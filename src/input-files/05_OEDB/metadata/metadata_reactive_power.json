@@ -1,0 +1,566 @@
+{
+    "name": "upload_tutorial_example_data",
+    "title": "Example Data for Upload Tutorial",
+    "id": "http://openenergyplatform.org/dataedit/view/model_draft/upload_tutorial_example_data",
+    "description": "Example data for upload tutorial to the OEP",
+    "language": [
+        "en-GB"
+    ],
+    "keywords": [
+        "example",
+        "template",
+        "test"
+    ],
+    "publicationDate": "2020-06-16",
+    "context": {
+        "homepage": "https://reiner-lemoine-institut.de/szenariendb/",
+        "documentation": "https://github.com/OpenEnergyPlatform/organisation/wiki/metadata",
+        "sourceCode": "https://github.com/OpenEnergyPlatform/tutorial/tree/master/upload/data/upload_tutorial_example_data.csv",
+        "contact": "https://github.com/christian-rli",
+        "grantNo": "03ET4057",
+        "fundingAgency": "Bundesministerium für Wirtschaft und Energie",
+        "fundingAgencyLogo": "https://www.innovation-beratung-foerderung.de/INNO/Redaktion/DE/Bilder/Titelbilder/titel_foerderlogo_bmwi.jpg?__blob=poster&v=2",
+        "publisherLogo": "https://reiner-lemoine-institut.de//wp-content/uploads/2015/09/rlilogo.png"
+    },
+    "spatial": {
+        "location": null,
+        "extent": null,
+        "resolution": null
+    },
+    "temporal": {
+        "referenceDate": "2020-06-16",
+        "timeseries": {
+            "start": null,
+            "end": null,
+            "resolution": null,
+            "alignment": null,
+            "aggregationType": null
+        }
+    },
+    "sources": [
+        {
+            "title": "OpenEnergyPlatform Metadata Example",
+            "description": "Metadata description",
+            "path": "https://github.com/OpenEnergyPlatform",
+            "licenses": [
+                {
+                    "name": "CC0-1.0",
+                    "title": "Creative Commons Zero v1.0 Universal",
+                    "path": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+                    "instruction": "You are free: To Share, To Create, To Adapt",
+                    "attribution": "© Reiner Lemoine Institut"
+                }
+            ]
+        }
+    ],
+    "licenses": [
+        {
+            "name": "ODbL-1.0",
+            "title": "Open Data Commons Open Database License 1.0",
+            "path": "https://opendatacommons.org/licenses/odbl/1.0/",
+            "instruction": "You are free: To Share, To Create, To Adapt; As long as you: Attribute, Share-Alike, Keep open!",
+            "attribution": "© Reiner Lemoine Institut © OpenStreetMap contributors"
+        }
+    ],
+    "contributors": [
+        {
+            "title": "christian-rli",
+            "email": null,
+            "date": "2020-06-16",
+            "object": "metadata",
+            "comment": "Create metadata"
+        }
+    ],
+    "resources": [
+        {
+            "profile": "tabular-data-resource",
+            "name": "model_draft.energycell_load_reactive_power_v01",
+            "path": "http://openenergyplatform.org/dataedit/view/model_draft/oep_metadata_table_example_v140",
+            "format": "PostgreSQL",
+            "encoding": "UTF-8",
+            "schema": {
+                "fields": [
+                    {
+                        "name": "timestamp",
+                        "description": "datetime",
+                        "type": "text",
+                        "unit": null
+                    },
+                    {
+                        "name": "q0",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q1",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q2",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q3",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q4",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q5",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q6",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q7",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q8",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q9",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q10",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q11",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q12",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q13",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q14",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q15",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q16",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q17",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q18",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q19",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q20",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q21",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q22",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q23",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q24",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q25",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q26",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q27",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q28",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q29",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q30",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q31",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q32",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q33",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q34",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q35",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q36",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q37",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q38",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q39",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q40",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q41",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q42",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q43",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q44",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q45",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q46",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q47",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q48",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q49",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q50",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q51",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q52",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q53",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q54",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q55",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q56",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q57",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q58",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q59",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q60",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q61",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q62",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q63",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q64",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q65",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q66",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q67",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q68",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q69",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q70",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q71",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q72",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    },
+                    {
+                        "name": "q73",
+                        "description": "reactive power profile",
+                        "type": "float",
+                        "unit": "kvar"
+                    }
+                ],
+                "primaryKey": [
+                    "id"
+                ],
+                "foreignKeys": []
+            },
+            "dialect": {
+                "delimiter": null,
+                "decimalSeparator": "."
+            }
+        }
+    ],
+    "review": {
+        "path": "https://github.com/OpenEnergyPlatform/data-preprocessing/wiki",
+        "badge": "platin"
+    },
+    "metaMetadata": {
+        "metadataVersion": "OEP-1.4.0",
+        "metadataLicense": {
+            "name": "CC0-1.0",
+            "title": "Creative Commons Zero v1.0 Universal",
+            "path": "https://creativecommons.org/publicdomain/zero/1.0/"
+        }
+    },
+    "_comment": {
+        "metadata": "Metadata documentation and explanation (https://github.com/OpenEnergyPlatform/organisation/wiki/metadata)",
+        "dates": "Dates and time must follow the ISO8601 including time zone (YYYY-MM-DD or YYYY-MM-DDThh:mm:ss±hh)",
+        "units": "Use a space between numbers and units (100 m)",
+        "languages": "Languages must follow the IETF (BCP47) format (en-GB, en-US, de-DE)",
+        "licenses": "License name must follow the SPDX License List (https://spdx.org/licenses/)",
+        "review": "Following the OEP Data Review (https://github.com/OpenEnergyPlatform/data-preprocessing/wiki)",
+        "null": "If not applicable use (null)"
+    }
+}
