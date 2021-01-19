@@ -1,0 +1,3 @@
+,car_type,bat_cap,location,use_case,netto_charging_capacity,SoC_start,SoC_end,chargingdemand,charge_start,charge_end,charge_time
+0,PHEV_luxury,40,1_business,public,19.8,0.6757484280999636,1.0,12.970062876001455,142,147,6
+1,PHEV_luxury,40,5_leisure,public,19.8,0.42812539391227344,1.0,22.874984243509058,534,541,8

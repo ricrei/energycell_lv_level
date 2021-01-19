@@ -1,0 +1,4 @@
+,car_type,bat_cap,location,use_case,netto_charging_capacity,SoC_start,SoC_end,chargingdemand,charge_start,charge_end,charge_time
+0,PHEV_medium,30,5_leisure,public,19.8,0.5357152622273691,1.0,13.928542133178928,166,170,5
+1,PHEV_medium,30,4_private/ridesharing,public,45.0,0.7724347034755875,1.0,6.826958895732376,432,436,5
+2,PHEV_medium,30,5_leisure,public,19.8,0.5693318019030196,1.0,12.920045942909413,636,645,10
