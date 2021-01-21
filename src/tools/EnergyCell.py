@@ -38,7 +38,7 @@ class EnergyCell():
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10,
                         'cos_phi' : .95}
-        #todo: power urban has to be verified
+        #TODO: power urban has to be verified
 
         self.hp_para = {'building_type' : ['DE_HEF33', 'DE_HEF34', 'DE_HMF33', 'DE_HMF34'],
                         'heatpump_type' : ['Air', 'Ground'],
@@ -226,6 +226,16 @@ class EnergyCell():
               self.df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power*cos_phi
               self.df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -(pv_dc_power**2 - (pv_dc_power*cos_phi)**2)**(1/2)
 
+        ### load load profiles ###
+        p0 = self.decompress_pickle(load_p_data_file)
+        q0 = self.decompress_pickle(load_q_data_file)
+        for i in range(0,74):
+            self.df['load_'+str(i)+'_p'] = p0["p"+str(i)]/1000	# normalized to MW
+            self.df['load_'+str(i)+'_q'] = q0["q"+str(i)]/1000	# normalized to MW
+        for i in self.net.load.index[self.net.load.type == 'load']:
+            self.net.load.type[i] = 'load_'+str(i%74)
+
+
         ### load heatpump profile ###
         if self.set_hp == True:
           hp = self.decompress_pickle(hp_data_file)
@@ -234,13 +244,6 @@ class EnergyCell():
             self.df['hp_'+hp_type+'_q'] = hp['Demand_el_'+hp_type]*self.hp_para['sin_phi']/1000 # normalized to MW
         else:
           self.df['hp'] = 0
-
-        ### load load profiles ###
-        p0 = self.decompress_pickle(load_p_data_file)
-        q0 = self.decompress_pickle(load_q_data_file)
-        for i in range(0,74):
-            self.df['load_p_'+str(i)] = p0["p"+str(i)]/1000	# normalized to MW
-            self.df['load_q_'+str(i)] = q0["q"+str(i)]/1000	# normalized to MW
 
         ### load ev profile ###
         if self.set_ev == True:
@@ -261,22 +264,42 @@ class EnergyCell():
     ### run df for whole timeseries ###
     ###################################
     def run_pf(self):
+
+      def create_output_dataframes():
+        vm_pu = pd.DataFrame(columns=self.net.bus.index)
+        li_lo = pd.DataFrame(columns=self.net.line.index)
+        tr_lo = pd.DataFrame(columns=self.net.trafo.index)
+        power = pd.DataFrame(columns=['load', 'pv', 'hp', 'ev'])
+        vm_pu.index.name = 'timestamp'
+        li_lo.index.name = 'timestamp'
+        tr_lo.index.name = 'timestamp'
+        power.index.name = 'timestamp'
+
+        return vm_pu, li_lo, tr_lo, power
+
+      def write_df_to_csv(mode, header, vm_pu, li_lo, tr_lo, power):
+        vm_pu.to_csv(self.output_dir + 'res_bus_vm_pu.csv',mode=mode, header=header, index = True)
+        li_lo.to_csv(self.output_dir + 'res_line_load_percent.csv',mode=mode, header=header, index = True)
+        tr_lo.to_csv(self.output_dir + 'res_trafo_load_percent.csv',mode=mode, header=header, index = True)
+        power.to_csv(self.output_dir + 'power_total_MW.csv',mode=mode, header=header, index = True) 
+
+
       time_series = self.df['timestamp']
-      timesteps = len(time_series)                
+      timesteps = len(time_series)
       rest_time = ''
-      vm_pu = pd.DataFrame(columns=self.net.bus.index, index=time_series)
-      li_lo = pd.DataFrame(columns=self.net.line.index, index=time_series)
-      tr_lo = pd.DataFrame(columns=self.net.trafo.index, index=time_series)
-      power = pd.DataFrame(columns=['load', 'pv', 'hp', 'ev'], index=time_series)
-      
+      time_delta = 1000
+
+      vm_pu, li_lo, tr_lo, power = create_output_dataframes()
+
       pv_index = self.net.sgen.index
       index_helper_pv = self.net.sgen.type.loc[pv_index]
       index_helper_pv_p = index_helper_pv + '_p'
       index_helper_pv_q = index_helper_pv + '_q'
 
-      load_index = self.net.load.index[self.net.load.type == 'load']
-      index_helper_load_p = ['load_p_'+str(i) for i in load_index%74]
-      index_helper_load_q = ['load_q_'+str(i) for i in load_index%74]
+      load_index = self.net.load.index[self.net.load.type.str.contains('load')]
+      index_helper_load_p = [self.net.load.type[i] + '_p' for i in load_index]
+      index_helper_load_q = [self.net.load.type[i] + '_q' for i in load_index]
+
 
       hp_index = self.net.load.index[self.net.load.type.str.contains('hp')]
       index_helper_hp_p = [self.net.load.type[i] + '_p' for i in hp_index]
@@ -285,6 +308,8 @@ class EnergyCell():
       ev_index = self.net.load.index[self.net.load.type.str.contains('ev')]
       index_helper_ev = [self.net.load.type[i] for i in ev_index]
 
+      ### main loop: try to avoid 'if', 'for', ... statments ###
+      ###           Processing time is valuable!             ###
       for i in range(0,timesteps):
         start = time.time()
         # show bar of process in terminal
@@ -303,28 +328,30 @@ class EnergyCell():
 
         self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
         #self.net.load.loc[ev_index, 'q_mvar'] = 0
-        '''
-        pp.runpp(self.net, algorithm='nr', init='results', max_iteration=10)
+        
+        # run pandapower power flow
+        pp.runpp(self.net, init='results')
 
         # write result into DataFrame
-        vm_pu.loc[time_series[i]] = self.net.res_bus.vm_pu
-        li_lo.loc[time_series[i]] = self.net.res_line.loading_percent
-        tr_lo.loc[time_series[i]] = self.net.res_trafo.loading_percent
-        '''
-        power.pv.loc[t] = self.net.sgen.p_mw.sum()
-        power.load.loc[t] = self.net.load.p_mw[load_index].sum()
-        power.hp.loc[t] = self.net.load.p_mw[hp_index].sum()
-        power.ev.loc[t] = self.net.load.p_mw[ev_index].sum()
+        vm_pu.loc[t] = self.net.res_bus.vm_pu
+        li_lo.loc[t] = self.net.res_line.loading_percent
+        tr_lo.loc[t] = self.net.res_trafo.loading_percent
+        power.loc[t] = [self.net.load.p_mw[load_index].sum(), self.net.sgen.p_mw.sum(), self.net.load.p_mw[hp_index].sum(), self.net.load.p_mw[ev_index].sum()]
 
+        # TODO: avoid if-statment
+        if i%time_delta == 0:
+          if i < time_delta:
+            write_df_to_csv(mode='w', header=True, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
+          else:
+            write_df_to_csv(mode='a', header=False, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
+            vm_pu, li_lo, tr_lo, power = create_output_dataframes()
+        
         end = time.time()
         rest_time = round((end - start)*(timesteps - i), 0)
       prog.progress(1, 1, status=' Done')
       print('')
 
-      vm_pu.to_csv(self.output_dir + 'res_bus_vm_pu.csv',mode='w', header=True, index = True)
-      li_lo.to_csv(self.output_dir + 'res_line_load_percent.csv',mode='w', header=True, index = True)
-      tr_lo.to_csv(self.output_dir + 'res_trafo_load_percent.csv',mode='w', header=True, index = True)
-      power.to_csv(self.output_dir + 'power_total_MW.csv',mode='w', header=True, index = True)
+      write_df_to_csv(mode='a', header=False, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
 
     ##############################
     ### Adjustment of Datasets ###
@@ -422,6 +449,9 @@ class EnergyCell():
      f.close()
      return data
 
+    ############################
+    ### calculate time delta ###
+    ############################
     def run_time(self, buttom):
      if buttom == 'start':
       self.start = time.time()

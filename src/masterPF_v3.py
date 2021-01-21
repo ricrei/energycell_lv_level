@@ -27,7 +27,7 @@ net_name = ["kerber_rural_1", #0
 
 start_time = '2017-01-01 00:01:00+01:00'
 end_time = '2017-12-31 23:59:00+01:00'
-t_freq = 'H'
+t_freq = 'T'
 '''
 start_time = '2017-05-17 00:00:00+02:00'
 end_time = '2017-05-17 23:59:00+02:00'
@@ -52,7 +52,7 @@ e.run_pf_timeseries()
 tda.calculate_relevant_outputdata(e.output_dir, t_freq)
 tda.calculate_net_problems(e.output_dir)
 tda.plot_generation_consumption_as_heat_map(e.output_dir)
-#tda.plot_grid_issus_over_power(e.output_dir)
+tda.plot_grid_issus_over_power(e.output_dir)
 tda.plot_residualload(e.output_dir)
 #tda.plot_colorbar_seaborn(e.output_dir, start_time, end_time)
 #tda.plot_input_data()
