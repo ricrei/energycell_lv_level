@@ -283,18 +283,10 @@ class EnergyCell():
         tr_lo.round(1).to_csv(self.output_dir + 'res_trafo_load_percent.csv',mode=mode, header=header, index = True)
         power.round(6).to_csv(self.output_dir + 'power_total_MW.csv',mode=mode, header=header, index = True) 
 
-      def calculate_time_step_array(time_step_size):
-        time_delta = int((timesteps - timesteps%time_step_size)/time_step_size)
-        a = 0*np.arange(time_delta + 1) + 1
-        a = int((timesteps - timesteps%time_delta)/time_delta)*a
-        a[time_delta] = int(timesteps%time_delta)
-
-        return a
-
       time_series = self.df['timestamp']
       timesteps = len(time_series)
       rest_time = ''
-      time_step_size = 1000
+      time_delta = 1000
 
       vm_pu, li_lo, tr_lo, power = create_output_dataframes()
 
@@ -315,59 +307,52 @@ class EnergyCell():
       ev_index = self.net.load.index[self.net.load.type.str.contains('ev')]
       index_helper_ev = [self.net.load.type[i] for i in ev_index]
 
-      a = calculate_time_step_array(time_step_size)
-      l, k, j, i = 0, 0, 0, 0
-
       ### main loop: try to avoid 'if', 'for', ... statments ###
       ###           Processing time is valuable!             ###
-      for k in a:
-          for j in range(k):
-            i = j + l
-            start = time.time()
-            # show bar of process in terminal
-            prog.progress(i, timesteps, status=' %s s ' % rest_time)
+      for i in range(0,timesteps):
+        start = time.time()
+        # show bar of process in terminal
+        prog.progress(i, timesteps, status=' %s s ' % rest_time)
+        t = time_series[i]
+        d = self.df.loc[t]
 
-            t = time_series[i]
-            d = self.df.loc[t]
+        self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
+        self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
 
-            self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
-            self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
+        self.net.load.loc[load_index, 'p_mw'] = d[index_helper_load_p].values
+        self.net.load.loc[load_index, 'q_mvar'] = d[index_helper_load_q].values
 
-            self.net.load.loc[load_index, 'p_mw'] = d[index_helper_load_p].values
-            self.net.load.loc[load_index, 'q_mvar'] = d[index_helper_load_q].values
+        self.net.load.loc[hp_index, 'p_mw'] = d[index_helper_hp_p].values
+        self.net.load.loc[hp_index, 'q_mvar'] = d[index_helper_hp_q].values
 
-            self.net.load.loc[hp_index, 'p_mw'] = d[index_helper_hp_p].values
-            self.net.load.loc[hp_index, 'q_mvar'] = d[index_helper_hp_q].values
-
-            self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
-            #self.net.load.loc[ev_index, 'q_mvar'] = 0
+        self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
+        #self.net.load.loc[ev_index, 'q_mvar'] = 0
         
-            # run pandapower power flow
-            pp.runpp(self.net, init='results')
+        # run pandapower power flow
+        pp.runpp(self.net, init='results')
 
-            # write result into DataFrame
-            vm_pu.loc[t] = self.net.res_bus.vm_pu
-            li_lo.loc[t] = self.net.res_line.loading_percent
-            tr_lo.loc[t] = self.net.res_trafo.loading_percent
-            power.loc[t] = [self.net.load.p_mw[load_index].sum(),
-                            self.net.sgen.p_mw.sum(),
-                            self.net.load.p_mw[hp_index].sum(),
-                            self.net.load.p_mw[ev_index].sum()]
+        # write result into DataFrame
+        vm_pu.loc[t] = self.net.res_bus.vm_pu
+        li_lo.loc[t] = self.net.res_line.loading_percent
+        tr_lo.loc[t] = self.net.res_trafo.loading_percent
+        power.loc[t] = [self.net.load.p_mw[load_index].sum(), self.net.sgen.p_mw.sum(), self.net.load.p_mw[hp_index].sum(), self.net.load.p_mw[ev_index].sum()]
 
-          if l == 0:
+        # TODO: avoid if-statment
+        if i%time_delta == 0:
+          if i < time_delta:
             write_df_to_csv(mode='w', header=True, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
-            vm_pu, li_lo, tr_lo, power = create_output_dataframes()
+            end = time.time()
+            rest_time = round((end - start)*(timesteps - i), 0)
           else:
             write_df_to_csv(mode='a', header=False, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
             vm_pu, li_lo, tr_lo, power = create_output_dataframes()
-          l += k
+            end = time.time()
+            rest_time = round((end - start)*(timesteps - i), 0)
 
-          end = time.time()
-          rest_time = int(round((end - start)*(timesteps - i), 0))
-
-      prog.progress(1, 1, status=' Done ')
+      prog.progress(1, 1, status=' Done')
       print('')
 
+      write_df_to_csv(mode='a', header=False, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
 
     ##############################
     ### Adjustment of Datasets ###
@@ -394,6 +379,7 @@ class EnergyCell():
 
       with open('input-files/daterange.csv') as daterange:
          csv_daterange = csv.reader(daterange)
+         #print(csv_daterange)
          for row in csv_daterange:
             dates_old = str(row[0])
 
@@ -407,9 +393,8 @@ class EnergyCell():
         
         print('Adjust input datasets ...')
 
-        start_time = pd.to_datetime(time_scope['start_time'], format='%Y-%m-%d %H:%M:%S')
-        end_time = pd.to_datetime(time_scope['end_time'], format='%Y-%m-%d %H:%M:%S')
-        t_freq = time_scope['t_freq']
+        start_time = pd.to_datetime(start_time, format='%Y-%m-%d %H:%M:%S')
+        end_time = pd.to_datetime(end_time, format='%Y-%m-%d %H:%M:%S')
 
         p0 = self.decompress_pickle('input-files/01_p0_load.pbz2')
         q0 = self.decompress_pickle('input-files/01_q0_load.pbz2')

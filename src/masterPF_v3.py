@@ -24,22 +24,18 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6"]  #12
 
 # define timescope and timestepwidth
-# TODO: create dict
-start_time = '2017-05-17 00:01:00+01:00'
-end_time = '2017-05-17 23:59:00+01:00'
-t_freq = '10T'
-'''
-start_time = '2017-05-17 00:00:00+02:00'
-end_time = '2017-05-17 23:59:00+02:00'
-t_freq = '10T'
+time_scope = { 'start_time' : '2017-05-17 00:01:00+02:00', 
+               'end_time'   : '2017-05-20 23:59:00+02:00',
+               't_freq'     : 'T'
+             }
 
-start_time = '2017-01-11 00:00:00+01:00'
-end_time = '2017-01-11 23:59:00+01:00'
-t_freq = 'T'
-'''
+time_scope_y = { 'start_time' : '2017-01-01 00:01:00+01:00', 
+               'end_time'   : '2017-12-31 23:59:00+01:00',
+               't_freq'     : 'D'
+             }
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name=net_name[7], set_pv=True, set_ev=True, set_hp=True, start_time=start_time, end_time=end_time, t_freq=t_freq)
+e = ec.EnergyCell(net_name=net_name[7], set_pv=True, set_ev=True, set_hp=True, time_scope=time_scope)
 
 # Run powerflow
 e.run_pf_timeseries()
