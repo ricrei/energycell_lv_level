@@ -294,7 +294,7 @@ class EnergyCell():
       time_series = self.df['timestamp']
       timesteps = len(time_series)
       rest_time = ''
-      time_step_size = 1000
+      time_step_size = 10
 
       vm_pu, li_lo, tr_lo, power = create_output_dataframes()
 
@@ -354,6 +354,9 @@ class EnergyCell():
                             self.net.load.p_mw[hp_index].sum(),
                             self.net.load.p_mw[ev_index].sum()]
 
+            end = time.time()
+            rest_time = int(round((end - start)*(timesteps - i), 0))
+
           if l == 0:
             write_df_to_csv(mode='w', header=True, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
             vm_pu, li_lo, tr_lo, power = create_output_dataframes()
@@ -361,9 +364,6 @@ class EnergyCell():
             write_df_to_csv(mode='a', header=False, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
             vm_pu, li_lo, tr_lo, power = create_output_dataframes()
           l += k
-
-          end = time.time()
-          rest_time = int(round((end - start)*(timesteps - i), 0))
 
       prog.progress(1, 1, status=' Done ')
       print('')

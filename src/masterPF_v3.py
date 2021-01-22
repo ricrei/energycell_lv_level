@@ -25,8 +25,8 @@ net_name = ["kerber_rural_1", #0
 
 # define timescope and timestepwidth
 time_scope = { 'start_time' : '2017-05-17 00:01:00+02:00', 
-               'end_time'   : '2017-05-20 23:59:00+02:00',
-               't_freq'     : 'T'
+               'end_time'   : '2017-05-17 12:59:00+02:00',
+               't_freq'     : '5T'
              }
 
 time_scope_y = { 'start_time' : '2017-01-01 00:01:00+01:00', 
@@ -45,7 +45,7 @@ e.run_pf_timeseries()
 ############# ANALISE OUTPUT DATA ##############
 ################################################
 
-#tda.calculate_relevant_outputdata(e.output_dir, t_freq)
+#tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
 #tda.calculate_net_problems(e.output_dir)
 #tda.plot_generation_consumption_as_heat_map(e.output_dir)
 #tda.plot_grid_issus_over_power(e.output_dir)
