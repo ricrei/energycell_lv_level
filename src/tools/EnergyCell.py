@@ -23,13 +23,11 @@ import _pickle as cPickle
 
 class EnergyCell():
     
-    def __init__(self, net_name, set_hp, set_ev, set_pv, time_scope):
+    def __init__(self, net_name, scenario, time_scope):
         self.run_time('start')
         self.net_name = net_name
-        self.set_hp = set_hp
-        self.set_ev = set_ev
-        self.set_pv = set_pv
-        self.output_dir = os.path.join("./", "output-files/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
+        self.scenario = scenario
+        self.output_dir = os.path.join("./", "output-files/"+str(scenario)+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
 
         # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
         # rate: frequency of occurrence of pv-orientation
@@ -109,33 +107,38 @@ class EnergyCell():
         for index in self.net.sgen.index:
           self.net.sgen.drop(index=index, inplace=True)
 
-        # calculate distribution of pv systems with different orientation
-        n_pv_systems = self.net.load.index.max() + 1
-        pv_orientation_proberbility = self.pv_para['rate']/100
-        n_pv_systems_orientation = pd.DataFrame(columns=['orientation','amount', 'decimal_amount', 'final_amount'])
-        n_pv_systems_orientation['orientation'] = self.pv_para['orientation']      
-        n_pv_systems_orientation['amount'] = n_pv_systems * pv_orientation_proberbility
-        n_pv_systems_orientation['final_amount'] = n_pv_systems_orientation['amount'].apply(np.floor)
-        n_pv_systems_orientation['decimal_amount'] = n_pv_systems_orientation['amount'] - n_pv_systems_orientation['final_amount']
-        n_pv_systems_left = n_pv_systems - n_pv_systems_orientation['final_amount'].sum()
-      
-        n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['decimal_amount'], ascending=False).reset_index(drop=True)
-
-        i = 0
-        while n_pv_systems_left > 0:
-          n_pv_systems_orientation['final_amount'].loc[i] += 1
-          n_pv_systems_left -= 1
-          i += 1
-        n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['orientation'], ascending=True).reset_index(drop=True)
-        n_pv_systems_to_distribute = n_pv_systems_orientation[['orientation', 'final_amount']]
+        # get scenario parameter
+        [self.set_hp, self.set_ev, self.set_pv] = self.get_scenario_parameter(scenario=self.scenario)
+        print('Scenario: %s' % self.scenario)
 
         # create sgen per load and set all values to zero
         # asign pv-orientaiton to every sgen
         if self.set_pv == True:
+
+            # calculate distribution of pv systems with different orientation
+            n_pv_systems = self.net.load.index.max() + 1
+            pv_orientation_proberbility = self.pv_para['rate']/100
+            n_pv_systems_orientation = pd.DataFrame(columns=['orientation','amount', 'decimal_amount', 'final_amount'])
+            n_pv_systems_orientation['orientation'] = self.pv_para['orientation']      
+            n_pv_systems_orientation['amount'] = n_pv_systems * pv_orientation_proberbility
+            n_pv_systems_orientation['final_amount'] = n_pv_systems_orientation['amount'].apply(np.floor)
+            n_pv_systems_orientation['decimal_amount'] = n_pv_systems_orientation['amount'] - n_pv_systems_orientation['final_amount']
+            n_pv_systems_left = n_pv_systems - n_pv_systems_orientation['final_amount'].sum()
+      
+            n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['decimal_amount'], ascending=False).reset_index(drop=True)
+
+            i = 0
+            while n_pv_systems_left > 0:
+               n_pv_systems_orientation['final_amount'].loc[i] += 1
+               n_pv_systems_left -= 1
+               i += 1
+            n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['orientation'], ascending=True).reset_index(drop=True)
+            n_pv_systems_to_distribute = n_pv_systems_orientation[['orientation', 'final_amount']]
+
             j = 0
             for index in self.net.load.index:
                 # create PV sgen at every load
-                pp.create_sgen(self.net, self.net.load.loc[index, "bus"], 0.0)
+                pp.create_sgen(self.net, self.net.load.loc[index, "bus"], 0.0, name='pv_'+str(self.net.load.loc[index, "bus"]))
                 self.net.load.loc[index, "p_mw"] = 0.0
                 # asign pv-orientation to every PV sgen
                 if n_pv_systems_to_distribute.final_amount.sum() > 0:
@@ -251,11 +254,11 @@ class EnergyCell():
             for i in ev.columns:
               self.df[i] = ev[i]/1000 # normalized to MW
               self.ev_para['ev_types'] += [i]
+            ev_len = len(self.ev_para['ev_types'])
+            for i in self.net.load.index[self.net.load.type == 'ev']:
+              self.net.load.type[i] = self.ev_para['ev_types'][i%ev_len]
         else:
             self.df['ev'] = 0
-        ev_len = len(self.ev_para['ev_types'])
-        for i in self.net.load.index[self.net.load.type == 'ev']:
-            self.net.load.type[i] = self.ev_para['ev_types'][i%ev_len]
 
         self.df['timestamp'] = time
 
@@ -432,6 +435,20 @@ class EnergyCell():
         f = open('input-files/daterange.csv','w')
         f.write(dates)
         f.close()
+
+    ##############################
+    ### get scenario parameter ###
+    ##############################
+    def get_scenario_parameter(self, scenario):
+        # hp, ev, pv
+        scenario_dict = {
+             1 : [0, 0, 0],
+             2 : [1, 1, 0],
+             3 : [0, 0, 1],
+             4 : [1, 1, 1]
+        }
+        return scenario_dict[scenario][0], scenario_dict[scenario][1], scenario_dict[scenario][2]
+
 
     #########################
     ### create output_dir ###
