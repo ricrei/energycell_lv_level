@@ -485,10 +485,10 @@ class EnergyCell():
     ############################
     ### calculate time delta ###
     ############################
-    def run_time(self, buttom):
-     if buttom == 'start':
+    def run_time(self, button):
+     if button == 'start':
       self.start = time.time()
-     elif buttom == 'end':
+     elif button == 'end':
       self.end = time.time()
       print("Elapsed (after compilation) = %s seconds" % (str(round(self.end - self.start, 2))))
      else:
