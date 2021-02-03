@@ -13,12 +13,11 @@ import numpy as np
 import pandas as pd
 import pandapower as pp
 import pandapower.networks as pn
-#import pandapower.plotting.plotly as ppply
+import pandapower.toolbox as tb
 import simbench as sb
 import tools.progress as prog
 
 import bz2
-#import pickle
 import _pickle as cPickle
 
 class EnergyCell():
@@ -33,9 +32,11 @@ class EnergyCell():
         # rate: frequency of occurrence of pv-orientation
         self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
                         'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
-                        'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2],
+                        'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10,
-                        'cos_phi' : .95}
+                        'cos_phi' : .95,
+                        'q_u_cont': True, 'tan_phi' : np.tan(np.arccos(.9)), 'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
+
         #TODO: power urban has to be verified
 
         self.hp_para = {'building_type' : ['DE_HEF33', 'DE_HEF34', 'DE_HMF33', 'DE_HMF34'],
@@ -101,7 +102,7 @@ class EnergyCell():
 
         # Set vm_pu of external grid
         #print(self.net.ext_grid.vm_pu)
-        self.net.ext_grid.vm_pu = 1.025
+        self.net.ext_grid.vm_pu = 1.0
 
         # if there are any sgen's within the original network -> remove them first
         for index in self.net.sgen.index:
@@ -118,7 +119,7 @@ class EnergyCell():
             # calculate distribution of pv systems with different orientation
             n_pv_systems = self.net.load.index.max() + 1
             pv_orientation_proberbility = self.pv_para['rate']/100
-            n_pv_systems_orientation = pd.DataFrame(columns=['orientation','amount', 'decimal_amount', 'final_amount'])
+            n_pv_systems_orientation = pd.DataFrame(columns=['orientation', 'amount', 'decimal_amount', 'final_amount'])
             n_pv_systems_orientation['orientation'] = self.pv_para['orientation']      
             n_pv_systems_orientation['amount'] = n_pv_systems * pv_orientation_proberbility
             n_pv_systems_orientation['final_amount'] = n_pv_systems_orientation['amount'].apply(np.floor)
@@ -226,8 +227,8 @@ class EnergyCell():
               # calculate installed power per household and normalize timeseries to MW
               pv_dc_power = pv[str(self.pv_para['orientation'][i])]*pv_power_installed*self.pv_para['installed_power_scaling'][i]/1000
               # calculate active and reactive power of pv-system
-              self.df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power*cos_phi
-              self.df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -(pv_dc_power**2 - (pv_dc_power*cos_phi)**2)**(1/2)
+              self.df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power
+              self.df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -pv_dc_power*np.tan(np.arccos(cos_phi))
 
         ### load load profiles ###
         p0 = self.decompress_pickle(load_p_data_file)
@@ -244,6 +245,7 @@ class EnergyCell():
           hp = self.decompress_pickle(hp_data_file)
           for hp_type in self.hp_para['hp_types']:
             self.df['hp_'+hp_type+'_p'] = hp['Demand_el_'+hp_type]/1000 # normalized to MW
+            # TODO: cos_phi Berechnung anpassen
             self.df['hp_'+hp_type+'_q'] = hp['Demand_el_'+hp_type]*self.hp_para['sin_phi']/1000 # normalized to MW
         else:
           self.df['hp'] = 0
@@ -273,18 +275,24 @@ class EnergyCell():
         li_lo = pd.DataFrame(columns=self.net.line.index)
         tr_lo = pd.DataFrame(columns=self.net.trafo.index)
         power = pd.DataFrame(columns=['load', 'pv', 'hp', 'ev'])
+        reactive_power = pd.DataFrame(columns=self.net.bus.index)
+        active_power = pd.DataFrame(columns=self.net.bus.index)
         vm_pu.index.name = 'timestamp'
         li_lo.index.name = 'timestamp'
         tr_lo.index.name = 'timestamp'
         power.index.name = 'timestamp'
+        reactive_power.index.name  = 'timestamp'
+        active_power.index.name = 'timestamp'
 
-        return vm_pu, li_lo, tr_lo, power
+        return vm_pu, li_lo, tr_lo, power, reactive_power, active_power
 
-      def write_df_to_csv(mode, header, vm_pu, li_lo, tr_lo, power):
+      def write_df_to_csv(mode, header, vm_pu, li_lo, tr_lo, power, reactive_power, active_power):
         vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',mode=mode, header=header, index = True)
         li_lo.round(1).to_csv(self.output_dir + 'res_line_load_percent.csv',mode=mode, header=header, index = True)
         tr_lo.round(1).to_csv(self.output_dir + 'res_trafo_load_percent.csv',mode=mode, header=header, index = True)
-        power.round(6).to_csv(self.output_dir + 'power_total_MW.csv',mode=mode, header=header, index = True) 
+        power.round(6).to_csv(self.output_dir + 'power_total_MW.csv',mode=mode, header=header, index = True)
+        reactive_power.round(6).to_csv(self.output_dir + 'reactive_power_MW.csv',mode=mode, header=header, index = True)
+        active_power.round(6).to_csv(self.output_dir + 'active_power_MW.csv',mode=mode, header=header, index = True)
 
       def calculate_time_step_array(time_step_size):
         time_delta = int((timesteps - timesteps%time_step_size)/time_step_size)
@@ -297,9 +305,9 @@ class EnergyCell():
       time_series = self.df['timestamp']
       timesteps = len(time_series)
       rest_time = ''
-      time_step_size = 10
+      time_step_size = 100
 
-      vm_pu, li_lo, tr_lo, power = create_output_dataframes()
+      vm_pu, li_lo, tr_lo, power, reactive_power, active_power = create_output_dataframes()
 
       pv_index = self.net.sgen.index
       index_helper_pv = self.net.sgen.type.loc[pv_index]
@@ -321,6 +329,14 @@ class EnergyCell():
       a = calculate_time_step_array(time_step_size)
       l, k, j, i = 0, 0, 0, 0
 
+      q_sgen_t_minus_1 = self.net.sgen['q_mvar']
+      p_sgen_t_minus_1 = self.net.sgen['p_mw']
+      v_t_minus_1 = self.net.bus.index*0 + 1.0
+      v_t_minus_2 = self.net.bus.index*0 + 1.0
+      v_t_minus_3 = self.net.bus.index*0 + 1.0
+      v_t_minus_4 = self.net.bus.index*0 + 1.0
+      v_t_minus_5 = self.net.bus.index*0 + 1.0
+
       ### main loop: try to avoid 'if', 'for', ... statments ###
       ###           Processing time is valuable!             ###
       for k in a:
@@ -334,7 +350,10 @@ class EnergyCell():
             d = self.df.loc[t]
 
             self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
-            self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
+            if self.pv_para['q_u_cont'] == True:
+              self.q_u_control(v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1)
+            else:
+              self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
 
             self.net.load.loc[load_index, 'p_mw'] = d[index_helper_load_p].values
             self.net.load.loc[load_index, 'q_mvar'] = d[index_helper_load_q].values
@@ -346,7 +365,16 @@ class EnergyCell():
             #self.net.load.loc[ev_index, 'q_mvar'] = 0
         
             # run pandapower power flow
-            pp.runpp(self.net, init='results')
+            pp.runpp(self.net, init='auto', init_vm_pu=v_t_minus_1, init_va_degree='results', max_iteration=30, tolerance_mva=1e-6)
+
+            v_t_minus_1 = self.net.res_bus.vm_pu
+            v_t_minus_2 = v_t_minus_1
+            v_t_minus_3 = v_t_minus_2
+            v_t_minus_4 = v_t_minus_3
+            v_t_minus_5 = v_t_minus_4
+
+            p_sgen_t_minus_1 = self.net.sgen['p_mw']
+            q_sgen_t_minus_1 = self.net.sgen['q_mvar']
 
             # write result into DataFrame
             vm_pu.loc[t] = self.net.res_bus.vm_pu
@@ -356,21 +384,56 @@ class EnergyCell():
                             self.net.sgen.p_mw.sum(),
                             self.net.load.p_mw[hp_index].sum(),
                             self.net.load.p_mw[ev_index].sum()]
+            reactive_power.loc[t] = self.net.sgen['q_mvar']
+            active_power.loc[t] = self.net.sgen['p_mw']
 
             end = time.time()
             rest_time = int(round((end - start)*(timesteps - i), 0))
 
           if l == 0:
-            write_df_to_csv(mode='w', header=True, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
-            vm_pu, li_lo, tr_lo, power = create_output_dataframes()
+            write_df_to_csv(mode='w', header=True, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power, reactive_power=reactive_power, active_power=active_power)
+            vm_pu, li_lo, tr_lo, power, reactive_power, active_power = create_output_dataframes()
           else:
-            write_df_to_csv(mode='a', header=False, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power)
-            vm_pu, li_lo, tr_lo, power = create_output_dataframes()
+            write_df_to_csv(mode='a', header=False, vm_pu=vm_pu, li_lo=li_lo, tr_lo=tr_lo, power=power, reactive_power=reactive_power, active_power=active_power)
+            vm_pu, li_lo, tr_lo, power, reactive_power, active_power = create_output_dataframes()
           l += k
 
       prog.progress(1, 1, status=' Done ')
       print('')
+      
 
+    ####################
+    ### Q(U) Control ###
+    ####################
+    def q_u_control(self, v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1):
+      a = .1
+      v_t = (v_t_minus_1 + v_t_minus_2 + v_t_minus_3 + v_t_minus_4 + v_t_minus_5)/5
+      #v_t = 1/6 + 1/6*v_t_minus_1 + 1/6*v_t_minus_2 + 1/6*v_t_minus_3 + 1/6*v_t_minus_4 + 1/6*v_t_minus_5
+      #v_t = 1/3 + 2/15*v_t_minus_1 + 2/15*v_t_minus_2 + 2/15*v_t_minus_3 + 2/15*v_t_minus_4 + 2/15*v_t_minus_5
+      v = v_t[self.net.sgen['bus']].values
+      P = self.net.sgen["p_mw"]
+      Q = P * self.pv_para['tan_phi']
+      m = Q/(self.pv_para['U2'] - self.pv_para['U1'])
+      self.net.sgen.loc[v <= self.pv_para['U1'], 'q_mvar'] =  Q
+      self.net.sgen.loc[(v <= self.pv_para['U2']) & (v >= self.pv_para['U1']), 'q_mvar'] = -m*(v-self.pv_para['U2'])
+      self.net.sgen.loc[(v <= self.pv_para['U3']) & (v >= self.pv_para['U2']), 'q_mvar'] = 0
+      self.net.sgen.loc[(v <= self.pv_para['U4']) & (v >= self.pv_para['U3']), 'q_mvar'] = -m*(v-self.pv_para['U3'])
+      self.net.sgen.loc[v >= self.pv_para['U4'], 'q_mvar'] = -Q
+
+      self.net.sgen['q_mvar'] = a*self.net.sgen['q_mvar'] + (1-a)*q_sgen_t_minus_1
+      self.net.sgen.loc[self.net.sgen['q_mvar'] < -Q, 'q_mvar'] = -Q
+      self.net.sgen.loc[self.net.sgen['q_mvar'] >  Q, 'q_mvar'] = Q
+
+      #print(v_t[42])
+      #print((self.net.sgen['q_mvar'] - q_sgen_t_minus_1).sum())
+      #print((self.net.sgen['q_mvar'] - q_sgen_t_minus_1).max())
+      #print(self.get_cos_phi(self.net.sgen['p_mw'], self.net.sgen['q_mvar']).min())
+
+    #########################
+    ### Calculate cos phi ###
+    #########################      
+    def get_cos_phi(self, P, Q):
+       return P/(P**2 + Q**2)**(1/2)
 
     ##############################
     ### Adjustment of Datasets ###

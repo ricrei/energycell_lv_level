@@ -76,7 +76,7 @@ def plot_colorbar_seaborn(output_dir, start_time, end_time):
         pd.to_datetime('2017-05-18 00:00:00+02:00', utc=True)
                 ])
   '''
-  ax.set_xticklabels(['00:00', '', '', '', '', '', '', '', '', '', '', '06:00', '', '', '', '', '', '', '', '', '', '', '12:00', '', '', '', '', '', '', '', '', '', '', '18:00', '', '', '', '', '', '', '', '', '', '', '00:00'])
+  ax.set_xticklabels(['00:00', '', '', '', '', '', '', '', '', '', '', '06:00', '', '', '', '', '', '', '', '', '', '', '12:00', '', '', '', '', '', '', '', '', '', '', '18:00', '', '', '', '', '', '', '', '', '', '00:00'])
   ax.set_xlabel('Time').set_size(10)
   ax.set_ylabel('Household').set_size(10)
   plt.show()
@@ -134,8 +134,8 @@ def plot_residualload(output_dir):
   ax.plot(power.index, -power.load-power.ev, lw=.6)
   ax.fill_between(power.index, -power.load-power.ev, -power.hp-power.load-power.ev, alpha=0.7)
   ax.plot(power.index, -power.hp-power.load-power.ev, lw=.6)
-  power = shorted_data(power, 'W')
-  ax.plot(power.index, power.pv-power.hp-power.load-power.ev, color='black', lw=.5)
+  #power = shorted_data(power, 'W')
+  #ax.plot(power.index, power.pv-power.hp-power.load-power.ev, color='black', lw=.5)
   ax.set_xlabel('Time')
   ax.set_ylabel('Power in kW')
   #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
@@ -216,23 +216,10 @@ def plot_grid_issus_over_power(output_dir):
   tl = read_data(output_dir+'res_trafo_load_percent.csv')
 
   v_over = v[v>1.1]
-  v_under = v[v<.95] # 0.9!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  v_under = v[v<.9]
   ll_over = ll[ll>100]
   tl_over = tl[tl>100]
-  #v_over = v[v>1.1].unstack(level=0).dropna().values
-  #print(v_over)
 
-
-  '''
-  plt.figure(figsize=(3, 9))
-  plt.subplot(311)
-  plt.plot(power, v_over, 'ro')
-  plt.subplot(312)
-  plt.plot(power, v_under, 'ro')
-  plt.subplot(313)
-  plt.plot(power, ll_over, 'ro')
-  plt.plot(power, tl_over, 'go')
-  '''
   fig, ax = plt.subplots()
   line3 = ax.plot(power, ll_over/100, 'bo', label="ll")[0]
   line4 = ax.plot(power, tl_over/100, 'go', label="tl")[0]
@@ -244,6 +231,19 @@ def plot_grid_issus_over_power(output_dir):
   plt.grid(True)
   plt.show()
 
+def plot_reactive_power(output_dir):
+  p = read_data(output_dir+'active_power_MW.csv')
+  q = read_data(output_dir+'reactive_power_MW.csv')
+  v = read_data(output_dir+'res_bus_vm_pu.csv')
+  cos_phi = p/(p**2 + q**2)**(1/2)
+
+  plt.figure()
+  plt.plot(v,q, 'o')
+  plt.figure()
+  plt.plot(v-1)
+  plt.plot(q)
+  plt.plot(cos_phi)
+  plt.show()
 
 def plot_net_res(net):
   # delete the geocoordinates
