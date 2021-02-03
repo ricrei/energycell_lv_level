@@ -35,17 +35,15 @@ class EnergyCell():
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10,
                         'cos_phi' : .95,
-                        'q_u_cont': True, 'tan_phi' : np.tan(np.arccos(.9)), 'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
+                        'q_u_cont': False, 'tan_phi' : np.tan(np.arccos(.9)), 'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
 
         #TODO: power urban has to be verified
 
-        self.hp_para = {'building_type' : ['DE_HEF33', 'DE_HEF34', 'DE_HMF33', 'DE_HMF34'],
-                        'heatpump_type' : ['Air', 'Ground'],
-                        'hp_types' : [],
+        self.hp_para = {'hp_types' : ['DE_HEF33_Air', 'DE_HEF34_Air', 'DE_HEF33_Ground', 'DE_HEF34_Ground'],
                         'cos_phi' : .95}
         self.hp_para['sin_phi'] = np.sin(np.arccos(self.hp_para['cos_phi']))
 
-        self.ev_para = {'ev_types' : []}
+        self.ev_para = {'ev_types' : ['ev_1_120', 'ev_2_120', 'ev_3_120', 'ev_4_120', 'ev_5_120', 'ev_6_120', 'ev_7_120', 'ev_8_120', 'ev_9_120', 'ev_10_120', 'ev_11_100', 'ev_12_100', 'ev_13_100', 'ev_14_100', 'ev_15_100', 'ev_16_100', 'ev_17_100', 'ev_18_100', 'ev_19_100', 'ev_20_100', 'ev_21_70', 'ev_22_70', 'ev_23_70', 'ev_24_70', 'ev_25_70', 'ev_26_70', 'ev_27_70', 'ev_28_70', 'ev_29_70', 'ev_30_70']}
 
         self.create_net()
         self.adjust_input_dataset(time_scope)
@@ -108,86 +106,8 @@ class EnergyCell():
         for index in self.net.sgen.index:
           self.net.sgen.drop(index=index, inplace=True)
 
-        # get scenario parameter
-        [self.set_hp, self.set_ev, self.set_pv] = self.get_scenario_parameter(scenario=self.scenario)
-        print('Scenario: %s' % self.scenario)
-
-        # create sgen per load and set all values to zero
-        # asign pv-orientaiton to every sgen
-        if self.set_pv == True:
-
-            # calculate distribution of pv systems with different orientation
-            n_pv_systems = self.net.load.index.max() + 1
-            pv_orientation_proberbility = self.pv_para['rate']/100
-            n_pv_systems_orientation = pd.DataFrame(columns=['orientation', 'amount', 'decimal_amount', 'final_amount'])
-            n_pv_systems_orientation['orientation'] = self.pv_para['orientation']      
-            n_pv_systems_orientation['amount'] = n_pv_systems * pv_orientation_proberbility
-            n_pv_systems_orientation['final_amount'] = n_pv_systems_orientation['amount'].apply(np.floor)
-            n_pv_systems_orientation['decimal_amount'] = n_pv_systems_orientation['amount'] - n_pv_systems_orientation['final_amount']
-            n_pv_systems_left = n_pv_systems - n_pv_systems_orientation['final_amount'].sum()
-      
-            n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['decimal_amount'], ascending=False).reset_index(drop=True)
-
-            i = 0
-            while n_pv_systems_left > 0:
-               n_pv_systems_orientation['final_amount'].loc[i] += 1
-               n_pv_systems_left -= 1
-               i += 1
-            n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['orientation'], ascending=True).reset_index(drop=True)
-            n_pv_systems_to_distribute = n_pv_systems_orientation[['orientation', 'final_amount']]
-
-            j = 0
-            for index in self.net.load.index:
-                # create PV sgen at every load
-                pp.create_sgen(self.net, self.net.load.loc[index, "bus"], 0.0, name='pv_'+str(self.net.load.loc[index, "bus"]))
-                self.net.load.loc[index, "p_mw"] = 0.0
-                # asign pv-orientation to every PV sgen
-                if n_pv_systems_to_distribute.final_amount.sum() > 0:
-                  if index%10 == 0 and n_pv_systems_to_distribute['final_amount'].loc[9] > 0:
-                    self.net.sgen.type.loc[index] = 'pv_180'
-                    n_pv_systems_to_distribute['final_amount'].loc[9] -= 1
-                  elif (index+5)%10 == 0 and n_pv_systems_to_distribute['final_amount'].loc[0] > 0:
-                    self.net.sgen.type.loc[index] = 'pv_90'
-                    n_pv_systems_to_distribute['final_amount'].loc[0] -= 1
-                  else:
-                    for k in range(0,18):
-                      i = (k + j)%18
-                      if i != 0 and i !=9:
-                        if n_pv_systems_to_distribute['final_amount'].loc[i] > 0:
-                          self.net.sgen.type.loc[index] = 'pv_' + str(n_pv_systems_to_distribute['orientation'][i])
-                          n_pv_systems_to_distribute['final_amount'].loc[i] -= 1
-                          j = i + 1
-                          break
-                        elif k == 17:
-                          for l in [0, 9]:
-                            if n_pv_systems_to_distribute['final_amount'].loc[l] > 0:
-                              self.net.sgen.type.loc[index] = 'pv_' + str(n_pv_systems_to_distribute['orientation'][l])
-                              n_pv_systems_to_distribute['final_amount'].loc[l] -= 1
-                              break
-                else:
-                  print('Error: No pv-system orientation to distrubute. Number of pv-systems by orientation does not match with number of sgen in the grid')
-            if n_pv_systems_to_distribute['final_amount'].sum() != 0 or n_pv_systems_to_distribute['final_amount'].max() != 0:
-              print('Assignment of PV-systems (orientation) to sgen failed.')
-
-        # hp: create series with all building and heatpump types
-        for hp_type in self.hp_para['heatpump_type']:        
-          if self.category == 'rural' or self.category == 'village' or self.category == 'suburban':
-            for b_type in self.hp_para['building_type'][0:2]:
-              self.hp_para['hp_types'] += [b_type + '_' + hp_type]
-          elif self.category == 'urban':
-            for b_type in self.hp_para['building_type'][2:4]:
-              self.hp_para['hp_types'] += [b_type + '_' + hp_type]
-
-        # create hp-loads und ev-loads at each bus 
-        for index in self.net.load.index:
-          self.net.load.name.loc[index] = 'load_'+str(self.net.load.loc[index, "bus"])
-          self.net.load.type.loc[index] = 'load'
-          if self.set_hp == True:
-            # calculate distribution of heatpump types and building types within the grid
-            pp.create_load(self.net, self.net.load.loc[index, "bus"], 0.0, name='hp_'+str(self.net.load.loc[index, "bus"]), type='hp_'+self.hp_para['hp_types'][index%4])
-
-          if self.set_ev == True:
-            pp.create_load(self.net, self.net.load.loc[index, "bus"], 0.0, name='ev_'+str(self.net.load.loc[index, "bus"]), type='ev')
+        # create sgen for pv and loads for hp and ev at each bus
+        self.create_sgen_load_at_each_bus(sceanrio=self.scenario)
 
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
@@ -247,20 +167,12 @@ class EnergyCell():
             self.df['hp_'+hp_type+'_p'] = hp['Demand_el_'+hp_type]/1000 # normalized to MW
             # TODO: cos_phi Berechnung anpassen
             self.df['hp_'+hp_type+'_q'] = hp['Demand_el_'+hp_type]*self.hp_para['sin_phi']/1000 # normalized to MW
-        else:
-          self.df['hp'] = 0
 
         ### load ev profile ###
         if self.set_ev == True:
             ev = self.decompress_pickle(ev_data_file)
-            for i in ev.columns:
-              self.df[i] = ev[i]/1000 # normalized to MW
-              self.ev_para['ev_types'] += [i]
-            ev_len = len(self.ev_para['ev_types'])
-            for i in self.net.load.index[self.net.load.type == 'ev']:
-              self.net.load.type[i] = self.ev_para['ev_types'][i%ev_len]
-        else:
-            self.df['ev'] = 0
+            for ev_type in self.ev_para['ev_types']:
+              self.df[ev_type] = ev[ev_type]/1000 # normalized to MW
 
         self.df['timestamp'] = time
 
@@ -330,6 +242,10 @@ class EnergyCell():
       l, k, j, i = 0, 0, 0, 0
 
       q_sgen_t_minus_1 = self.net.sgen['q_mvar']
+      q_sgen_t_minus_2 = self.net.sgen['q_mvar']
+      q_sgen_t_minus_3 = self.net.sgen['q_mvar']
+      q_sgen_t_minus_4 = self.net.sgen['q_mvar']
+      q_sgen_t_minus_5 = self.net.sgen['q_mvar']
       p_sgen_t_minus_1 = self.net.sgen['p_mw']
       v_t_minus_1 = self.net.bus.index*0 + 1.0
       v_t_minus_2 = self.net.bus.index*0 + 1.0
@@ -351,7 +267,7 @@ class EnergyCell():
 
             self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
             if self.pv_para['q_u_cont'] == True:
-              self.q_u_control(v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1)
+              self.q_u_control(v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5)
             else:
               self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
 
@@ -362,7 +278,6 @@ class EnergyCell():
             self.net.load.loc[hp_index, 'q_mvar'] = d[index_helper_hp_q].values
 
             self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
-            #self.net.load.loc[ev_index, 'q_mvar'] = 0
         
             # run pandapower power flow
             pp.runpp(self.net, init='auto', init_vm_pu=v_t_minus_1, init_va_degree='results', max_iteration=30, tolerance_mva=1e-6)
@@ -374,6 +289,11 @@ class EnergyCell():
             v_t_minus_5 = v_t_minus_4
 
             p_sgen_t_minus_1 = self.net.sgen['p_mw']
+            p_sgen_t_minus_2 = p_sgen_t_minus_1
+            p_sgen_t_minus_3 = p_sgen_t_minus_2
+            p_sgen_t_minus_4 = p_sgen_t_minus_3
+            p_sgen_t_minus_5 = p_sgen_t_minus_4
+
             q_sgen_t_minus_1 = self.net.sgen['q_mvar']
 
             # write result into DataFrame
@@ -405,11 +325,12 @@ class EnergyCell():
     ####################
     ### Q(U) Control ###
     ####################
-    def q_u_control(self, v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1):
-      a = .1
+    def q_u_control(self, v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5):
+      a = 1
       v_t = (v_t_minus_1 + v_t_minus_2 + v_t_minus_3 + v_t_minus_4 + v_t_minus_5)/5
       #v_t = 1/6 + 1/6*v_t_minus_1 + 1/6*v_t_minus_2 + 1/6*v_t_minus_3 + 1/6*v_t_minus_4 + 1/6*v_t_minus_5
       #v_t = 1/3 + 2/15*v_t_minus_1 + 2/15*v_t_minus_2 + 2/15*v_t_minus_3 + 2/15*v_t_minus_4 + 2/15*v_t_minus_5
+      q_sgen_t = (p_sgen_t_minus_1 + q_sgen_t_minus_1 + q_sgen_t_minus_2 + q_sgen_t_minus_3 + q_sgen_t_minus_4 + q_sgen_t_minus_5)/5
       v = v_t[self.net.sgen['bus']].values
       P = self.net.sgen["p_mw"]
       Q = P * self.pv_para['tan_phi']
@@ -420,7 +341,7 @@ class EnergyCell():
       self.net.sgen.loc[(v <= self.pv_para['U4']) & (v >= self.pv_para['U3']), 'q_mvar'] = -m*(v-self.pv_para['U3'])
       self.net.sgen.loc[v >= self.pv_para['U4'], 'q_mvar'] = -Q
 
-      self.net.sgen['q_mvar'] = a*self.net.sgen['q_mvar'] + (1-a)*q_sgen_t_minus_1
+      self.net.sgen['q_mvar'] = a*self.net.sgen['q_mvar'] + (1-a)*q_sgen_t
       self.net.sgen.loc[self.net.sgen['q_mvar'] < -Q, 'q_mvar'] = -Q
       self.net.sgen.loc[self.net.sgen['q_mvar'] >  Q, 'q_mvar'] = Q
 
@@ -434,6 +355,89 @@ class EnergyCell():
     #########################      
     def get_cos_phi(self, P, Q):
        return P/(P**2 + Q**2)**(1/2)
+
+    ############################################
+    ### distribute PV systems within the net ###
+    ############################################   
+    def set_pv_distribution(self):
+            # calculate distribution of pv systems with different orientation
+            n_pv_systems = self.net.load.index.max() + 1
+            pv_orientation_proberbility = self.pv_para['rate']/100
+            n_pv_systems_orientation = pd.DataFrame(columns=['orientation', 'amount', 'decimal_amount', 'final_amount'])
+            n_pv_systems_orientation['orientation'] = self.pv_para['orientation']      
+            n_pv_systems_orientation['amount'] = n_pv_systems * pv_orientation_proberbility
+            n_pv_systems_orientation['final_amount'] = n_pv_systems_orientation['amount'].apply(np.floor)
+            n_pv_systems_orientation['decimal_amount'] = n_pv_systems_orientation['amount'] - n_pv_systems_orientation['final_amount']
+            n_pv_systems_left = n_pv_systems - n_pv_systems_orientation['final_amount'].sum()
+      
+            n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['decimal_amount'], ascending=False).reset_index(drop=True)
+
+            i = 0
+            while n_pv_systems_left > 0:
+               n_pv_systems_orientation['final_amount'].loc[i] += 1
+               n_pv_systems_left -= 1
+               i += 1
+            n_pv_systems_orientation = n_pv_systems_orientation.sort_values(by=['orientation'], ascending=True).reset_index(drop=True)
+            n_pv_systems_to_distribute = n_pv_systems_orientation[['orientation', 'final_amount']]
+
+            j = 0
+            for index in self.net.load.index:
+                # create PV sgen at every load
+                pp.create_sgen(self.net, self.net.load.loc[index, "bus"], 0.0, name='pv_'+str(self.net.load.loc[index, "bus"]))
+                self.net.load.loc[index, "p_mw"] = 0.0
+                # asign pv-orientation to every PV sgen
+                if n_pv_systems_to_distribute.final_amount.sum() > 0:
+                  if index%10 == 0 and n_pv_systems_to_distribute['final_amount'].loc[9] > 0:
+                    self.net.sgen.type.loc[index] = 'pv_180'
+                    n_pv_systems_to_distribute['final_amount'].loc[9] -= 1
+                  elif (index+5)%10 == 0 and n_pv_systems_to_distribute['final_amount'].loc[0] > 0:
+                    self.net.sgen.type.loc[index] = 'pv_90'
+                    n_pv_systems_to_distribute['final_amount'].loc[0] -= 1
+                  else:
+                    for k in range(0,18):
+                      i = (k + j)%18
+                      if i != 0 and i !=9:
+                        if n_pv_systems_to_distribute['final_amount'].loc[i] > 0:
+                          self.net.sgen.type.loc[index] = 'pv_' + str(n_pv_systems_to_distribute['orientation'][i])
+                          n_pv_systems_to_distribute['final_amount'].loc[i] -= 1
+                          j = i + 1
+                          break
+                        elif k == 17:
+                          for l in [0, 9]:
+                            if n_pv_systems_to_distribute['final_amount'].loc[l] > 0:
+                              self.net.sgen.type.loc[index] = 'pv_' + str(n_pv_systems_to_distribute['orientation'][l])
+                              n_pv_systems_to_distribute['final_amount'].loc[l] -= 1
+                              break
+                else:
+                  print('Error: No pv-system orientation to distrubute. Number of pv-systems by orientation does not match with number of sgen in the grid')
+            if n_pv_systems_to_distribute['final_amount'].sum() != 0 or n_pv_systems_to_distribute['final_amount'].max() != 0:
+              print('Assignment of PV-systems (orientation) to sgen failed.')
+
+
+    ############################################################
+    ### Create sGen and Loads at each bus for all PV, HP, EV ###
+    ############################################################
+    def create_sgen_load_at_each_bus(self, sceanrio):
+        # get scenario parameter
+        [self.set_hp, self.set_ev, self.set_pv] = self.get_scenario_parameter(scenario=self.scenario)
+        print('Scenario: %s' % self.scenario)
+
+        # create sgen per load and set all values to zero
+        # asign pv-orientaiton to every sgen
+        if self.set_pv == True:
+          self.set_pv_distribution()
+
+        # create hp-loads und ev-loads at each bus 
+        for index in self.net.load.index:
+          self.net.load.name.loc[index] = 'load_'+str(self.net.load.loc[index, "bus"])
+          self.net.load.type.loc[index] = 'load'
+          if self.set_hp == True:
+            # calculate distribution of heatpump types and building types within the grid
+            pp.create_load(self.net, self.net.load.loc[index, "bus"], 0.0, name='hp_'+str(self.net.load.loc[index, "bus"]), type='hp_'+self.hp_para['hp_types'][index%len(self.hp_para['hp_types'])])
+
+          if self.set_ev == True:
+            pp.create_load(self.net, self.net.load.loc[index, "bus"], 0.0, name='ev_'+str(self.net.load.loc[index, "bus"]), type=self.ev_para['ev_types'][index%len(self.ev_para['ev_types'])])
+
 
     ##############################
     ### Adjustment of Datasets ###
