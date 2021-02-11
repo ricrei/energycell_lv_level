@@ -16,10 +16,13 @@ import pandapower.networks as pn
 #import pandapower.plotting.plotly as ppply
 import simbench as sb
 import tools.progress as prog
+import tools.hp_controller as hp_cntr
 
 import bz2
 #import pickle
 import _pickle as cPickle
+
+import datetime #Added by Paul
 
 class EnergyCell():
     
@@ -49,7 +52,9 @@ class EnergyCell():
         self.create_net()
         self.adjust_input_dataset(time_scope)
         self.create_output_dir()
-    
+
+        self.hp_controll = hp_cntr.HP_Controller()
+
     ######################
     ### create network ###
     ######################
@@ -306,11 +311,15 @@ class EnergyCell():
       index_helper_pv_p = index_helper_pv + '_p'
       index_helper_pv_q = index_helper_pv + '_q'
 
+
+#Indexe der Lasten laden
       load_index = self.net.load.index[self.net.load.type.str.contains('load')]
+#list-comprehension -> Ziel ist eine Erweiterung des Index-Namens mit _p
       index_helper_load_p = [self.net.load.type[i] + '_p' for i in load_index]
+#list-comprehension -> Ziel ist eine Erweiterung des Index-Namens mit _q
       index_helper_load_q = [self.net.load.type[i] + '_q' for i in load_index]
 
-
+#Indexe der HPs laden und Erweiterung wie oben
       hp_index = self.net.load.index[self.net.load.type.str.contains('hp')]
       index_helper_hp_p = [self.net.load.type[i] + '_p' for i in hp_index]
       index_helper_hp_q = [self.net.load.type[i] + '_q' for i in hp_index]
@@ -333,9 +342,10 @@ class EnergyCell():
             t = time_series[i]
             d = self.df.loc[t]
 
+#Werte existeiren schon im df -> die akteullen Werte der PV werden ins Netz geschrieben
             self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
             self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
-
+#Zuweisungen erfolgen wie oben
             self.net.load.loc[load_index, 'p_mw'] = d[index_helper_load_p].values
             self.net.load.loc[load_index, 'q_mvar'] = d[index_helper_load_q].values
 
@@ -343,8 +353,16 @@ class EnergyCell():
             self.net.load.loc[hp_index, 'q_mvar'] = d[index_helper_hp_q].values
 
             self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
-            #self.net.load.loc[ev_index, 'q_mvar'] = 0
-        
+            # self.net.load.loc[ev_index, 'q_mvar'] = 0
+
+            self.hp_controll.evu_sperre(load = self.net.load, t = t, hp_index = hp_index)
+
+            # calculate residualload
+            power.loc[t] = [self.net.load.p_mw[load_index].sum(),
+                            self.net.sgen.p_mw.sum(),
+                            self.net.load.p_mw[hp_index].sum(),
+                            self.net.load.p_mw[ev_index].sum()]
+
             # run pandapower power flow
             pp.runpp(self.net, init='results')
 
@@ -352,10 +370,7 @@ class EnergyCell():
             vm_pu.loc[t] = self.net.res_bus.vm_pu
             li_lo.loc[t] = self.net.res_line.loading_percent
             tr_lo.loc[t] = self.net.res_trafo.loading_percent
-            power.loc[t] = [self.net.load.p_mw[load_index].sum(),
-                            self.net.sgen.p_mw.sum(),
-                            self.net.load.p_mw[hp_index].sum(),
-                            self.net.load.p_mw[ev_index].sum()]
+
 
             end = time.time()
             rest_time = int(round((end - start)*(timesteps - i), 0))
