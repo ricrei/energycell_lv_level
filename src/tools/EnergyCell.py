@@ -35,13 +35,13 @@ class EnergyCell():
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10,
                         'cos_phi' : .95,
-                        'q_u_cont': False, 'tan_phi' : np.tan(np.arccos(.9)), 'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
+                        'q_u_cont': True, 'tan_phi' : np.tan(np.arccos(.9)), 'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
 
         #TODO: power urban has to be verified
 
         self.hp_para = {'hp_types' : ['DE_HEF33_Air', 'DE_HEF34_Air', 'DE_HEF33_Ground', 'DE_HEF34_Ground'],
                         'cos_phi' : .95}
-        self.hp_para['sin_phi'] = np.sin(np.arccos(self.hp_para['cos_phi']))
+        self.hp_para['tan_phi'] = np.tan(np.arccos(self.hp_para['cos_phi']))
 
         self.ev_para = {'ev_types' : ['ev_1_120', 'ev_2_120', 'ev_3_120', 'ev_4_120', 'ev_5_120', 'ev_6_120', 'ev_7_120', 'ev_8_120', 'ev_9_120', 'ev_10_120', 'ev_11_100', 'ev_12_100', 'ev_13_100', 'ev_14_100', 'ev_15_100', 'ev_16_100', 'ev_17_100', 'ev_18_100', 'ev_19_100', 'ev_20_100', 'ev_21_70', 'ev_22_70', 'ev_23_70', 'ev_24_70', 'ev_25_70', 'ev_26_70', 'ev_27_70', 'ev_28_70', 'ev_29_70', 'ev_30_70']}
 
@@ -166,7 +166,7 @@ class EnergyCell():
           for hp_type in self.hp_para['hp_types']:
             self.df['hp_'+hp_type+'_p'] = hp['Demand_el_'+hp_type]/1000 # normalized to MW
             # TODO: cos_phi Berechnung anpassen
-            self.df['hp_'+hp_type+'_q'] = hp['Demand_el_'+hp_type]*self.hp_para['sin_phi']/1000 # normalized to MW
+            self.df['hp_'+hp_type+'_q'] = hp['Demand_el_'+hp_type]*self.hp_para['tan_phi']/1000 # normalized to MW
 
         ### load ev profile ###
         if self.set_ev == True:
@@ -268,6 +268,11 @@ class EnergyCell():
             self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
             if self.pv_para['q_u_cont'] == True:
               self.q_u_control(v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5)
+              q_sgen_t_minus_5 = q_sgen_t_minus_4
+              q_sgen_t_minus_4 = q_sgen_t_minus_3
+              q_sgen_t_minus_3 = q_sgen_t_minus_2
+              q_sgen_t_minus_2 = q_sgen_t_minus_1
+              q_sgen_t_minus_1 = self.net.sgen.loc[pv_index,'q_mvar']
             else:
               self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
 
@@ -282,19 +287,13 @@ class EnergyCell():
             # run pandapower power flow
             pp.runpp(self.net, init='auto', init_vm_pu=v_t_minus_1, init_va_degree='results', max_iteration=30, tolerance_mva=1e-6)
 
-            v_t_minus_1 = self.net.res_bus.vm_pu
-            v_t_minus_2 = v_t_minus_1
-            v_t_minus_3 = v_t_minus_2
-            v_t_minus_4 = v_t_minus_3
             v_t_minus_5 = v_t_minus_4
+            v_t_minus_4 = v_t_minus_3
+            v_t_minus_3 = v_t_minus_2
+            v_t_minus_2 = v_t_minus_1
+            v_t_minus_1 = self.net.res_bus.vm_pu
 
             p_sgen_t_minus_1 = self.net.sgen['p_mw']
-            p_sgen_t_minus_2 = p_sgen_t_minus_1
-            p_sgen_t_minus_3 = p_sgen_t_minus_2
-            p_sgen_t_minus_4 = p_sgen_t_minus_3
-            p_sgen_t_minus_5 = p_sgen_t_minus_4
-
-            q_sgen_t_minus_1 = self.net.sgen['q_mvar']
 
             # write result into DataFrame
             vm_pu.loc[t] = self.net.res_bus.vm_pu
@@ -326,16 +325,17 @@ class EnergyCell():
     ### Q(U) Control ###
     ####################
     def q_u_control(self, v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5):
-      a = 1
+      a = .2
       v_t = (v_t_minus_1 + v_t_minus_2 + v_t_minus_3 + v_t_minus_4 + v_t_minus_5)/5
       #v_t = 1/6 + 1/6*v_t_minus_1 + 1/6*v_t_minus_2 + 1/6*v_t_minus_3 + 1/6*v_t_minus_4 + 1/6*v_t_minus_5
       #v_t = 1/3 + 2/15*v_t_minus_1 + 2/15*v_t_minus_2 + 2/15*v_t_minus_3 + 2/15*v_t_minus_4 + 2/15*v_t_minus_5
-      q_sgen_t = (p_sgen_t_minus_1 + q_sgen_t_minus_1 + q_sgen_t_minus_2 + q_sgen_t_minus_3 + q_sgen_t_minus_4 + q_sgen_t_minus_5)/5
+      q_sgen_t = (q_sgen_t_minus_1 + q_sgen_t_minus_2 + q_sgen_t_minus_3 + q_sgen_t_minus_4 + q_sgen_t_minus_5)/5
       v = v_t[self.net.sgen['bus']].values
       P = self.net.sgen["p_mw"]
       Q = P * self.pv_para['tan_phi']
       m = Q/(self.pv_para['U2'] - self.pv_para['U1'])
-      self.net.sgen.loc[v <= self.pv_para['U1'], 'q_mvar'] =  Q
+      #print(self.net.sgen['q_mvar'])
+      self.net.sgen.loc[v <= self.pv_para['U1'], 'q_mvar'] = Q
       self.net.sgen.loc[(v <= self.pv_para['U2']) & (v >= self.pv_para['U1']), 'q_mvar'] = -m*(v-self.pv_para['U2'])
       self.net.sgen.loc[(v <= self.pv_para['U3']) & (v >= self.pv_para['U2']), 'q_mvar'] = 0
       self.net.sgen.loc[(v <= self.pv_para['U4']) & (v >= self.pv_para['U3']), 'q_mvar'] = -m*(v-self.pv_para['U3'])
@@ -346,6 +346,7 @@ class EnergyCell():
       self.net.sgen.loc[self.net.sgen['q_mvar'] >  Q, 'q_mvar'] = Q
 
       #print(v_t[42])
+      #print(q_sgen_t_minus_1[42])
       #print((self.net.sgen['q_mvar'] - q_sgen_t_minus_1).sum())
       #print((self.net.sgen['q_mvar'] - q_sgen_t_minus_1).max())
       #print(self.get_cos_phi(self.net.sgen['p_mw'], self.net.sgen['q_mvar']).min())

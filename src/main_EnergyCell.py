@@ -26,18 +26,18 @@ net_name = ["kerber_rural_1", #0
 # Define timescope and timestepwidth
 time_scope = { 'start_time' : '2017-05-17 00:00:00+02:00', 
                'end_time'   : '2017-05-18 00:00:00+02:00',
-               't_freq'     : '10T'
+               't_freq'     : 'T'
              }
 
-time_scope_jan = { 'start_time' : '2017-01-11 00:00:00+02:00', 
-                   'end_time'   : '2017-01-12 00:00:00+02:00',
+time_scope_jan = { 'start_time' : '2017-01-02 00:00:00+02:00', 
+                   'end_time'   : '2017-01-03 00:00:00+02:00',
                    't_freq'     : 'T'
                  }
 
 
 time_scope_y = { 'start_time' : '2017-01-01 00:01:00+01:00', 
-                 'end_time'   : '2017-12-31 23:59:00+01:00',
-                 't_freq'     : 'D'
+                 'end_time'   : '2018-01-01 00:00:00+01:00',
+                 't_freq'     : 'H'
                }
 
 # Define scenario
@@ -45,10 +45,10 @@ time_scope_y = { 'start_time' : '2017-01-01 00:01:00+01:00',
 scenario = 4
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
+e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
-e.run_pf_timeseries()
+#e.run_pf_timeseries()
 
 
 ################################################
@@ -59,8 +59,9 @@ tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
 tda.calculate_net_problems(e.output_dir)
 #tda.plot_generation_consumption_as_heat_map(e.output_dir)
 #tda.plot_grid_issus_over_power(e.output_dir)
+#tda.plot_grid_issus_over_time(e.output_dir)
 #tda.plot_residualload(e.output_dir)
-#tda.plot_reactive_power(e.output_dir)
+tda.plot_reactive_power(e.output_dir)
 #tda.plot_colorbar_seaborn(e.output_dir, time_scope['start_time'], time_scope['end_time'])
 #tda.plot_input_data()
 #tda.plot_net_res(net)

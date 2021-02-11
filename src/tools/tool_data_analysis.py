@@ -134,8 +134,8 @@ def plot_residualload(output_dir):
   ax.plot(power.index, -power.load-power.ev, lw=.6)
   ax.fill_between(power.index, -power.load-power.ev, -power.hp-power.load-power.ev, alpha=0.7)
   ax.plot(power.index, -power.hp-power.load-power.ev, lw=.6)
-  #power = shorted_data(power, 'W')
-  #ax.plot(power.index, power.pv-power.hp-power.load-power.ev, color='black', lw=.5)
+  power = shorted_data(power, 'W')
+  ax.plot(power.index, power.pv-power.hp-power.load-power.ev, color='black', lw=.5)
   ax.set_xlabel('Time')
   ax.set_ylabel('Power in kW')
   #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
@@ -145,11 +145,16 @@ def plot_residualload(output_dir):
 def calculate_relevant_outputdata(output_dir, t_freq):
 
   power = read_data(output_dir+'power_total_MW.csv')
-  power = shorted_data(power, 'H')
-  sum_pv = power.pv.sum()
-  sum_hp = power.hp.sum()
-  sum_ev = power.ev.sum()
-  sum_load = power.load.sum()
+  if t_freq != 'D':
+    power = shorted_data(power, 'H')
+    f = 1
+  else:
+    f = 24
+
+  sum_pv = power.pv.sum()*f
+  sum_hp = power.hp.sum()*f
+  sum_ev = power.ev.sum()*f
+  sum_load = power.load.sum()*f
   sum_total_load = sum_hp + sum_load + sum_ev
 
   Res = power.pv - power.hp - power.ev - power.load
@@ -208,6 +213,26 @@ def calculate_net_problems(output_dir):
   #ax = sns.violinplot(y=v_over, cut=0)
   plt.show()
 
+def plot_grid_issus_over_time(output_dir):
+  v = read_data(output_dir+'res_bus_vm_pu.csv')
+  ll = read_data(output_dir+'res_line_load_percent.csv')
+  tl = read_data(output_dir+'res_trafo_load_percent.csv')
+
+  v_min = v.T.min().T
+  v_max = v.T.max().T
+  ll_max = ll.T.max().T
+  tl_max = tl.T.max().T
+
+  fig, (ax1, ax2) = plt.subplots(2)
+  fig.suptitle('Vertically stacked subplots')
+  l1 = ax1.plot(v_min, 'r')[0]
+  l2 = ax1.plot(v_max, 'y')[0]
+  l3 = ax2.plot(tl_max, 'g')[0]
+  l4 = ax2.plot(ll_max, 'b')[0]
+  ax1.legend(handles=[l2, l1], labels=['overvoltage', 'undervoltage'])
+  ax2.legend(handles=[l4, l3], labels=['line overload', 'trafo overload'])
+  plt.show()
+
 def plot_grid_issus_over_power(output_dir):
   power = read_data(output_dir+'power_total_MW.csv')
   power = power.load+power.hp+power.ev-power.pv
@@ -238,11 +263,11 @@ def plot_reactive_power(output_dir):
   cos_phi = p/(p**2 + q**2)**(1/2)
 
   plt.figure()
-  plt.plot(v,q, 'o')
+  plt.plot(v['42'],q['42'], 'o')
   plt.figure()
-  plt.plot(v-1)
-  plt.plot(q)
-  plt.plot(cos_phi)
+  plt.plot(v['42']-1)
+  plt.plot(q['42'])
+  plt.plot(cos_phi['42'])
   plt.show()
 
 def plot_net_res(net):
