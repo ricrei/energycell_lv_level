@@ -267,12 +267,17 @@ class EnergyCell():
 
             self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
             if self.pv_para['q_u_cont'] == True:
+              v_t_minus_5 = v_t_minus_4
+              v_t_minus_4 = v_t_minus_3
+              v_t_minus_3 = v_t_minus_2
+              v_t_minus_2 = v_t_minus_1
               self.q_u_control(v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5)
               q_sgen_t_minus_5 = q_sgen_t_minus_4
               q_sgen_t_minus_4 = q_sgen_t_minus_3
               q_sgen_t_minus_3 = q_sgen_t_minus_2
               q_sgen_t_minus_2 = q_sgen_t_minus_1
               q_sgen_t_minus_1 = self.net.sgen.loc[pv_index,'q_mvar']
+              p_sgen_t_minus_1 = self.net.sgen['p_mw']
             else:
               self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
 
@@ -287,13 +292,7 @@ class EnergyCell():
             # run pandapower power flow
             pp.runpp(self.net, init='auto', init_vm_pu=v_t_minus_1, init_va_degree='results', max_iteration=30, tolerance_mva=1e-6)
 
-            v_t_minus_5 = v_t_minus_4
-            v_t_minus_4 = v_t_minus_3
-            v_t_minus_3 = v_t_minus_2
-            v_t_minus_2 = v_t_minus_1
             v_t_minus_1 = self.net.res_bus.vm_pu
-
-            p_sgen_t_minus_1 = self.net.sgen['p_mw']
 
             # write result into DataFrame
             vm_pu.loc[t] = self.net.res_bus.vm_pu
@@ -326,22 +325,20 @@ class EnergyCell():
     ####################
     def q_u_control(self, v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5):
       a = .2
-      v_t = (v_t_minus_1 + v_t_minus_2 + v_t_minus_3 + v_t_minus_4 + v_t_minus_5)/5
-      #v_t = 1/6 + 1/6*v_t_minus_1 + 1/6*v_t_minus_2 + 1/6*v_t_minus_3 + 1/6*v_t_minus_4 + 1/6*v_t_minus_5
-      #v_t = 1/3 + 2/15*v_t_minus_1 + 2/15*v_t_minus_2 + 2/15*v_t_minus_3 + 2/15*v_t_minus_4 + 2/15*v_t_minus_5
       q_sgen_t = (q_sgen_t_minus_1 + q_sgen_t_minus_2 + q_sgen_t_minus_3 + q_sgen_t_minus_4 + q_sgen_t_minus_5)/5
+      v_t = (v_t_minus_1 + v_t_minus_2 + v_t_minus_3 + v_t_minus_4 + v_t_minus_5)/5
       v = v_t[self.net.sgen['bus']].values
       P = self.net.sgen["p_mw"]
       Q = P * self.pv_para['tan_phi']
       m = Q/(self.pv_para['U2'] - self.pv_para['U1'])
-      #print(self.net.sgen['q_mvar'])
+
       self.net.sgen.loc[v <= self.pv_para['U1'], 'q_mvar'] = Q
       self.net.sgen.loc[(v <= self.pv_para['U2']) & (v >= self.pv_para['U1']), 'q_mvar'] = -m*(v-self.pv_para['U2'])
       self.net.sgen.loc[(v <= self.pv_para['U3']) & (v >= self.pv_para['U2']), 'q_mvar'] = 0
       self.net.sgen.loc[(v <= self.pv_para['U4']) & (v >= self.pv_para['U3']), 'q_mvar'] = -m*(v-self.pv_para['U3'])
       self.net.sgen.loc[v >= self.pv_para['U4'], 'q_mvar'] = -Q
 
-      self.net.sgen['q_mvar'] = a*self.net.sgen['q_mvar'] + (1-a)*q_sgen_t
+      self.net.sgen['q_mvar'] = a*self.net.sgen['q_mvar'] + q_sgen_t
       self.net.sgen.loc[self.net.sgen['q_mvar'] < -Q, 'q_mvar'] = -Q
       self.net.sgen.loc[self.net.sgen['q_mvar'] >  Q, 'q_mvar'] = Q
 

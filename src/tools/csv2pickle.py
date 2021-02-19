@@ -43,8 +43,8 @@ def csv_2_pickle(file):
 
 
 file_csv = 'input-files/04_ev_load.csv'
-file_pbz2 = 'input-files/04_ev_load.pbz2'
-csv_2_pickle(file_csv)
+file_pbz2 = 'input-files/01_q0_load.pbz2'
+#csv_2_pickle(file_csv)
 
 df = decompress_pickle(file_pbz2)
 print(df)
@@ -52,10 +52,11 @@ print(type(df.columns))
 
 # compare datasets
 df = decompress_pickle(file_pbz2)
-file_pbz2_old = 'input-files/04_ev_load.pbz2'
+file_pbz2_old = 'input-files/01_generate_load-data/HTW/2_assess_profiles/01_q0_load.pbz2'
 df_old = decompress_pickle(file_pbz2_old)
 print(df_old)
 print(type(df_old.columns))
 print(type(df.index))
 print(type(df_old.index))
 print(df.equals(df_old))
+print(df-df_old)

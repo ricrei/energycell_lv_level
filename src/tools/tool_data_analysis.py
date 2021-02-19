@@ -121,10 +121,35 @@ def plot_generation_consumption_as_heat_map(output_dir):
   ax.set_ylabel('Hour').set_size(20)
   plt.show()
 
+def plot_generation_consumption_as_heat_map_overall_eva(power):
+
+  power_pivot = power.pivot_table(columns=power.index.dayofyear, index=power.index.hour + power.index.minute/60)
+
+  plt.figure(figsize=(10,8))
+  ax = sns.heatmap(power_pivot.pv - power_pivot.load - power_pivot.hp - power_pivot.ev, center=0)
+  ax.set_xlabel('Day').set_size(20)
+  ax.set_ylabel('Hour').set_size(20)
+  plt.show()
+
 def plot_residualload(output_dir):
   
   power = read_data(output_dir+'power_total_MW.csv')
   power = power*1000
+
+  '''
+  # Calculates the floating sum of consumption, generation and residual load for 7 days
+  print('Timeindex' + '        ' + 'summed up loads' + '  ' + 'summed up generation' + '  ' + 'summed up res')
+  for i in range(len(power.index)-7):
+    power_loads_sum = 0
+    power_gen_sum = 0
+    power_res_sum = 0
+    for l in range(7):
+      power_loads_sum += power.hp[i+l] + power.load[i+l] + power.ev[i+l]
+      power_gen_sum += power.pv[i+l]
+      power_res_sum += power.hp[i+l] + power.load[i+l] + power.ev[i+l] - power.pv[i+l]
+    print(str(power.index[i]) + '  ' + str(power_loads_sum.round(1)) + '  ' + str(power_gen_sum.round(1)) + '  ' + str(power_res_sum.round(1)))
+  '''
+
   fig, ax = plt.subplots()
   ax.fill_between(power.index, 0, power.pv, alpha=0.7)
   ax.plot(power.index, power.pv, lw=.6)
@@ -141,6 +166,30 @@ def plot_residualload(output_dir):
   #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
   plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load'])
   plt.show()
+
+def plot_residualload_overall_eva(power):
+
+  power = power*1000
+
+  fig, ax = plt.subplots()
+  ax.fill_between(power.index, 0, power.pv, alpha=0.7)
+  ax.plot(power.index, power.pv, lw=.6)
+  ax.fill_between(power.index, 0, -power.ev, alpha=0.7)
+  ax.plot(power.index, -power.ev, lw=.6)
+  ax.fill_between(power.index, -power.ev, -power.load-power.ev, alpha=0.7)
+  ax.plot(power.index, -power.load-power.ev, lw=.6)
+  ax.fill_between(power.index, -power.load-power.ev, -power.hp-power.load-power.ev, alpha=0.7)
+  ax.plot(power.index, -power.hp-power.load-power.ev, lw=.6)
+  #power = shorted_data(power, 'W')
+  #ax.plot(power.index, power.pv-power.hp-power.load-power.ev, color='black', lw=.5)
+  ax.set_xlabel('Time')
+  ax.set_ylabel('Power in kW')
+  ax.set_xticks([i for i in power.index if (i.hour == 12) & (i.minute == 0)])
+  ax.set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
+  ax.set(xlim=(power.index[0], power.index[-1]))
+  plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load'])
+  plt.show()
+
 
 def calculate_relevant_outputdata(output_dir, t_freq):
 
@@ -173,6 +222,26 @@ def calculate_relevant_outputdata(output_dir, t_freq):
   print('Self-sufficiancy (balanced): %s ' % ((sum_pv/sum_total_load*100).round(1)))
   print('Self-sufficiancy: %s ' % ((SelfSufficiancy).round(1)))
   print('PV consumption rate: %s ' % ((PVConsumption).round(1)))
+
+def calculate_relevant_outputdata_overall_eva(power):
+
+  sum_pv = power.pv.sum()
+  sum_hp = power.hp.sum()
+  sum_ev = power.ev.sum()
+  sum_load = power.load.sum()
+  sum_total_load = sum_hp + sum_load + sum_ev
+
+  Res = power.pv - power.hp - power.ev - power.load
+  Res_pos = Res[Res > 0]
+  Res_neg = Res[Res < 0]
+
+  SelfSufficiancy = (sum_total_load + Res_neg.sum())*100/sum_total_load
+  if sum_pv != 0:
+    PVConsumption = (sum_pv - Res_pos.sum())*100/sum_pv
+  else:
+    PVConsumption = 0
+
+  return SelfSufficiancy, PVConsumption
 
 def calculate_net_problems(output_dir):
 
@@ -211,7 +280,46 @@ def calculate_net_problems(output_dir):
 
   #plt.plot(sum_v_over)
   #ax = sns.violinplot(y=v_over, cut=0)
-  plt.show()
+  #plt.show()
+
+def plot_violin_overall_eva(eva):
+  pass
+
+def calculate_net_problems_overall_eva(v, ll, tl):
+
+  v_events = len(v.index)*len(v.columns)
+  ll_events = len(ll.index)*len(ll.columns)
+  tl_events = len(tl.index)*len(tl.columns)
+
+  v_over = v[v>1.1].fillna(0)
+  v_over[v_over > 0] = 1 
+  sum_v_over = v_over[v_over.columns].sum(axis=1).sum()
+  #print('Anzahl der Überspannungsereignisse im gesamten Netz: %s' % sum_v_over.sum())
+  #sum_v_over[sum_v_over > 0] = 1
+  #print('Minuten in denen es zu einer Überspannung kam: %s' % sum_v_over.sum())
+
+  v_under = v[v<.9].fillna(0)
+  v_under[v_under > 0] = 1 
+  sum_v_under = v_under[v_under.columns].sum(axis=1).sum()
+  #print('Anzahl der Unterspannungsereignisse im gesamten Netz: %s' % sum_v_under.sum())
+  #sum_v_under[sum_v_under > 0] = 1
+  #print('Minuten in denen es zu einer Unterspannung kam: %s' % sum_v_under.sum())
+
+  ll = ll[ll>100].fillna(0)
+  ll[ll > 0] = 1 
+  sum_ll = ll[ll.columns].sum(axis=1).sum()
+  #print('Anzahl der Leitungsüberlastungen im gesamten Netz: %s' % ll.sum())
+  #ll[ll > 0] = 1
+  #print('Minuten in denen es zu einer Leitungsüberlastung kam: %s' % ll.sum())
+
+  tl = tl[tl>100].fillna(0)
+  tl[tl > 0] = 1 
+  sum_tl = tl[tl.columns].sum(axis=1).sum()
+  #print('Anzahl der Trafoüberlastungen im gesamten Netz: %s' % tl.sum())
+  #tl[tl > 0] = 1
+  #print('Minuten in denen es zu einer Trafoüberlastung kam: %s' % tl.sum())
+
+  return sum_v_under, sum_v_over, v_events, sum_ll, ll_events, sum_tl, tl_events
 
 def plot_grid_issus_over_time(output_dir):
   v = read_data(output_dir+'res_bus_vm_pu.csv')
@@ -268,6 +376,28 @@ def plot_reactive_power(output_dir):
   plt.plot(v['42']-1)
   plt.plot(q['42'])
   plt.plot(cos_phi['42'])
+  plt.show()
+
+def plot_hist_grid_issus(output_dir):
+  power = read_data(output_dir+'power_total_MW.csv')
+  power = power.load+power.hp+power.ev-power.pv
+  v = read_data(output_dir+'res_bus_vm_pu.csv')
+  ll = read_data(output_dir+'res_line_load_percent.csv')
+  tl = read_data(output_dir+'res_trafo_load_percent.csv')
+
+  fig, (ax1, ax2, ax3) = plt.subplots(3)
+  fig.suptitle('Vertically stacked subplots')
+  h1 = ax1.hist(v.stack().values, bins=100, density=True,
+         stacked=True,
+         cumulative=True)[0]
+  h4 = ax2.hist(ll.stack().values, bins=100, density=True,
+         stacked=True,
+         cumulative=True)[0]
+  h3 = ax3.hist(tl, bins=100, density=True,
+         stacked=True,
+         cumulative=True)[0]
+  #ax1.legend(handles=[h1], labels=['Voltage'])
+  #ax2.legend(handles=[h4, h3], labels=['Line Overload', 'Trafo Overload'])
   plt.show()
 
 def plot_net_res(net):

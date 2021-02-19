@@ -24,8 +24,8 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6"]  #12
 
 # Define timescope and timestepwidth
-time_scope = { 'start_time' : '2017-05-17 00:00:00+02:00', 
-               'end_time'   : '2017-05-18 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', 
+               'end_time'   : '2017-05-27 00:00:00+02:00',
                't_freq'     : 'T'
              }
 
@@ -37,31 +37,60 @@ time_scope_jan = { 'start_time' : '2017-01-02 00:00:00+02:00',
 
 time_scope_y = { 'start_time' : '2017-01-01 00:01:00+01:00', 
                  'end_time'   : '2018-01-01 00:00:00+01:00',
-                 't_freq'     : 'H'
+                 't_freq'     : 'D'
                }
+
+
+# timescopes to examine
+time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00', 
+                      'end_time'   : '2017-01-11 00:00:00+01:00',
+                      't_freq'     : 'T',
+                      'name'       : 'winter'
+                    }
+
+
+time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00', 
+                      'end_time'   : '2017-06-02 00:00:00+02:00',
+                      't_freq'     : 'T',
+                      'name'       : 'summer'
+                    }
 
 # Define scenario
 # 1: conventional, 2: full-electrified, 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
 scenario = 4
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
+#e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
 #e.run_pf_timeseries()
 
+i = 0
+CGREEN = '\33[32m'
+CEND   = '\33[0m'
+for time_scope_i in [time_scope_winter, time_scope_summer]:
+  for net_name_i in [7, 8, 9, 10, 11]:
+    for scenario_i in [1, 2, 3, 4]:
+      print(' ')
+      print(CGREEN + 'Durchlauf: ' + str(i) + CEND)
+      i += 1
+      e = ec.EnergyCell(net_name = net_name[net_name_i], scenario = scenario_i, time_scope = time_scope_i)
+      e.run_pf_timeseries()
+
+print('Done')
 
 ################################################
 ############# ANALISE OUTPUT DATA ##############
 ################################################
 
-tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
-tda.calculate_net_problems(e.output_dir)
+#tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
+#tda.calculate_net_problems(e.output_dir)
 #tda.plot_generation_consumption_as_heat_map(e.output_dir)
 #tda.plot_grid_issus_over_power(e.output_dir)
 #tda.plot_grid_issus_over_time(e.output_dir)
+#tda.plot_hist_grid_issus(e.output_dir)
 #tda.plot_residualload(e.output_dir)
-tda.plot_reactive_power(e.output_dir)
+#tda.plot_reactive_power(e.output_dir)
 #tda.plot_colorbar_seaborn(e.output_dir, time_scope['start_time'], time_scope['end_time'])
 #tda.plot_input_data()
 #tda.plot_net_res(net)
