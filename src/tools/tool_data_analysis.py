@@ -282,8 +282,6 @@ def calculate_net_problems(output_dir):
   #ax = sns.violinplot(y=v_over, cut=0)
   #plt.show()
 
-def plot_violin_overall_eva(eva):
-  pass
 
 def calculate_net_problems_overall_eva(v, ll, tl):
 

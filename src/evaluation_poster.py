@@ -9,7 +9,7 @@ import pandapower.plotting.plotly as ppply
 import seaborn as sns
 from datetime import datetime, timedelta
 
-import tools.tool_data_analysis as tda
+import tools.tool_data_analysis_overall as tdao
 
 # Handle date time conversions between pandas and matplotlib
 from pandas.plotting import register_matplotlib_converters
@@ -24,13 +24,13 @@ def read_data(filename):
     #data['TIMESTAMP'] = pd.to_datetime(times['TIMESTAMP'], utc=True)
     #data['timestamp'] = data['timestamp'][0:19]
     #data['timestamp'] = data['timestamp'].tz_localize()
-    data['timestamp'] = pd.to_datetime(data['timestamp'], utc=True)
+    data['timestamp'] = pd.to_datetime(data['timestamp'], utc=False)
     data = data.set_index('timestamp')
     #data.index = pd.DatetimeIndex(data.index, tz=None, ambiguous='infer')
     #data.index = pd.to_datetime(data.index)
     #data.index = data.index.tz_localize(tz=None, ambiguous='infer')
     #data.index = data.index.tz_convert('UTC')
-    #data.index = data.index.tz_localize(None)
+    data.index = data.index.tz_localize(None)
 
     return data
 
@@ -70,6 +70,10 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'name'       : 'summer'
                     }
 
+# Image output directory
+save_fig_dir = 'img/'
+
+
 eva = {}
 df_eva_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
 df_helper_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
@@ -77,15 +81,13 @@ df_helper_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 
 df_eva_l = pd.DataFrame(columns=['time', 'lineloading', 'scenario', 'timescope', 'gridID', 'lineID'])
 df_helper_l = pd.DataFrame(columns=['time', 'lineloading', 'scenario', 'timescope', 'gridID', 'lineID'])
 
+print('Load Data')
 for time_scope_i in [time_scope_winter, time_scope_summer]:
   for net_name_i in [7, 8, 9, 10, 11]:
     for scenario_i in [1, 2, 3, 4]:
-
         output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_name[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
         index = 's' + str(scenario_i) + 'n' + str(net_name_i) + str(time_scope_i['name'])
-
-        #print(index)
-
+        print(index)
         eva[index] = {}
         eva[index]['scenario'] = scenario_i
         eva[index]['net_name'] = net_name[net_name_i]
@@ -95,8 +97,8 @@ for time_scope_i in [time_scope_winter, time_scope_summer]:
         eva[index]['v'] = read_data(output_dir+'res_bus_vm_pu.csv')
         eva[index]['ll'] = read_data(output_dir+'res_line_load_percent.csv')
         eva[index]['tl'] = read_data(output_dir+'res_trafo_load_percent.csv')
-        eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= tda.calculate_relevant_outputdata_overall_eva(eva[index]['power'])
-        eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = tda.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
+        eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= tdao.calculate_relevant_outputdata_overall_eva(eva[index]['power'])
+        eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = tdao.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
 
       
         v = read_data(output_dir+'res_bus_vm_pu.csv')
@@ -124,95 +126,27 @@ df_eva_l.reset_index(drop=True, inplace=True)
 
 n = 2*4 # Number of timescopes * Number of scenarios
 
-
-'''
 ### Violin plots ###
-plt.figure()
-ax = sns.violinplot(x="gridID", y="voltage", hue='timescope', data=df_eva_v, palette="muted", split=True, inner="quartile", cut=0)
+tdao.plot_violin_overall_eva(df_eva_v=df_eva_v, df_eva_l=df_eva_l, save_fig_dir=save_fig_dir)
 
-plt.figure()
-ax = sns.violinplot(x="gridID", y="lineloading", hue='timescope', data=df_eva_l, palette="muted", split=True, inner="quartile", cut=0)
-
-plt.show()
-'''
 
 ### Barplot ###
-df_bar = pd.DataFrame(index=range(len(eva.keys())*4), columns=['type', 'value', 'scenario', 'gridID', 'timescope'])
-
-v_events = 0
-l_events = 0
-t_events = 0
-
-j = 0
-j1 = 0
-j2 = 0
-for index in eva:
-  j2 = 0
-  for k in ['v_over','v_under','ll_over','tl_over']:
-    j = j1 + j2
-    df_bar['type'].iloc[j] = k
-    if (k == 'v_over') | (k == 'v_under'):
-     df_bar['value'].iloc[j] = eva[index][k]
-    elif k == 'll_over':
-     df_bar['value'].iloc[j] = eva[index][k]
-    elif k == 'tl_over':
-     df_bar['value'].iloc[j] = eva[index][k]
-    df_bar['scenario'].iloc[j] = eva[index]['scenario']
-    df_bar['gridID'].iloc[j] = eva[index]['net_name_i']
-    df_bar['timescope'].iloc[j] = eva[index]['time_scope_name']
-    j2 += 1
-  j1 += j2
-  v_events += len(eva[index]['v'].columns)/n
-  l_events += len(eva[index]['ll'].columns)/n
-  t_events += len(eva[index]['tl'].columns)/n
-
-df_bar.loc[df_bar['type'] == 'v_over', 'value']  = df_bar.loc[df_bar['type'] == 'v_over', 'value']/v_events
-df_bar.loc[df_bar['type'] == 'v_under', 'value'] = df_bar.loc[df_bar['type'] == 'v_under', 'value']/v_events
-df_bar.loc[df_bar['type'] == 'll_over', 'value'] = df_bar.loc[df_bar['type'] == 'll_over', 'value']/l_events
-df_bar.loc[df_bar['type'] == 'tl_over', 'value'] = df_bar.loc[df_bar['type'] == 'tl_over', 'value']/t_events
-
-df_bar_1 = df_bar.groupby(['scenario', 'type'])['value'].sum()/n
-df_bar_1 = df_bar_1.reset_index()
-
-df_bar_2 = df_bar.groupby(['gridID', 'type'])['value'].sum()/n
-df_bar_2 = df_bar_2.reset_index()
-
-plt.figure()
-ax = sns.barplot(x = 'scenario', y = 'value', hue = 'type', data = df_bar_1)
-plt.show()
-
-plt.figure()
-ax = sns.barplot(x = 'gridID', y = 'value', hue = 'type', data = df_bar_2)
-plt.show()
-
+tdao.plot_barplots_overall_eva(eva, n, save_fig_dir=save_fig_dir)
 
 ### Heatmaps ###
-df_v_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[1,2,3,4]).fillna(0)
-df_l_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[1,2,3,4]).fillna(0)
-df_t_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[1,2,3,4]).fillna(0)
-v_events = 0
-l_events = 0
-t_events = 0
-
-for index in eva:
-  df_v_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += (eva[index]['v_under'] + eva[index]['v_over'])/n
-  df_l_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['ll_over']/n
-  df_t_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['tl_over']/n
-  v_events += len(eva[index]['v'].columns)/n
-  l_events += len(eva[index]['ll'].columns)/n
-  t_events += len(eva[index]['tl'].columns)/n
-
-plt.figure()
-ax = sns.heatmap(df_v_heatmap/v_events, annot=True)
-
-plt.figure()
-ax = sns.heatmap(df_l_heatmap/l_events, annot=True)
-
-plt.show()
-
+tdao.plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=save_fig_dir)
 
 ### Others ###
-#tda.plot_residualload_overall_eva(eva['s4n9winter']['power'])
-#tda.plot_residualload_overall_eva(eva['s4n9summer']['power'])
+print('Create Other plots')
+tdao.plot_residualload_overall_eva(eva['s4n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_winter.png')
+tdao.plot_residualload_overall_eva(eva['s4n8summer']['power'], save_fig_dir=save_fig_dir+'plot_res_load_summer.png')
 
-#tda.plot_generation_consumption_as_heat_map_overall_eva(eva['s4n9winter']['power'])
+tdao.plot_generation_consumption_as_heat_map_overall_eva(eva['s4n9winter']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
+tdao.plot_generation_consumption_as_heat_map_overall_eva(eva['s4n9summer']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_summer.png')
+
+tdao.plot_grid_issus_over_power(eva['s4n8winter'], save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
+
+tdao.plot_grid_issus_over_time(eva['s4n9winter'], save_fig_dir+ 'plot_grid_issus_over_time_winter.png')
+tdao.plot_grid_issus_over_time(eva['s4n9summer'], save_fig_dir+ 'plot_grid_issus_over_time_summer.png')
+
+tdao.plot_hist_grid_issus_voltage(eva['s4n9summer'], eva['s4n9winter'], save_fig_dir+ 'hist_grid_issus_voltage.png')
