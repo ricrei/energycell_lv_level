@@ -24,8 +24,8 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6"]  #12
 
 # Define timescope and timestepwidth
-time_scope = { 'start_time' : '2017-04-17 00:00:00+01:00',
-               'end_time'   : '2017-04-18 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-03-12 00:00:00+01:00',
+               'end_time'   : '2017-03-13 00:00:00+01:00',
                't_freq'     : '5T'
              }
 
@@ -50,11 +50,12 @@ e.run_pf_timeseries()
 ################################################
 
 
-tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
-tda.calculate_net_problems(e.output_dir)
-tda.plot_generation_consumption_as_heat_map(e.output_dir)
-tda.plot_grid_issus_over_power(e.output_dir)
-tda.plot_residualload(e.output_dir)
+#tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
+#tda.calculate_net_problems(e.output_dir)
+#tda.plot_generation_consumption_as_heat_map(e.output_dir)
+#tda.plot_grid_issus_over_power(e.output_dir)
+#tda.plot_residualload(e.output_dir)
+
 #tda.plot_colorbar_seaborn(e.output_dir, time_scope['start_time'], time_scope['end_time'])
 #tda.plot_input_data()
 #tda.plot_net_res(e.net)

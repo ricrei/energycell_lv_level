@@ -17,6 +17,7 @@ import pandapower.networks as pn
 import simbench as sb
 import tools.progress as prog
 import tools.hp_controller as hp_cntr
+import tools.hp_storages as hp_strgs
 
 import bz2
 #import pickle
@@ -49,11 +50,15 @@ class EnergyCell():
 
         self.ev_para = {'ev_types' : []}
 
+        #Instanz der HP_Storages erzeugen
+        self.hp_storages = hp_strgs.HP_Storage()
+
         self.create_net()
         self.adjust_input_dataset(time_scope)
         self.create_output_dir()
 
         self.hp_controll = hp_cntr.HP_Controller()
+    
 
     ######################
     ### create network ###
@@ -192,6 +197,9 @@ class EnergyCell():
 
           if self.set_ev == True:
             pp.create_load(self.net, self.net.load.loc[index, "bus"], 0.0, name='ev_'+str(self.net.load.loc[index, "bus"]), type='ev')
+
+        #Search for HPs and place a Storage at the bus
+        hp_storage_index = self.hp_storages.create_hp_storages(self.net)
 
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
@@ -355,14 +363,13 @@ class EnergyCell():
             self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
             # self.net.load.loc[ev_index, 'q_mvar'] = 0
 
-            #self.hp_controll.evu_sperre(load = self.net.load, t = t, hp_index = hp_index)
             #resi_load = self.hp_controll.get_resi_load(sgen = self.net.sgen,
             #                              load = self.net.load,
             #                              pv_index = pv_index,
             #                              load_index = load_index,
             #                              hp_index = hp_index,
             #                              ev_index = ev_index)
-            """
+            
             self.hp_controll.controll_hps(res_bus_load = self.net.res_bus,
                             tstamp = t,
                             sgen = self.net.sgen,
@@ -370,8 +377,9 @@ class EnergyCell():
                             pv_index = pv_index,
                             load_index = load_index,
                             hp_index = hp_index,
-                            ev_index = ev_index)
-            """
+                            ev_index = ev_index,
+                            hp_storages = self.hp_storages)
+            
 
             # calculate residualload
             power.loc[t] = [self.net.load.p_mw[load_index].sum(),
