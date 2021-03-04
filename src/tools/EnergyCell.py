@@ -355,7 +355,23 @@ class EnergyCell():
             self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
             # self.net.load.loc[ev_index, 'q_mvar'] = 0
 
-            self.hp_controll.evu_sperre(load = self.net.load, t = t, hp_index = hp_index)
+            #self.hp_controll.evu_sperre(load = self.net.load, t = t, hp_index = hp_index)
+            #resi_load = self.hp_controll.get_resi_load(sgen = self.net.sgen,
+            #                              load = self.net.load,
+            #                              pv_index = pv_index,
+            #                              load_index = load_index,
+            #                              hp_index = hp_index,
+            #                              ev_index = ev_index)
+            """
+            self.hp_controll.controll_hps(res_bus_load = self.net.res_bus,
+                            tstamp = t,
+                            sgen = self.net.sgen,
+                            load = self.net.load,
+                            pv_index = pv_index,
+                            load_index = load_index,
+                            hp_index = hp_index,
+                            ev_index = ev_index)
+            """
 
             # calculate residualload
             power.loc[t] = [self.net.load.p_mw[load_index].sum(),
