@@ -8,24 +8,62 @@ Created on Wed Feb  3 12:58:22 2021
 
 import datetime
 
-    
 class HP_Controller():
     """Der HP_Controller steuert die Leistung der HPs."""
 
     def __init__(self):
         print("Init HP-Controller")
-    
+
     def controll_hps(self, res_bus_load, tstamp, sgen, load, pv_index,
                      load_index, hp_index, ev_index, hp_storages):
         """Erster Entwurf der Kontroll-Funktion für HPs.
            Monitor residual load -> add 1kW HP in case of feed in"""
-        #"bus_id-wise" feed in to 
+        # "bus_id-wise" feed in to
+        print('>>> Timestamp:', tstamp)
+        
         for bus_id in range(0, len(res_bus_load.p_mw)-2):
+            f_feed_in = False
+            f_feed_out = False
 
-            
+            resi_load = res_bus_load.p_mw[bus_id]
+            static_hp_load = load.p_mw[hp_index[bus_id]]
+            new_hp_load = load.p_mw[hp_index[bus_id]]
 
-            if(res_bus_load.p_mw[bus_id] <= 0):
-                load.p_mw[hp_index[bus_id]] = load.p_mw[hp_index[bus_id]] + 0.001
+            print('Bus_Id:', bus_id)
+            print(resi_load)
+
+
+
+            # if Residual_load negative (feed in to grid) fill into storage
+            if(resi_load < 0): f_feed_in = True
+            else: f_feed_in = False
+
+            if(f_feed_in):
+                print('Feed in storage -> HP_load_start', new_hp_load)             
+                #print(hp_storages.get_level(bus_id))
+                
+                #Calculate new HP-Load
+                new_hp_load = static_hp_load - resi_load
+                
+                # Calculate feed_in per Timestep in kW
+                amount_feed_in = (-resi_load * 1000)/12
+                level = hp_storages.get_level(bus_id).values
+                print('Level_old:', level)
+#                level = level+amount_feed_in
+                print('Level_new:', level)                
+
+                '''
+                if(resi_load <= -0.001):
+                    new_hp_load = static_hp_load - resi_load
+
+                else:
+                    new_hp_load = static_hp_load + 0.001
+                '''
+
+                print('End Feed in stor -> new_hp_load ', new_hp_load)
+
+            load.p_mw[hp_index[bus_id]] = new_hp_load
+
 
 
 '''

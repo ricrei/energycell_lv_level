@@ -50,11 +50,11 @@ e.run_pf_timeseries()
 ################################################
 
 
-#tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
-#tda.calculate_net_problems(e.output_dir)
-#tda.plot_generation_consumption_as_heat_map(e.output_dir)
-#tda.plot_grid_issus_over_power(e.output_dir)
-#tda.plot_residualload(e.output_dir)
+tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
+tda.calculate_net_problems(e.output_dir)
+tda.plot_generation_consumption_as_heat_map(e.output_dir)
+tda.plot_grid_issus_over_power(e.output_dir)
+tda.plot_residualload(e.output_dir)
 
 #tda.plot_colorbar_seaborn(e.output_dir, time_scope['start_time'], time_scope['end_time'])
 #tda.plot_input_data()

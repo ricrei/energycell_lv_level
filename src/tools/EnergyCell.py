@@ -51,7 +51,7 @@ class EnergyCell():
         self.ev_para = {'ev_types' : []}
 
         #Instanz der HP_Storages erzeugen
-        self.hp_storages = hp_strgs.HP_Storage()
+        self.hp_storages_obj = hp_strgs.HP_Storage()
 
         self.create_net()
         self.adjust_input_dataset(time_scope)
@@ -199,7 +199,7 @@ class EnergyCell():
             pp.create_load(self.net, self.net.load.loc[index, "bus"], 0.0, name='ev_'+str(self.net.load.loc[index, "bus"]), type='ev')
 
         #Search for HPs and place a Storage at the bus
-        hp_storage_index = self.hp_storages.create_hp_storages(self.net)
+        hp_storage_index = self.hp_storages_obj.create_hp_storages(self.net)
 
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
@@ -378,7 +378,7 @@ class EnergyCell():
                             load_index = load_index,
                             hp_index = hp_index,
                             ev_index = ev_index,
-                            hp_storages = self.hp_storages)
+                            hp_storages = self.hp_storages_obj)
             
 
             # calculate residualload
