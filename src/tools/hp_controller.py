@@ -15,55 +15,80 @@ class HP_Controller():
         print("Init HP-Controller")
 
     def controll_hps(self, res_bus_load, tstamp, sgen, load, pv_index,
-                     load_index, hp_index, ev_index, hp_storages):
+                     load_index, hp_index, ev_index, hp_stor_obj):
         """Erster Entwurf der Kontroll-Funktion für HPs.
            Monitor residual load -> add 1kW HP in case of feed in"""
         # "bus_id-wise" feed in to
         print('>>> Timestamp:', tstamp)
         
+        
         for bus_id in range(0, len(res_bus_load.p_mw)-2):
+        #for bus_id in range(hp_index.astype('int64')):
             f_feed_in = False
             f_feed_out = False
-
+            
+            # Get values from net.load values in [MW]
             resi_load = res_bus_load.p_mw[bus_id]
             static_hp_load = load.p_mw[hp_index[bus_id]]
             new_hp_load = load.p_mw[hp_index[bus_id]]
 
+            # Get values from hp_storage values in [kWh]
+            stor_level = hp_stor_obj.get_level(bus_id).values
+            max_level = hp_stor_obj.get_capacity(bus_id).values
+
             print('Bus_Id:', bus_id)
-            print(resi_load)
+            print('Residual_Load[MW]:', resi_load)
+            print('stor_level[kWh]: ', stor_level, ' max_level[kWh]:', max_level)
 
 
-
-            # if Residual_load negative (feed in to grid) fill into storage
-            if(resi_load < 0): f_feed_in = True
+            # if Residual_load negative (feed in to grid) feed_in to storage
+            if((resi_load < 0) & (max_level > stor_level)): f_feed_in = True
             else: f_feed_in = False
 
-            if(f_feed_in):
-                print('Feed in storage -> HP_load_start', new_hp_load)             
-                #print(hp_storages.get_level(bus_id))
-                
-                #Calculate new HP-Load
-                new_hp_load = static_hp_load - resi_load
-                
-                # Calculate feed_in per Timestep in kW
-                amount_feed_in = (-resi_load * 1000)/12
-                level = hp_storages.get_level(bus_id).values
-                print('Level_old:', level)
-#                level = level+amount_feed_in
-                print('Level_new:', level)                
+            # if Residual_load positiv (feed from grid) feed_out from storage
+            if((resi_load > 0) & (stor_level > 0)): f_feed_out = True
+            else: f_feed_out = False
 
-                '''
-                if(resi_load <= -0.001):
+            if(f_feed_in):
+                print('Feed in to storage -> HP_load_start:', new_hp_load)             
+                #print(hp_storages.get_level(bus_id))
+
+                # Set Max_Flow
+                if(resi_load >= -0.0015):
+                    # Calculate new HP-Load
                     new_hp_load = static_hp_load - resi_load
 
-                else:
-                    new_hp_load = static_hp_load + 0.001
-                '''
+                    # Calculate feed_in per Timestep in kW
+                    amount_feed_in = (-resi_load * 1000)/12
 
-                print('End Feed in stor -> new_hp_load ', new_hp_load)
+                else:
+                    # Set static max Feed_In_Value
+                    new_hp_load = static_hp_load + 0.0015
+                    
+                    # Calculate feed_in per Timestep in kW
+                    amount_feed_in = (0.0015 * 1000)/12
+
+                print('new_hp_load [MW]:', new_hp_load, ' amount_feed_in[kW]:', amount_feed_in)
+                print('Stor_Level_old[kWh]: ', hp_stor_obj.get_level(bus_id).values)
+                # Feed into storage
+                hp_stor_obj.feed_in(bus_id = bus_id, energy = amount_feed_in)
+                print('Stor_Level_new[kWh]:', hp_stor_obj.get_level(bus_id).values)
+
+            if(f_feed_out):
+                print('Feed out from storage -> HP_load_start:', new_hp_load)
+
+                # Calculate feed_out_in per Timestep in kW
+                amount_feed_out = (static_hp_load * 1000)/12
+                new_hp_load = static_hp_load - (amount_feed_out/1000)*12        
+
+                print('new_hp_load [MW]:', new_hp_load, ' amount_feed_out[kW]:', amount_feed_out)
+                print('Stor_Level_old[kWh]: ', hp_stor_obj.get_level(bus_id).values)
+                
+                # Feed out from storage
+                hp_stor_obj.feed_out(bus_id = bus_id, energy = amount_feed_out)
+                print('Stor_Level_new[kWh]:', hp_stor_obj.get_level(bus_id).values)
 
             load.p_mw[hp_index[bus_id]] = new_hp_load
-
 
 
 '''

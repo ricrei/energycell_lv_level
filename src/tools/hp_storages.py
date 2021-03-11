@@ -16,15 +16,15 @@ class HP_Storage():
         self.hp_storages = pd.DataFrame({
             'name': [],
             'bus': 0,
-            'capacity': 0,
+            'capacity': 0.0,
             'level': 0,
             'max_flow': 0.0
             })
 
         # Defines in kW
-        self.hp_stor_para = {'el_capacity': ['5.0', '4.0', '3.0'],
-                             'start_level': ['3.0', '2.0', '1.0'],
-                             'max_flow': ['2', '1', '0.5']}
+        self.hp_stor_para = {'el_capacity': [10.0, 5.0, 3.0],
+                             'start_level': [3.0, 2.0, 1.0],
+                             'max_flow': [2, 1, 0.5]}
 
         # Access_list for hp_storages_indexed by bus_id
         self.hp_storage_index = self.get_hp_stor_index()
@@ -51,47 +51,48 @@ class HP_Storage():
 
         print("Create HP-Storage")
         # print(self.hp_storage_index_index)
-        
+
         return self.hp_storage_index
-    
+
     def get_level(self, bus_id):
         '''
         Returns level of specific storage
         -------
+        Input bus_id to identify storage
+        '''
+        return self.hp_storages.level[self.hp_storage_index[bus_id]]
+
+    def get_capacity(self, bus_id):
+        '''
+        Returns capacity of specific storage
+        -------
         Input bus_id
         '''
-
-        # self.hp_storages.level[self.hp_storage_index[bus_id]]
-
-        return self.hp_storages.level[self.hp_storage_index[bus_id]]
+        return self.hp_storages.capacity[self.hp_storage_index[bus_id]]
 
     def feed_in(self, bus_id, energy):
         '''
-        
-
-        Returns
+        Returns new_level as a result of feed_in
         -------
-        int
-            DESCRIPTION.
-
+        input: bus_id to identify storage, amount of energy in kWh per timestep
         '''
-        new_level = hp_storages[hp_storage_index[bus_id]].level + energy
-        hp_storages[hp_storage_index[bus_id]].level = new_level
-
+        new_level = self.hp_storages.loc[self.hp_storage_index
+                                                  [bus_id]].level + energy
+        self.hp_storages.loc[self.hp_storage_index
+                                        [bus_id], 'level'] = new_level
         return new_level
 
     def feed_out(self, bus_id, energy):
         '''
-        
-
-        Returns
+        Returns new_level as a result of feed_out
         -------
-        int
-            DESCRIPTION.
-
+        input: bus_id to identify storage, amount of energy in kWh per timestep
         '''
-
-        return 0
+        new_level = self.hp_storages.loc[self.hp_storage_index
+                                                  [bus_id]].level - energy
+        self.hp_storages.loc[self.hp_storage_index
+                                        [bus_id], 'level'] = new_level    
+        return new_level
     
     def get_hp_stor_index(self):
         
@@ -109,6 +110,8 @@ class HP_Storage():
         # Finally is list with all bus_id willbe created
         for i in range(len(self.hp_storages)):
             temp_list = self.hp_storages.bus.isin([i])
+            #print(temp_list)
             hp_stor_index.append(list(temp_list[temp_list == True].index))
+            #print(hp_stor_index)
 
         return hp_stor_index
