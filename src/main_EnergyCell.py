@@ -60,7 +60,7 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 scenario = 4
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
+e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
 e.run_pf_timeseries()
@@ -89,7 +89,7 @@ print('Done')
 #tda.plot_grid_issus_over_power(e.output_dir)
 #tda.plot_grid_issus_over_time(e.output_dir)
 #tda.plot_hist_grid_issus(e.output_dir)
-#tda.plot_residualload(e.output_dir)
+tda.plot_residualload(e.output_dir)
 #tda.plot_reactive_power(e.output_dir)
 #tda.plot_colorbar_seaborn(e.output_dir, time_scope['start_time'], time_scope['end_time'])
 #tda.plot_input_data()

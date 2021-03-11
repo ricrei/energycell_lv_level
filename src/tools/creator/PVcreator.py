@@ -23,9 +23,9 @@ class PVcreator:
                         'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10,
-                        'cos_phi' : .95,
-                        'q_u_cont': True, 'tan_phi' : np.tan(np.arccos(.9)), 'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
+                        'cos_phi' : 1}
     #TODO: power urban has to be verified
+    self.pv_data_file = 'input-files/12_pv_short.pbz2'
 
 
   ############################################################
@@ -103,9 +103,9 @@ class PVcreator:
   ##########################################
   ### load genearation and load profiles ###
   ##########################################
-  def load_pv_profiles(self, df, pv_data_file, category):
+  def load_pv_profiles(self, df, category):
         ### load pv profiles ###
-        pv = tt.decompress_pickle(pv_data_file)
+        pv = tt.decompress_pickle(self.pv_data_file)
 
         # Define maximum installed pv-power per roof-top side (in kW)
         pv_power_installed = self.pv_para['power_'+str(category)]
@@ -115,6 +115,6 @@ class PVcreator:
               pv_dc_power = pv[str(self.pv_para['orientation'][i])]*pv_power_installed*self.pv_para['installed_power_scaling'][i]/1000
               # calculate active and reactive power of pv-system
               df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power
-              df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -pv_dc_power*np.tan(np.arccos(cos_phi))
+              #df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -pv_dc_power*np.tan(np.arccos(cos_phi))
         return df
 

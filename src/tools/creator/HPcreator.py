@@ -20,6 +20,8 @@ class HPcreator:
         self.hp_para = {'hp_types' : ['DE_HEF33_Air', 'DE_HEF34_Air', 'DE_HEF33_Ground', 'DE_HEF34_Ground'],
                         'cos_phi' : .95}
         self.hp_para['tan_phi'] = np.tan(np.arccos(self.hp_para['cos_phi']))
+        self.hp_data_file = 'input-files/13_hp_short.pbz2'
+
 
   ###########################################
   ### Create Loads at each bus for all HP ###
@@ -36,10 +38,10 @@ class HPcreator:
   ##########################################
   ### load genearation and load profiles ###
   ##########################################
-  def load_hp_profiles(self, df, hp_data_file):
+  def load_hp_profiles(self, df):
         ### load heatpump profile ###
         if self.set_hp == True:
-          hp = tt.decompress_pickle(hp_data_file)
+          hp = tt.decompress_pickle(self.hp_data_file)
           for hp_type in self.hp_para['hp_types']:
             df['hp_'+hp_type+'_p'] = hp['Demand_el_'+hp_type]/1000 # normalized to MW
             # TODO: cos_phi Berechnung anpassen

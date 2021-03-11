@@ -16,7 +16,8 @@ import _pickle as cPickle
 class HHLcreator:
 
   def __init__(self):
-    pass
+        self.load_p_data_file = 'input-files/11_p0_short.pbz2'
+        self.load_q_data_file = 'input-files/11_q0_short.pbz2'
 
   ###########################################
   ### Create Loads at each bus for all HP ###
@@ -33,10 +34,10 @@ class HHLcreator:
   ##########################################
   ### load genearation and load profiles ###
   ##########################################
-  def load_hhl_profiles(self, df, load_p_data_file, load_q_data_file):
+  def load_hhl_profiles(self, df):
         ### load load profiles ###
-        p0 = tt.decompress_pickle(load_p_data_file)
-        q0 = tt.decompress_pickle(load_q_data_file)
+        p0 = tt.decompress_pickle(self.load_p_data_file)
+        q0 = tt.decompress_pickle(self.load_q_data_file)
         for i in range(0,74):
             df['load_'+str(i)+'_p'] = p0["p"+str(i)]/1000	# normalized to MW
             df['load_'+str(i)+'_q'] = q0["q"+str(i)]/1000	# normalized to MW

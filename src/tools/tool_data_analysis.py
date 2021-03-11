@@ -369,11 +369,11 @@ def plot_reactive_power(output_dir):
   cos_phi = p/(p**2 + q**2)**(1/2)
 
   plt.figure()
-  plt.plot(v['42'],q['42'], 'o')
+  plt.plot(v,q, 'o')
   plt.figure()
-  plt.plot(v['42']-1)
-  plt.plot(q['42'])
-  plt.plot(cos_phi['42'])
+  plt.plot(v-1)
+  plt.plot(q)
+  plt.plot(cos_phi)
   plt.show()
 
 def plot_hist_grid_issus(output_dir):

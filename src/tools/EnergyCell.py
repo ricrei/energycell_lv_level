@@ -16,6 +16,7 @@ import pandapower.networks as pn
 import pandapower.toolbox as tb
 import simbench as sb
 import tools.progress as prog
+import tools.tools as tt
 
 import bz2
 import _pickle as cPickle
@@ -24,7 +25,13 @@ from tools.creator.HHLcreator import HHLcreator
 from tools.creator.PVcreator import PVcreator
 from tools.creator.HPcreator import HPcreator
 from tools.creator.EVcreator import EVcreator
-from tools.network.Grid      import Grid
+
+from tools.controller.PVcontroller import PVcontroller
+
+from tools.network.Grid import Grid
+
+from tools.data.OutputDataHandler import OutputDataHandler
+from tools.data.InputDataHandler import InputDataHandler
 
 class EnergyCell():
     
@@ -32,25 +39,25 @@ class EnergyCell():
         self.run_time('start')
         self.scenario = scenario
         [self.set_hp, self.set_ev, self.set_pv] = self.get_scenario_parameter(scenario=self.scenario)
-        #print('Scenario: %s' % self.scenario)
-        self.output_dir = os.path.join("./", "output-files/"+str(scenario)+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
 
         self.grid = Grid(net_name)
 
         self.hhl_creator = HHLcreator()
-        self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
-
         self.pv_creator = PVcreator(self.set_pv)
-        self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
-
         self.hp_creator = HPcreator(self.set_hp)
-        self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
-
         self.ev_creator = EVcreator(self.set_ev)
+
+        self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
+        self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
+        self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
 
-        self.adjust_input_dataset(time_scope)
-        self.create_output_dir()
+        self.input_data_handler = InputDataHandler()
+        self.input_data_handler.adjust_input_dataset(time_scope)
+
+        self.output_data_handler = OutputDataHandler()
+        self.output_data_handler.create_output_dir(net_name, scenario, time_scope)
+        self.output_dir = self.output_data_handler.output_dir
    
 
     #########################################
@@ -67,23 +74,17 @@ class EnergyCell():
     ### load genearation and load profiles ###
     ##########################################
     def load_profiles(self):
-        load_p_data_file = 'input-files/11_p0_test.pbz2'
-        load_q_data_file = 'input-files/11_q0_test.pbz2'
-        pv_data_file = 'input-files/12_pv_test.pbz2'
-        hp_data_file = 'input-files/13_hp_test.pbz2'
-        ev_data_file = 'input-files/14_ev_test.pbz2'
-
         # Define timeseries
-        time = self.decompress_pickle(pv_data_file).index
-        self.df['timestamp'] = time
+        time = tt.decompress_pickle('input-files/10_time_short.pbz2')
         # define dataframe for all data
         self.df = pd.DataFrame(range(0,len(time)), index=time)
+        self.df['timestamp'] = time
 
         # load all profiles and store them into df
-        self.df = self.hhl_creator.load_hhl_profiles(self.df, load_p_data_file, load_q_data_file)
-        self.df = self.pv_creator.load_pv_profiles(self.df, pv_data_file, self.grid.category)
-        self.df = self.hp_creator.load_hp_profiles(self.df, hp_data_file)
-        self.df = self.ev_creator.load_ev_profiles(self.df, ev_data_file)
+        self.df = self.hhl_creator.load_hhl_profiles(self.df)
+        self.df = self.pv_creator.load_pv_profiles(self.df, self.grid.category)
+        self.df = self.hp_creator.load_hp_profiles(self.df)
+        self.df = self.ev_creator.load_ev_profiles(self.df)
 
 
     ###################################
@@ -150,17 +151,7 @@ class EnergyCell():
       a = calculate_time_step_array(time_step_size)
       l, k, j, i = 0, 0, 0, 0
 
-      q_sgen_t_minus_1 = self.grid.net.sgen['q_mvar']
-      q_sgen_t_minus_2 = self.grid.net.sgen['q_mvar']
-      q_sgen_t_minus_3 = self.grid.net.sgen['q_mvar']
-      q_sgen_t_minus_4 = self.grid.net.sgen['q_mvar']
-      q_sgen_t_minus_5 = self.grid.net.sgen['q_mvar']
-      p_sgen_t_minus_1 = self.grid.net.sgen['p_mw']
-      v_t_minus_1 = self.grid.net.bus.index*0 + 1.0
-      v_t_minus_2 = self.grid.net.bus.index*0 + 1.0
-      v_t_minus_3 = self.grid.net.bus.index*0 + 1.0
-      v_t_minus_4 = self.grid.net.bus.index*0 + 1.0
-      v_t_minus_5 = self.grid.net.bus.index*0 + 1.0
+      self.pv_controller = PVcontroller(self.grid)
 
       ### main loop: try to avoid 'if', 'for', ... statments ###
       ###           Processing time is valuable!             ###
@@ -174,21 +165,11 @@ class EnergyCell():
             t = time_series[i]
             d = self.df.loc[t]
 
-            self.grid.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values
-            if self.pv_creator.pv_para['q_u_cont'] == True:
-              v_t_minus_5 = v_t_minus_4
-              v_t_minus_4 = v_t_minus_3
-              v_t_minus_3 = v_t_minus_2
-              v_t_minus_2 = v_t_minus_1
-              self.q_u_control(v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5)
-              q_sgen_t_minus_5 = q_sgen_t_minus_4
-              q_sgen_t_minus_4 = q_sgen_t_minus_3
-              q_sgen_t_minus_3 = q_sgen_t_minus_2
-              q_sgen_t_minus_2 = q_sgen_t_minus_1
-              q_sgen_t_minus_1 = self.grid.net.sgen.loc[pv_index,'q_mvar']
-              p_sgen_t_minus_1 = self.grid.net.sgen['p_mw']
-            else:
-              self.grid.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
+            self.grid.net.sgen['p_mw'] = d[index_helper_pv_p].values
+            if self.pv_controller.pv_para['control'] == 'qu':
+              self.grid = self.pv_controller.control_q_u(self.grid)
+            elif self.pv_controller.pv_para['control'] == 'cos_phi':
+              self.grid = self.pv_controller.control_cos_phi(self.grid)
 
             self.grid.net.load.loc[load_index, 'p_mw'] = d[index_helper_load_p].values
             self.grid.net.load.loc[load_index, 'q_mvar'] = d[index_helper_load_q].values
@@ -199,9 +180,9 @@ class EnergyCell():
             self.grid.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
         
             # run pandapower power flow
-            pp.runpp(self.grid.net, init='auto', init_vm_pu=v_t_minus_1, init_va_degree='results', max_iteration=30, tolerance_mva=1e-6)
+            pp.runpp(self.grid.net, max_iteration=30, tolerance_mva=1e-6)
 
-            v_t_minus_1 = self.grid.net.res_bus.vm_pu
+            self.pv_controller.get_v_of_last_timestep(self.grid.net.res_bus.vm_pu)
 
             # write result into DataFrame
             vm_pu.loc[t] = self.grid.net.res_bus.vm_pu
@@ -227,105 +208,6 @@ class EnergyCell():
 
       prog.progress(1, 1, status=' Done ')
       print('')
-      
-
-    ####################
-    ### Q(U) Control ###
-    ####################
-    def q_u_control(self, v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5):
-      a = .2
-      q_sgen_t = (q_sgen_t_minus_1 + q_sgen_t_minus_2 + q_sgen_t_minus_3 + q_sgen_t_minus_4 + q_sgen_t_minus_5)/5
-      v_t = (v_t_minus_1 + v_t_minus_2 + v_t_minus_3 + v_t_minus_4 + v_t_minus_5)/5
-      v = v_t[self.grid.net.sgen['bus']].values
-      P = self.grid.net.sgen["p_mw"]
-      Q = P * self.pv_creator.pv_para['tan_phi']
-      m = Q/(self.pv_creator.pv_para['U2'] - self.pv_creator.pv_para['U1'])
-
-      self.grid.net.sgen.loc[v <= self.pv_creator.pv_para['U1'], 'q_mvar'] = Q
-      self.grid.net.sgen.loc[(v <= self.pv_creator.pv_para['U2']) & (v >= self.pv_creator.pv_para['U1']), 'q_mvar'] = -m*(v-self.pv_creator.pv_para['U2'])
-      self.grid.net.sgen.loc[(v <= self.pv_creator.pv_para['U3']) & (v >= self.pv_creator.pv_para['U2']), 'q_mvar'] = 0
-      self.grid.net.sgen.loc[(v <= self.pv_creator.pv_para['U4']) & (v >= self.pv_creator.pv_para['U3']), 'q_mvar'] = -m*(v-self.pv_creator.pv_para['U3'])
-      self.grid.net.sgen.loc[v >= self.pv_creator.pv_para['U4'], 'q_mvar'] = -Q
-
-      self.grid.net.sgen['q_mvar'] = a*self.grid.net.sgen['q_mvar'] + q_sgen_t
-      self.grid.net.sgen.loc[self.grid.net.sgen['q_mvar'] < -Q, 'q_mvar'] = -Q
-      self.grid.net.sgen.loc[self.grid.net.sgen['q_mvar'] >  Q, 'q_mvar'] = Q
-
-      #print(v_t[42])
-      #print(q_sgen_t_minus_1[42])
-      #print((self.grid.net.sgen['q_mvar'] - q_sgen_t_minus_1).sum())
-      #print((self.grid.net.sgen['q_mvar'] - q_sgen_t_minus_1).max())
-      #print(self.get_cos_phi(self.grid.net.sgen['p_mw'], self.grid.net.sgen['q_mvar']).min())
-
-    #########################
-    ### Calculate cos phi ###
-    #########################      
-    def get_cos_phi(self, P, Q):
-       return P/(P**2 + Q**2)**(1/2)
-
-    ##############################
-    ### Adjustment of Datasets ###
-    ##############################
-    def adjust_input_dataset(self, time_scope):
-      
-      # Read csv / DEPRICATED
-      def read_data(file):
-        data = pd.read_csv(file, low_memory=False)
-        data['timestamp'] = pd.to_datetime(data['timestamp'], utc=True)
-        data = data.set_index('timestamp')
-        data.index = data.index.tz_convert('Europe/Berlin')
-
-        return data
-
-      def shorted_data(data, start_time, end_time, t_freq):
-        data_shorted = data.loc[start_time:end_time]
-        data_shorted = data_shorted.resample(t_freq).mean()
-        data_shorted = data_shorted.round(4)
-
-        return data_shorted
-
-      dates = time_scope['start_time'] + ' ' + time_scope['end_time'] + ' ' + time_scope['t_freq']
-
-      with open('input-files/daterange.csv') as daterange:
-         csv_daterange = csv.reader(daterange)
-         for row in csv_daterange:
-            dates_old = str(row[0])
-
-      dates_old = dates_old.strip('[')
-      dates_old = dates_old.strip(']')
-      dates_old = dates_old.strip('\'')
-
-      print('Daterange: %s' % dates)
-
-      if dates != dates_old:
-        
-        print('Adjust input datasets ...')
-
-        start_time = pd.to_datetime(time_scope['start_time'], format='%Y-%m-%d %H:%M:%S')
-        end_time = pd.to_datetime(time_scope['end_time'], format='%Y-%m-%d %H:%M:%S')
-        t_freq = time_scope['t_freq']
-
-        p0 = self.decompress_pickle('input-files/01_p0_load.pbz2')
-        q0 = self.decompress_pickle('input-files/01_q0_load.pbz2')
-        pv = self.decompress_pickle('input-files/02_pv_gen.pbz2')
-        hp = self.decompress_pickle('input-files/03_hp_load.pbz2')
-        ev = self.decompress_pickle('input-files/04_ev_load.pbz2')
-
-        p0_shorted = shorted_data(p0, start_time, end_time, t_freq)
-        q0_shorted = shorted_data(q0, start_time, end_time, t_freq)
-        pv_shorted = shorted_data(pv, start_time, end_time, t_freq)
-        hp_shorted = shorted_data(hp, start_time, end_time, t_freq)
-        ev_shorted = shorted_data(ev, start_time, end_time, t_freq)
-
-        self.compress_pickle('input-files/11_p0_test.pbz2', p0_shorted)
-        self.compress_pickle('input-files/11_q0_test.pbz2', q0_shorted)
-        self.compress_pickle('input-files/12_pv_test.pbz2', pv_shorted)
-        self.compress_pickle('input-files/13_hp_test.pbz2', hp_shorted)
-        self.compress_pickle('input-files/14_ev_test.pbz2', ev_shorted)
-
-        f = open('input-files/daterange.csv','w')
-        f.write(dates)
-        f.close()
 
     ##############################
     ### get scenario parameter ###
@@ -340,51 +222,6 @@ class EnergyCell():
              4 : [1, 1, 1]
         }
         return scenario_dict[scenario][0], scenario_dict[scenario][1], scenario_dict[scenario][2]
-
-
-    #########################
-    ### create output_dir ###
-    #########################
-    def create_output_dir(self):
-        # Create output directory
-        if os.path.isdir(self.output_dir):
-          print("Output directory: " + str(self.output_dir))
-        else:
-          try:
-            os.makedirs(self.output_dir)
-          except OSError:
-            print("Error: Creation of output directory %s failed" % self.output_dir)
-          else:
-            print("Create outout directory %s" % self.output_dir)
-
-    #####################################################################
-    ### Pickle a file and then compress it into a file with extension ###
-    #####################################################################
-    def compress_pickle(self, title, data):
-     '''
-     Method to pickle a file and then compress it into a file with extension.
-
-     :param title: string
-     :param data:  DataFrame
-     '''
-     with bz2.BZ2File(title, 'w') as f: 
-      cPickle.dump(data, f)
-     f.close()
-
-    #######################################
-    ### Load any compressed pickle file ###
-    #######################################
-    def decompress_pickle(self, file):
-     '''
-     Method to load a compressed pickle file.
-
-     :param file: string
-     :return: DataFrame
-     '''
-     f = bz2.BZ2File(file, 'rb')
-     data = cPickle.load(f)
-     f.close()
-     return data
 
     ############################
     ### calculate time delta ###
