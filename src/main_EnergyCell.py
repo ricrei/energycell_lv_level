@@ -26,7 +26,7 @@ net_name = ["kerber_rural_1", #0
 # Define timescope and timestepwidth
 time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', 
                'end_time'   : '2017-05-27 00:00:00+02:00',
-               't_freq'     : 'T'
+               't_freq'     : 'H'
              }
 
 time_scope_jan = { 'start_time' : '2017-01-02 00:00:00+02:00', 
@@ -60,11 +60,11 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 scenario = 4
 
 # Initialize EnergyCell
-#e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
+e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
-#e.run_pf_timeseries()
-
+e.run_pf_timeseries()
+'''
 i = 0
 CGREEN = '\33[32m'
 CEND   = '\33[0m'
@@ -76,7 +76,7 @@ for time_scope_i in [time_scope_winter, time_scope_summer]:
       i += 1
       e = ec.EnergyCell(net_name = net_name[net_name_i], scenario = scenario_i, time_scope = time_scope_i)
       e.run_pf_timeseries()
-
+'''
 print('Done')
 
 ################################################

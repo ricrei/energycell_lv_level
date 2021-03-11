@@ -59,14 +59,14 @@ net_name = ["kerber_rural_1", #0
 # timescopes to examine
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00', 
                       'end_time'   : '2017-01-11 00:00:00+01:00',
-                      't_freq'     : 'H',
+                      't_freq'     : 'T',
                       'name'       : 'winter'
                     }
 
 
 time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00', 
                       'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : 'H',
+                      't_freq'     : 'T',
                       'name'       : 'summer'
                     }
 
@@ -124,29 +124,33 @@ for time_scope_i in [time_scope_winter, time_scope_summer]:
 df_eva_v.reset_index(drop=True, inplace=True)
 df_eva_l.reset_index(drop=True, inplace=True)
 
-n = 2*4 # Number of timescopes * Number of scenarios
+n = 2    # Number of timescopes
+m = 2*4  # Number of timescopes * Number of scenarios
+
 
 ### Violin plots ###
-tdao.plot_violin_overall_eva(df_eva_v=df_eva_v, df_eva_l=df_eva_l, save_fig_dir=save_fig_dir)
+#tdao.plot_violin_overall_eva(df_eva_v=df_eva_v, df_eva_l=df_eva_l, save_fig_dir=save_fig_dir)
 
 
 ### Barplot ###
-tdao.plot_barplots_overall_eva(eva, n, save_fig_dir=save_fig_dir)
+tdao.plot_barplots_overall_eva(eva, m, save_fig_dir=save_fig_dir)
 
 ### Heatmaps ###
 tdao.plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=save_fig_dir)
 
 ### Others ###
 print('Create Other plots')
-tdao.plot_residualload_overall_eva(eva['s4n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_winter.png')
-tdao.plot_residualload_overall_eva(eva['s4n8summer']['power'], save_fig_dir=save_fig_dir+'plot_res_load_summer.png')
+#tdao.plot_residualload_overall_eva(eva['s4n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_winter.png')
+#tdao.plot_residualload_overall_eva(eva['s4n8summer']['power'], save_fig_dir=save_fig_dir+'plot_res_load_summer.png')
+tdao.plot_residualload_subplot_overall_eva(eva['s4n8summer']['power'], eva['s4n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot.png')
 
 tdao.plot_generation_consumption_as_heat_map_overall_eva(eva['s4n9winter']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
 tdao.plot_generation_consumption_as_heat_map_overall_eva(eva['s4n9summer']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_summer.png')
 
 tdao.plot_grid_issus_over_power(eva['s4n8winter'], save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
 
-tdao.plot_grid_issus_over_time(eva['s4n9winter'], save_fig_dir+ 'plot_grid_issus_over_time_winter.png')
-tdao.plot_grid_issus_over_time(eva['s4n9summer'], save_fig_dir+ 'plot_grid_issus_over_time_summer.png')
+#tdao.plot_grid_issus_over_time(eva['s4n9winter'], save_fig_dir+ 'plot_grid_issus_over_time_winter.png')
+#tdao.plot_grid_issus_over_time(eva['s4n9summer'], save_fig_dir+ 'plot_grid_issus_over_time_summer.png')
+tdao.plot_grid_issus_over_time_subplot(eva['s4n8summer'], eva['s4n8winter'], save_fig_dir+ 'plot_grid_issus_over_time_subplot.png')
 
 tdao.plot_hist_grid_issus_voltage(eva['s4n9summer'], eva['s4n9winter'], save_fig_dir+ 'hist_grid_issus_voltage.png')
