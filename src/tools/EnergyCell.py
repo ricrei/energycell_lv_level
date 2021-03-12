@@ -362,8 +362,9 @@ class EnergyCell():
 
             self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values
             # self.net.load.loc[ev_index, 'q_mvar'] = 0
-            
-            
+
+            #self.hp_controll.controll_hps_df(load = self.net.load)
+
             self.hp_controll.controll_hps(res_bus_load = self.net.res_bus,
                             tstamp = t,
                             sgen = self.net.sgen,
@@ -373,7 +374,7 @@ class EnergyCell():
                             hp_index = hp_index,
                             ev_index = ev_index,
                             hp_stor_obj = self.hp_storages_obj)
-            
+
 
             # calculate residualload
             power.loc[t] = [self.net.load.p_mw[load_index].sum(),

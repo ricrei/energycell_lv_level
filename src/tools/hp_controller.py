@@ -14,6 +14,8 @@ class HP_Controller():
     def __init__(self):
         print("Init HP-Controller")
 
+    # def controll_hps_df(self, )
+
     def controll_hps(self, res_bus_load, tstamp, sgen, load, pv_index,
                      load_index, hp_index, ev_index, hp_stor_obj):
         """Erster Entwurf der Kontroll-Funktion für HPs.

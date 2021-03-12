@@ -7,6 +7,7 @@ Created on Wed Jul 15 11:08:14 2020
 """
 import tools.tool_data_analysis as tda
 import tools.EnergyCell as ec
+import pandapower as pp
 
 # Define all gird names
 net_name = ["kerber_rural_1", #0
@@ -55,6 +56,7 @@ tda.calculate_net_problems(e.output_dir)
 tda.plot_generation_consumption_as_heat_map(e.output_dir)
 tda.plot_grid_issus_over_power(e.output_dir)
 tda.plot_residualload(e.output_dir)
+pp.plotting.simple_plot(e.net)
 
 #tda.plot_colorbar_seaborn(e.output_dir, time_scope['start_time'], time_scope['end_time'])
 #tda.plot_input_data()
