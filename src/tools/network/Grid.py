@@ -7,7 +7,6 @@ import pandapower as pp
 import pandapower.networks as pn
 import pandapower.toolbox as tb
 import simbench as sb
-import tools.progress as prog
 import tools.tools as tt
 
 import bz2
@@ -17,14 +16,15 @@ class Grid:
 
   def __init__(self, net_name):
     self.net_name = net_name
-    self.create_net()  
+    self.create_net()
+    pp.runpp(self.net)  # Has be execute to get initial net.res_bus for Q(U)-control
 
 
   ######################
   ### create network ###
   ######################
   def create_net(self):
-        print('Create grid ...')
+        #print('Create grid ...')
         # create net: only load without pv
         if self.net_name == "kerber_rural_1":
             self.net = pn.create_kerber_landnetz_freileitung_1()
@@ -67,7 +67,6 @@ class Grid:
             self.category = 'urban'
         else:
             raise NameError('Hint: No Network found. Please check net_name')
-        print('Grid: ' + str(self.net_name) + ', Category: ' + str(self.category))
 
         # Set vm_pu of external grid
         #print(self.net.ext_grid.vm_pu)
@@ -79,3 +78,22 @@ class Grid:
 
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
+
+  def get_component_index(self):
+        self.pv_index = self.net.sgen.index
+        self.load_index = self.net.load.index[self.net.load.type.str.contains('load')]
+        self.hp_index = self.net.load.index[self.net.load.type.str.contains('hp')]
+        self.ev_index = self.net.load.index[self.net.load.type.str.contains('ev')]
+
+  def get_label_of_each_component(self):
+      self.label_pv = self.net.sgen.type.loc[self.pv_index]
+      self.label_pv_p = self.label_pv + '_p'
+      self.label_pv_q = self.label_pv + '_q'
+
+      self.label_load_p = [self.net.load.type[i] + '_p' for i in self.load_index]
+      self.label_load_q = [self.net.load.type[i] + '_q' for i in self.load_index]
+
+      self.label_hp_p = [self.net.load.type[i] + '_p' for i in self.hp_index]
+      self.label_hp_q = [self.net.load.type[i] + '_q' for i in self.hp_index]
+
+      self.label_ev = [self.net.load.type[i] for i in self.ev_index]

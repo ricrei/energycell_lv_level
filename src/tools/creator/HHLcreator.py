@@ -7,7 +7,6 @@ import pandapower as pp
 import pandapower.networks as pn
 import pandapower.toolbox as tb
 import simbench as sb
-import tools.progress as prog
 import tools.tools as tt
 
 import bz2

@@ -7,7 +7,6 @@ import pandapower as pp
 import pandapower.networks as pn
 import pandapower.toolbox as tb
 import simbench as sb
-import tools.progress as prog
 import tools.tools as tt
 
 import bz2
@@ -15,8 +14,8 @@ import _pickle as cPickle
 
 class HPcreator:
 
-  def __init__(self, set_hp):
-        self.set_hp = set_hp
+  def __init__(self, scenario):
+        self.set_hp = (scenario == 2) | (scenario == 4)
         self.hp_para = {'hp_types' : ['DE_HEF33_Air', 'DE_HEF34_Air', 'DE_HEF33_Ground', 'DE_HEF34_Ground'],
                         'cos_phi' : .95}
         self.hp_para['tan_phi'] = np.tan(np.arccos(self.hp_para['cos_phi']))

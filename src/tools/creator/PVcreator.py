@@ -7,7 +7,6 @@ import pandapower as pp
 import pandapower.networks as pn
 import pandapower.toolbox as tb
 import simbench as sb
-import tools.progress as prog
 import tools.tools as tt
 
 import bz2
@@ -15,8 +14,8 @@ import _pickle as cPickle
 
 class PVcreator:
 
-  def __init__(self, set_pv):
-    self.set_pv = set_pv
+  def __init__(self, scenario):
+    self.set_pv = (scenario == 3) | (scenario == 4)
     # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
     # rate: frequency of occurrence of pv-orientation
     self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
