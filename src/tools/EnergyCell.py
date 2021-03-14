@@ -16,6 +16,7 @@ import pandapower.networks as pn
 import pandapower.toolbox as tb
 import simbench as sb
 import tools.tools as tt
+import logging
 
 import bz2
 import _pickle as cPickle
@@ -56,8 +57,6 @@ class EnergyCell():
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pf = PowerFlow()
-
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(time_scope)
 
@@ -65,6 +64,8 @@ class EnergyCell():
         self.output_data_handler.create_output_dir(net_name, scenario, time_scope)
         self.output_dir = self.output_data_handler.output_dir
         self.output_data_handler.create_output_dataframes(self.grid)
+
+        self.pf = PowerFlow(self.output_dir)
 
         self.print_object_parameter()
    

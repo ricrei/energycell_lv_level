@@ -17,7 +17,7 @@ class Grid:
   def __init__(self, net_name):
     self.net_name = net_name
     self.create_net()
-    pp.runpp(self.net)  # Has be execute to get initial net.res_bus for Q(U)-control
+    pp.runpp(self.net, algorithm='nr')  # Has be execute to get initial net.res_bus for Q(U)-control
 
 
   ######################

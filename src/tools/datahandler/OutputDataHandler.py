@@ -35,7 +35,6 @@ class OutputDataHandler():
           else:
             print("Create outout directory %s" % self.output_dir)
 
-
   def create_output_dataframes(self, grid):
         self.vm_pu = pd.DataFrame(columns=grid.net.bus.index)
         self.li_lo = pd.DataFrame(columns=grid.net.line.index)
@@ -50,16 +49,6 @@ class OutputDataHandler():
         self.reactive_power.index.name  = 'timestamp'
         self.active_power.index.name = 'timestamp'
 
-  def write_dataframe_to_csv(self, mode, header, grid):
-        self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',mode=mode, header=header, index = True)
-        self.li_lo.round(1).to_csv(self.output_dir + 'res_line_load_percent.csv',mode=mode, header=header, index = True)
-        self.tr_lo.round(1).to_csv(self.output_dir + 'res_trafo_load_percent.csv',mode=mode, header=header, index = True)
-        self.power.round(6).to_csv(self.output_dir + 'power_total_MW.csv',mode=mode, header=header, index = True)
-        self.reactive_power.round(6).to_csv(self.output_dir + 'reactive_power_MW.csv',mode=mode, header=header, index = True)
-        self.active_power.round(6).to_csv(self.output_dir + 'active_power_MW.csv',mode=mode, header=header, index = True)
-
-        self.create_output_dataframes(grid)
-
   def write_output_into_dataframe(self, grid, t):
         self.vm_pu.loc[t] = grid.net.res_bus.vm_pu
         self.li_lo.loc[t] = grid.net.res_line.loading_percent
@@ -71,7 +60,12 @@ class OutputDataHandler():
         self.reactive_power.loc[t] = grid.net.sgen['q_mvar']
         self.active_power.loc[t]   = grid.net.sgen['p_mw']
 
+  def write_dataframe_to_csv(self, mode, header, grid):
+        self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',mode=mode, header=header, index = True)
+        self.li_lo.round(1).to_csv(self.output_dir + 'res_line_load_percent.csv',mode=mode, header=header, index = True)
+        self.tr_lo.round(1).to_csv(self.output_dir + 'res_trafo_load_percent.csv',mode=mode, header=header, index = True)
+        self.power.round(6).to_csv(self.output_dir + 'power_total_MW.csv',mode=mode, header=header, index = True)
+        self.reactive_power.round(6).to_csv(self.output_dir + 'reactive_power_MW.csv',mode=mode, header=header, index = True)
+        self.active_power.round(6).to_csv(self.output_dir + 'active_power_MW.csv',mode=mode, header=header, index = True)
 
-
-
-
+        self.create_output_dataframes(grid)
