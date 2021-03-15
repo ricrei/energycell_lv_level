@@ -9,5 +9,5 @@ import bz2
 import _pickle as cPickle
 
 
-class EvaluationAll():
+class EvaluationAllCases():
   pass

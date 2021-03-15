@@ -16,9 +16,12 @@ class PVcontroller:
 
   def __init__(self, grid, control='qu', cos_phi=.9):
       # 'control': 'qu', 'cos_phi'
-      self.control = control
-      self.pv_para = {'cos_phi' : cos_phi,
-                      'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
+      if (control=='qu' or control=='cos_phi'):
+        self.control = control
+        self.pv_para = {'cos_phi' : cos_phi,
+                        'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
+      else:
+        raise ValueError('The entered pv control is not a valid option.')
       self.pv_para['tan_phi'] = np.tan(np.arccos(self.pv_para['cos_phi']))
 
       if self.control == 'qu':
@@ -27,7 +30,7 @@ class PVcontroller:
         self.Qcontroller = PVQcontrolCOSPHI(self.pv_para)
 
   def get_reactive_power(self, grid):
-    return self.Qcontroller.qcontrol(grid)
+      return self.Qcontroller.qcontrol(grid)
 
 
 class PVQcontrol:
@@ -35,7 +38,7 @@ class PVQcontrol:
       self.pv_para = pv_para
 
   def qcontrol(self):
-    pass
+      pass
 
 
 class PVQcontrolCOSPHI(PVQcontrol):

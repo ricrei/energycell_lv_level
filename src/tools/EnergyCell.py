@@ -35,12 +35,24 @@ from tools.powerflow.PowerFlow import PowerFlow
 from tools.datahandler.OutputDataHandler import OutputDataHandler
 from tools.datahandler.InputDataHandler import InputDataHandler
 
+from tools.evaluation.EvaluationSingleCase import EvaluationSingleCase
+
 class EnergyCell():
     
     def __init__(self, net_name, scenario, time_scope):
         self.run_time('start')
 
-        self.scenario = scenario
+        self.net_name = net_name
+        if scenario in [1, 2, 3, 4]:
+          self.scenario = scenario
+        else:
+          raise ValueError('The entered ´scenario´ is not a valid option. '+
+                           '´Scenario´ should be between 1 and 4.')
+
+        if ('start_time' in time_scope) and ('end_time' in time_scope) and ('t_freq' in time_scope):
+          self.time_scope = time_scope
+        else:
+          raise ValueError('time_scope is not properly defined. start_time, end_time and t_freq is needed.')
 
         self.grid = Grid(net_name)
 
@@ -74,9 +86,7 @@ class EnergyCell():
     ### load timeseries and run powerflow ###
     #########################################
     def run_pf_timeseries(self):
-        #print('Load profiles ...')
         self.load_profiles()
-        #print('Run powerflow ...')
         self.run_pf()
         self.run_time('end')
             
@@ -103,7 +113,9 @@ class EnergyCell():
     def run_pf(self):
 
       self.output_data_handler.write_dataframe_to_csv(mode='w', header=True, grid=self.grid)
-      self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
+
+      if not hasattr(self, 'pv_controller'):
+        self.set_pvcontroller(control='qu', cos_phi=.9)
 
       self.pf.run_power_flow_through_timeseries(df=self.df,
                                                 grid=self.grid,
@@ -128,4 +140,16 @@ class EnergyCell():
     def print_object_parameter(self):
         print(tt.text1('Grid: ') + str(self.grid.net_name) + ', ' + str(self.grid.category) + tt.text1('   Scenario: ') + str(self.scenario))
         print(tt.text1('Daterange: ') + str(self.input_data_handler.dates))
+
+    ################################
+    ### initialize pv controller ###
+    ################################
+    def set_pvcontroller(self, control='qu', cos_phi=.9):
+        self.pv_controller = PVcontroller(grid=self.grid, control=control, cos_phi=cos_phi)
+
+    ####################################################
+    ### initiate evaluation object for a single case ###
+    ####################################################
+    def initiate_evaluation(self):
+        self.eva = EvaluationSingleCase(self.output_dir, self.net_name, self.scenario, self.time_scope)
 

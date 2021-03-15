@@ -60,7 +60,6 @@ class PowerFlow:
                                                         pv_controller=pv_controller)
 
             try:
-              # run pandapower power flow
               pp.runpp(grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
             except:
               print(tt.textred('Power Flow nr did not converge at ' + str(t)))
