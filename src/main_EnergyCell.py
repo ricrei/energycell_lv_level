@@ -24,7 +24,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6"]  #12
 
 # Define timescope and timestepwidth
-time_scope = { 'strt_time' : '2017-05-26 00:00:00+02:00', 
+time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', 
                'end_time'   : '2017-05-27 00:00:00+02:00',
                't_freq'     : 'H'
              }
