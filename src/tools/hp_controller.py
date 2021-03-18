@@ -14,12 +14,33 @@ class HP_Controller():
     def __init__(self):
         print("Init HP-Controller")
 
-    # def controll_hps_df(self, )
+    def controll_hps_df(self, res_bus_load, load, sgen, tstamp, hp_stor_obj):
+        """Zweiter Entwurf der Kontroll-Funktion für HPs.
+        Monitor residual load above -1,5kW add 1,5kW HP in Buffer
+        heat demand is set by demand curve
+        Except to iteration try usage of DataFrame-functions"""
+        # "bus_id-wise" feed in to
+
+        # search for feeder in res_bus
+        feeder = res_bus_load.loc[res_bus_load['p_mw'] < 0]
+        # print(feeder.to_markdown())
+
+        if( feeder.empty is False ):
+
+            print('>>> Timestamp:', tstamp)
+            # sorted storages by bus and group storage to set index to bus for add
+            new_sorted = hp_stor_obj.hp_storages.sort_values(by='bus')
+            hps_level = new_sorted.groupby(['bus']).sum().level
+
+            hps_res = (hps_level - feeder.p_mw).dropna()
+            print(hps_res.to_markdown())
+
 
     def controll_hps(self, res_bus_load, tstamp, sgen, load, pv_index,
                      load_index, hp_index, ev_index, hp_stor_obj):
         """Erster Entwurf der Kontroll-Funktion für HPs.
-           Monitor residual load -> add 1kW HP in case of feed in"""
+           Monitor residual load above -1,5kW add 1,5kW HP in Buffer
+           heat demand is set by demand curve"""
         # "bus_id-wise" feed in to
         print('>>> Timestamp:', tstamp)
         
