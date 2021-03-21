@@ -1,17 +1,5 @@
 import os
-import csv
-import time
-import numpy as np
 import pandas as pd
-import pandapower as pp
-import pandapower.networks as pn
-import pandapower.toolbox as tb
-import simbench as sb
-import tools.tools as tt
-
-import bz2
-import _pickle as cPickle
-
 
 class OutputDataHandler():
 
@@ -31,6 +19,8 @@ class OutputDataHandler():
             print("Error: Creation of output directory %s failed" % self.output_dir)
           else:
             print("Create outout directory %s" % self.output_dir)
+
+        return self.output_dir
 
   def create_output_dataframes(self, grid):
         self.vm_pu = pd.DataFrame(columns=grid.net.bus.index)

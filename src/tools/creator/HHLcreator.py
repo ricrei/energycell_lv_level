@@ -1,16 +1,4 @@
-import os
-import csv
-import time
-import numpy as np
-import pandas as pd
-import pandapower as pp
-import pandapower.networks as pn
-import pandapower.toolbox as tb
-import simbench as sb
 import tools.tools as tt
-
-import bz2
-import _pickle as cPickle
 
 class HHLcreator:
 
@@ -23,7 +11,7 @@ class HHLcreator:
   ###########################################
   def create_hh_load_at_each_bus(self, grid):
       # create hp-loads at each bus 
-      for index in grid.net.load.index:
+      for index in grid.component_buses.index:
           grid.net.load.name.loc[index] = 'load_'+str(grid.net.load.loc[index, "bus"])
           grid.net.load.type.loc[index] = 'load_'+str(index%74)
           #grid.net.load.type[index] = 'load_'+str(index%74)

@@ -1,17 +1,8 @@
-import os
-import csv
 import time
 import numpy as np
-import pandas as pd
 import pandapower as pp
-import pandapower.networks as pn
-import pandapower.toolbox as tb
-import simbench as sb
 import logging
 import tools.tools as tt
-
-import bz2
-import _pickle as cPickle
 
 class PowerFlow:
 
@@ -41,7 +32,13 @@ class PowerFlow:
                                         df,
                                         grid,
                                         pv_controller,
+                                        hp_controller,
+                                        ev_controller,
+                                        bss_controller,
                                         output_data_handler):
+
+      output_data_handler.write_dataframe_to_csv(mode='w', header=True, grid=grid)
+
       self.set_time_step_array(df)
       rest_time = ''
       i = 0
@@ -49,28 +46,31 @@ class PowerFlow:
       ###           Processing time is valuable!             ###
       for k in self.time_step_array:
           for j in range(k):
-            start = time.time()
-            tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
+              start = time.time()
+              tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
 
-            t = self.time_series[i]
-            d = df.loc[t]
+              t = self.time_series[i]
+              d = df.loc[t]
 
-            grid.net = self.merge_df_and_grid_at_time_i(d=d,
-                                                        grid=grid,
-                                                        pv_controller=pv_controller)
+              grid.net = self.merge_df_and_grid_at_time_i(d=d,
+                                                          grid=grid,
+                                                          pv_controller=pv_controller,
+                                                          hp_controller=hp_controller,
+                                                          ev_controller=ev_controller,
+                                                          bss_controller=bss_controller)
 
-            try:
-              pp.runpp(grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
-            except:
-              print(tt.textred('Power Flow nr did not converge at ' + str(t)))
-              self.logger.error('Power Flow nr did not converge at ' + str(t))
+              try:
+                  pp.runpp(grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
+              except:
+                  print(tt.textred('Power Flow nr did not converge at ' + str(t)))
+                  self.logger.error('Power Flow nr did not converge at ' + str(t))
 
-            # write result into DataFrame
-            output_data_handler.write_output_into_dataframe(grid, t)
+              # write result into DataFrame
+              output_data_handler.write_output_into_dataframe(grid, t)
 
-            end = time.time()
-            rest_time = int(round((end - start)*(self.timesteps - i), 0))
-            i += 1
+              end = time.time()
+              rest_time = int(round((end - start)*(self.timesteps - i), 0))
+              i += 1
           # write results dataframe into csv
           output_data_handler.write_dataframe_to_csv(mode='a', header=False, grid=grid)
 
@@ -78,17 +78,25 @@ class PowerFlow:
       print('')
 
 
-  def merge_df_and_grid_at_time_i(self, d, grid, pv_controller):
+  def merge_df_and_grid_at_time_i(self,
+                                  d,
+                                  grid,
+                                  pv_controller,
+                                  hp_controller,
+                                  ev_controller,
+                                  bss_controller):
 
-    grid.net.sgen['p_mw'] = d[grid.label_pv_p].values
+    grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, d)
     grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
 
     grid.net.load.loc[grid.load_index, 'p_mw'] = d[grid.label_load_p].values
     grid.net.load.loc[grid.load_index, 'q_mvar'] = d[grid.label_load_q].values
 
-    grid.net.load.loc[grid.hp_index, 'p_mw'] = d[grid.label_hp_p].values
-    grid.net.load.loc[grid.hp_index, 'q_mvar'] = d[grid.label_hp_q].values
+    grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, d)
+    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, d)
 
-    grid.net.load.loc[grid.ev_index, 'p_mw'] = d[grid.label_ev].values
+    grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, d)
+
+    grid.net.storage['p_mw'] = bss_controller.get_active_power(grid, d)
 
     return grid.net

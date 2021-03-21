@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jul 15 11:08:14 2020
+Created on Wed March 17 11:08:14 2020
 
-@author: ricardo
+@authors: ricardo, tabea, paul
 """
-import tools.tool_data_analysis as tda
 import tools.EnergyCell as ec
 
 # Define all gird names
@@ -21,39 +20,38 @@ net_name = ["kerber_rural_1", #0
             "simbench_rural_3", #9
             "simbench_suburb_4", #10
             "simbench_suburb_5", #11
-            "simbench_urban_6"]  #12
+            "simbench_urban_6",  #12
+            "test_net_one_load_branch"]  #13
 
 # Define timescope and timestepwidth
-time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', 
+time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
                'end_time'   : '2017-05-27 00:00:00+02:00',
-               't_freq'     : 'H'
+               't_freq'     : 'h'
              }
 
 # timescopes to examine
-time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00', 
+time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : 'T',
                       'name'       : 'winter'
                     }
 
 
-time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00', 
+time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
                       't_freq'     : 'T',
                       'name'       : 'summer'
                     }
 
 # Define scenario
-# 1: conventional, 2: full-electrified, 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
+# 1: conventional, 2: full-electrified
+# 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
+# 5: grid extention (not implemented), 6: battery storage systems
+# 7: smart consumers, 8: battery storage systems and smart consumers
 scenario = 4
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[0], scenario = scenario, time_scope = time_scope)
-
-# Initialize PV-Controller
-# control: 'qu', 'cos_phi', cos_phi: .9 - 1.0
-# default: 'qu' .9
-e.set_pvcontroller()
+e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
 e.run_pf_timeseries()
@@ -65,22 +63,17 @@ e.initiate_evaluation()
 ############# ANALISE OUTPUT DATA ##############
 ################################################
 
-#e.eva.plot_residualload()
-#e.eva.plot_generation_consumption_as_heat_map_overall_eva()
-#e.eva.plot_colorbar_seaborn()
+e.eva.calculate_relevant_outputdata()
+e.eva.calculate_net_problems()
 
-#tda.calculate_relevant_outputdata(e.output_dir, time_scope['t_freq'])
-#tda.calculate_net_problems(e.output_dir)
-#tda.plot_generation_consumption_as_heat_map(e.output_dir)
-#tda.plot_grid_issus_over_power(e.output_dir)
-#tda.plot_grid_issus_over_time(e.output_dir)
-#tda.plot_hist_grid_issus(e.output_dir)
-#tda.plot_residualload(e.output_dir)
-#tda.plot_reactive_power(e.output_dir)
-#tda.plot_colorbar_seaborn(e.output_dir, time_scope['start_time'], time_scope['end_time'])
-#tda.plot_input_data()
-#tda.plot_net_res(net)
-#tda.compare_results_of_different_timesteps()
+e.eva.plot_residualload()
+#e.eva.plot_generation_consumption_as_heat_map()
+#e.eva.plot_colorbar_seaborn()
+#e.eva.plot_grid_issus_over_power()
+#e.eva.plot_grid_issus_over_time()
+#e.eva.plot_reactive_power()
+
+#print(e.grid.net.sgen)
 
 '''
 i = 0
@@ -92,9 +85,10 @@ for time_scope_i in [time_scope_winter, time_scope_summer]:
       print(' ')
       print(CGREEN + 'Durchlauf: ' + str(i) + CEND)
       i += 1
-      e = ec.EnergyCell(net_name = net_name[net_name_i], scenario = scenario_i, time_scope = time_scope_i)
+      e = ec.EnergyCell(net_name = net_name[net_name_i],
+                        scenario = scenario_i,
+                        time_scope = time_scope_i)
       e.run_pf_timeseries()
 
 print('Done')
 '''
-

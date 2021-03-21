@@ -1,16 +1,7 @@
-import os
 import csv
-import time
-import numpy as np
 import pandas as pd
-import pandapower as pp
-import pandapower.networks as pn
-import pandapower.toolbox as tb
-import simbench as sb
-import tools.tools as tt
 
-import bz2
-import _pickle as cPickle
+import tools.tools as tt
 
 
 class InputDataHandler():
@@ -78,4 +69,16 @@ class InputDataHandler():
 
   def get_time_df(self, df):
         return df.index
+
+  def create_empty_df(self, time_scope):
+        # Define timeseries
+        self.time_series = tt.decompress_pickle('input-files/10_time_short.pbz2')
+        self.time_series = pd.DataFrame(self.time_series)
+        self.time_series.index = self.time_series['timestamp']
+        # define dataframe for all data
+        df = pd.DataFrame(range(0,len(self.time_series)), index=self.time_series)
+        df = self.time_series
+        df.index.freq = time_scope['t_freq']
+
+        return df
 

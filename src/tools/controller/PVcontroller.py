@@ -1,21 +1,11 @@
-import os
-import csv
-import time
 import numpy as np
 import pandas as pd
-import pandapower as pp
-import pandapower.networks as pn
-import pandapower.toolbox as tb
-import simbench as sb
-import tools.tools as tt
-
-import bz2
-import _pickle as cPickle
 
 class PVcontroller:
 
   def __init__(self, grid, control='qu', cos_phi=.9):
-      # 'control': 'qu', 'cos_phi'
+      self.set_pv = (grid.scenario in [3, 4, 6])
+
       if (control=='qu' or control=='cos_phi'):
         self.control = control
         self.pv_para = {'cos_phi' : cos_phi,
@@ -24,16 +14,49 @@ class PVcontroller:
         raise ValueError('The entered pv control is not a valid option.')
       self.pv_para['tan_phi'] = np.tan(np.arccos(self.pv_para['cos_phi']))
 
+      if self.set_pv == True:
+        self.P_controller = PV_P_controlFEEDINALL(self.pv_para)
+      else:
+        self.P_controller = PV_P_control_no_pv(self.pv_para)
+
       if self.control == 'qu':
-        self.Qcontroller = PVQcontrolQU(grid, self.pv_para)
+        self.Q_controller = PV_Q_controlQU(grid, self.pv_para)
       elif self.control == 'cos_phi':
-        self.Qcontroller = PVQcontrolCOSPHI(self.pv_para)
+        self.Q_controller = PV_Q_controlCOSPHI(self.pv_para)
+
 
   def get_reactive_power(self, grid):
-      return self.Qcontroller.qcontrol(grid)
+      return self.Q_controller.qcontrol(grid)
+
+  def get_active_power(self, grid, d):
+      return self.P_controller.pcontrol(grid, d)
 
 
-class PVQcontrol:
+class PV_P_control:
+  def __init__(self, pv_para):
+      self.pv_para = pv_para
+
+  def pcontrol(self):
+      pass
+
+class PV_P_control_no_pv(PV_P_control):
+  def __init__(self, pv_para):
+      super().__init__(pv_para)
+
+  def pcontrol(self, grid, d):
+      return d[grid.label_pv_p].values*0
+
+
+class PV_P_controlFEEDINALL(PV_P_control):
+  def __init__(self, pv_para):
+      super().__init__(pv_para)
+
+  def pcontrol(self, grid, d):
+      return d[grid.label_pv_p].values
+
+
+
+class PV_Q_control:
   def __init__(self, pv_para):
       self.pv_para = pv_para
 
@@ -41,29 +64,29 @@ class PVQcontrol:
       pass
 
 
-class PVQcontrolCOSPHI(PVQcontrol):
+class PV_Q_controlCOSPHI(PV_Q_control):
 
   def __init__(self, pv_para):
       super().__init__(pv_para)
 
   def qcontrol(self, grid):
+      #PVQcontrol.qcontrol(self)
       grid = self.control_cos_phi(grid)
       return grid.net.sgen['q_mvar']
 
   def control_cos_phi(self, grid):
-      PVQcontrol.qcontrol(self)
       grid.net.sgen["q_mvar"] = -1*grid.net.sgen["p_mw"]*self.pv_para['tan_phi']
       return grid
 
 
-class PVQcontrolQU(PVQcontrol):
+class PV_Q_controlQU(PV_Q_control):
 
   def __init__(self, grid, pv_para):
       super().__init__(pv_para)
       self.control_q_u_init(grid)
 
   def qcontrol(self, grid):
-      PVQcontrol.qcontrol(self)
+      #PVQcontrol.qcontrol(self)
       grid = self.control_q_u(grid)
       return grid.net.sgen['q_mvar']
 

@@ -1,21 +1,12 @@
-import os
-import csv
-import time
 import numpy as np
 import pandas as pd
 import pandapower as pp
-import pandapower.networks as pn
-import pandapower.toolbox as tb
-import simbench as sb
-import tools.tools as tt
 
-import bz2
-import _pickle as cPickle
+import tools.tools as tt
 
 class PVcreator:
 
-  def __init__(self, scenario):
-    self.set_pv = (scenario == 3) | (scenario == 4)
+  def __init__(self):
     # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
     # rate: frequency of occurrence of pv-orientation
     self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
@@ -33,11 +24,7 @@ class PVcreator:
   def create_pv_sgen_at_each_bus(self, grid):
         # create sgen per load and set all values to zero
         # asign pv-orientaiton to every sgen
-        if self.set_pv == True:
-          return self.set_pv_distribution(grid)
-        else:
-          return grid
-
+        return self.set_pv_distribution(grid)
 
   ############################################
   ### distribute PV systems within the net ###
@@ -108,12 +95,10 @@ class PVcreator:
 
         # Define maximum installed pv-power per roof-top side (in kW)
         pv_power_installed = self.pv_para['power_'+str(category)]
-        cos_phi = self.pv_para['cos_phi']
         for i in range(0,len(self.pv_para['orientation'])):
               # calculate installed power per household and normalize timeseries to MW
               pv_dc_power = pv[str(self.pv_para['orientation'][i])]*pv_power_installed*self.pv_para['installed_power_scaling'][i]/1000
               # calculate active and reactive power of pv-system
               df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power
-              #df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -pv_dc_power*np.tan(np.arccos(cos_phi))
         return df
 
