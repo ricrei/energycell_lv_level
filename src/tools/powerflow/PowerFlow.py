@@ -53,7 +53,8 @@ class PowerFlow:
 
               t = self.time_series[i]
 
-              grid.net = self.merge_df_and_grid_at_time_i(input_dict=self.input_dict,
+              grid.net = self.merge_input_dict_and_grid_at_time_t(
+                                                          input_dict=self.input_dict,
                                                           grid=grid,
                                                           pv_controller=pv_controller,
                                                           hp_controller=hp_controller,
@@ -80,7 +81,7 @@ class PowerFlow:
       print('')
 
 
-  def merge_df_and_grid_at_time_i(self,
+  def merge_input_dict_and_grid_at_time_t(self,
                                   input_dict,
                                   grid,
                                   pv_controller,

@@ -73,8 +73,6 @@ e.eva.plot_residualload()
 e.eva.plot_grid_issus_over_time()
 #e.eva.plot_reactive_power()
 
-#print(e.grid.net.sgen)
-
 '''
 i = 0
 CGREEN = '\33[32m'

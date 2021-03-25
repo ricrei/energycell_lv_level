@@ -23,6 +23,7 @@ class EVcontroller:
   def get_active_power(self, grid, d):
       return self.P_controller.pcontrol(grid, d)
 
+
 class EV_P_control:
   def __init__(self, grid):
       pass

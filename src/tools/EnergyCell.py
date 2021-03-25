@@ -7,9 +7,7 @@ Created on Wed Jul 15 10:51:49 2020
 """
 
 import time
-import pandas as pd
 import tools.tools as tt
-
 
 from tools.creator.HHLcreator import HHLcreator
 from tools.creator.PVcreator import PVcreator
@@ -66,7 +64,7 @@ class EnergyCell():
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
+        self.pv_controller = PVcontroller(grid=self.grid, control='cos_phi', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple')
