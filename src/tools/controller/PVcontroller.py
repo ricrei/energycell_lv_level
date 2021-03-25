@@ -44,7 +44,7 @@ class PV_P_control_no_pv(PV_P_control):
       super().__init__(pv_para)
 
   def pcontrol(self, grid, d):
-      return d[grid.label_pv_p].values*0
+      return d.values*0
 
 
 class PV_P_controlFEEDINALL(PV_P_control):
@@ -52,7 +52,7 @@ class PV_P_controlFEEDINALL(PV_P_control):
       super().__init__(pv_para)
 
   def pcontrol(self, grid, d):
-      return d[grid.label_pv_p].values
+      return d.values
 
 
 

@@ -37,6 +37,8 @@ class PowerFlow:
                                         bss_controller,
                                         output_data_handler):
 
+      self.input_dict = self.create_input_dict(df, grid)
+
       output_data_handler.write_dataframe_to_csv(mode='w', header=True, grid=grid)
 
       self.set_time_step_array(df)
@@ -50,14 +52,14 @@ class PowerFlow:
               tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
 
               t = self.time_series[i]
-              d = df.loc[t]
 
-              grid.net = self.merge_df_and_grid_at_time_i(d=d,
+              grid.net = self.merge_df_and_grid_at_time_i(input_dict=self.input_dict,
                                                           grid=grid,
                                                           pv_controller=pv_controller,
                                                           hp_controller=hp_controller,
                                                           ev_controller=ev_controller,
-                                                          bss_controller=bss_controller)
+                                                          bss_controller=bss_controller,
+                                                          t=t)
 
               try:
                   pp.runpp(grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
@@ -79,24 +81,39 @@ class PowerFlow:
 
 
   def merge_df_and_grid_at_time_i(self,
-                                  d,
+                                  input_dict,
                                   grid,
                                   pv_controller,
                                   hp_controller,
                                   ev_controller,
-                                  bss_controller):
+                                  bss_controller,
+                                  t):
 
-    grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, d)
+    grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
     grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
 
-    grid.net.load.loc[grid.load_index, 'p_mw'] = d[grid.label_load_p].values
-    grid.net.load.loc[grid.load_index, 'q_mvar'] = d[grid.label_load_q].values
+    grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
+    grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
-    grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, d)
-    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, d)
+    grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t])
+    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t])
 
-    grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, d)
+    grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, input_dict['ev'].loc[t])
 
-    grid.net.storage['p_mw'] = bss_controller.get_active_power(grid, d)
+    grid.net.storage['p_mw'] = bss_controller.get_active_power(grid)
 
     return grid.net
+
+
+  ###############################
+  ### create input dictionary ###
+  ###############################
+  def create_input_dict(self, df, grid):
+        input_dict = {}
+        input_dict['load_p'] = df[grid.label_load_p]
+        input_dict['load_q'] = df[grid.label_load_q]
+        input_dict['pv'] = df[grid.label_pv_p]
+        input_dict['hp'] = df[grid.label_hp_p]
+        input_dict['ev'] = df[grid.label_ev]
+        input_dict['timestamp'] = df['timestamp']
+        return input_dict

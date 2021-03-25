@@ -46,7 +46,7 @@ class HP_P_control_no_hp(HP_P_control):
 
   def pcontrol(self, grid, d):
       HP_P_control.pcontrol(self)
-      return d[grid.label_hp_p].values*0
+      return d.values*0
 
 class HP_P_control_greedy(HP_P_control):
 
@@ -55,6 +55,6 @@ class HP_P_control_greedy(HP_P_control):
 
   def pcontrol(self, grid, d):
       HP_P_control.pcontrol(self)
-      return d[grid.label_hp_p].values
+      return d.values
 
 

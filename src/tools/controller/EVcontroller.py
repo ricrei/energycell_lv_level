@@ -38,7 +38,7 @@ class EV_P_control_no_ev(EV_P_control):
 
   def pcontrol(self, grid, d):
       EV_P_control.pcontrol(self)
-      return d[grid.label_ev].values*0
+      return d.values*0
 
 
 class EV_P_control_greedy(EV_P_control):
@@ -48,6 +48,6 @@ class EV_P_control_greedy(EV_P_control):
 
   def pcontrol(self, grid, d):
       EV_P_control.pcontrol(self)
-      return d[grid.label_ev].values
+      return d.values
 
 

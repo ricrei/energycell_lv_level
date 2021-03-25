@@ -26,7 +26,7 @@ net_name = ["kerber_rural_1", #0
 # Define timescope and timestepwidth
 time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
                'end_time'   : '2017-05-27 00:00:00+02:00',
-               't_freq'     : 'h'
+               't_freq'     : 'H'
              }
 
 # timescopes to examine
@@ -51,7 +51,7 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 scenario = 4
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
+e = ec.EnergyCell(net_name = net_name[0], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
 e.run_pf_timeseries()
@@ -70,7 +70,7 @@ e.eva.plot_residualload()
 #e.eva.plot_generation_consumption_as_heat_map()
 #e.eva.plot_colorbar_seaborn()
 #e.eva.plot_grid_issus_over_power()
-#e.eva.plot_grid_issus_over_time()
+e.eva.plot_grid_issus_over_time()
 #e.eva.plot_reactive_power()
 
 #print(e.grid.net.sgen)

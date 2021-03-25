@@ -21,8 +21,8 @@ class BSScontroller:
       else:
         self.P_controller = BSS_control_no_bss(grid)
 
-  def get_active_power(self, grid, d):
-      return self.P_controller.pcontrol(grid, d)
+  def get_active_power(self, grid):
+      return self.P_controller.pcontrol(grid)
 
 class BSS_control:
   def __init__(self, grid):
@@ -36,7 +36,7 @@ class BSS_control_no_bss(BSS_control):
   def __init__(self, grid):
       super().__init__(grid)
 
-  def pcontrol(self, grid, d):
+  def pcontrol(self, grid):
       BSS_control.pcontrol(self)
       return 0
 
@@ -45,7 +45,7 @@ class BSS_control_simple(BSS_control):
   def __init__(self, grid):
       super().__init__(grid)
 
-  def pcontrol(self, grid, d):
+  def pcontrol(self, grid):
       BSS_control.pcontrol(self)
       residual_load_per_bus = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
                               grid.net.load.loc[grid.hp_index, 'p_mw'].values + \

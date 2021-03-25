@@ -66,9 +66,10 @@ class EnergyCell():
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.set_pvcontroller(control='qu', cos_phi=.9)
-        self.set_hpcontroller(control='greedy')
-        self.set_evcontroller(control='greedy')
+        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
+        self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
+        self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
+        self.bss_controller = BSScontroller(grid=self.grid, control='simple')
 
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(time_scope)
@@ -81,6 +82,8 @@ class EnergyCell():
 
         self.print_object_parameter()
 
+        self.run_time('end', 'init ec')
+
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'
 
@@ -88,14 +91,8 @@ class EnergyCell():
     ### load timeseries and run powerflow ###
     #########################################
     def run_pf_timeseries(self):
-        self.load_profiles()
-        self.run_pf()
-        self.run_time('end')
-            
-    ##########################################
-    ### load genearation and load profiles ###
-    ##########################################
-    def load_profiles(self):
+
+        self.run_time('start')
 
         # create df
         self.df = self.input_data_handler.create_empty_df(self.time_scope)
@@ -106,56 +103,34 @@ class EnergyCell():
         self.df = self.hp_creator.load_hp_profiles(self.df)
         self.df = self.ev_creator.load_ev_profiles(self.df)
 
-        self.input_dict = self.create_input_df(self.df, self.grid)
+        #  run powerflow
+        self.pf.run_power_flow_through_timeseries(df=self.df,
+                                                  grid=self.grid,
+                                                  pv_controller=self.pv_controller,
+                                                  hp_controller=self.hp_controller,
+                                                  ev_controller=self.ev_controller,
+                                                  bss_controller=self.bss_controller,
+                                                  output_data_handler=self.output_data_handler)
+ 
+        self.run_time('end', 'run pf')
 
 
-    ###################################
-    ### run df for whole timeseries ###
-    ###################################
-    def run_pf(self):
-
-      if not hasattr(self, 'pv_controller'):
-        self.set_pvcontroller(control='qu', cos_phi=.9)
-
-      if not hasattr(self, 'ev_controller'):
-        self.set_evcontroller(control='greedy')
-
-      if not hasattr(self, 'hp_controller'):
-        self.set_hpcontroller(control='greedy')
-
-      if not hasattr(self, 'bss_controller'):
-        self.set_bsscontroller()
-
-      self.pf.run_power_flow_through_timeseries(df=self.df,
-                                                grid=self.grid,
-                                                pv_controller=self.pv_controller,
-                                                hp_controller=self.hp_controller,
-                                                ev_controller=self.ev_controller,
-                                                bss_controller=self.bss_controller,
-                                                output_data_handler=self.output_data_handler)
-
+    ####################################################
+    ### initiate evaluation object for a single case ###
+    ####################################################
+    def initiate_evaluation(self):
+        self.eva = EvaluationSingleCase(self.output_dir, self.net_name, self.scenario, self.time_scope)
 
 
     ############################
     ### calculate time delta ###
     ############################
-    def create_input_df(self, df, grid):
-        input_dict = {}
-        input_dict['load_p'] = df[grid.label_load_p]
-        input_dict['load_q'] = df[grid.label_load_q]
-        input_dict['pv'] = df[grid.label_pv_p]
-        input_dict['hp'] = df[grid.label_hp_p]
-        input_dict['ev'] = df[grid.label_ev]
-
-    ############################
-    ### calculate time delta ###
-    ############################
-    def run_time(self, button):
+    def run_time(self, button, string=''):
         if button == 'start':
           self.start = time.time()
         elif button == 'end':
           self.end = time.time()
-          print(tt.text1('Processing time : ') + '%s seconds' % (str(round(self.end - self.start, 1))))
+          print(tt.text1('Processing time ' + string + ': ') + '%s seconds' % (str(round(self.end - self.start, 1))))
         else:
           print('Error: no start or end time defined. run_time()')
 
@@ -166,24 +141,4 @@ class EnergyCell():
         print(tt.text1('Grid: ') + str(self.grid.net_name) + ', ' + str(self.grid.category) + tt.text1('   Scenario: ') + str(self.scenario))
         print(tt.text1('Daterange: ') + str(self.input_data_handler.dates))
 
-    #############################
-    ### initialize controller ###
-    #############################
-    def set_pvcontroller(self, control='qu', cos_phi=.9):
-        self.pv_controller = PVcontroller(grid=self.grid, control=control, cos_phi=cos_phi)
-
-    def set_evcontroller(self, control='greedy'):
-        self.ev_controller = EVcontroller(grid=self.grid, control=control)
-
-    def set_hpcontroller(self, control='greedy'):
-        self.hp_controller = HPcontroller(grid=self.grid, control=control)
-
-    def set_bsscontroller(self, control='simple'):
-        self.bss_controller = BSScontroller(grid=self.grid, control=control)
-
-    ####################################################
-    ### initiate evaluation object for a single case ###
-    ####################################################
-    def initiate_evaluation(self):
-        self.eva = EvaluationSingleCase(self.output_dir, self.net_name, self.scenario, self.time_scope)
 
