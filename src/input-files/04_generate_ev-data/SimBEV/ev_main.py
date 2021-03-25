@@ -21,37 +21,39 @@ tz = 'Europe/Berlin'
 times = pd.date_range(start='2017-01-01 00:00:00', end='2018-01-01 00:00:00', freq='15min', tz=tz)
 times_year = pd.date_range(start='2017-01-01 00:01:00', end='2018-01-01 00:00:00', freq='1min', tz=tz)
 
+input_folder = 'SimBEV-Data/test/'
+
 file_names = [
-'SimBEV-Data/BEV_luxury_00001_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00003_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00004_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00005_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00006_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00008_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00009_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00010_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00011_standing_times.csv',
-'SimBEV-Data/BEV_luxury_00012_standing_times.csv',
-'SimBEV-Data/BEV_medium_00000_standing_times.csv',
-'SimBEV-Data/BEV_medium_00001_standing_times.csv',
-'SimBEV-Data/BEV_medium_00005_standing_times.csv',
-'SimBEV-Data/BEV_medium_00006_standing_times.csv',
-'SimBEV-Data/BEV_medium_00007_standing_times.csv',
-'SimBEV-Data/BEV_medium_00008_standing_times.csv',
-'SimBEV-Data/BEV_medium_00009_standing_times.csv',
-'SimBEV-Data/BEV_medium_00010_standing_times.csv',
-'SimBEV-Data/BEV_medium_00011_standing_times.csv',
-'SimBEV-Data/BEV_medium_00012_standing_times.csv',
-'SimBEV-Data/BEV_mini_00001_standing_times.csv',
-'SimBEV-Data/BEV_mini_00003_standing_times.csv',
-'SimBEV-Data/BEV_mini_00004_standing_times.csv',
-'SimBEV-Data/BEV_mini_00006_standing_times.csv',
-'SimBEV-Data/BEV_mini_00007_standing_times.csv',
-'SimBEV-Data/BEV_mini_00008_standing_times.csv',
-'SimBEV-Data/BEV_mini_00009_standing_times.csv',
-'SimBEV-Data/BEV_mini_00010_standing_times.csv',
-'SimBEV-Data/BEV_mini_00011_standing_times.csv',
-'SimBEV-Data/BEV_mini_00013_standing_times.csv',
+#input_folder+'BEV_luxury_00001_standing_times.csv',
+#input_folder+'BEV_luxury_00003_standing_times.csv', #100
+#input_folder+'BEV_luxury_00004_standing_times.csv',
+input_folder+'BEV_luxury_00005_standing_times.csv', #100
+#input_folder+'BEV_luxury_00006_standing_times.csv',
+#input_folder+'BEV_luxury_00008_standing_times.csv',
+#input_folder+'BEV_luxury_00009_standing_times.csv',
+#input_folder+'BEV_luxury_00010_standing_times.csv',
+#input_folder+'BEV_luxury_00011_standing_times.csv',
+#input_folder+'BEV_luxury_00012_standing_times.csv',
+#input_folder+'BEV_medium_00000_standing_times.csv',
+#input_folder+'BEV_medium_00001_standing_times.csv',
+#input_folder+'BEV_medium_00005_standing_times.csv',
+#input_folder+'BEV_medium_00006_standing_times.csv',
+#input_folder+'BEV_medium_00007_standing_times.csv',
+#input_folder+'BEV_medium_00008_standing_times.csv',
+#input_folder+'BEV_medium_00009_standing_times.csv',
+#input_folder+'BEV_medium_00010_standing_times.csv',
+#input_folder+'BEV_medium_00011_standing_times.csv',
+#input_folder+'BEV_medium_00012_standing_times.csv',
+#input_folder+'BEV_mini_00001_standing_times.csv',
+#input_folder+'BEV_mini_00003_standing_times.csv',
+#input_folder+'BEV_mini_00004_standing_times.csv',
+#input_folder+'BEV_mini_00006_standing_times.csv',
+#input_folder+'BEV_mini_00007_standing_times.csv',
+#input_folder+'BEV_mini_00008_standing_times.csv',
+#input_folder+'BEV_mini_00009_standing_times.csv',
+#input_folder+'BEV_mini_00010_standing_times.csv',
+#input_folder+'BEV_mini_00011_standing_times.csv',
+#input_folder+'BEV_mini_00013_standing_times.csv',
 ]
 
 df_EV = pd.DataFrame(index=times_year)
@@ -85,11 +87,8 @@ print(df_EV.sum()/3600*52)
 #print(df_EV)
 
 
-
-'''
 EV = pd.DataFrame(index=times, columns=['0_work', '1_business', '2', '3_shopping', '4_private/ridesharing', '5_leisure', '6_home'])
 EV = EV.fillna(0)
-
 
 for index in BEV.index:
   #print(index)
@@ -100,4 +99,3 @@ plt.figure()
 plt.plot(EV)
 plt.legend(['0_work', '1', '2', '3_shopping', '4_private/ridesharing', '5_leisure', '6_home'])
 plt.show()
-'''
