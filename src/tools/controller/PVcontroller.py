@@ -3,7 +3,7 @@ import pandas as pd
 
 class PVcontroller:
 
-  def __init__(self, grid, control='qu', cos_phi=.9):
+  def __init__(self, grid, control, cos_phi):
       self.set_pv = (grid.scenario in [3, 4, 6])
 
       if (control=='qu' or control=='cos_phi'):

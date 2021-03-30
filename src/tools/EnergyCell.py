@@ -21,6 +21,7 @@ from tools.controller.EVcontroller import EVcontroller
 from tools.controller.BSScontroller import BSScontroller
 
 from tools.network.Grid import Grid
+from tools.network.GridReinforce import GridReinforce
 
 from tools.powerflow.PowerFlow import PowerFlow
 
@@ -35,7 +36,7 @@ class EnergyCell():
         self.run_time('start')
 
         self.net_name = net_name
-        if scenario in [1, 2, 3, 4, 6]:
+        if scenario in [1, 2, 3, 4, 5, 6]:
           self.scenario = scenario
         else:
           raise ValueError('The entered ´scenario´ is not a valid option. \
@@ -64,7 +65,7 @@ class EnergyCell():
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control='cos_phi', cos_phi=.9)
+        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple')
@@ -73,10 +74,15 @@ class EnergyCell():
         self.input_data_handler.adjust_input_dataset(time_scope)
 
         self.output_data_handler = OutputDataHandler()
-        self.output_dir = self.output_data_handler.create_output_dir(net_name, scenario, time_scope)
+        self.output_dir = self.output_data_handler.create_output_dir(self.net_name, self.scenario, self.time_scope)
         self.output_data_handler.create_output_dataframes(self.grid)
 
         self.pf = PowerFlow(self.output_dir)
+
+        if self.scenario==5:
+          self.output_dir_worst_case = self.output_data_handler.create_output_dir(self.net_name, 4, self.time_scope)
+          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case)
+          self.grid_reinforce.run_worst_case()
 
         self.print_object_parameter()
 

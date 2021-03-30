@@ -48,7 +48,7 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 # 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
 # 5: grid extention (not implemented), 6: battery storage systems
 # 7: smart consumers, 8: battery storage systems and smart consumers
-scenario = 4
+scenario = 5
 
 # Initialize EnergyCell
 e = ec.EnergyCell(net_name = net_name[0], scenario = scenario, time_scope = time_scope)
@@ -70,8 +70,8 @@ e.eva.plot_residualload()
 #e.eva.plot_generation_consumption_as_heat_map()
 #e.eva.plot_colorbar_seaborn()
 #e.eva.plot_grid_issus_over_power()
-e.eva.plot_grid_issus_over_time()
-#e.eva.plot_reactive_power()
+#e.eva.plot_grid_issus_over_time()
+#e.eva.plot_pv_reactive_power()
 
 '''
 i = 0
