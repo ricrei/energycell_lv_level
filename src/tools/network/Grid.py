@@ -106,3 +106,14 @@ class Grid:
     pp.create_load(net, b3, 0)
     pp.create_transformer(net, b1, b2, '0.25 MVA 10/0.4 kV', name='trafo')
     return net
+
+
+  def get_vm_pu_ext_grid(self, grid):
+    # considering the MV-grid valid voltage deviation of +-4%
+    # assuming that the voltage magnitute depends on the residual load
+    voltage_deviation_in_percent = .04
+    nominal_voltage = 1.0
+    residual_load = grid.net.load.p_mw.sum() - grid.net.sgen.p_mw.sum()
+    voltage_deviation = -residual_load/(grid.total_installed_pv_power/1000)*voltage_deviation_in_percent
+
+    return nominal_voltage + voltage_deviation

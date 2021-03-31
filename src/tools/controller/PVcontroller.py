@@ -4,7 +4,7 @@ import pandas as pd
 class PVcontroller:
 
   def __init__(self, grid, control, cos_phi):
-      self.set_pv = (grid.scenario in [3, 4, 6])
+      self.set_pv = (grid.scenario in [3, 4, 5, 6])
 
       if (control=='qu' or control=='cos_phi'):
         self.control = control
@@ -52,6 +52,7 @@ class PV_P_controlFEEDINALL(PV_P_control):
       super().__init__(pv_para)
 
   def pcontrol(self, grid, d):
+      #print(d.values)
       return d.values
 
 

@@ -27,8 +27,10 @@ class OutputDataHandler():
         self.li_lo = pd.DataFrame(columns=grid.net.line.index)
         self.tr_lo = pd.DataFrame(columns=grid.net.trafo.index)
         self.power = pd.DataFrame(columns=['load', 'pv', 'hp', 'ev'])
-        self.pv_reactive_power = pd.DataFrame(columns=grid.net.bus.index)
-        self.pv_active_power = pd.DataFrame(columns=grid.net.bus.index)
+        self.pv_active_power = pd.DataFrame(columns=grid.net.sgen.index)
+        self.pv_reactive_power = pd.DataFrame(columns=grid.net.sgen.index)
+        self.load_active_power = pd.DataFrame(columns=grid.net.load.index)
+        self.load_reactive_power = pd.DataFrame(columns=grid.net.load.index)
         self.storage_active_power = pd.DataFrame(columns=grid.net.storage.index)
         self.trafo_active_power = pd.DataFrame(columns=grid.net.trafo.index)
         self.losses_active_power = pd.DataFrame(columns=['trafo','lines'])
@@ -38,6 +40,8 @@ class OutputDataHandler():
         self.power.index.name = 'timestamp'
         self.pv_reactive_power.index.name  = 'timestamp'
         self.pv_active_power.index.name = 'timestamp'
+        self.load_active_power.index.name = 'timestamp'
+        self.load_reactive_power.index.name = 'timestamp'
         self.storage_active_power.index.name = 'timestamp'
         self.trafo_active_power.index.name = 'timestamp'
         self.losses_active_power.index.name = 'timestamp'
@@ -50,8 +54,10 @@ class OutputDataHandler():
                              grid.net.sgen.p_mw.sum(),
                              grid.net.load.p_mw[grid.hp_index].sum(),
                              grid.net.load.p_mw[grid.ev_index].sum()]
-        self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
         self.pv_active_power.loc[t]   = grid.net.sgen['p_mw']
+        self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
+        self.load_active_power.loc[t] = grid.net.load['p_mw']
+        self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
         self.storage_active_power.loc[t] = grid.net.storage['p_mw']
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
         self.losses_active_power.loc[t] = [grid.net.res_trafo.pl_mw.sum(),
@@ -70,13 +76,15 @@ class OutputDataHandler():
                                              mode=mode, header=header, index = True)
         self.pv_reactive_power.round(6).to_csv(self.output_dir + 'pv_reactive_power_MW.csv',
                                                mode=mode, header=header, index = True)
+        self.load_active_power.round(6).to_csv(self.output_dir + 'load_active_power_MW.csv',
+                                               mode=mode, header=header, index = True)
+        self.load_reactive_power.round(6).to_csv(self.output_dir + 'load_reactive_power_MW.csv',
+                                               mode=mode, header=header, index = True)
         self.storage_active_power.round(6).to_csv(self.output_dir + 'storage_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.trafo_active_power.round(6).to_csv(self.output_dir + 'trafo_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.losses_active_power.round(6).to_csv(self.output_dir + 'losses_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
-
-
 
         self.create_output_dataframes(grid)

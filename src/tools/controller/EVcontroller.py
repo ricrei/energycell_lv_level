@@ -4,7 +4,7 @@ import pandas as pd
 class EVcontroller:
 
   def __init__(self, grid, control='greedy'):
-      self.set_ev = (grid.scenario in [2, 4, 6])
+      self.set_ev = (grid.scenario in [2, 4, 5, 6])
       if (control=='greedy' or control=='preventive' or control=='curative'):
         self.control = control
       else:

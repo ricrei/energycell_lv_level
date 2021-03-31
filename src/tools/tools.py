@@ -48,6 +48,13 @@ def read_data(file):
      #data = data.drop(['timestamp'], axis=1)
      return data
 
+def shorted_data(self, data, t_freq):
+    data_shorted = data.resample(t_freq).mean()
+    data_shorted = data_shorted.round(4)
+    data_shorted.index = pd.DatetimeIndex(data_shorted.index, tz=None, ambiguous='infer')
+
+    return data_shorted
+
 ####################################################
 ### convert csv file into compressed pickle file ###
 ####################################################

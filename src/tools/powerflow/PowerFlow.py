@@ -80,6 +80,8 @@ class PowerFlow:
       tt.progress(1, 1, status=' Done ')
       print('')
 
+      return grid
+
 
   def merge_input_dict_and_grid_at_time_t(self,
                                   input_dict,
@@ -102,6 +104,8 @@ class PowerFlow:
     grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, input_dict['ev'].loc[t])
 
     grid.net.storage['p_mw'] = bss_controller.get_active_power(grid)
+
+    grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
     return grid.net
 

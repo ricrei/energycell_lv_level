@@ -48,10 +48,10 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 # 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
 # 5: grid extention (not implemented), 6: battery storage systems
 # 7: smart consumers, 8: battery storage systems and smart consumers
-scenario = 5
+scenario = 4
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[0], scenario = scenario, time_scope = time_scope)
+e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
 e.run_pf_timeseries()
@@ -66,7 +66,7 @@ e.initiate_evaluation()
 e.eva.calculate_relevant_outputdata()
 e.eva.calculate_net_problems()
 
-e.eva.plot_residualload()
+#e.eva.plot_residualload()
 #e.eva.plot_generation_consumption_as_heat_map()
 #e.eva.plot_colorbar_seaborn()
 #e.eva.plot_grid_issus_over_power()

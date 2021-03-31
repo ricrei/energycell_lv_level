@@ -24,7 +24,9 @@ class PVcreator:
   def create_pv_sgen_at_each_bus(self, grid):
         # create sgen per load and set all values to zero
         # asign pv-orientaiton to every sgen
-        return self.set_pv_distribution(grid)
+        grid = self.set_pv_distribution(grid)
+        grid = self.total_installed_pv_power = self.get_installed_power_within_the_grid(grid)
+        return grid
 
   ############################################
   ### distribute PV systems within the net ###
@@ -85,7 +87,6 @@ class PVcreator:
 
             return grid
 
-
   ##########################################
   ### load genearation and load profiles ###
   ##########################################
@@ -101,4 +102,25 @@ class PVcreator:
               # calculate active and reactive power of pv-system
               df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power
         return df
+
+
+  #################################################
+  ### get total installed power within the grid ###
+  #################################################
+  def get_installed_power_within_the_grid(self, grid):
+    df_power_by_orientation = pd.DataFrame(columns=['orientation', 'installed_power_scaling'], index=range(0,len(self.pv_para['orientation'])))
+    df_power_by_orientation.orientation = ['pv_'+str(self.pv_para['orientation'][i]) for i in range(len(self.pv_para['orientation']))]
+    df_power_by_orientation['installed_power_scaling'] = self.pv_para['installed_power_scaling']
+    df_power_by_orientation['power_per_orientation'] = df_power_by_orientation['installed_power_scaling']*self.pv_para['power_'+str(grid.category)]
+    grid.total_installed_pv_power = 0
+    for pv_type in grid.net.sgen.type:
+      grid.total_installed_pv_power += int(df_power_by_orientation['power_per_orientation'][str(pv_type) == df_power_by_orientation['orientation']].values)
+
+    return grid
+    
+
+
+
+
+
 

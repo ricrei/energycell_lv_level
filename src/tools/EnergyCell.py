@@ -73,31 +73,32 @@ class EnergyCell():
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(time_scope)
 
+        if self.scenario == 5:
+          self.output_data_handler_worst_case = OutputDataHandler()
+          self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(self.net_name, 4, self.time_scope)
+          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case)
+          self.grid_reinforce.reinforce_transformer()
+          #raise KeyError('BREAK')
+
         self.output_data_handler = OutputDataHandler()
         self.output_dir = self.output_data_handler.create_output_dir(self.net_name, self.scenario, self.time_scope)
         self.output_data_handler.create_output_dataframes(self.grid)
 
         self.pf = PowerFlow(self.output_dir)
 
-        if self.scenario==5:
-          self.output_dir_worst_case = self.output_data_handler.create_output_dir(self.net_name, 4, self.time_scope)
-          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case)
-          self.grid_reinforce.run_worst_case()
-
         self.print_object_parameter()
 
         self.run_time('end', 'init ec')
+       
+        
 
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'
 
-    #########################################
-    ### load timeseries and run powerflow ###
-    #########################################
-    def run_pf_timeseries(self):
-
-        self.run_time('start')
-
+    #######################
+    ### load timeseries ###
+    #######################
+    def load_timeseries(self):
         # create df
         self.df = self.input_data_handler.create_empty_df(self.time_scope)
 
@@ -106,6 +107,15 @@ class EnergyCell():
         self.df = self.pv_creator.load_pv_profiles(self.df, self.grid.category)
         self.df = self.hp_creator.load_hp_profiles(self.df)
         self.df = self.ev_creator.load_ev_profiles(self.df)
+
+    #########################################
+    ### load timeseries and run powerflow ###
+    #########################################
+    def run_pf_timeseries(self):
+
+        self.run_time('start')
+
+        self.load_timeseries()
 
         #  run powerflow
         self.pf.run_power_flow_through_timeseries(df=self.df,
@@ -117,7 +127,6 @@ class EnergyCell():
                                                   output_data_handler=self.output_data_handler)
  
         self.run_time('end', 'run pf')
-
 
     ####################################################
     ### initiate evaluation object for a single case ###
