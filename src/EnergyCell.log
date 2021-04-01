@@ -178,3 +178,4 @@
 2021-03-25 12:41:04,588 - PowerFlow_Logger - ERROR - ./output-files/6/kerber_rural_1/2017-05-26_2017-05-27_H/- Power Flow nr did not converge at 2017-05-27 00:00:00+02:00
 2021-03-25 12:41:04,588 - PowerFlow_Logger - ERROR - ./output-files/6/simbench_rural_2/2017-05-26_2017-05-27_H/- Power Flow nr did not converge at 2017-05-27 00:00:00+02:00
 2021-03-25 12:41:04,588 - PowerFlow_Logger - ERROR - ./output-files/4/simbench_rural_2/2017-05-26_2017-05-27_H/- Power Flow nr did not converge at 2017-05-27 00:00:00+02:00
+2021-03-31 19:35:23,849 - PowerFlow_Logger - ERROR - ./output-files/5/simbench_rural_1/2017-05-26_2017-05-26_H/- Power Flow nr did not converge at 2017-05-26 14:00:00+02:00

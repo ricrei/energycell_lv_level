@@ -34,6 +34,7 @@ class OutputDataHandler():
         self.storage_active_power = pd.DataFrame(columns=grid.net.storage.index)
         self.trafo_active_power = pd.DataFrame(columns=grid.net.trafo.index)
         self.losses_active_power = pd.DataFrame(columns=['trafo','lines'])
+        self.v_pu_ext_grid = pd.DataFrame(columns=['v_pu'])
         self.vm_pu.index.name = 'timestamp'
         self.li_lo.index.name = 'timestamp'
         self.tr_lo.index.name = 'timestamp'
@@ -45,6 +46,7 @@ class OutputDataHandler():
         self.storage_active_power.index.name = 'timestamp'
         self.trafo_active_power.index.name = 'timestamp'
         self.losses_active_power.index.name = 'timestamp'
+        self.v_pu_ext_grid.index.name  = 'timestamp'
 
   def write_output_into_dataframe(self, grid, t):
         self.vm_pu.loc[t] = grid.net.res_bus.vm_pu
@@ -62,6 +64,7 @@ class OutputDataHandler():
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
         self.losses_active_power.loc[t] = [grid.net.res_trafo.pl_mw.sum(),
                                            grid.net.res_line.pl_mw.sum()]
+        self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
 
   def write_dataframe_to_csv(self, mode, header, grid):
         self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',
@@ -85,6 +88,8 @@ class OutputDataHandler():
         self.trafo_active_power.round(6).to_csv(self.output_dir + 'trafo_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.losses_active_power.round(6).to_csv(self.output_dir + 'losses_active_power_MW.csv',
+                                                  mode=mode, header=header, index = True)
+        self.v_pu_ext_grid.round(3).to_csv(self.output_dir + 'v_pu_ext_grid.csv',
                                                   mode=mode, header=header, index = True)
 
         self.create_output_dataframes(grid)

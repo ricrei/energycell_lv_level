@@ -7,6 +7,7 @@ Created on Wed Jul 15 10:51:49 2020
 """
 
 import time
+import sys
 import tools.tools as tt
 
 from tools.creator.HHLcreator import HHLcreator
@@ -73,13 +74,6 @@ class EnergyCell():
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(time_scope)
 
-        if self.scenario == 5:
-          self.output_data_handler_worst_case = OutputDataHandler()
-          self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(self.net_name, 4, self.time_scope)
-          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case)
-          self.grid_reinforce.reinforce_transformer()
-          #raise KeyError('BREAK')
-
         self.output_data_handler = OutputDataHandler()
         self.output_dir = self.output_data_handler.create_output_dir(self.net_name, self.scenario, self.time_scope)
         self.output_data_handler.create_output_dataframes(self.grid)
@@ -89,8 +83,15 @@ class EnergyCell():
         self.print_object_parameter()
 
         self.run_time('end', 'init ec')
-       
-        
+
+        if self.scenario == 5:
+          self.output_data_handler_worst_case = OutputDataHandler()
+          self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(self.net_name, 4, self.time_scope)
+          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case)
+          #self.grid_reinforce.reinforce_transformer()
+          self.grid_reinforce.reinforce_lines()
+          sys.exit(0)
+
 
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'
@@ -125,7 +126,7 @@ class EnergyCell():
                                                   ev_controller=self.ev_controller,
                                                   bss_controller=self.bss_controller,
                                                   output_data_handler=self.output_data_handler)
- 
+
         self.run_time('end', 'run pf')
 
     ####################################################

@@ -28,7 +28,12 @@ time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
                'end_time'   : '2017-05-27 00:00:00+02:00',
                't_freq'     : 'H'
              }
-
+'''
+time_scope = { 'start_time' : '2017-05-26 14:00:00+02:00',
+               'end_time'   : '2017-05-26 14:00:00+02:00',
+               't_freq'     : 'H'
+             }
+'''
 # timescopes to examine
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',

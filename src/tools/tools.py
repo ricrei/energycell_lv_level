@@ -84,6 +84,11 @@ def textred(string):
     CEND   = '\33[0m'
     return CBOLD + string + CEND
 
+def textgreen(string):
+    CBOLD = '\33[1;32m'
+    CEND   = '\33[0m'
+    return CBOLD + string + CEND
+
 ####################################################
 ###         method to print progress bar   # █   ###
 ####################################################

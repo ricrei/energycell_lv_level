@@ -167,10 +167,10 @@ class EvaluationSingleCase():
     tl[tl > 0] = 1
     tl = tl.sum()
 
-    print('Over voltage    : %s %%' % (v_over/(n_buses*n_timesteps)*100).round(3))
-    print('Under voltage   : %s %%' % (v_under/(n_buses*n_timesteps)*100).round(3))
-    print('Lineoverloading : %s %%' % (ll/(n_lines*n_timesteps)*100).round(3))
-    print('Trafooverloading: %s %%' % (tl/(n_timesteps)*100).round(3))
+    print('Over voltage events     : %s %%' % (v_over/(n_buses*n_timesteps)*100).round(3))
+    print('Under voltage events    : %s %%' % (v_under/(n_buses*n_timesteps)*100).round(3))
+    print('Line overloading events : %s %%' % (ll/(n_lines*n_timesteps)*100).round(3))
+    print('Trafo overloading events: %s %%' % (tl/(n_timesteps)*100).round(3))
 
 
   def plot_grid_issus_over_time(self):
