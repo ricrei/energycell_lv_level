@@ -4,7 +4,8 @@ import simbench as sb
 
 class Grid:
 
-  def __init__(self, net_name, scenario):
+  def __init__(self, net_name, scenario, time_scope):
+    self.time_scope = time_scope
     self.scenario = scenario
     self.net_name = net_name
     self.create_net()
@@ -41,21 +42,27 @@ class Grid:
         elif self.net_name == "simbench_rural_1":
             self.net = sb.get_simbench_net('1-LV-rural1--0-sw')
             self.category = 'rural'
+            self.rename_all_buses()
         elif self.net_name == "simbench_rural_2":
             self.net = sb.get_simbench_net('1-LV-rural2--0-sw')
             self.category = 'rural'
+            self.rename_all_buses()
         elif self.net_name == "simbench_rural_3":
             self.net = sb.get_simbench_net('1-LV-rural3--0-sw')
             self.category = 'rural'
+            self.rename_all_buses()
         elif self.net_name == "simbench_suburb_4":
             self.net = sb.get_simbench_net('1-LV-semiurb4--0-sw')
             self.category = 'suburban'
+            self.rename_all_buses()
         elif self.net_name == "simbench_suburb_5":
             self.net = sb.get_simbench_net('1-LV-semiurb5--0-sw')
             self.category = 'suburban'
+            self.rename_all_buses()
         elif self.net_name == "simbench_urban_6":
             self.net = sb.get_simbench_net('1-LV-urban6--0-sw')
             self.category = 'urban'
+            self.rename_all_buses()
         elif self.net_name == "test_net_one_load_branch":
             self.net = self.create_test_net_one_load_branch()
             self.category = 'rural'
@@ -95,6 +102,10 @@ class Grid:
         self.label_hp_q = [self.net.load.type[i] + '_q' for i in self.hp_index]
 
         self.label_ev = [self.net.load.type[i] for i in self.ev_index]
+
+  def rename_all_buses(self):
+    for i in self.net.bus.index:
+      self.net.bus.name[i] = str(self.net.bus.subnet[i]) + ' Bus ' + str(i)
 
   def create_test_net_one_load_branch(self):
     net = pp.create_empty_network(name='one_load_branch')

@@ -45,11 +45,12 @@ class EnergyCell():
 
         if ('start_time' in time_scope) and ('end_time' in time_scope) and ('t_freq' in time_scope):
           self.time_scope = time_scope
+          self.time_scope.intervall_in_seconds = pd.to_timedelta(self.time_scope['t_freq']).total_seconds() # converts time_delta object to time in seconds; neu Tabea:
         else:
           raise ValueError('time_scope is not properly defined. \
                             start_time, end_time and t_freq is needed.')
 
-        self.grid = Grid(net_name, self.scenario)
+        self.grid = Grid(net_name, self.scenario, self.time_scope)
 
         self.hhl_creator = HHLcreator()
         self.pv_creator = PVcreator()
@@ -72,7 +73,7 @@ class EnergyCell():
         self.bss_controller = BSScontroller(grid=self.grid, control='simple')
 
         self.input_data_handler = InputDataHandler()
-        self.input_data_handler.adjust_input_dataset(time_scope)
+        self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.output_data_handler = OutputDataHandler()
         self.output_dir = self.output_data_handler.create_output_dir(self.net_name, self.scenario, self.time_scope)
@@ -87,9 +88,10 @@ class EnergyCell():
         if self.scenario == 5:
           self.output_data_handler_worst_case = OutputDataHandler()
           self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(self.net_name, 4, self.time_scope)
-          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case)
-          #self.grid_reinforce.reinforce_transformer()
+          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case, self.output_dir)
+          self.grid_reinforce.reinforce_transformer()
           self.grid_reinforce.reinforce_lines()
+          self.grid_reinforce.final_grid_check()
           sys.exit(0)
 
 
