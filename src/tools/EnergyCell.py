@@ -8,6 +8,7 @@ Created on Wed Jul 15 10:51:49 2020
 
 import time
 import sys
+import pandas as pd
 import tools.tools as tt
 
 from tools.creator.HHLcreator import HHLcreator
@@ -45,7 +46,8 @@ class EnergyCell():
 
         if ('start_time' in time_scope) and ('end_time' in time_scope) and ('t_freq' in time_scope):
           self.time_scope = time_scope
-          self.time_scope.intervall_in_seconds = pd.to_timedelta(self.time_scope['t_freq']).total_seconds() # converts time_delta object to time in seconds; neu Tabea:
+          self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
+          self.time_scope['intervall_in_seconds'] = self.intervall_in_seconds
         else:
           raise ValueError('time_scope is not properly defined. \
                             start_time, end_time and t_freq is needed.')
