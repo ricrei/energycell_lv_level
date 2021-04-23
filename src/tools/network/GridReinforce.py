@@ -216,7 +216,7 @@ class GridReinforce:
     print('Line(s) chenged to: ')
     print(self.result_lines)
     self.print_loading_voltage()
-    #pf_res_plotly(self.grid.net, aspectratio=(1,1))
+    pf_res_plotly(self.grid.net, aspectratio=(1,1))
     #pp.plotting.to_html(self.grid.net, 'test.html', respect_switches=True, include_lines=True, include_trafos=True, show_tables=True)
     self.result_lines.round(3).to_csv(self.output_dir + 'reinforced_lines.csv',
                                    mode='w', header=True, index=True)
