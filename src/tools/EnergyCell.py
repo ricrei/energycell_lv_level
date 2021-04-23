@@ -66,8 +66,6 @@ class EnergyCell():
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
 
-        print(self.grid.net.load.type[100:120])
-
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
