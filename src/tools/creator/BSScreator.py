@@ -16,7 +16,7 @@ class BSScreator:
       # create bss at each bus 
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], p_mw=0,\
-                            max_e_mwh=0.7, soc_percent=1 ,name='bss_'+str(grid.net.load.loc[index, "bus"]), type='bss')
+                            max_e_mwh=0.01, soc_percent=0 ,name='bss_'+str(grid.net.load.loc[index, "bus"]), type='bss')
 
       return grid
   
