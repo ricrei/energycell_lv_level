@@ -16,8 +16,16 @@ class BSScreator:
       # create bss at each bus 
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], p_mw=0,\
-                            max_e_mwh=0.01, soc_percent=0 ,name='bss_'+str(grid.net.load.loc[index, "bus"]), type='bss')
+                            max_e_mwh=0.01, soc_percent=100 ,name='bss_'+str(grid.net.load.loc[index, "bus"]), type='bss')
 
       return grid
   
     #ec.grid.bss_controller.state_of_charge(grid)
+'''
+  def create_bss_at_one_bus(self, grid):
+      # create bss at bus 0
+      pp.create_storage(grid.net, grid.net.load.loc[0, "bus"], p_mw=0,\
+                            max_e_mwh=0.13, soc_percent=100 ,name='bss_'+str(grid.net.load.loc[0, "bus"]), type='bss')
+
+      return grid
+'''
