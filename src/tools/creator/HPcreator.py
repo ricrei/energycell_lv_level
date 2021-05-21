@@ -23,6 +23,8 @@ class HPcreator:
           self.hp_para['hp_types'] = self.hp_para['hp_types'][self.hp_para['hp_types'].str.contains('DE_HEF')]
       elif (grid.category == 'urban'):
           self.hp_para['hp_types'] = self.hp_para['hp_types'][self.hp_para['hp_types'].str.contains('DE_HMF')]
+      else:
+          raise ValueError('No valid grid.category defined. Not able to choose HP type.')
 
       # create hp-loads at each bus
       for index in grid.component_buses.index:

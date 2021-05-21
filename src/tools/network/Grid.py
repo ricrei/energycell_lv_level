@@ -11,6 +11,8 @@ class Grid:
     self.create_net()
     pp.runpp(self.net, algorithm='nr')  # Has be execute to get initial net.res_bus for Q(U)-control
 
+    self.curtailed_pv_power = 0
+    self.curtailed_load_power = 0
 
   ######################
   ### create network ###
@@ -117,7 +119,6 @@ class Grid:
     pp.create_load(net, b3, 0)
     pp.create_transformer(net, b1, b2, '0.25 MVA 10/0.4 kV', name='trafo')
     return net
-
 
   def get_vm_pu_ext_grid(self, grid):
     # considering the MV-grid valid voltage deviation of +-4%

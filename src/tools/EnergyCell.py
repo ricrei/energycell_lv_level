@@ -21,6 +21,7 @@ from tools.controller.PVcontroller import PVcontroller
 from tools.controller.HPcontroller import HPcontroller
 from tools.controller.EVcontroller import EVcontroller
 from tools.controller.BSScontroller import BSScontroller
+from tools.controller.Curtailcontroller import Curtailcontroller
 
 from tools.network.Grid import Grid
 from tools.network.GridReinforce import GridReinforce
@@ -38,11 +39,12 @@ class EnergyCell():
         self.run_time('start')
 
         self.net_name = net_name
-        if scenario in [1, 2, 3, 4, 5, 6]:
-          self.scenario = scenario
+        if scenario[0] in [1, 2, 3, 4, 5, 6]:
+          self.scenario = scenario[0]
+          self.scenario_frame = scenario
         else:
           raise ValueError('The entered ´scenario´ is not a valid option. \
-                           ´Scenario´ should be between 1 and 4.')
+                           ´Scenario´ should be between 1 and 6.')
 
         if ('start_time' in time_scope) and ('end_time' in time_scope) and ('t_freq' in time_scope):
           self.time_scope = time_scope
@@ -66,10 +68,12 @@ class EnergyCell():
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
 
+        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = scenario[1])
+
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
+        self.pv_controller = PVcontroller(grid=self.grid, control='cos_phi', cos_phi=1)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple')
@@ -78,8 +82,10 @@ class EnergyCell():
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.output_data_handler = OutputDataHandler()
-        self.output_dir = self.output_data_handler.create_output_dir(self.net_name, self.scenario, self.time_scope)
-        self.output_data_handler.create_output_dataframes(self.grid)
+        self.output_dir = self.output_data_handler.create_output_dir(
+                                         self.net_name,
+                                         self.scenario_frame,
+                                         self.time_scope)
 
         self.pf = PowerFlow(self.output_dir)
 
@@ -88,13 +94,23 @@ class EnergyCell():
         self.run_time('end', 'init ec')
 
         if self.scenario == 5:
+          use_data_of_scenario = [4, 0]
           self.output_data_handler_worst_case = OutputDataHandler()
-          self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(self.net_name, 4, self.time_scope)
-          self.grid_reinforce = GridReinforce(self.grid, self.output_dir_worst_case, self.output_dir)
-          self.grid_reinforce.reinforce_transformer()
-          self.grid_reinforce.reinforce_lines()
+          self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(
+                                         self.net_name,
+                                         use_data_of_scenario,
+                                         self.time_scope)
+          self.grid_reinforce = GridReinforce(
+                                         self.grid,
+                                         self.output_dir_worst_case,
+                                         self.output_dir,
+                                         use_data_of_scenario)
+          self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
+          self.grid = self.grid_reinforce.reinforce_lines(self.grid)
           self.grid_reinforce.final_grid_check()
           sys.exit(0)
+
+        self.output_data_handler.create_output_dataframes(self.grid)
 
 
     def __repr__(self):
@@ -129,6 +145,7 @@ class EnergyCell():
                                                   hp_controller=self.hp_controller,
                                                   ev_controller=self.ev_controller,
                                                   bss_controller=self.bss_controller,
+                                                  curtail_controller=self.curtail_controller,
                                                   output_data_handler=self.output_data_handler)
 
         self.run_time('end', 'run pf')

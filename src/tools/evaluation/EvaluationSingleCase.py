@@ -21,12 +21,12 @@ class EvaluationSingleCase():
     self.ll = self.read_data(self.output_dir+'res_line_load_percent.csv')
     self.tl = self.read_data(self.output_dir+'res_trafo_load_percent.csv')
     self.power = self.read_data(self.output_dir+'power_total_MW.csv')
-    self.pv_p = self.read_data(output_dir+'pv_active_power_MW.csv')
-    self.pv_q = self.read_data(output_dir+'pv_reactive_power_MW.csv')
+    self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
+    self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
-
+    self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -47,6 +47,7 @@ class EvaluationSingleCase():
   def plot_residualload(self):
     power = self.power*1000
     storage = -self.storage_p.sum(axis=1)*1000
+    curtailed = self.curtailed_power*1000
     
     fig, ax = plt.subplots()
     ax.fill_between(power.index, 0, -power.pv, alpha=0.7)
@@ -91,15 +92,19 @@ class EvaluationSingleCase():
     power = self.power
     losses = self.losses_p
     trafo_p = self.trafo_p
+    curtail_p = self.curtailed_power
 
     if self.time_scope['t_freq'] != 'D':
       power = self.shorted_data(power, 'H')
       losses = self.shorted_data(losses, 'H')
       trafo_p = self.shorted_data(trafo_p, 'H')
+      curtail_p = self.shorted_data(curtail_p, 'H')
       f = 1
     else:
       f = 24
 
+    sum_curtailed_pv = curtail_p.curtail_pv.sum()*f
+    sum_curtailed_load = curtail_p.curtail_load.sum()*f
     losses = losses.sum().sum()
     sum_pv = power.pv.sum()*f
     sum_hp = power.hp.sum()*f
@@ -126,6 +131,8 @@ class EvaluationSingleCase():
     print('Total Consumption: %s MWh' % sum_total_load.round(2))
     print(' ')
     print('Total Losses (lines+trafo): %s MWh' % losses.round(2))
+    print('Curtailed PV Energy: %s MWh' % sum_curtailed_pv.round(2))
+    print('Curtailed Load Energy: %s MWh' % sum_curtailed_load.round(2))
     print(' ')
     print('Generation/Consumption ratio: %s %%' % ((sum_pv/sum_total_load*100).round(1)))
     print('Self-sufficiancy: %s %%' % ((SelfSufficiancy).round(1)))
@@ -191,7 +198,7 @@ class EvaluationSingleCase():
     l4 = ax2.plot(ll_max, 'b')[0]
     ax1.legend(handles=[l2, l1], labels=['overvoltage', 'undervoltage'])
     ax2.legend(handles=[l4, l3], labels=['line overload', 'trafo overload'])
-
+    plt.show()
 
   def plot_grid_issus_over_power(self):
     power = self.power
@@ -214,6 +221,7 @@ class EvaluationSingleCase():
     plt.xlabel('Residual load in MW')
     plt.ylabel('voltage in pu / line overloading and trafo overloading')
     plt.grid(True)
+    plt.show()
 
   def plot_pv_reactive_power(self):
     p = self.pv_p
@@ -230,3 +238,4 @@ class EvaluationSingleCase():
     ax2.set_ylabel('Reactive power in Mvar')
     ax3.set_ylabel('cos(phi)')
     ax3.set_xlabel('Time')
+    plt.show()

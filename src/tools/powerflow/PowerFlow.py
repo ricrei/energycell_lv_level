@@ -4,6 +4,9 @@ import pandapower as pp
 import logging
 import tools.tools as tt
 
+from pandapower.plotting.plotly import pf_res_plotly
+import pandas as pd
+
 class PowerFlow:
 
   def __init__(self, output_dir):
@@ -35,6 +38,7 @@ class PowerFlow:
                                         hp_controller,
                                         ev_controller,
                                         bss_controller,
+                                        curtail_controller,
                                         output_data_handler):
 
       self.input_dict = self.create_input_dict(df, grid)
@@ -60,6 +64,7 @@ class PowerFlow:
                                                           hp_controller=hp_controller,
                                                           ev_controller=ev_controller,
                                                           bss_controller=bss_controller,
+                                                          curtail_controller=curtail_controller,
                                                           t=t)
 
               try:
@@ -90,6 +95,7 @@ class PowerFlow:
                                   hp_controller,
                                   ev_controller,
                                   bss_controller,
+                                  curtail_controller,
                                   t):
 
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
@@ -106,6 +112,8 @@ class PowerFlow:
     grid.net.storage['p_mw'] = bss_controller.get_active_power(grid)
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
+
+    grid = curtail_controller.curtail(grid)
 
     return grid.net
 

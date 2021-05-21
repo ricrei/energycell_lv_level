@@ -4,7 +4,7 @@ import pandas as pd
 class HPcontroller:
 
   def __init__(self, grid, control='greedy'):
-      self.set_hp = (grid.scenario in [2, 4, 5, 6])
+      self.set_hp = (grid.scenario in [2, 4, 5, 51, 52, 6])
       if (control=='greedy' or control=='preventive' or control=='curative'):
         self.control = control
         self.cos_phi = .95

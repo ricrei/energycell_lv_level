@@ -79,8 +79,6 @@ class InputDataHandler():
         df = pd.DataFrame(range(0,len(self.time_series)), index=self.time_series)
         df = self.time_series
         df.index.freq = time_scope['t_freq']
-        #input_dict = {}
-        #input_dict['timestamp'] = self.time_series['timestamp']
 
         return df
 
