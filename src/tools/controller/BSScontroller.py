@@ -31,6 +31,9 @@ class BSScontroller:
 
   def get_active_power(self, grid):
       return self.P_controller.pcontrol(grid)
+  
+  def get_soc(self, grid):
+      return self.P_controller.e_mwh_start
 '''
   def state_of_charge(self, grid): #neu Tabea
       soc_test = (self.e_mwh_start / grid.net.storage.max_e_mwh) * 100
@@ -114,29 +117,42 @@ class BSS_control_simple(BSS_control): #intervall_in_seconds
       p_mw_bss = -residual_load_per_bus      
       
       get_soc=self.state_of_charge(grid)
+      '''
+      if np.any(abs(get_soc)==np.inf):
+          print('STOP')# --> in diesem fall gleich null setzen
+      if np.any(get_soc==np.nan): # funktioniert nicht
+          print('HALTSTOP')# --> in diesem fall gleich null setzen
+      '''
+      get_soc=get_soc.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0
+            
       #get_e_mwh=self.stored_energy(grid, residual_load_per_bus)
       get_e_mwh=self.e_mwh_start
       #print('emwh_start_1:')
       #print(get_e_mwh)
+      
+      #if np.any(get_soc>100)
       
       #max_e_mj = grid.net.storage.max_e_mwh*3600
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
       needed_capacity = p_mw_bss*self.intervall / 3600
       
       busses_num = len(grid.component_buses.index)
+      #busses_num = len(grid.bss_index) #ändern zu storage_num
       
       #test cases
       solar_excess_1 = np.greater(p_mw_bss,np.zeros(busses_num)) & \
                        np.less(get_soc,np.ones(busses_num)*100) & \
                        np.less(free_capacity, needed_capacity)
       solar_excess_2 = np.greater(p_mw_bss,np.zeros(busses_num)) & \
-                       np.equal(get_soc,np.ones(busses_num)*100)
+                       np.greater_equal(get_soc,np.ones(busses_num)*100)
       load_excess_1 = np.less(p_mw_bss,np.zeros(busses_num)) & \
                       np.greater(get_soc,np.zeros(busses_num)) & \
                       np.less(get_e_mwh,-needed_capacity)
       load_excess_2 = np.less(p_mw_bss,np.zeros(busses_num)) & \
                       np.equal(get_soc,np.zeros(busses_num))
-      
+                      
+     # if p_mw_bss[np.greater(get_soc, np.ones(busses_num)*100)]=5000
+
       # Excess in solar power:
       p_mw_bss[solar_excess_1] = free_capacity[solar_excess_1] * 3600/self.intervall
       p_mw_bss[solar_excess_2] = 0
@@ -163,8 +179,8 @@ class BSS_control_simple(BSS_control): #intervall_in_seconds
       #z = np.greater(get_e_mwh, grid.net.storage.max_e_mwh)
       #for x in z == False:
          # print('falsch')
-  
-      
+      test=max(grid.net.bus.index)
+      print(test)
       #print(grid.net.storage['p_mw'].values)
       #return -residual_load_per_bus
       return p_mw_bss

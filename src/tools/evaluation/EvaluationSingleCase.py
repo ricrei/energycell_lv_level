@@ -1,3 +1,4 @@
+import numpy as np # wegen anzahl busse
 import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ import tools.tools as tt
 
 class EvaluationSingleCase():
   
-  def __init__(self, output_dir, net_name, scenario, time_scope):
+  def __init__(self, output_dir, net_name, scenario, time_scope, grid): #tabea grid
     self.output_dir = output_dir
     self.net_name = net_name
     self.scenario = scenario
@@ -26,7 +27,7 @@ class EvaluationSingleCase():
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
-
+    self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv')#tabea
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -230,3 +231,18 @@ class EvaluationSingleCase():
     ax2.set_ylabel('Reactive power in Mvar')
     ax3.set_ylabel('cos(phi)')
     ax3.set_xlabel('Time')
+
+  def plot_soc(self,grid):
+    busses_num = len(grid.component_buses.index)
+    array_bus = np.arange(busses_num)
+    soc=self.storage_soc
+    fig, ax = plt.subplots()
+    ax.plot(soc.index, soc)
+    #power = self.shorted_data(power, 'H')
+    #ax.plot(power.index, -power.pv+power.hp+power.load+power.ev, color='black', lw=.5)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Power in kW')
+    #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
+    plt.legend(grid.component_buses.index)
+    plt.show()
+    pass
