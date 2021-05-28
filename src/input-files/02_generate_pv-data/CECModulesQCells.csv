@@ -1,4 +1,0 @@
-Name,Manufacturer,Technology,Bifacial,STC,PTC,A_c,Length,Width,N_s,I_sc_ref,V_oc_ref,I_mp_ref,V_mp_ref,alpha_sc,beta_oc,T_NOCT,a_ref,I_L_ref,I_o_ref,R_s,R_sh_ref,Adjust,gamma_r,BIPV,Version,Date
-Units,,,,,,m2,m,m,,A,V,A,V,A/K,V/K,C,V,A,A,Ohm,Ohm,%,%/K,,,
-[0],lib_manufacturer,cec_material,lib_is_bifacial,,,cec_area,,,cec_n_s,cec_i_sc_ref,cec_v_oc_ref,cec_i_mp_ref,cec_v_mp_ref,cec_alpha_sc,cec_beta_oc,cec_t_noct,cec_a_ref,cec_i_l_ref,cec_i_o_ref,cec_r_s,cec_r_sh_ref,cec_adjust,cec_gamma_r,,,
-Hanwha Q CELLS Q.PEAK-G4.1 300,Hanwha Q CELLS,Mono-c-Si,0,300.1166,277.6,1.61,,,60,9.77,39.76,9.26,32.41,0.004397,-0.111328,44.89,1.515804,9.773466,3.95E-11,0.29834,840.934692,8.506764,-0.379,N,SAM 2019.12.19,12/19/2019

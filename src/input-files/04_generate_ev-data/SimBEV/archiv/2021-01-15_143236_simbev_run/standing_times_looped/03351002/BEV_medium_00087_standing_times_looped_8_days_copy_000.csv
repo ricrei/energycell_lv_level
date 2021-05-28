@@ -1,2 +1,0 @@
-,car_type,bat_cap,location,use_case,netto_charging_capacity,SoC_start,SoC_end,chargingdemand,charge_start,charge_end,charge_time
-0,BEV_medium,100,4_private/ridesharing,public,45.0,0.627177530808942,1.0,37.282246919105795,624,639,16

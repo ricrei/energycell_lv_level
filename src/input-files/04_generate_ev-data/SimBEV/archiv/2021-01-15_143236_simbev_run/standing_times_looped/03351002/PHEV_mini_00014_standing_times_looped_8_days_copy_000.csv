@@ -1,3 +1,0 @@
-,car_type,bat_cap,location,use_case,netto_charging_capacity,SoC_start,SoC_end,chargingdemand,charge_start,charge_end,charge_time
-0,PHEV_mini,25,3_shopping,public,9.9,0.6230018348709998,0.8210018348709998,4.949999999999998,454,455,2
-1,PHEV_mini,25,4_private/ridesharing,public,19.8,0.003629756690154917,1.0,24.90925608274613,556,562,7

@@ -1,6 +1,0 @@
-,car_type,bat_cap,location,use_case,netto_charging_capacity,SoC_start,SoC_end,chargingdemand,charge_start,charge_end,charge_time
-0,BEV_medium,100,4_private/ridesharing,public,19.8,0.9485185596740144,0.9856148592306491,3.709629955663463,122,212,91
-1,BEV_medium,100,6_home,private,9.9,0.9233645342502521,1.0,7.6635465749748,333,405,73
-2,BEV_medium,100,6_home,private,9.9,0.8844287608095776,0.9586787608095776,7.425000000000003,464,504,41
-3,BEV_medium,100,0_work,public,9.9,0.9000180969822551,1.0,9.998190301774489,510,548,39
-4,BEV_medium,100,0_work,public,9.9,0.9377749690514452,1.0,6.222503094855468,606,618,13
