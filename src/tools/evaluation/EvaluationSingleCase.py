@@ -59,7 +59,7 @@ class EvaluationSingleCase():
     ax.plot(power.index, power.load+power.ev, lw=.6)
     ax.plot(power.index, power.hp+power.load+power.ev, lw=.6)
     ax.plot(storage.index, storage)
-    power = self.shorted_data(power, 'H')
+    power = self.shorted_data(power, 'W')
     ax.plot(power.index, -power.pv+power.hp+power.load+power.ev, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')

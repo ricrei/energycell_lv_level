@@ -39,7 +39,7 @@ class EnergyCell():
         self.run_time('start')
 
         self.net_name = net_name
-        if scenario[0] in [1, 2, 3, 4, 5, 6]:
+        if int(scenario[0]) in [1, 2, 3, 4, 5, 6]:
           self.scenario = scenario[0]
           self.scenario_frame = scenario
         else:
@@ -53,6 +53,9 @@ class EnergyCell():
         else:
           raise ValueError('time_scope is not properly defined. \
                             start_time, end_time and t_freq is needed.')
+
+        self.input_data_handler = InputDataHandler()
+        self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.grid = Grid(net_name, self.scenario, self.time_scope)
 
@@ -68,18 +71,15 @@ class EnergyCell():
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
 
-        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = scenario[1])
+        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[1]))
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control='cos_phi', cos_phi=1)
+        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple')
-
-        self.input_data_handler = InputDataHandler()
-        self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.output_data_handler = OutputDataHandler()
         self.output_dir = self.output_data_handler.create_output_dir(

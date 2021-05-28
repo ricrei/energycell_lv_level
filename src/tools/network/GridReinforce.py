@@ -170,9 +170,9 @@ class GridReinforce:
     elif self.net_name == "simbench_rural_2":
       return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_rural_3":
-      return None
+      return ['0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_4":
-      return None
+      return ['0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_5":
       return None
     elif self.net_name == "simbench_urban_6":

@@ -68,11 +68,15 @@ class PowerFlow:
                                                           t=t)
 
               try:
-                  pp.runpp(grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
+                pp.runpp(grid.net, algorithm='nr', init='results')
               except:
+                try:
+                  pp.runpp(grid.net, algorithm='nr', max_iteration=30, tolerance_mva=1e-6)
+                except:
                   print(tt.textred('Power Flow nr did not converge at ' + str(t)))
                   self.logger.error('Power Flow nr did not converge at ' + str(t))
 
+              #print(t)
               # write result into DataFrame
               output_data_handler.write_output_into_dataframe(grid, t)
 
