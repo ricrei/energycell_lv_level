@@ -33,11 +33,6 @@ time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00',
                't_freq'     : '1T'
              }
 
-time_scope2 = { 'start_time' : '2017-06-06 00:00:00+02:00',
-               'end_time'   : '2017-06-06 00:10:00+02:00',
-               't_freq'     : '1T'
-             }
-
 # timescopes to examine
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
@@ -74,7 +69,7 @@ run_simulation = 0
 if run_simulation == 0:
 
   # Initialize EnergyCell
-  e = ec.EnergyCell(net_name = net_name[10], scenario = scenario, time_scope = time_scope2)
+  e = ec.EnergyCell(net_name = net_name[10], scenario = scenario, time_scope = time_scope)
 
   # Run powerflow
   e.run_pf_timeseries()
