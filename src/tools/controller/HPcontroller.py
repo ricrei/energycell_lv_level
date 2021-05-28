@@ -5,7 +5,7 @@ class HPcontroller:
 
   def __init__(self, grid, control='greedy'):
       self.set_hp = (grid.scenario in [2, 4, 5, 6])
-      if (control=='greedy' or control=='preventive' or control=='curative'):
+      if (control=='greedy' or control=='evu_lock' or control=='preventive' or control=='curative'):
         self.control = control
         self.cos_phi = .95
         self.tan_phi = np.tan(np.arccos(self.cos_phi))
@@ -15,6 +15,8 @@ class HPcontroller:
       if self.set_hp == True:
         if self.control == 'greedy':
           self.P_controller = HP_P_control_greedy(grid)
+        if self.control == 'evu_lock':
+          self.P_controller = HP_P_control_evu_lock(grid)
         elif self.control == 'preventive':
           raise ValueError('HP preventive control is not implemented.')
         elif self.control == 'curative':
@@ -39,6 +41,7 @@ class HP_P_control:
   def get_q(self, grid, d, tan_phi):
       return self.pcontrol(grid, d)*tan_phi 
 
+
 class HP_P_control_no_hp(HP_P_control):
 
   def __init__(self, grid):
@@ -48,13 +51,22 @@ class HP_P_control_no_hp(HP_P_control):
       HP_P_control.pcontrol(self)
       return d.values*0
 
+
 class HP_P_control_greedy(HP_P_control):
 
-  def __init__(self, grid):
-      super().__init__(grid)
+    def __init__(self, grid):
+        super().__init__(grid)
 
-  def pcontrol(self, grid, d):
-      HP_P_control.pcontrol(self)
-      return d.values
+    def pcontrol(self, grid, d):
+        HP_P_control.pcontrol(self)
+        return d.values
 
 
+class HP_P_control_evu_lock(HP_P_control):
+
+    def __init__(self, grid):
+        super().__init__(grid)
+
+    def pcontrol(self, grid, d):
+        HP_P_control.pcontrol(self)
+        return d.values

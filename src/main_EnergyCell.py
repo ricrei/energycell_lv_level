@@ -24,14 +24,14 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch"]  #13
 
 # Define timescope and timestepwidth
-time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
-               'end_time'   : '2017-05-27 00:00:00+02:00',
-               't_freq'     : '1H'
+time_scope = { 'start_time' : '2017-03-12 00:00:00+02:00',
+               'end_time'   : '2017-03-13 00:00:00+02:00',
+               't_freq'     : '10T'
              }
 '''
 time_scope = { 'start_time' : '2017-05-26 14:00:00+02:00',
                'end_time'   : '2017-05-26 14:00:00+02:00',
-               't_freq'     : 'H'
+               't_freq'     : '10T'
              }
 '''
 # timescopes to examine
@@ -56,7 +56,7 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 scenario = 4
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
+e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
 
 # Run powerflow
 e.run_pf_timeseries()
@@ -71,12 +71,12 @@ e.initiate_evaluation()
 e.eva.calculate_relevant_outputdata()
 e.eva.calculate_net_problems()
 
-#e.eva.plot_residualload()
-#e.eva.plot_generation_consumption_as_heat_map()
-#e.eva.plot_colorbar_seaborn()
-#e.eva.plot_grid_issus_over_power()
-#e.eva.plot_grid_issus_over_time()
-#e.eva.plot_pv_reactive_power()
+e.eva.plot_residualload()
+e.eva.plot_generation_consumption_as_heat_map()
+e.eva.plot_colorbar_seaborn()
+e.eva.plot_grid_issus_over_power()
+e.eva.plot_grid_issus_over_time()
+e.eva.plot_pv_reactive_power()
 
 '''
 i = 0

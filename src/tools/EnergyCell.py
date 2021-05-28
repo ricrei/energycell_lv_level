@@ -69,9 +69,9 @@ class EnergyCell():
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
+        self.pv_controller = PVcontroller(grid=self.grid, control='cos_phi', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
-        self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
+        self.hp_controller = HPcontroller(grid=self.grid, control='evu_lock')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple')
 
         self.input_data_handler = InputDataHandler()
