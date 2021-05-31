@@ -58,7 +58,7 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 ## 7: smart consumers, 8: battery storage systems and smart consumers
 # Second digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0]
+scenario = [4, 0, 0]
 #######################
 
 #######################
