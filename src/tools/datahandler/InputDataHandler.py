@@ -48,11 +48,19 @@ class InputDataHandler():
         hp = tt.decompress_pickle('input-files/03_hp_load.pbz2')
         ev = tt.decompress_pickle('input-files/04_ev_load.pbz2')
 
+        ev_rural    = ev[ev.columns[ev.columns.str.contains('_rural')]]
+        ev_suburban = ev[ev.columns[ev.columns.str.contains('_suburban')]]
+        ev_urban    = ev[ev.columns[ev.columns.str.contains('_urban')]]
+
         p0_shorted = shorted_data(p0, start_time, end_time, t_freq)
         q0_shorted = shorted_data(q0, start_time, end_time, t_freq)
         pv_shorted = shorted_data(pv, start_time, end_time, t_freq)
         hp_shorted = shorted_data(hp, start_time, end_time, t_freq)
-        ev_shorted = shorted_data(ev, start_time, end_time, t_freq)
+
+        ev_shorted_rural    = shorted_data(ev_rural, start_time, end_time, t_freq)
+        ev_shorted_suburban = shorted_data(ev_suburban, start_time, end_time, t_freq)
+        ev_shorted_urban    = shorted_data(ev_urban, start_time, end_time, t_freq)
+        ev_shorted = pd.concat([ev_shorted_rural, ev_shorted_suburban, ev_shorted_urban], axis=1)
 
         time = self.get_time_df(pv_shorted)
 
