@@ -80,7 +80,7 @@ e.eva.plot_residualload()
 #e.eva.plot_grid_issus_over_power()
 e.eva.plot_grid_issus_over_time()
 #e.eva.plot_pv_reactive_power()
-e.eva.plot_e_mwh(e.grid) # abhängigkeit von grid wegen anzahl busse...ändern
+e.eva.plot_soc() # abhängigkeit von grid wegen anzahl busse...ändern
 
 '''
 i = 0

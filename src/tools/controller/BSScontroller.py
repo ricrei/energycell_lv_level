@@ -31,14 +31,17 @@ class BSScontroller:
   
   def get_e_mwh(self, grid):
       return self.P_controller.e_mwh_start
+  
+  def get_soc(self, grid):
+      return self.P_controller.soc_new
  
-
 class BSS_control:
   def __init__(self, grid, intervall_in_seconds, busses_num): 
       self.intervall = intervall_in_seconds
       self.busses_num = busses_num
       self.soc_start = grid.net.storage.soc_percent 
       self.e_mwh_start = self.soc_start/100 * grid.net.storage.max_e_mwh 
+      self.soc_new = self.soc_start
       pass
 
   def pcontrol(self):
@@ -129,6 +132,7 @@ class BSS_control_simple(BSS_control):
       
       get_soc=self.state_of_charge(grid)
       #get_soc=get_soc.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0
+      self.soc_new = get_soc
             
       get_e_mwh=self.e_mwh_start
     
