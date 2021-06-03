@@ -94,11 +94,11 @@ class EvaluationSingleCase():
     trafo_p = self.trafo_p
     curtail_p = self.curtailed_power
 
-    if self.time_scope['t_freq'] != 'D':
-      power = self.shorted_data(power, 'H')
-      losses = self.shorted_data(losses, 'H')
-      trafo_p = self.shorted_data(trafo_p, 'H')
-      curtail_p = self.shorted_data(curtail_p, 'H')
+    if self.time_scope['t_freq'] != '1D':
+      power = self.shorted_data(power, '1H')
+      losses = self.shorted_data(losses, '1H')
+      trafo_p = self.shorted_data(trafo_p, '1H')
+      curtail_p = self.shorted_data(curtail_p, '1H')
       f = 1
     else:
       f = 24
