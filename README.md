@@ -42,3 +42,5 @@ In this template, 3 possible linters are proposed:
 - black sends warning but can also fix the files for you
 
 You can perfectly use the 3 of them or subset, at your preference. Don't forget to edit `.travis.yml` if you want to deactivate the automatic testing of some linters!
+
+## Test merge
