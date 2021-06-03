@@ -77,8 +77,6 @@ evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s40n9summer'
 
 evaluation.plot_grid_issus_over_power(eva['s40n8winter'], save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
 
-evaluation.plot_curtailed_power(eva, save_fig_dir=save_fig_dir+'curtailed_power.png')
-
 #evaluation.plot_grid_issus_over_time(eva['s4n9winter'], save_fig_dir+ 'plot_grid_issus_over_time_winter.png')
 #evaluation.plot_grid_issus_over_time(eva['s4n9summer'], save_fig_dir+ 'plot_grid_issus_over_time_summer.png')
 evaluation.plot_grid_issus_over_time_subplot(eva['s40n8summer'], eva['s40n8winter'], save_fig_dir+ 'plot_grid_issus_over_time_subplot_s40n8.png')

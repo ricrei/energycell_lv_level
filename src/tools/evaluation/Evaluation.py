@@ -352,6 +352,11 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   ll = eva['ll']
   tl = eva['tl']
 
+  power = shorted_data(power, 'H')
+  v = shorted_data(v, 'H')
+  ll = shorted_data(ll, 'H')
+  tl = shorted_data(tl, 'H')
+
   line_v_o = power*0 + 1.1
   line_v_u = power*0 + .9
   line_lt = power*0 + 1
@@ -361,7 +366,7 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   ll_max = ll.T.max().T
   tl_max = tl.T.max().T
 
-  fig, (ax1, ax2, ax3) = plt.subplots(3)
+  fig, (ax3, ax1, ax2) = plt.subplots(3)
   fig.suptitle(' ')
   l1 = ax1.plot(v_min, 'r')[0]
   ax1.plot(line_v_u, '--k', lw=.5)
@@ -372,7 +377,7 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
   l5 = ax3.plot(power, 'k')[0]
   ax1.legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right")
-  ax2.legend(handles=[l4, l3, l_limit2], labels=['Line Overload', 'Trafo Overload', 'Overload Limit'] ,loc="upper right")
+  ax2.legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right")
   ax3.legend(handles=[l5], labels=['Residualload'] ,loc="lower right")
   ax1.set_xlabel('Time')
   ax1.set_ylabel('Voltage\nin p.u.')
@@ -404,6 +409,18 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, save_fig_dir=None)
   ll_winter = eva_winter['ll']
   tl_winter = eva_winter['tl']
 
+  t_freq_new = 'H'
+
+  power_summer = shorted_data(power_summer, t_freq_new)
+  v_summer = shorted_data(v_summer, t_freq_new)
+  ll_summer = shorted_data(ll_summer, t_freq_new)
+  tl_summer = shorted_data(tl_summer, t_freq_new)
+
+  power_winter = shorted_data(power_winter, t_freq_new)
+  v_winter = shorted_data(v_winter, t_freq_new)
+  ll_winter = shorted_data(ll_winter, t_freq_new)
+  tl_winter = shorted_data(tl_winter, t_freq_new)
+
   line_v_o_winter = power_winter*0 + 1.1
   line_v_u_winter = power_winter*0 + .9
   line_lt_winter = power_winter*0 + 1
@@ -423,9 +440,9 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, save_fig_dir=None)
   power = [power_summer, power_winter]
 
   fig, ax = plt.subplots(3, 2, figsize=(10,5), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05})
-  ax1 = ax[0]
-  ax2 = ax[1]
-  ax3 = ax[2]
+  ax1 = ax[1] # Voltage
+  ax2 = ax[2] # Line and Trafo
+  ax3 = ax[0] # Residualload
   for i in [0, 1]:
     l1 = ax1[i].plot(v_min[i], 'r')[0]
     ax1[i].plot(line_v_u[i], '--k', lw=.5)
@@ -444,17 +461,17 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, save_fig_dir=None)
     ax2[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
     ax3[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
     ax3[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
-    ax1[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(.87, 1.2))
+    ax1[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(.85, 1.15))
     ax2[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(0, 7.0))
     ax3[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-2.2, 1)) 
-  ax3[0].set_xlabel('Summer')
-  ax3[1].set_xlabel('Winter')
+  ax2[0].set_xlabel('Summer')
+  ax2[1].set_xlabel('Winter')
   ax1[0].set_ylabel('Voltage\nin p.u.')
   ax2[0].set_ylabel('Line and Trafo\nLoading in p.u.')
-  ax3[0].set_ylabel('Power\nin p.u.')
+  ax3[0].set_ylabel('Power\nin MW')
 
   ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right", shadow=True)
-  ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Line Overload', 'Trafo Overload', 'Overload Limit'] ,loc="upper right", shadow=True)
+  ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right", shadow=True)
   ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True)
 
   if save_fig_dir is not None:
@@ -631,6 +648,7 @@ def plot_curtailed_power(eva, save_fig_dir=None):
      plt.savefig(save_fig_dir+'curtailed_PV_power.png')
 
   plot_clustered_stacked([df_winter_load, df_summer_load], ['curtailed','grid-obtained','self-consumed'], ['winter', 'summer'], title='Consumption')
+
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir+'curtailed_Load_power.png')
 
