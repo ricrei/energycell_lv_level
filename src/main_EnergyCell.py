@@ -49,9 +49,6 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'name'       : 'summer'
                     }
 
-data_bss = {'efficiency_storage': [0.9], 'efficiency_inverter': [0.96], 'efficiency_mppt': [0.98]}
-df_bss = pd.DataFrame(data_bss)
-
 
 # Define scenario
 # 1: conventional, 2: full-electrified
@@ -62,7 +59,7 @@ scenario = 6
 
 # Initialize EnergyCell
 e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, \
-                  time_scope = time_scope, df_bss = df_bss)
+                  time_scope = time_scope)
 
 # Run powerflow
 e.run_pf_timeseries()

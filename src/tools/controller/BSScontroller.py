@@ -3,9 +3,8 @@ import pandas as pd
 
 class BSScontroller:
 
-  def __init__(self, grid, time_scope, df_bss, control='simple'): 
+  def __init__(self, grid, time_scope, control='simple'): 
       self.set_bss = (grid.scenario in [6])
-      self.df_bss=df_bss
       self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
       self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds
       self.busses_num = len(grid.component_buses.index)
@@ -19,7 +18,7 @@ class BSScontroller:
         if self.control == 'simple':
           self.P_controller = BSS_control_simple(grid, \
                                                  self.intervall_in_seconds, \
-                                                 self.busses_num, self.df_bss)
+                                                 self.busses_num)
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
         elif self.control == ' ':
@@ -35,10 +34,9 @@ class BSScontroller:
  
 
 class BSS_control:
-  def __init__(self, grid, intervall_in_seconds, busses_num, df_bss): 
+  def __init__(self, grid, intervall_in_seconds, busses_num): 
       self.intervall = intervall_in_seconds
       self.busses_num = busses_num
-      self.df_bss = df_bss
       self.soc_start = grid.net.storage.soc_percent 
       self.e_mwh_start = self.soc_start/100 * grid.net.storage.max_e_mwh 
       pass
@@ -86,8 +84,8 @@ class BSS_control:
       
       p_neg = np.less(p_mw_bss,np.zeros(self.busses_num))
       p_mw_bss[p_neg] = p_mw_bss[p_neg] \
-                          / (self.df_bss.efficiency_storage[0] \
-                             * self.df_bss.efficiency_inverter[0])
+                          / (grid.net.storage.efficiency_storage[p_neg] \
+                             * grid.net.storage.efficiency_inverter[p_neg])
       
       self.e_mwh_start = e_mwh + (p_mw_bss * self.intervall / 3600) # [MWh]
       return e_mwh
@@ -102,8 +100,8 @@ class BSS_control_no_bss(BSS_control):
       return 0
 
 class BSS_control_simple(BSS_control): 
-  def __init__(self, grid, intervall_in_seconds, busses_num, df_bss): 
-      super().__init__(grid, intervall_in_seconds, busses_num, df_bss)
+  def __init__(self, grid, intervall_in_seconds, busses_num): 
+      super().__init__(grid, intervall_in_seconds, busses_num)
 
   def pcontrol(self, grid):
       '''
@@ -145,9 +143,9 @@ class BSS_control_simple(BSS_control):
                        np.greater_equal(get_soc,np.ones(self.busses_num)*100)
       load_excess_1 = np.less(p_mw_bss,np.zeros(self.busses_num)) & \
                       np.greater(get_soc,np.zeros(self.busses_num)) & \
-                      np.less(get_e_mwh,-needed_capacity / \
-                              (self.df_bss.efficiency_storage[0] * \
-                               self.df_bss.efficiency_inverter[0]))
+                      np.less(get_e_mwh,-needed_capacity \
+                              / (grid.net.storage.efficiency_storage \
+                                * grid.net.storage.efficiency_inverter))
       load_excess_2 = np.less(p_mw_bss,np.zeros(self.busses_num)) & \
                       np.less_equal(get_soc,np.zeros(self.busses_num))
                       
@@ -158,8 +156,8 @@ class BSS_control_simple(BSS_control):
       
       # Excess in load: # später soc_min integrieren statt zeros
       p_mw_bss[load_excess_1] = - get_e_mwh[load_excess_1] \
-                                  * self.df_bss.efficiency_storage[0] \
-                                  * self.df_bss.efficiency_inverter[0] \
+                                  * grid.net.storage.efficiency_storage[load_excess_1]  \
+                                  * grid.net.storage.efficiency_inverter[load_excess_1] \
                                   * 3600 \
                                   / self.intervall
       p_mw_bss[load_excess_2] = 0

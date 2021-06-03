@@ -17,8 +17,13 @@ class BSScreator:
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], p_mw=0,\
                             max_e_mwh=0.01, soc_percent=0 ,name='bss_'+str(grid.net.load.loc[index, "bus"]), type='bss')
-
+      
+      grid.net.storage['efficiency_storage'] = 0.9
+      grid.net.storage['efficiency_inverter'] = 0.96
+      grid.net.storage['efficiency_mppt'] = 0.98
+      
       return grid
+      
   
     #ec.grid.bss_controller.state_of_charge(grid)
 
