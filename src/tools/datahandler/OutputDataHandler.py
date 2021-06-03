@@ -45,7 +45,7 @@ class OutputDataHandler():
         self.load_active_power.index.name = 'timestamp'
         self.load_reactive_power.index.name = 'timestamp'
         self.storage_active_power.index.name = 'timestamp'
-        self.storage_state_of_charge.index.name = 'timestamp' #neu Tabea
+        self.storage_state_of_charge.index.name = 'timestamp' 
         self.trafo_active_power.index.name = 'timestamp'
         self.losses_active_power.index.name = 'timestamp'
         self.v_pu_ext_grid.index.name  = 'timestamp'
@@ -63,7 +63,7 @@ class OutputDataHandler():
         self.load_active_power.loc[t] = grid.net.load['p_mw']
         self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
         self.storage_active_power.loc[t] = grid.net.storage['p_mw']
-        self.storage_state_of_charge.loc[t] = grid.net.storage['soc_percent'] #neu Tabea
+        self.storage_state_of_charge.loc[t] = grid.net.storage['soc_percent']
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
         self.losses_active_power.loc[t] = [grid.net.res_trafo.pl_mw.sum(),
                                            grid.net.res_line.pl_mw.sum()]
@@ -89,7 +89,7 @@ class OutputDataHandler():
         self.storage_active_power.round(6).to_csv(self.output_dir + 'storage_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.storage_state_of_charge.round(6).to_csv(self.output_dir + 'storage_state_of_charge_percent.csv',
-                                                  mode=mode, header=header, index = True) #neu Tabea
+                                                  mode=mode, header=header, index = True) 
         self.trafo_active_power.round(6).to_csv(self.output_dir + 'trafo_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.losses_active_power.round(6).to_csv(self.output_dir + 'losses_active_power_MW.csv',

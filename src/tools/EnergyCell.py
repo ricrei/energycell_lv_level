@@ -33,7 +33,7 @@ from tools.evaluation.EvaluationSingleCase import EvaluationSingleCase
 
 class EnergyCell():
 
-    def __init__(self, net_name, scenario, time_scope):
+    def __init__(self, net_name, scenario, time_scope, df_bss):#eff_storage
         self.run_time('start')
 
         self.net_name = net_name
@@ -70,7 +70,7 @@ class EnergyCell():
         self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
-        self.bss_controller = BSScontroller(grid=self.grid,time_scope=time_scope, control='simple') # neu Tabea (time_scope)
+        self.bss_controller = BSScontroller(grid=self.grid,time_scope=time_scope, df_bss=df_bss, control='simple') # neu Tabea (time_scope, eff_storage)
 
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(time_scope)

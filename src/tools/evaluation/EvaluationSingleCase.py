@@ -27,7 +27,7 @@ class EvaluationSingleCase():
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
-    self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv')#tabea
+    self.storage_e_mwh = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -232,17 +232,14 @@ class EvaluationSingleCase():
     ax3.set_ylabel('cos(phi)')
     ax3.set_xlabel('Time')
 
-  def plot_soc(self,grid):
+  def plot_e_mwh(self,grid):
     busses_num = len(grid.component_buses.index)
     array_bus = np.arange(busses_num)
-    soc=self.storage_soc
+    e_mwh=self.storage_e_mwh
     fig, ax = plt.subplots()
-    ax.plot(soc.index, soc)
-    #power = self.shorted_data(power, 'H')
-    #ax.plot(power.index, -power.pv+power.hp+power.load+power.ev, color='black', lw=.5)
+    ax.plot(e_mwh.index, e_mwh)
     ax.set_xlabel('Time')
-    ax.set_ylabel('Power in kW')
-    #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
-    plt.legend(grid.component_buses.index)
+    ax.set_ylabel('Energy content in MWh')
+    #plt.legend(grid.component_buses.index)
     plt.show()
     pass

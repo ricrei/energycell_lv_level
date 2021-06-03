@@ -6,6 +6,7 @@ Created on Wed March 17 11:08:14 2020
 @authors: ricardo, tabea, paul
 """
 import tools.EnergyCell as ec
+import pandas as pd
 
 # Define all gird names
 net_name = ["kerber_rural_1", #0
@@ -48,6 +49,10 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'name'       : 'summer'
                     }
 
+data_bss = {'efficiency_storage': [0.9], 'efficiency_inverter': [0.96], 'efficiency_mppt': [0.98]}
+df_bss = pd.DataFrame(data_bss)
+
+
 # Define scenario
 # 1: conventional, 2: full-electrified
 # 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
@@ -56,7 +61,8 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 scenario = 6
 
 # Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
+e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, \
+                  time_scope = time_scope, df_bss = df_bss)
 
 # Run powerflow
 e.run_pf_timeseries()
@@ -77,7 +83,7 @@ e.eva.plot_residualload()
 #e.eva.plot_grid_issus_over_power()
 e.eva.plot_grid_issus_over_time()
 #e.eva.plot_pv_reactive_power()
-#e.eva.plot_soc(e.grid) # abhäbgigkeit von grid wegen anzahl busse...ändern
+e.eva.plot_e_mwh(e.grid) # abhängigkeit von grid wegen anzahl busse...ändern
 
 '''
 i = 0

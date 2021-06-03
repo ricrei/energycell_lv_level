@@ -70,7 +70,6 @@ class PowerFlow:
 
               # write result into DataFrame
               output_data_handler.write_output_into_dataframe(grid, t)
-              #print(output_data_handler.storage_state_of_charge.loc[self.time_series[i]])#Tabea
 
               end = time.time()
               rest_time = int(round((end - start)*(self.timesteps - i), 0))
@@ -105,8 +104,7 @@ class PowerFlow:
     grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, input_dict['ev'].loc[t])
 
     grid.net.storage['p_mw'] = bss_controller.get_active_power(grid)
-    grid.net.storage['soc_percent'] = bss_controller.get_soc(grid) #neu Tabea
-    #grid.net.storage['e_mwh'] = bss_controller.stored_energy(grid) #neu Tabea
+    grid.net.storage['soc_percent'] = bss_controller.get_e_mwh(grid) #später soc
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
