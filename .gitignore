@@ -11,4 +11,8 @@ tests/*
 *.log
 *.gitignore*
 *.ipynb_checkpoints*
-#*temp_plot.html
+*temp-plot.html
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
