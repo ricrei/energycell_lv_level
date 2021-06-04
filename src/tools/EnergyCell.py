@@ -70,7 +70,7 @@ class EnergyCell():
         self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
-        self.bss_controller = BSScontroller(grid=self.grid,time_scope=time_scope, control='simple') # neu Tabea (time_scope, eff_storage)
+        self.bss_controller = BSScontroller(grid=self.grid, control='feed_in_damping') 
 
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(time_scope)

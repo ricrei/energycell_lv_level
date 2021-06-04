@@ -3,13 +3,15 @@ import pandas as pd
 
 class BSScontroller:
 
-  def __init__(self, grid, time_scope, control='simple'): 
       self.set_bss = (grid.scenario in [6])
-      self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
-      self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds
+      #self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
+      #self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds
+      self.intervall = grid.time_scope.intervall_in_seconds
       self.busses_num = len(grid.component_buses.index)
 
       if (control=='simple'):
+        self.control = control
+      elif (control=='feed_in_damping'):
         self.control = control
       else:
         raise ValueError('The entered BSS control is not a valid option.')
@@ -17,6 +19,10 @@ class BSScontroller:
       if self.set_bss == True:
         if self.control == 'simple':
           self.P_controller = BSS_control_simple(grid, \
+                                                 self.intervall_in_seconds, \
+                                                 self.busses_num)
+        elif self.control == 'feed_in_damping':
+          self.P_controller = BSS_control_feed_in_damping(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num)
         elif self.control == ' ':
@@ -92,6 +98,13 @@ class BSS_control:
       
       self.e_mwh_start = e_mwh + (p_mw_bss * self.intervall / 3600) # [MWh]
       return e_mwh
+  
+  def residual_load_per_bus(self, grid):
+      residual_load_per_bus = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
+                              grid.net.load.loc[grid.hp_index, 'p_mw'].values + \
+                              grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
+                              grid.net.sgen['p_mw'].values
+      return residual_load_per_bus
 
 
 class BSS_control_no_bss(BSS_control):
@@ -170,7 +183,28 @@ class BSS_control_simple(BSS_control):
 
       return p_mw_bss
 
+'''
+class BSS_control_feed_in_damping(BSS_control): 
+  def __init__(self, grid, intervall_in_seconds, busses_num): 
+      super().__init__(grid, intervall_in_seconds, busses_num)
+      
+      #self.trafo_mw_rat = 0.16
+      #self.trafo_mw_rat = grid.net.trafo.sn_mva
+      self.trafo_load_percent = grid.net.res_trafo.loading_percent
   
 
-
-
+  def pcontrol(self, grid):
+      
+      p_mw_bss = np.zeros(self.busses_num)#- self.residual_load_per_bus(grid)
+      residual_load_trafo = sum(p_mw_bss)
+      
+      #case_linear =
+      #case_damping =
+      
+      #print(residual_load_trafo)
+      #print(self.trafo_mw_rat)
+      print(self.trafo_load_percent)
+      
+      
+      return p_mw_bss
+'''
