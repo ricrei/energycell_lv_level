@@ -70,6 +70,7 @@ class EnergyCell():
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
+        #self.grid = self.bss_creator.create_bss_at_one_bus(self.grid)
 
         self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[1]))
 
@@ -79,7 +80,7 @@ class EnergyCell():
         self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
-        self.bss_controller = BSScontroller(grid=self.grid, control='simple')
+        self.bss_controller = BSScontroller(grid=self.grid, control='feed_in_damping') 
 
         self.output_data_handler = OutputDataHandler()
         self.output_dir = self.output_data_handler.create_output_dir(

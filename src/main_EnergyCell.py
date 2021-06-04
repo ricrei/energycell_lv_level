@@ -31,8 +31,6 @@ net_name = ["kerber_rural_1", #0
 time_scope = { 'start_time' : '2017-01-01 00:00:00+01:00',
                'end_time'   : '2018-01-01 00:00:00+01:00',
                't_freq'     : '1D'
-             }
-
 
 # timescopes to examine
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
@@ -100,8 +98,8 @@ elif run_simulation == 1:
         print(CGREEN + 'Durchlauf: ' + str(i) + CEND)
         i += 1
         e = ec.EnergyCell(net_name = net_name[net_name_i],
-                        scenario = scenario_i,
-                        time_scope = time_scope_i)
+                          scenario = scenario_i,
+                          time_scope = time_scope_i)
         e.run_pf_timeseries()
 
   #elif run_simulation == 11:
