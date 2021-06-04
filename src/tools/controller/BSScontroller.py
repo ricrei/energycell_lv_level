@@ -3,10 +3,11 @@ import pandas as pd
 
 class BSScontroller:
 
+  def __init__(self, grid, control='simple'):
       self.set_bss = (grid.scenario in [6])
       #self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
       #self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds
-      self.intervall = grid.time_scope.intervall_in_seconds
+      self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
 
       if (control=='simple'):
@@ -30,7 +31,7 @@ class BSScontroller:
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
       else:
-        self.P_controller = BSS_control_no_bss(grid)
+        self.P_controller = BSS_control_no_bss(grid, self.intervall_in_seconds, self.busses_num)
 
   def get_active_power(self, grid):
       return self.P_controller.pcontrol(grid)
@@ -108,13 +109,14 @@ class BSS_control:
 
 
 class BSS_control_no_bss(BSS_control):
-  def __init__(self, grid):
-      super().__init__(grid)
+  def __init__(self, grid, intervall_in_seconds, busses_num):
+      super().__init__(grid, intervall_in_seconds, busses_num)
 
   def pcontrol(self, grid):
       BSS_control.pcontrol(self)
       return 0
 
+### SIMPLE ###
 class BSS_control_simple(BSS_control): 
   def __init__(self, grid, intervall_in_seconds, busses_num): 
       super().__init__(grid, intervall_in_seconds, busses_num)
