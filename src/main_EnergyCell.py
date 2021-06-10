@@ -28,7 +28,7 @@ net_name = ["kerber_rural_1", #0
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-04-01 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-04-03 00:00:00+01:00',
                'end_time'   : '2017-04-04 00:00:00+01:00',
                't_freq'     : '30T'
              }
@@ -57,7 +57,7 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 ## 7: smart consumers, 8: battery storage systems and smart consumers
 # Second digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 0]
+scenario = [4, 0]
 #######################
 
 #######################
@@ -66,10 +66,12 @@ scenario = [6, 0]
 run_simulation = 0
 #######################
 
+#############################
+### Run Single Simulation ###
 if run_simulation == 0:
 
   # Initialize EnergyCell
-  e = ec.EnergyCell(net_name = net_name[13], scenario = scenario, time_scope = time_scope)
+  e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope_winter)
 
   # Run powerflow
   e.run_pf_timeseries()
@@ -80,22 +82,26 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload()
+  #e.eva.plot_residualload()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
-  e.eva.plot_soc()
+  #e.eva.plot_soc()
+  #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')
+#############################
 
+###############################
+### Run Multiple Simulation ###
 elif run_simulation == 1:
 
   i = 1
   CGREEN = '\33[32m'
   CEND   = '\33[0m'
   for time_scope_i in [time_scope_winter]:
-    for net_name_i in [8, 9]: #[7, 8, 9, 10, 11]:
-      for scenario_i in [[4, 1]]:#[[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
+    for net_name_i in [7, 8, 9, 10, 11]:
+      for scenario_i in [[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
         print(' ')
         print(CGREEN + 'Durchlauf: ' + str(i) + CEND)
         i += 1
@@ -111,4 +117,5 @@ elif run_simulation == 1:
                                  time_scopes = [time_scope_winter, time_scope_summer])
 
   print('Done')
+###############################
 
