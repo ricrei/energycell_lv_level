@@ -1,3 +1,4 @@
+import numpy as np # wegen anzahl busse
 import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ import tools.tools as tt
 
 class EvaluationSingleCase():
   
-  def __init__(self, output_dir, net_name, scenario, time_scope):
+  def __init__(self, output_dir, net_name, scenario, time_scope): 
     self.output_dir = output_dir
     self.net_name = net_name
     self.scenario = scenario
@@ -21,12 +22,13 @@ class EvaluationSingleCase():
     self.ll = self.read_data(self.output_dir+'res_line_load_percent.csv')
     self.tl = self.read_data(self.output_dir+'res_trafo_load_percent.csv')
     self.power = self.read_data(self.output_dir+'power_total_MW.csv')
-    self.pv_p = self.read_data(output_dir+'pv_active_power_MW.csv')
-    self.pv_q = self.read_data(output_dir+'pv_reactive_power_MW.csv')
+    self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
+    self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
-
+    self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
+    self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -47,6 +49,7 @@ class EvaluationSingleCase():
   def plot_residualload(self):
     power = self.power*1000
     storage = -self.storage_p.sum(axis=1)*1000
+    curtailed = self.curtailed_power*1000
     
     fig, ax = plt.subplots()
     ax.fill_between(power.index, 0, -power.pv, alpha=0.7)
@@ -58,7 +61,7 @@ class EvaluationSingleCase():
     ax.plot(power.index, power.load+power.ev, lw=.6)
     ax.plot(power.index, power.hp+power.load+power.ev, lw=.6)
     ax.plot(storage.index, storage)
-    power = self.shorted_data(power, 'H')
+    power = self.shorted_data(power, 'W')
     ax.plot(power.index, -power.pv+power.hp+power.load+power.ev, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')
@@ -91,15 +94,19 @@ class EvaluationSingleCase():
     power = self.power
     losses = self.losses_p
     trafo_p = self.trafo_p
+    curtail_p = self.curtailed_power
 
-    if self.time_scope['t_freq'] != 'D':
-      power = self.shorted_data(power, 'H')
-      losses = self.shorted_data(losses, 'H')
-      trafo_p = self.shorted_data(trafo_p, 'H')
+    if self.time_scope['t_freq'] != '1D':
+      power = self.shorted_data(power, '1H')
+      losses = self.shorted_data(losses, '1H')
+      trafo_p = self.shorted_data(trafo_p, '1H')
+      curtail_p = self.shorted_data(curtail_p, '1H')
       f = 1
     else:
       f = 24
 
+    sum_curtailed_pv = curtail_p.curtail_pv.sum()*f
+    sum_curtailed_load = curtail_p.curtail_load.sum()*f
     losses = losses.sum().sum()
     sum_pv = power.pv.sum()*f
     sum_hp = power.hp.sum()*f
@@ -126,6 +133,8 @@ class EvaluationSingleCase():
     print('Total Consumption: %s MWh' % sum_total_load.round(2))
     print(' ')
     print('Total Losses (lines+trafo): %s MWh' % losses.round(2))
+    print('Curtailed PV Energy: %s MWh' % sum_curtailed_pv.round(2))
+    print('Curtailed Load Energy: %s MWh' % sum_curtailed_load.round(2))
     print(' ')
     print('Generation/Consumption ratio: %s %%' % ((sum_pv/sum_total_load*100).round(1)))
     print('Self-sufficiancy: %s %%' % ((SelfSufficiancy).round(1)))
@@ -191,7 +200,7 @@ class EvaluationSingleCase():
     l4 = ax2.plot(ll_max, 'b')[0]
     ax1.legend(handles=[l2, l1], labels=['overvoltage', 'undervoltage'])
     ax2.legend(handles=[l4, l3], labels=['line overload', 'trafo overload'])
-
+    plt.show()
 
   def plot_grid_issus_over_power(self):
     power = self.power
@@ -214,6 +223,7 @@ class EvaluationSingleCase():
     plt.xlabel('Residual load in MW')
     plt.ylabel('voltage in pu / line overloading and trafo overloading')
     plt.grid(True)
+    plt.show()
 
   def plot_pv_reactive_power(self):
     p = self.pv_p
@@ -230,3 +240,16 @@ class EvaluationSingleCase():
     ax2.set_ylabel('Reactive power in Mvar')
     ax3.set_ylabel('cos(phi)')
     ax3.set_xlabel('Time')
+    plt.show()
+
+  def plot_soc(self):
+    #busses_num = len(grid.component_buses.index)
+    #array_bus = np.arange(busses_num)
+    soc = self.storage_soc
+    fig, ax = plt.subplots()
+    ax.plot(soc.index, soc)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('State of charge in %')
+    #plt.legend(grid.component_buses.index)
+    plt.show()
+    pass

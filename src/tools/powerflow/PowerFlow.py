@@ -4,6 +4,9 @@ import pandapower as pp
 import logging
 import tools.tools as tt
 
+from pandapower.plotting.plotly import pf_res_plotly
+import pandas as pd
+
 class PowerFlow:
 
   def __init__(self, output_dir):
@@ -35,6 +38,7 @@ class PowerFlow:
                                         hp_controller,
                                         ev_controller,
                                         bss_controller,
+                                        curtail_controller,
                                         output_data_handler):
 
       self.input_dict = self.create_input_dict(df, grid)
@@ -60,14 +64,19 @@ class PowerFlow:
                                                           hp_controller=hp_controller,
                                                           ev_controller=ev_controller,
                                                           bss_controller=bss_controller,
+                                                          curtail_controller=curtail_controller,
                                                           t=t)
 
               try:
-                  pp.runpp(grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
+                pp.runpp(grid.net, algorithm='nr', init='results')
               except:
+                try:
+                  pp.runpp(grid.net, algorithm='nr', max_iteration=30, tolerance_mva=1e-6)
+                except:
                   print(tt.textred('Power Flow nr did not converge at ' + str(t)))
                   self.logger.error('Power Flow nr did not converge at ' + str(t))
 
+              #print(t)
               # write result into DataFrame
               output_data_handler.write_output_into_dataframe(grid, t)
 
@@ -90,6 +99,7 @@ class PowerFlow:
                                   hp_controller,
                                   ev_controller,
                                   bss_controller,
+                                  curtail_controller,
                                   t):
 
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
@@ -104,8 +114,11 @@ class PowerFlow:
     grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, input_dict['ev'].loc[t])
 
     grid.net.storage['p_mw'] = bss_controller.get_active_power(grid)
+    grid.net.storage['soc_percent'] = bss_controller.get_soc(grid) #später soc
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
+
+    grid = curtail_controller.curtail(grid)
 
     return grid.net
 

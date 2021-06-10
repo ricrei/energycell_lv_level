@@ -9,8 +9,8 @@ class OutputDataHandler():
   #########################
   ### create output_dir ###
   #########################
-  def create_output_dir(self, net_name, scenario, time_scope):
-        self.output_dir = os.path.join("./", "output-files/"+str(scenario)+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
+  def create_output_dir(self, net_name, scenario_frame, time_scope):
+        self.output_dir = os.path.join("./", "output-files/"+str(scenario_frame[0])+str(scenario_frame[1])+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
         # Create output directory
         if not os.path.isdir(self.output_dir):
           try:
@@ -32,9 +32,11 @@ class OutputDataHandler():
         self.load_active_power = pd.DataFrame(columns=grid.net.load.index)
         self.load_reactive_power = pd.DataFrame(columns=grid.net.load.index)
         self.storage_active_power = pd.DataFrame(columns=grid.net.storage.index)
+        self.storage_state_of_charge = pd.DataFrame(columns=grid.net.storage.index) #neu Tabea
         self.trafo_active_power = pd.DataFrame(columns=grid.net.trafo.index)
         self.losses_active_power = pd.DataFrame(columns=['trafo','lines'])
         self.v_pu_ext_grid = pd.DataFrame(columns=['v_pu'])
+        self.curtailed_power = pd.DataFrame(columns=['curtail_pv', 'curtail_load'])
         self.vm_pu.index.name = 'timestamp'
         self.li_lo.index.name = 'timestamp'
         self.tr_lo.index.name = 'timestamp'
@@ -44,9 +46,11 @@ class OutputDataHandler():
         self.load_active_power.index.name = 'timestamp'
         self.load_reactive_power.index.name = 'timestamp'
         self.storage_active_power.index.name = 'timestamp'
+        self.storage_state_of_charge.index.name = 'timestamp' 
         self.trafo_active_power.index.name = 'timestamp'
         self.losses_active_power.index.name = 'timestamp'
         self.v_pu_ext_grid.index.name  = 'timestamp'
+        self.curtailed_power.index.name  = 'timestamp'
 
   def write_output_into_dataframe(self, grid, t):
         self.vm_pu.loc[t] = grid.net.res_bus.vm_pu
@@ -61,10 +65,12 @@ class OutputDataHandler():
         self.load_active_power.loc[t] = grid.net.load['p_mw']
         self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
         self.storage_active_power.loc[t] = grid.net.storage['p_mw']
+        self.storage_state_of_charge.loc[t] = grid.net.storage['soc_percent']
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
         self.losses_active_power.loc[t] = [grid.net.res_trafo.pl_mw.sum(),
                                            grid.net.res_line.pl_mw.sum()]
         self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
+        self.curtailed_power.loc[t] = [grid.curtailed_pv_power, grid.curtailed_load_power]
 
   def write_dataframe_to_csv(self, mode, header, grid):
         self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',
@@ -85,11 +91,15 @@ class OutputDataHandler():
                                                mode=mode, header=header, index = True)
         self.storage_active_power.round(6).to_csv(self.output_dir + 'storage_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
+        self.storage_state_of_charge.round(6).to_csv(self.output_dir + 'storage_state_of_charge_percent.csv',
+                                                  mode=mode, header=header, index = True) 
         self.trafo_active_power.round(6).to_csv(self.output_dir + 'trafo_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.losses_active_power.round(6).to_csv(self.output_dir + 'losses_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.v_pu_ext_grid.round(3).to_csv(self.output_dir + 'v_pu_ext_grid.csv',
+                                                  mode=mode, header=header, index = True)
+        self.curtailed_power.round(6).to_csv(self.output_dir + 'curtailed_power_MW.csv',
                                                   mode=mode, header=header, index = True)
 
         self.create_output_dataframes(grid)

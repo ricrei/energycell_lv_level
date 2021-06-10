@@ -4,8 +4,13 @@ import pandas as pd
 class HPcontroller:
 
   def __init__(self, grid, control='greedy'):
+<<<<<<< HEAD
       self.set_hp = (grid.scenario in [2, 4, 5, 6])
       if (control=='greedy' or control=='evu_lock' or control=='preventive' or control=='curative'):
+=======
+      self.set_hp = (grid.scenario in [2, 4, 5, 51, 52, 6])
+      if (control=='greedy' or control=='preventive' or control=='curative'):
+>>>>>>> dev
         self.control = control
         self.cos_phi = .95
         self.tan_phi = np.tan(np.arccos(self.cos_phi))

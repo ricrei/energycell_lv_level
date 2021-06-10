@@ -7,12 +7,21 @@ class EVcreator:
   def __init__(self):
         self.ev_data_file = 'input-files/14_ev_short.pbz2'
         self.ev = tt.decompress_pickle(self.ev_data_file)        
-        self.ev_para = {'ev_types' : self.ev.columns.values}
+        self.ev_para = {'ev_types' : self.ev.columns}
 
   ###########################################
   ### Create Loads at each bus for all HP ###
   ###########################################
   def create_ev_load_at_each_bus(self, grid):
+      if (grid.category == 'rural') or (grid.category == 'village'):
+          self.ev_para['ev_types'] = self.ev_para['ev_types'][self.ev_para['ev_types'].str.contains('_rural')]
+      elif (grid.category == 'suburban'):
+          self.ev_para['ev_types'] = self.ev_para['ev_types'][self.ev_para['ev_types'].str.contains('_suburban')]
+      elif (grid.category == 'urban'):
+          self.ev_para['ev_types'] = self.ev_para['ev_types'][self.ev_para['ev_types'].str.contains('_urban')]
+      else:
+          raise ValueError('No valid grid.category defined. Not able to choose EV type.')
+
       # create hp-loads at each bus 
       for index in grid.component_buses.index:
           # calculate distribution of e-vehicles

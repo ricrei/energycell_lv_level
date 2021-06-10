@@ -1,5 +1,0 @@
-,car_type,bat_cap,location,use_case,netto_charging_capacity,SoC_start,SoC_end,chargingdemand,charge_start,charge_end,charge_time
-0,BEV_medium,100,0_work,public,19.8,0.8919950768626712,1.0,10.800492313732876,207,227,21
-1,BEV_medium,100,0_work,public,19.8,0.9111942762476928,1.0,8.880572375230733,304,327,24
-2,BEV_medium,100,0_work,public,19.8,0.9480031855414952,1.0,5.199681445850478,406,408,3
-3,BEV_medium,100,0_work,public,19.8,0.8377673732578498,1.0,16.223262674215018,509,533,25

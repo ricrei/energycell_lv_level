@@ -3,6 +3,7 @@ import pandapower.networks as pn
 import pandapower.topology as top
 from pandapower.plotting.plotly import simple_plotly
 from pandapower.plotting.plotly import pf_res_plotly
+from pandapower.plotting.plotly import create_bus_trace
 
 import simbench as sb
 
@@ -15,24 +16,26 @@ import tools.tools as tt
 
 class GridReinforce:
 
-  def __init__(self, grid, output_dir_worst_case, output_dir):
+  def __init__(self, grid, output_dir_worst_case, output_dir, use_data_of_scenario):
     self.grid = grid
     self.net_name = self.grid.net_name
     self.output_dir = output_dir
     self.output_dir_worst_case = output_dir_worst_case
 
+    self.use_data_of_scenario = use_data_of_scenario
+
     self.load_scenario_output_data()
 
-    self.trafo_overloading = self.tl.max().values
-    self.trafo_overloading_time = pd.to_datetime(self.tl.idxmax())
+    self.trafo_overloading = self.tl.max().max()
+    self.trafo_overloading_time = pd.to_datetime(self.tl.max(axis=1).idxmax())
 
     self.line_overloading = self.ll.max().max()
     self.line_overloading_time = pd.to_datetime(self.ll.max(axis=1).idxmax())
 
-    self.overvoltage = self.v_pu.max().max().round(2)
+    self.overvoltage = self.v_pu.max().max().round(3)
     self.overvoltage_time = pd.to_datetime(self.v_pu.max(axis=1).idxmax())
 
-    self.undervoltage = self.v_pu.min().min().round(2)
+    self.undervoltage = self.v_pu.min().min().round(3)
     self.undervoltage_time = pd.to_datetime(self.v_pu.min(axis=1).idxmin())
 
     self.result_lines = pd.DataFrame(columns=['linetype', 'from_bus', 'to_bus', 'length_in_km', 'costs_per_km', 'total_costs'])
@@ -64,23 +67,23 @@ class GridReinforce:
   def set_grid_expantion_costs(self):
     # according to Verteilnetzstudie Hessen
     self.trafo_costs_dir = {'0.25 MVA 20/0.4 kV' : 
-                                {'inv_cost' : 25000+7000,
-                                 'ope_cost' : (25000+7000)*.02,
+                                {'inv_cost' : 25000.+7000.,
+                                 'ope_cost' : (25000.+7000.)*.02,
                                  'ope_time' : 35},
                             '0.4 MVA 20/0.4 kV' : 
-                                {'inv_cost' : 25000+9000,
-                                 'ope_cost' : (25000+9000)*.02,
+                                {'inv_cost' : 25000.+9000.,
+                                 'ope_cost' : (25000.+9000.)*.02,
                                  'ope_time' : 35},
                             '0.63 MVA 20/0.4 kV' : 
-                                {'inv_cost' : 25000+12000,
-                                 'ope_cost' : (25000+12000)*.02,
+                                {'inv_cost' : 25000.+12000.,
+                                 'ope_cost' : (25000.+12000.)*.02,
                                  'ope_time' : 35}
     }
 
     # according to Verteilnetzstudie Baden-Württemberg
-    self.lines_costs_dir = {'rural' : 80000,
-                            'suburban' : 100000,
-                            'urban' : 120000
+    self.lines_costs_dir = {'rural' : 80000.,
+                            'suburban' : 100000.,
+                            'urban' : 120000.
     }
 
   def load_scenario_output_data(self):
@@ -101,20 +104,21 @@ class GridReinforce:
        raise KeyError('Run first Scenario 4')
 
   def fill_grid_with_power_values(self, timestep):
-    self.grid.net.sgen['p_mw'] = self.pv_p.loc[timestep].values[0]
-    self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values[0]
-    self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values[0]
-    self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values[0]
-    self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values[0]
+    self.grid.net.sgen['p_mw'] = self.pv_p.loc[timestep].values
+    self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values
+    self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values
+    self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values
+    self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values
 
   ##########################
   ### START: TRANSFORMER ###
   ##########################
-  def reinforce_transformer(self):
+  def reinforce_transformer(self, grid):
+    self.grid = grid
     print(' ')
-    print(tt.text1('Transfromer reinforcement: ')+ str(self.trafo_overloading_time[0]))
+    print(tt.text1('Transfromer reinforcement: ')+ str(self.trafo_overloading_time))
     print('Maximum trafo loading within the grid: ' + str(self.trafo_overloading) + ' %')
-    if self.trafo_overloading > 100:
+    if (self.trafo_overloading > 100).any() or self.use_data_of_scenario[0] == 5:
       print(tt.textred('Transformer reinforcement needed.'))
       print('Original transformer:')
       self.print_trafo_loading()
@@ -143,6 +147,8 @@ class GridReinforce:
       print(tt.textgreen('No transformer reinforcement needed.'))
     print(' ')
 
+    return self.grid
+
   def get_transformer_type(self):
     if self.net_name == "kerber_rural_1":
       return ['0.25 MVA 10/0.4 kV']
@@ -164,9 +170,9 @@ class GridReinforce:
     elif self.net_name == "simbench_rural_2":
       return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_rural_3":
-      return None
+      return ['0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_4":
-      return None
+      return ['0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_5":
       return None
     elif self.net_name == "simbench_urban_6":
@@ -185,12 +191,13 @@ class GridReinforce:
   ##########################
   ### START: LINELOADING ###
   ##########################
-  def reinforce_lines(self):
+  def reinforce_lines(self, grid):
+    self.grid = grid
     print(' ')
     print(tt.text1('Line reinforcement: '))
     self.print_loading_voltage()
 
-    if (self.line_overloading > 100) or (self.overvoltage > 1.1) or (self.undervoltage < .9):
+    if (self.line_overloading > 100) or (self.overvoltage > 1.1) or (self.undervoltage < .9) or self.use_data_of_scenario[0] == 5:
       self.install_line_by_gridtype()
     else:
       print(tt.textgreen('No line reinforcement needed.'))
@@ -213,15 +220,16 @@ class GridReinforce:
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       self.undervoltage = self.grid.net.res_bus.vm_pu.min().min()
 
-    print('Line(s) chenged to: ')
+    print('Line(s) changed to: ')
     print(self.result_lines)
     self.print_loading_voltage()
-    pf_res_plotly(self.grid.net, aspectratio=(1,1))
     #pp.plotting.to_html(self.grid.net, 'test.html', respect_switches=True, include_lines=True, include_trafos=True, show_tables=True)
     self.result_lines.round(3).to_csv(self.output_dir + 'reinforced_lines.csv',
                                    mode='w', header=True, index=True)
 
     print(' ')
+
+    return self.grid
 
 
   def install_line_by_gridtype(self):
@@ -243,15 +251,17 @@ class GridReinforce:
       return None
     elif self.net_name == "simbench_rural_2":
       # Strang 1
-      self.connect_buses(bus_to_trafo=22, former_bus=68, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=74, former_bus=None, line_type='NAYY 4x240SE 0.6/1kV')
+      self.disconnect_buses(22, 68)
       # Strang 2
       self.connect_buses(bus_to_trafo=4, former_bus=16, line_type='NAYY 4x150SE 0.6/1kV')
       # Strang 3
       self.connect_buses(bus_to_trafo=19, former_bus=37, line_type='NAYY 4x150SE 0.6/1kV')
       # Strang 4
-      self.connect_buses(bus_to_trafo=75, former_bus=80, line_type='NAYY 4x240SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=28, former_bus=82, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=71, former_bus=28, line_type='NAYY 4x185SE 0.6/1kV')
       self.connect_buses(bus_to_trafo=41, former_bus=36, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=75, former_bus=80, line_type='NAYY 4x300SE 0.6/1kV')
+      #self.connect_buses(bus_to_trafo=75, former_bus=None, line_type='NAYY 4x300SE 0.6/1kV')
       return None
     elif self.net_name == "simbench_rural_3":
       return None
@@ -267,11 +277,12 @@ class GridReinforce:
 
   def connect_buses(self, bus_to_trafo, former_bus, line_type):
     trafo_lv_bus_nr = self.grid.net.trafo.lv_bus[0]
-    dist = top.calc_distance_to_bus(self.grid.net, trafo_lv_bus_nr) 
+    dist = top.calc_distance_to_bus(self.grid.net, trafo_lv_bus_nr)
     new_linelength = dist[bus_to_trafo]
     pp.create_line(self.grid.net, trafo_lv_bus_nr, bus_to_trafo, new_linelength, line_type)
 
-    self.disconnect_buses(bus1=bus_to_trafo, bus2=former_bus)
+    if former_bus != None:
+      self.disconnect_buses(bus1=bus_to_trafo, bus2=former_bus)
 
     result = pd.DataFrame(data=[[line_type, trafo_lv_bus_nr,
                                           bus_to_trafo,
@@ -291,9 +302,9 @@ class GridReinforce:
     self.grid.net.line.drop(lines.index, inplace=True)
 
   def print_loading_voltage(self):
-    print('Max line loading at '+str(self.line_overloading_time)+': ' + str(self.line_overloading.round(0)) + ' %')
-    print('Max bus voltage at  '+str(self.overvoltage_time)+': ' + str(self.overvoltage.round(2)) + ' p.u.')
-    print('Min bus voltage at  '+str(self.undervoltage_time)+': ' + str(self.undervoltage.round(2)) + ' p.u.')
+    print('Max line loading at '+str(self.line_overloading_time)+': ' + str(self.line_overloading.round(1)) + ' %')
+    print('Max bus voltage at  '+str(self.overvoltage_time)+': ' + str(self.overvoltage.round(3)) + ' p.u.')
+    print('Min bus voltage at  '+str(self.undervoltage_time)+': ' + str(self.undervoltage.round(3)) + ' p.u.')
 
   ########################
   ### END: LINELOADING ###
@@ -303,15 +314,23 @@ class GridReinforce:
     everything_ok = True
     if (self.line_overloading > 100):
       print(tt.textred('Lineoverloading  at %s: %s %%' % (self.line_overloading_time, self.line_overloading)))
+      self.fill_grid_with_power_values(self.line_overloading_time)
+      pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       everything_ok = False
     if (self.overvoltage > 1.1):
-      print(tt.textred('Overvoltage      at %s: %s %%' % (self.overvoltage_time, self.overvoltage)))
+      print(tt.textred('Overvoltage      at %s: %s' % (self.overvoltage_time, self.overvoltage)))
+      self.fill_grid_with_power_values(self.overvoltage_time)
+      pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       everything_ok = False
     if (self.undervoltage < .9):
-      print(tt.textred('Undervoltage     at %s: %s %%' % (self.undervoltage_time, self.undervoltage)))
+      print(tt.textred('Undervoltage     at %s: %s' % (self.undervoltage_time, self.undervoltage)))
+      self.fill_grid_with_power_values(self.undervoltage_time)
+      pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       everything_ok = False
-    if self.trafo_overloading.any() > 100:
-      print(tt.textred('Trafooverloading at %s: %s %%' % (self.trafo_overloading_time[0], self.trafo_overloading)))
+    if (self.trafo_overloading > 100).any():
+      print(tt.textred('Trafooverloading at %s: %s %%' % (self.trafo_overloading_time, self.trafo_overloading)))
+      self.fill_grid_with_power_values(self.trafo_overloading_time)
+      pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       everything_ok = False
     if everything_ok:
       print(tt.textgreen('All components work within normal parameters.'))
@@ -319,4 +338,7 @@ class GridReinforce:
     total_line_costs = self.result_lines.total_costs.sum()
     total_trafo_costs = self.result_trafo.costs.sum()
 
-    print('Total line- and transformercosts: %s Euro' % (total_line_costs + total_trafo_costs))
+    print('Total line- and transformercosts: %s Euro' % (round(float(total_line_costs + total_trafo_costs))))
+
+    pf_res_plotly(self.grid.net, aspectratio=(1,1))
+
