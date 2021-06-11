@@ -120,6 +120,10 @@ class PowerFlow:
 
     grid = curtail_controller.curtail(grid)
 
+    b = grid.get_residualload_s_sum()
+    #print(grid.get_residualload_s_per_bus())
+    a = grid.get_residualload_s_per_household()
+
     return grid.net
 
 

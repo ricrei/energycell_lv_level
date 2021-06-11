@@ -28,13 +28,13 @@ class Curtailment:
 
   def curtail(self,grid):
 
-    residual_load_s = grid.get_residualload_s_sum()
+    res_s = grid.get_residualload_s_sum()
 
-    if (-residual_load_s > self.trafo_power*self.sf_pv):
+    if (-res_s > self.trafo_power*self.sf_pv):
       #print('PV:')
       total_pv_power = (grid.net.sgen.p_mw.sum()**2 + grid.net.sgen.q_mvar.sum()**2)**.5
       total_pv_power_mw = grid.net.sgen.p_mw.sum()
-      curtail_power = -residual_load_s - self.trafo_power*self.sf_pv
+      curtail_power = -res_s - self.trafo_power*self.sf_pv
 
       grid.net.sgen.p_mw = grid.net.sgen.p_mw * (1 - curtail_power/total_pv_power)
       grid.net.sgen.q_mvar = grid.net.sgen.q_mvar * (1 - curtail_power/total_pv_power)
@@ -43,11 +43,11 @@ class Curtailment:
     else:
       grid.curtailed_pv_power = 0
 
-    if (residual_load_s > self.trafo_power*self.sf_load):
+    if (res_s > self.trafo_power*self.sf_load):
       #print('Load:')
       total_load_power = (grid.net.load.p_mw.sum()**2 + grid.net.load.q_mvar.sum()**2)**.5
       total_load_power_mw = grid.net.load.p_mw.sum()
-      curtail_power = residual_load_s - self.trafo_power*self.sf_load
+      curtail_power = res_s - self.trafo_power*self.sf_load
 
       grid.net.load.p_mw = grid.net.load.p_mw * (1 - curtail_power/total_load_power)
       grid.net.load.q_mvar = grid.net.load.q_mvar * (1 - curtail_power/total_load_power)

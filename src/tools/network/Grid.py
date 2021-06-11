@@ -154,11 +154,37 @@ class Grid:
     total_load_p = self.net.load.p_mw.sum() + line_losses_p.sum() + trafo_losses_p.sum()
     total_load_q = self.net.load.q_mvar.sum() + line_losses_q.sum() + trafo_losses_q.sum()
 
-    p_res = total_load_p - self.net.sgen.p_mw.sum()
-    q_res = total_load_q - self.net.sgen.q_mvar.sum()
+    p_res = total_load_p - self.net.sgen.p_mw.sum() + self.net.storage['p_mw'].sum()
+    q_res = total_load_q - self.net.sgen.q_mvar.sum() + self.net.storage['q_mvar'].sum()
+
     s_res = (p_res**2 + q_res**2)**(.5)
     if p_res < 0:
       s_res = -s_res
+
+    return s_res
+
+  def get_residualload_p_per_household(self):
+    p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \
+            self.net.load.loc[self.hp_index, 'p_mw'].values + \
+            self.net.load.loc[self.ev_index, 'p_mw'].values - \
+            self.net.sgen['p_mw'].values + \
+            self.net.storage['p_mw'].values
+    return p_res
+
+
+  def get_residualload_q_per_household(self):
+    q_res = self.net.load.loc[self.load_index, 'q_mvar'].values + \
+            self.net.load.loc[self.hp_index, 'q_mvar'].values + \
+            self.net.load.loc[self.ev_index, 'q_mvar'].values - \
+            self.net.sgen['q_mvar'].values  + \
+            self.net.storage['q_mvar'].values
+    return q_res
+
+  def get_residualload_s_per_household(self):
+    p_res = self.get_residualload_p_per_household()
+    q_res = self.get_residualload_q_per_household()
+    s_res = (p_res**2 + q_res**2)**(.5)
+    s_res[p_res < 0] = -s_res[p_res < 0]
 
     return s_res
 

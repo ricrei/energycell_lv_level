@@ -28,9 +28,9 @@ net_name = ["kerber_rural_1", #0
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-04-03 00:00:00+01:00',
-               'end_time'   : '2017-04-04 00:00:00+01:00',
-               't_freq'     : '30T'
+time_scope = { 'start_time' : '2017-01-05 00:00:00+01:00',
+               'end_time'   : '2017-01-06 00:00:00+01:00',
+               't_freq'     : '10T'
              }
 
 # timescopes to examine
@@ -86,7 +86,7 @@ if run_simulation == 0:
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
   #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')
