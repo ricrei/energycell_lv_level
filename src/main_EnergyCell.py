@@ -71,7 +71,7 @@ run_simulation = 0
 if run_simulation == 0:
 
   # Initialize EnergyCell
-  e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope_winter)
+  e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
 
   # Run powerflow
   e.run_pf_timeseries()
@@ -82,7 +82,7 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload()
+  e.eva.plot_residualload()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()

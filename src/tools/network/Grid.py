@@ -5,6 +5,16 @@ import simbench as sb
 class Grid:
 
   def __init__(self, net_name, scenario, time_scope):
+    '''
+    Init method to initialize and modify a pandapower network. 
+
+    :param net_name: string
+                Name of the network (see config-file)
+    :param scenario: array of int 
+                Scenario definition (see config-file)
+    :param time_scope: dict of strings
+                Containing the simulation start time, end time, and time resolution (see config-file)
+    '''
     self.time_scope = time_scope
     self.scenario = scenario
     self.net_name = net_name
@@ -18,6 +28,10 @@ class Grid:
   ### create network ###
   ######################
   def create_net(self):
+        '''
+        Load predefined grid with pandapower or simbench. Grid contains not generation units or sector coupled consumers. 
+
+        '''
         #print('Create grid ...')
         # create net: only load without pv
         if self.net_name == "kerber_rural_1":
@@ -86,6 +100,10 @@ class Grid:
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
 
   def get_component_index(self):
+        '''
+        Method to store the index of generation and consumption units within class Grid.
+        Call after generation and additional consumers are defined.
+        '''
         self.pv_index = self.net.sgen.index
         self.load_index = self.net.load.index[self.net.load.type.str.contains('load')]
         self.hp_index = self.net.load.index[self.net.load.type.str.contains('hp')]
@@ -93,6 +111,10 @@ class Grid:
         self.bss_index = self.net.storage.index
 
   def get_label_of_each_component(self):
+        '''
+        Set labels for all gens and cons coresponding to the type unit.
+        Necessary to allocate a load series to each gen and con unit.
+        '''
         self.label_pv = self.net.sgen.type.loc[self.pv_index]
         self.label_pv_p = self.label_pv + '_p'
         self.label_pv_q = self.label_pv + '_q'
@@ -109,7 +131,41 @@ class Grid:
     for i in self.net.bus.index:
       self.net.bus.name[i] = str(self.net.bus.subnet[i]) + ' Bus ' + str(i)
 
+  def get_vm_pu_ext_grid(self, grid):
+    '''
+    Returns the voltage in pu at the external grid.  
+    considering the MV-grid valid voltage deviation of +-4%
+    assuming that the voltage magnitute depends on the residual load
+
+    :param grid: class Grid
+    '''
+    voltage_deviation_in_percent = .04
+    nominal_voltage = 1.0
+    residual_load = grid.net.load.p_mw.sum() - grid.net.sgen.p_mw.sum()
+    voltage_deviation = -residual_load/(grid.total_installed_pv_power/1000)*voltage_deviation_in_percent
+
+    return nominal_voltage + voltage_deviation
+
+  def get_residualload_s_sum(self):
+    line_losses_p = self.net.res_line.pl_mw
+    line_losses_q = self.net.res_line.ql_mvar
+    trafo_losses_p = self.net.res_trafo.pl_mw
+    trafo_losses_q = self.net.res_trafo.ql_mvar
+    total_load_p = self.net.load.p_mw.sum() + line_losses_p.sum() + trafo_losses_p.sum()
+    total_load_q = self.net.load.q_mvar.sum() + line_losses_q.sum() + trafo_losses_q.sum()
+
+    p_res = total_load_p - self.net.sgen.p_mw.sum()
+    q_res = total_load_q - self.net.sgen.q_mvar.sum()
+    s_res = (p_res**2 + q_res**2)**(.5)
+    if p_res < 0:
+      s_res = -s_res
+
+    return s_res
+
   def create_test_net_one_load_branch(self):
+    '''
+    Create a test grid with one household: ext_grid --- trafo --- line --- generation/consumption
+    '''
     net = pp.create_empty_network(name='one_load_branch')
     b1 = pp.create_bus(net=net, vn_kv = 10, name='1')
     b2 = pp.create_bus(net=net, vn_kv =.4, name='2')
@@ -119,13 +175,3 @@ class Grid:
     pp.create_load(net, b3, 0)
     pp.create_transformer(net, b1, b2, '0.25 MVA 10/0.4 kV', name='trafo')
     return net
-
-  def get_vm_pu_ext_grid(self, grid):
-    # considering the MV-grid valid voltage deviation of +-4%
-    # assuming that the voltage magnitute depends on the residual load
-    voltage_deviation_in_percent = .04
-    nominal_voltage = 1.0
-    residual_load = grid.net.load.p_mw.sum() - grid.net.sgen.p_mw.sum()
-    voltage_deviation = -residual_load/(grid.total_installed_pv_power/1000)*voltage_deviation_in_percent
-
-    return nominal_voltage + voltage_deviation
