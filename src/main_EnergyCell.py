@@ -26,7 +26,6 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch"]  #13
 ############################
 
-<<<<<<< HEAD
 # Define timescope and timestepwidth
 time_scope = { 'start_time' : '2017-03-12 00:00:00+02:00',
                'end_time'   : '2017-03-13 00:00:00+02:00',
@@ -38,7 +37,7 @@ time_scope = { 'start_time' : '2017-05-26 14:00:00+02:00',
                't_freq'     : '10T'
              }
 '''
-=======
+
 ##########################################
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-04-01 00:00:00+01:00',
@@ -46,7 +45,7 @@ time_scope = { 'start_time' : '2017-04-01 00:00:00+01:00',
                't_freq'     : '30T'
              }
 
->>>>>>> dev
+
 # timescopes to examine
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
@@ -95,11 +94,11 @@ if run_simulation == 0:
   e.eva.calculate_net_problems()
 
   e.eva.plot_residualload()
-  #e.eva.plot_generation_consumption_as_heat_map()
-  #e.eva.plot_colorbar_seaborn()
-  #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
-  #e.eva.plot_pv_reactive_power()
+  e.eva.plot_generation_consumption_as_heat_map()
+  e.eva.plot_colorbar_seaborn()
+  e.eva.plot_grid_issus_over_power()
+  e.eva.plot_grid_issus_over_time()
+  e.eva.plot_pv_reactive_power()
   e.eva.plot_soc()
 
 elif run_simulation == 1:
@@ -126,37 +125,6 @@ elif run_simulation == 1:
 
   print('Done')
 
-<<<<<<< HEAD
-# Define scenario
-# 1: conventional, 2: full-electrified
-# 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
-# 5: grid extention (not implemented), 6: battery storage systems
-# 7: smart consumers, 8: battery storage systems and smart consumers
-scenario = 4
-
-# Initialize EnergyCell
-e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
-
-# Run powerflow
-e.run_pf_timeseries()
-
-# Initialize Evaluation
-e.initiate_evaluation()
-
-################################################
-############# ANALISE OUTPUT DATA ##############
-################################################
-
-e.eva.calculate_relevant_outputdata()
-e.eva.calculate_net_problems()
-
-e.eva.plot_residualload()
-e.eva.plot_generation_consumption_as_heat_map()
-e.eva.plot_colorbar_seaborn()
-e.eva.plot_grid_issus_over_power()
-e.eva.plot_grid_issus_over_time()
-e.eva.plot_pv_reactive_power()
-
 '''
 i = 0
 CGREEN = '\33[32m'
@@ -174,5 +142,3 @@ for time_scope_i in [time_scope_winter, time_scope_summer]:
 
 print('Done')
 '''
-=======
->>>>>>> dev

@@ -40,12 +40,13 @@ class EnergyCell():
 
         self.net_name = net_name
         if int(scenario[0]) in [1, 2, 3, 4, 5, 6]:
-          self.scenario = scenario[0]
-          self.scenario_frame = scenario
+            self.scenario = scenario[0]
+            self.scenario_frame = scenario
         else:
-          raise ValueError('The entered ´scenario´ is not a valid option. \
-                           ´Scenario´ should be between 1 and 6.')
+            raise ValueError('The entered ´scenario´ is not a valid option. \
+                            ´Scenario´ should be between 1 and 6.')
 
+        
         if ('start_time' in time_scope) and ('end_time' in time_scope) and ('t_freq' in time_scope):
           self.time_scope = time_scope
           self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
@@ -72,23 +73,24 @@ class EnergyCell():
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
         #self.grid = self.bss_creator.create_bss_at_one_bus(self.grid)
 
-        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[1]))
+        #Paul workaround wegen: TypeError: 'int' object is not subscriptable
+        #self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[1]))
+        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = 0)
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
         self.pv_controller = PVcontroller(grid=self.grid, control='cos_phi', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
-<<<<<<< HEAD
+
         self.hp_controller = HPcontroller(grid=self.grid, control='evu_lock')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple')
 
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(self.time_scope)
-=======
+
         self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple') 
->>>>>>> dev
 
         self.output_data_handler = OutputDataHandler()
         self.output_dir = self.output_data_handler.create_output_dir(
