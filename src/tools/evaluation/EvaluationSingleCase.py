@@ -1,6 +1,10 @@
 import numpy as np # wegen anzahl busse
 import pandas as pd
 
+import pandapower as pp
+from pandapower.plotting.plotly import simple_plotly
+from pandapower.plotting.plotly import pf_res_plotly
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -12,7 +16,8 @@ import tools.tools as tt
 
 class EvaluationSingleCase():
   
-  def __init__(self, output_dir, net_name, scenario, time_scope): 
+  def __init__(self, grid, output_dir, net_name, scenario, time_scope): 
+    self.grid = grid
     self.output_dir = output_dir
     self.net_name = net_name
     self.scenario = scenario
@@ -24,11 +29,14 @@ class EvaluationSingleCase():
     self.power = self.read_data(self.output_dir+'power_total_MW.csv')
     self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
     self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
+    self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
+    self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
+    self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
-    self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
+    #self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -62,7 +70,7 @@ class EvaluationSingleCase():
     ax.plot(power.index, power.hp+power.load+power.ev, lw=.6)
     ax.plot(storage.index, storage)
     power = self.shorted_data(power, 'W')
-    ax.plot(power.index, -power.pv+power.hp+power.load+power.ev, color='black', lw=.5)
+    #ax.plot(power.index, -power.pv+power.hp+power.load+power.ev, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')
     #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
@@ -252,4 +260,26 @@ class EvaluationSingleCase():
     ax.set_ylabel('State of charge in %')
     #plt.legend(grid.component_buses.index)
     plt.show()
-    pass
+    
+  def plot_grid(self, time_sample=None):
+    if time_sample==None:
+      raise ValueError('plot_grid failed. Please define time_sample.')
+
+    def fill_grid_with_power_values(timestep):
+      self.grid.net.sgen['p_mw'] = self.pv_p.loc[timestep].values
+      self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values
+      self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values
+      self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values
+      self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values
+
+    time_sample = pd.to_datetime(time_sample)
+
+    fill_grid_with_power_values(time_sample)
+
+    pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
+
+    pf_res_plotly(self.grid.net, aspectratio=(1,1))
+
+    
+
+
