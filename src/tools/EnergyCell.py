@@ -11,6 +11,10 @@ import sys
 import pandas as pd
 import tools.tools as tt
 
+#temp
+import pandapower as pp
+#temp
+
 from tools.creator.HHLcreator import HHLcreator
 from tools.creator.PVcreator import PVcreator
 from tools.creator.HPcreator import HPcreator
@@ -57,7 +61,7 @@ class EnergyCell():
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
-        self.grid = Grid(net_name, self.scenario, self.time_scope)
+        self.grid = Grid(self.net_name, self.scenario, self.time_scope)
 
         self.hhl_creator = HHLcreator()
         self.pv_creator = PVcreator()
@@ -70,7 +74,6 @@ class EnergyCell():
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
-        #self.grid = self.bss_creator.create_bss_at_one_bus(self.grid)
 
         self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[1]))
 
@@ -112,6 +115,9 @@ class EnergyCell():
           sys.exit(0)
 
         self.output_data_handler.create_output_dataframes(self.grid)
+
+        # Save net to pickle
+        pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
 
 
     def __repr__(self):

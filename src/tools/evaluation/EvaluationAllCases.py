@@ -10,7 +10,7 @@ import _pickle as cPickle
 
 
 class EvaluationAllCases():
-  def __init__(self, net_name, scenarios, time_scopes):
+  def __init__(self, net_names, scenarios, time_scopes):
     output_df_dir = 'output-files/'
 
     eva = {}
@@ -27,12 +27,12 @@ class EvaluationAllCases():
     for time_scope_i in time_scopes:#[time_scope_winter, time_scope_summer]:
       for net_name_i in [7, 8, 9, 10, 11]:
         for scenario_i in scenarios:#[10, 20, 30, 40, 41]:
-          output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_name[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
+          output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_names[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
           index = 's' + str(scenario_i) + 'n' + str(net_name_i) + str(time_scope_i['name'])
           print('create: ' + str(index))
           eva[index] = {}
           eva[index]['scenario'] = scenario_i
-          eva[index]['net_name'] = net_name[net_name_i]
+          eva[index]['net_name'] = net_names[net_name_i]
           eva[index]['net_name_i'] = net_name_i
           eva[index]['time_scope_name'] = time_scope_i['name']
           eva[index]['power'] = self.read_data(output_dir+'power_total_MW.csv')

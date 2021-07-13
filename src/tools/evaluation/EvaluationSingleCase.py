@@ -280,6 +280,9 @@ class EvaluationSingleCase():
 
     pf_res_plotly(self.grid.net, aspectratio=(1,1))
 
+    #print(self.grid.net.res_trafo.p_hv_mw)
+    #print(self.grid.net.res_trafo.p_lv_mw)
+
     
 
 

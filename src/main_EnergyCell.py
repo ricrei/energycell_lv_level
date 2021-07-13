@@ -8,29 +8,11 @@ Created on Wed March 17 11:08:14 2020
 import tools.EnergyCell as ec
 import tools.evaluation.EvaluationAllCases as EvaAllCases
 
-#############################
-### Define all gird names ###
-net_name = ["kerber_rural_1", #0
-            "kerber_rural_2", #1
-            "kerber_rural_3", #2
-            "kerber_rural_4",  #3
-            "kerber_village",  #4
-            "kerber_suburb_1", #5
-            "kerber_suburb_2",  #6
-            "simbench_rural_1", #7
-            "simbench_rural_2", #8
-            "simbench_rural_3", #9
-            "simbench_suburb_4", #10
-            "simbench_suburb_5", #11
-            "simbench_urban_6",  #12
-            "test_net_one_load_branch"]  #13
-############################
-
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-05 00:00:00+01:00',
-               'end_time'   : '2017-01-06 00:00:00+01:00',
-               't_freq'     : '10T'
+time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
+               'end_time'   : '2017-05-26 23:00:00+02:00',
+               't_freq'     : '1H'
              }
 
 # timescopes to examine
@@ -46,6 +28,8 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'summer'
                     }
+
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -60,6 +44,26 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 scenario = [4, 0]
 #######################
 
+######################
+### Define network ###
+net_name = ["kerber_rural_1", #0
+            "kerber_rural_2", #1
+            "kerber_rural_3", #2
+            "kerber_rural_4",  #3
+            "kerber_village",  #4
+            "kerber_suburb_1", #5
+            "kerber_suburb_2",  #6
+            "simbench_rural_1", #7
+            "simbench_rural_2", #8
+            "simbench_rural_3", #9
+            "simbench_suburb_4", #10
+            "simbench_suburb_5", #11
+            "simbench_urban_6",  #12
+            "test_net_one_load_branch"]  #13
+# define net number
+net_number = 8
+######################
+
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
@@ -71,7 +75,9 @@ run_simulation = 0
 if run_simulation == 0:
 
   # Initialize EnergyCell
-  e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
+  e = ec.EnergyCell(net_name = net_name[net_number],
+                    scenario = scenario,
+                    time_scope = time_scope)
 
   # Run powerflow
   e.run_pf_timeseries()
@@ -82,14 +88,14 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload()
+  #e.eva.plot_residualload()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  e.eva.plot_grid_issus_over_time()
+  #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
-  #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')
+  #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')
 #############################
 
 ###############################
@@ -97,22 +103,20 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  CGREEN = '\33[32m'
-  CEND   = '\33[0m'
   for time_scope_i in [time_scope_winter]:
     for net_name_i in [7, 8, 9, 10, 11]:
       for scenario_i in [[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
         print(' ')
-        print(CGREEN + 'Durchlauf: ' + str(i) + CEND)
+        print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
-        e = ec.EnergyCell(net_name = net_name[net_name_i],
+        e = ec.EnergyCell(net_name = net_name_i,
                           scenario = scenario_i,
                           time_scope = time_scope_i)
         e.run_pf_timeseries()
 
   #elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
-                                 net_name = net_name,
+                                 net_names = net_name,
                                  scenarios = [10, 20, 30, 40, 41],
                                  time_scopes = [time_scope_winter, time_scope_summer])
 

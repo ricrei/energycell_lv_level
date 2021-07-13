@@ -15,6 +15,7 @@ class Grid:
     :param time_scope: dict of strings
                 Containing the simulation start time, end time, and time resolution (see config-file)
     '''
+
     self.time_scope = time_scope
     self.scenario = scenario
     self.net_name = net_name
