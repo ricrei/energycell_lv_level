@@ -47,6 +47,7 @@ class InputDataHandler():
         pv = tt.decompress_pickle('input-files/02_pv_gen.pbz2')
         hp = tt.decompress_pickle('input-files/03_hp_load.pbz2')
         ev = tt.decompress_pickle('input-files/04_ev_load.pbz2')
+        ta = tt.decompress_pickle('input-files/05_temperature_ambient.pbz2')
 
         ev_rural    = ev[ev.columns[ev.columns.str.contains('_rural')]]
         ev_suburban = ev[ev.columns[ev.columns.str.contains('_suburban')]]
@@ -62,6 +63,8 @@ class InputDataHandler():
         ev_shorted_urban    = shorted_data(ev_urban, start_time, end_time, t_freq)
         ev_shorted = pd.concat([ev_shorted_rural, ev_shorted_suburban, ev_shorted_urban], axis=1)
 
+        ta_shorted = shorted_data(ta, start_time, end_time, t_freq)
+
         time = self.get_time_df(pv_shorted)
 
         tt.compress_pickle('input-files/10_time_short.pbz2', time)
@@ -70,6 +73,7 @@ class InputDataHandler():
         tt.compress_pickle('input-files/12_pv_short.pbz2', pv_shorted)
         tt.compress_pickle('input-files/13_hp_short.pbz2', hp_shorted)
         tt.compress_pickle('input-files/14_ev_short.pbz2', ev_shorted)
+        tt.compress_pickle('input-files/15_temperature_ambient_short.pbz2', ta_shorted)
 
         f = open('input-files/daterange.csv','w')
         f.write(self.dates)
