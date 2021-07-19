@@ -40,9 +40,23 @@ time_scope = time_scope
 ## 5: grid extention, 6: battery storage systems
 ## 7: smart consumers, 8: battery storage systems and smart consumers
 # Second digit:
+## 0: HP,EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
+## 1: Household-oriented feed-in damping (only in scenario[0] 6, 7, 8)
+## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
+# Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0]
+scenario = [6, 1, 0]
 #######################
+
+############################
+### Controller parameter ###
+# PV_mod: qu, cos_phi
+# PV_cos_phi: 0.9 - 1
+control_parameter = {
+  'PV_mod' : 'qu',
+  'PV_cos_phi' : .9}
+
+############################
 
 ######################
 ### Define network ###
@@ -77,6 +91,7 @@ if run_simulation == 0:
   # Initialize EnergyCell
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
+                    control_parameter = control_parameter,
                     time_scope = time_scope)
 
   # Run powerflow
@@ -111,6 +126,7 @@ elif run_simulation == 1:
         i += 1
         e = ec.EnergyCell(net_name = net_name_i,
                           scenario = scenario_i,
+                          control_parameter = control_parameter,
                           time_scope = time_scope_i)
         e.run_pf_timeseries()
 

@@ -4,8 +4,8 @@ import pandas as pd
 class HPcontroller:
 
   def __init__(self, grid, control='greedy'):
-      self.set_hp = (grid.scenario in [2, 4, 5, 51, 52, 6])
-      if (control=='greedy' or control=='preventive' or control=='curative'):
+      self.set_hp = (grid.scenario[0] in [2, 4, 5, 51, 52, 6])
+      if (control=='greedy' or control=='household-oriented_feed-in_damping' or control=='grid-oriented_feed-in_damping'):
         self.control = control
         self.cos_phi = .95
         self.tan_phi = np.tan(np.arccos(self.cos_phi))
@@ -15,10 +15,10 @@ class HPcontroller:
       if self.set_hp == True:
         if self.control == 'greedy':
           self.P_controller = HP_P_control_greedy(grid)
-        elif self.control == 'preventive':
-          raise ValueError('HP preventive control is not implemented.')
-        elif self.control == 'curative':
-          raise ValueError('HP curative control is not implemented.')
+        elif self.control == 'household-oriented_feed-in_damping':
+          self.P_controller = HP_P_control_hh_fid(grid)
+        elif self.control == 'grid-oriented_feed-in_damping':
+          self.P_controller = HP_P_control_grid_fid(grid)
       else:
         self.P_controller =  HP_P_control_no_hp(grid)
 
@@ -57,4 +57,26 @@ class HP_P_control_greedy(HP_P_control):
       HP_P_control.pcontrol(self)
       return d.values
 
+### household-oriented_feed-in_damping ###
+class HP_P_control_hh_fid(HP_P_control):
 
+  def __init__(self, grid):
+      #TODO
+      print('Warning: HP household-oriented_feed-in_damping control is not implemented')
+      super().__init__(grid)
+
+  def pcontrol(self, grid, d):
+      HP_P_control.pcontrol(self)
+      return d.values
+
+### grid-oriented_feed-in_damping ###
+class HP_P_control_grid_fid(HP_P_control):
+
+  def __init__(self, grid):
+      #TODO
+      print('Warning: HP grid-oriented_feed-in_damping control is not implemented')
+      super().__init__(grid)
+
+  def pcontrol(self, grid, d):
+      HP_P_control.pcontrol(self)
+      return d.values

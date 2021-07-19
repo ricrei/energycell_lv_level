@@ -4,7 +4,7 @@ import pandas as pd
 class BSScontroller:
 
   def __init__(self, grid, control='simple'):
-      self.set_bss = (grid.scenario in [6])
+      self.set_bss = (grid.scenario[0] in [6])
       #self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
       #self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
@@ -14,6 +14,12 @@ class BSScontroller:
         self.control = control
       elif (control=='feed_in_damping'):
         self.control = control
+      elif control == 'household-oriented_feed-in_damping':
+        self.control = 'simple'
+        #raise ValueError('household-oriented_feed-in_damping control is not implemented.')
+      elif control == 'grid-oriented_feed-in_damping':
+        self.control = 'simple'
+        #raise ValueError('grid-oriented_feed-in_damping control is not implemented.')
       else:
         raise ValueError('The entered BSS control is not a valid option.')
 
@@ -254,3 +260,27 @@ class BSS_control_feed_in_damping(BSS_control):
       
       return p_mw_bss
 '''
+
+### household-oriented_feed-in_damping ###
+class BSS_P_control_hh_fid(BSS_control):
+
+  def __init__(self, grid):
+      #TODO
+      print('Warning: BSS household-oriented_feed-in_damping control is not implemented.')
+      super().__init__(grid)
+
+  def pcontrol(self, grid, d):
+      BSS_P_control.pcontrol(self)
+      return d.values
+
+### grid-oriented_feed-in_damping ###
+class BSS_P_control_grid_fid(BSS_control):
+
+  def __init__(self, grid):
+      #TODO
+      print('Warning: EV grid-oriented_feed-in_damping control is not implemented.')
+      super().__init__(grid)
+
+  def pcontrol(self, grid, d):
+      BSS_P_control.pcontrol(self)
+      return d.values

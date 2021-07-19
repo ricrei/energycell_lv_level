@@ -10,7 +10,7 @@ class OutputDataHandler():
   ### create output_dir ###
   #########################
   def create_output_dir(self, net_name, scenario_frame, time_scope):
-        self.output_dir = os.path.join("./", "output-files/"+str(scenario_frame[0])+str(scenario_frame[1])+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
+        self.output_dir = os.path.join("./", "output-files/"+str(scenario_frame[0])+str(scenario_frame[1])+str(scenario_frame[2])+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
         # Create output directory
         if not os.path.isdir(self.output_dir):
           try:

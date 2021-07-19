@@ -31,6 +31,7 @@ from tools.network.Grid import Grid
 from tools.network.GridReinforce import GridReinforce
 
 from tools.powerflow.PowerFlow import PowerFlow
+from tools.powerflow.EnergyManagement import EnergyManagement
 
 from tools.datahandler.OutputDataHandler import OutputDataHandler
 from tools.datahandler.InputDataHandler import InputDataHandler
@@ -39,16 +40,15 @@ from tools.evaluation.EvaluationSingleCase import EvaluationSingleCase
 
 class EnergyCell():
 
-    def __init__(self, net_name, scenario, time_scope):
+    def __init__(self, net_name, scenario, control_parameter, time_scope):
         self.run_time('start')
 
         self.net_name = net_name
-        if int(scenario[0]) in [1, 2, 3, 4, 5, 6]:
-          self.scenario = scenario[0]
-          self.scenario_frame = scenario
+        if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2])) or ((scenario[0] in [1, 2, 3, 4, 5, 6]) and (scenario[1] == 0)):
+          self.scenario = scenario
         else:
-          raise ValueError('The entered ´scenario´ is not a valid option. \
-                           ´Scenario´ should be between 1 and 6.')
+          raise ValueError('Scenario number and Controll mode do not match. \
+                           Scenario should be between 1 and 8.')
 
         if ('start_time' in time_scope) and ('end_time' in time_scope) and ('t_freq' in time_scope):
           self.time_scope = time_scope
@@ -75,30 +75,37 @@ class EnergyCell():
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
 
-        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[1]))
-
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
-        self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
-        self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
-        self.bss_controller = BSScontroller(grid=self.grid, control='simple') 
+        self.pv_controller = PVcontroller(grid=self.grid, control=control_parameter['PV_mod'], cos_phi=control_parameter['PV_cos_phi'])
+        if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [0]):
+          self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
+          self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
+          self.bss_controller = BSScontroller(grid=self.grid, control='simple')
+        elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2]):
+          mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
+          self.ev_controller = EVcontroller(grid=self.grid, control=mode[scenario[1]])
+          self.hp_controller = HPcontroller(grid=self.grid, control=mode[scenario[1]])
+          self.bss_controller = BSScontroller(grid=self.grid, control=mode[scenario[1]])
+
+        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[2]))
 
         self.output_data_handler = OutputDataHandler()
         self.output_dir = self.output_data_handler.create_output_dir(
                                          self.net_name,
-                                         self.scenario_frame,
+                                         self.scenario,
                                          self.time_scope)
 
         self.pf = PowerFlow(self.output_dir)
+        self.energy_manager = EnergyManagement(self.scenario[0])
 
         self.print_object_parameter()
 
         self.run_time('end', 'init ec')
 
-        if self.scenario == 5:
-          use_data_of_scenario = [4, 0]
+        if self.scenario[0] == 5:
+          use_data_of_scenario = [4, 0, 0]
           self.output_data_handler_worst_case = OutputDataHandler()
           self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(
                                          self.net_name,
@@ -153,6 +160,7 @@ class EnergyCell():
                                                   ev_controller=self.ev_controller,
                                                   bss_controller=self.bss_controller,
                                                   curtail_controller=self.curtail_controller,
+                                                  energy_manager=self.energy_manager,
                                                   output_data_handler=self.output_data_handler)
 
         self.run_time('end', 'run pf')
@@ -161,7 +169,7 @@ class EnergyCell():
     ### initiate evaluation object for a single case ###
     ####################################################
     def initiate_evaluation(self):
-        self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario, self.time_scope)
+        self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope)
 
 
     ############################
