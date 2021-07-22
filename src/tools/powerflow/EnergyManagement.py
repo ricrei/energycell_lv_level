@@ -134,7 +134,7 @@ class EnergyManagementAdvanced:
     grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t])
     grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t])
 
-    grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, input_dict['ev'].loc[t])
+    grid.net.load.loc[grid.ev_index, 'p_mw'] = ev_controller.get_active_power(grid, input_dict['ev'].loc[t], t)
 
     grid.net.storage['p_mw'] = bss_controller.get_active_power(grid)
 

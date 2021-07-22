@@ -23,6 +23,13 @@ class InputDataHandler():
 
         return data_shorted
 
+      def shorted_data_sum(data, start_time, end_time, t_freq):
+        data_shorted = data.loc[start_time:end_time]
+        data_shorted = data_shorted.resample(t_freq).sum()
+        data_shorted = data_shorted.round(4)
+
+        return data_shorted
+
       self.dates = time_scope['start_time'] + ' ' + time_scope['end_time'] + ' ' + time_scope['t_freq']
 
       with open('input-files/daterange.csv') as daterange:
@@ -46,12 +53,16 @@ class InputDataHandler():
         q0 = tt.decompress_pickle('input-files/01_q0_load.pbz2')
         pv = tt.decompress_pickle('input-files/02_pv_gen.pbz2')
         hp = tt.decompress_pickle('input-files/03_hp_load.pbz2')
-        ev = tt.decompress_pickle('input-files/04_ev_load.pbz2')
+        ev_rural    = tt.decompress_pickle('input-files/04_ev_load_rural.pbz2')
+        ev_suburban = tt.decompress_pickle('input-files/04_ev_load_suburban.pbz2')
+        ev_urban    = tt.decompress_pickle('input-files/04_ev_load_urban.pbz2')
+        ev_rural_charging_demand    = tt.decompress_pickle('input-files/04_ev_charging_demand_rural.pbz2')
+        ev_suburban_charging_demand = tt.decompress_pickle('input-files/04_ev_charging_demand_suburban.pbz2')
+        ev_urban_charging_demand    = tt.decompress_pickle('input-files/04_ev_charging_demand_urban.pbz2')
+        ev_rural_parking_time    = tt.decompress_pickle('input-files/04_ev_parking_time_rural.pbz2')
+        ev_suburban_parking_time = tt.decompress_pickle('input-files/04_ev_parking_time_suburban.pbz2')
+        ev_urban_parking_time    = tt.decompress_pickle('input-files/04_ev_parking_time_urban.pbz2')
         ta = tt.decompress_pickle('input-files/05_temperature_ambient.pbz2')
-
-        ev_rural    = ev[ev.columns[ev.columns.str.contains('_rural')]]
-        ev_suburban = ev[ev.columns[ev.columns.str.contains('_suburban')]]
-        ev_urban    = ev[ev.columns[ev.columns.str.contains('_urban')]]
 
         p0_shorted = shorted_data(p0, start_time, end_time, t_freq)
         q0_shorted = shorted_data(q0, start_time, end_time, t_freq)
@@ -61,7 +72,13 @@ class InputDataHandler():
         ev_shorted_rural    = shorted_data(ev_rural, start_time, end_time, t_freq)
         ev_shorted_suburban = shorted_data(ev_suburban, start_time, end_time, t_freq)
         ev_shorted_urban    = shorted_data(ev_urban, start_time, end_time, t_freq)
-        ev_shorted = pd.concat([ev_shorted_rural, ev_shorted_suburban, ev_shorted_urban], axis=1)
+        ev_shorted_rural_charging_demand    = shorted_data(ev_rural_charging_demand, start_time, end_time, t_freq)
+        ev_shorted_suburban_charging_demand = shorted_data(ev_suburban_charging_demand, start_time, end_time, t_freq)
+        ev_shorted_urban_charging_demand    = shorted_data(ev_urban_charging_demand, start_time, end_time, t_freq)
+        ev_shorted_rural_parking_time    = shorted_data(ev_rural_parking_time, start_time, end_time, t_freq)
+        ev_shorted_suburban_parking_time = shorted_data(ev_suburban_parking_time, start_time, end_time, t_freq)
+        ev_shorted_urban_parking_time    = shorted_data(ev_urban_parking_time, start_time, end_time, t_freq)
+
 
         ta_shorted = shorted_data(ta, start_time, end_time, t_freq)
 
@@ -72,7 +89,15 @@ class InputDataHandler():
         tt.compress_pickle('input-files/11_q0_short.pbz2', q0_shorted)
         tt.compress_pickle('input-files/12_pv_short.pbz2', pv_shorted)
         tt.compress_pickle('input-files/13_hp_short.pbz2', hp_shorted)
-        tt.compress_pickle('input-files/14_ev_short.pbz2', ev_shorted)
+        tt.compress_pickle('input-files/14_ev_short_rural.pbz2', ev_shorted_rural)
+        tt.compress_pickle('input-files/14_ev_short_suburban.pbz2', ev_shorted_suburban)
+        tt.compress_pickle('input-files/14_ev_short_urban.pbz2', ev_shorted_urban)
+        tt.compress_pickle('input-files/14_ev_short_rural_charging_demand.pbz2', ev_shorted_rural_charging_demand)
+        tt.compress_pickle('input-files/14_ev_short_suburban_charging_demand.pbz2', ev_shorted_suburban_charging_demand)
+        tt.compress_pickle('input-files/14_ev_short_urban_charging_demand.pbz2', ev_shorted_urban_charging_demand)
+        tt.compress_pickle('input-files/14_ev_short_rural_parking_time.pbz2', ev_shorted_rural_parking_time)
+        tt.compress_pickle('input-files/14_ev_short_suburban_parking_time.pbz2', ev_shorted_suburban_parking_time)
+        tt.compress_pickle('input-files/14_ev_short_urban_parking_time.pbz2', ev_shorted_urban_parking_time)
         tt.compress_pickle('input-files/15_temperature_ambient_short.pbz2', ta_shorted)
 
         f = open('input-files/daterange.csv','w')

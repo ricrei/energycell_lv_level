@@ -20,7 +20,7 @@ class Grid:
     self.scenario = scenario
     self.net_name = net_name
     self.create_net()
-    pp.runpp(self.net, algorithm='nr')  # Has be execute to get initial net.res_bus for Q(U)-control
+    pp.runpp(self.net, algorithm='nr')  # Has to be executed to get initial net.res_bus for Q(U)-control
 
     self.curtailed_pv_power = 0
     self.curtailed_load_power = 0
