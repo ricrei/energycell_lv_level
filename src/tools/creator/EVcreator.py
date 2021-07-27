@@ -7,7 +7,7 @@ class EVcreator:
 
   def __init__(self):
     self.usable_c_bat = 1 # 0-1
-    self.ev_start_soc = .5 # 0-1
+    self.ev_start_soc = 1 # 0-1
 
 
   ###########################################

@@ -14,8 +14,8 @@ class EVcontroller:
 
       self.ev_parameter = {'charging_power' : .011,
                            'charging_efficiency' : .9,
-                           'greedy_charge_limit' : .7,
-                           'linear_charge_limit' : .8}
+                           'greedy_charge_limit' : .8,
+                           'linear_charge_limit' : .9}
 
       if (grid.category == 'rural') or (grid.category == 'village'):
         self.ev_data_file_charging_demand = 'input-files/14_ev_short_rural_charging_demand.pbz2'
@@ -34,7 +34,7 @@ class EVcontroller:
 
       if self.set_ev == True:
         if self.control == 'greedy':
-          self.P_controller = EV_P_control_greedy(grid)
+          self.P_controller = EV_P_control_greedy(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
         elif self.control == 'household-oriented_feed-in_damping':
           self.P_controller = EV_P_control_hh_fid(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
         elif self.control == 'grid-oriented_feed-in_damping':
@@ -53,28 +53,52 @@ class EV_P_control:
       self.ev_parameter = ev_parameter
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
 
-  def pcontrol(self):
-      pass
+  def pcontrol(self, grid, d, t):
+      grid.net.load.ev_parking.loc[grid.ev_index] = self.parking_time[grid.net.load.loc[grid.ev_index].type].loc[t].values
+      grid.net.load.ev_soc.loc[grid.ev_index] -= (self.charging_demand[grid.net.load.loc[grid.ev_index].type].loc[t].values)/grid.net.load.ev_c_bat.loc[grid.ev_index]
+      grid.net.load.p_mw.loc[grid.ev_index] = 0
+
+      return grid
+
+
+  def greedy_charge(self, grid, t, limit = 1.0):
+
+      ev = grid.net.load.loc[grid.ev_index]
+      
+      soc_increase = (self.ev_parameter['charging_power'] * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+      soc_increase[ev.ev_parking == 0] = 0
+      soc_increase_ref = soc_increase
+      soc_increase[(ev.ev_soc + soc_increase_ref > limit) & (ev.ev_soc < limit)] = limit - ev.ev_soc
+      soc_increase[(ev.ev_soc + soc_increase_ref > limit) & (ev.ev_soc >= limit)] = 0
+
+      ev.ev_soc += soc_increase
+      ev.p_mw += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000     
+
+      grid.net.load.loc[grid.ev_index] = ev
+
+      return grid
 
 ### no ev ###
 class EV_P_control_no_ev(EV_P_control):
 
-  def __init__(self, grid):
-      super().__init__(grid)
+  def __init__(self, grid, ev_parameter, charging_demand, parking_time):
+      super().__init__(grid, ev_parameter, charging_demand, parking_time)
 
   def pcontrol(self, grid, d, t):
-      EV_P_control.pcontrol(self)
-      return d.values*0
+      grid = EV_P_control.pcontrol(self, grid, d, t)
+      return grid.net.load.p_mw.loc[grid.ev_index]*0#d.values*0
 
 ### greedy ###
 class EV_P_control_greedy(EV_P_control):
 
-  def __init__(self, grid):
-      super().__init__(grid)
+  def __init__(self, grid, ev_parameter, charging_demand, parking_time):
+      super().__init__(grid, ev_parameter, charging_demand, parking_time)
 
-  def pcontrol(self, grid, d):
-      EV_P_control.pcontrol(self)
-      return d.values
+  def pcontrol(self, grid, d, t):
+      EV_P_control.pcontrol(self, grid, d, t)
+      grid = self.greedy_charge(grid, t, limit = 1.0)
+
+      return grid.net.load.p_mw.loc[grid.ev_index]#d.values
 
 ### household-oriented_feed-in_damping ###
 class EV_P_control_hh_fid(EV_P_control):
@@ -85,26 +109,32 @@ class EV_P_control_hh_fid(EV_P_control):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
 
   def pcontrol(self, grid, d, t):
-      EV_P_control.pcontrol(self)
-
-      self.p_res = grid.get_residualload_p_per_household()
-
-      grid = self.greedy_charge(grid, t)
+      grid = EV_P_control.pcontrol(self, grid, d, t)
+      grid = self.greedy_charge(grid, t, limit = self.ev_parameter['greedy_charge_limit'])
+      grid = self.p_res_charge(grid, t, limit = 1.0)
 
       return grid.net.load.p_mw.loc[grid.ev_index]#d.values
 
-  def greedy_charge(self, grid, t):
+
+  def p_res_charge(self, grid, t, limit = 1.0):
+
+      self.p_res = -grid.get_residualload_p_per_household()
 
       ev = grid.net.load.loc[grid.ev_index]
-      ev.loc[ev.ev_soc >= self.ev_parameter['greedy_charge_limit'], 'p_mw'] = 0
 
-      ev.ev_parking = self.parking_time[ev.type].loc[t].values
-      
-      ev.loc[(ev.ev_soc < self.ev_parameter['greedy_charge_limit']) & (ev.ev_parking > 0), 'p_mw'] = self.ev_parameter['charging_power']
-      ev.loc[(ev.ev_soc < self.ev_parameter['greedy_charge_limit']) & (ev.ev_parking > 0), 'ev_soc'] += (self.ev_parameter['charging_power'] * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.loc[ev.ev_soc < self.ev_parameter['greedy_charge_limit'], 'ev_c_bat']
+      soc_increase_ref = (self.ev_parameter['charging_power'] * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+
+      soc_increase = (self.p_res * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+      soc_increase[self.p_res < 0] = 0
+      soc_increase[soc_increase > soc_increase_ref] = soc_increase_ref
+      soc_increase[ev.ev_parking == 0] = 0
+      soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc < limit)] = limit - ev.ev_soc
+      soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc >= limit)] = 0
+
+      ev.ev_soc += soc_increase
+      ev.p_mw += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000     
 
       grid.net.load.loc[grid.ev_index] = ev
-
 
       return grid
 
@@ -117,6 +147,9 @@ class EV_P_control_grid_fid(EV_P_control):
       print('Warning: EV grid-oriented_feed-in_damping control is not implemented')
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
 
-  def pcontrol(self, grid, d):
-      EV_P_control.pcontrol(self)
-      return d.values
+  def pcontrol(self, grid, d, t):
+      grid = EV_P_control.pcontrol(self, grid, d, t)
+      grid = self.greedy_charge(grid, t, limit = self.ev_parameter['greedy_charge_limit'])
+      #self.p_res = grid.get_residualload_p_per_household()
+
+      return grid.net.load.p_mw.loc[grid.ev_index]#d.values
