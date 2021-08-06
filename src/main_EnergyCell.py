@@ -28,9 +28,9 @@ net_name = ["kerber_rural_1", #0
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-05 00:00:00+01:00',
-               'end_time'   : '2017-01-06 00:00:00+01:00',
-               't_freq'     : '10T'
+time_scope = { 'start_time' : '2017-04-01 00:00:00+01:00',
+               'end_time'   : '2017-04-02 00:00:00+01:00',
+               't_freq'     : '1H'
              }
 
 # timescopes to examine
@@ -57,7 +57,7 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
 ## 7: smart consumers, 8: battery storage systems and smart consumers
 # Second digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0]
+scenario = [6, 0]
 #######################
 
 #######################
@@ -71,7 +71,7 @@ run_simulation = 0
 if run_simulation == 0:
 
   # Initialize EnergyCell
-  e = ec.EnergyCell(net_name = net_name[8], scenario = scenario, time_scope = time_scope)
+  e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
 
   # Run powerflow
   e.run_pf_timeseries()
@@ -88,7 +88,7 @@ if run_simulation == 0:
   #e.eva.plot_grid_issus_over_power()
   e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_soc()
+  e.eva.plot_soc()
   #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')
 #############################
 
