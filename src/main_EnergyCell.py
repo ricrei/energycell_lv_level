@@ -11,8 +11,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 ##########################################
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
-               'end_time'   : '2017-06-02 00:00:00+02:00',
-               't_freq'     : '1H'
+               'end_time'   : '2017-05-27 00:00:00+02:00',
+               't_freq'     : '10T'
              }
 
 # timescopes to examine
@@ -52,7 +52,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [4, 0, 0]
-scenario = [7, 1, 0]
+#scenario = [7, 2, 0]
 #######################
 
 ############################
@@ -114,7 +114,7 @@ if run_simulation == 0:
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
   #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')

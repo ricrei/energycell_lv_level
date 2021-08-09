@@ -40,12 +40,13 @@ class EVcontroller:
         elif self.control == 'grid-oriented_feed-in_damping':
           self.P_controller = EV_P_control_grid_fid(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
       else:
-        self.P_controller = EV_P_control_no_ev(grid)
+        self.P_controller = EV_P_control_no_ev(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
 
   def get_active_power(self, grid, d, t):
       return self.P_controller.pcontrol(grid, d, t)
 
 
+### Parent class EV_P_control ###
 class EV_P_control:
   def __init__(self, grid, ev_parameter, charging_demand=np.nan, parking_time=np.nan):
       self.charging_demand = charging_demand
@@ -78,6 +79,18 @@ class EV_P_control:
 
       return grid
 
+  def check_soc_p_mw(self, grid):
+      ev = grid.net.load.loc[grid.ev_index]
+      if (ev.p_mw.round(3) > self.ev_parameter['charging_power']).any():
+         print('Warning: p_mw of ev exceeds max. charging power!')
+         print(ev.p_mw)
+      if (ev.p_mw < 0).any():
+         print('Warning: p_mw of ev is below 0!')
+      if (ev.ev_soc > 1).any():
+         print('Warning: soc of ev exceeds 1!')
+      if (ev.ev_soc < 0).any():
+         print('Warning: soc of ev is below 0!')
+
 ### no ev ###
 class EV_P_control_no_ev(EV_P_control):
 
@@ -98,6 +111,8 @@ class EV_P_control_greedy(EV_P_control):
       EV_P_control.pcontrol(self, grid, d, t)
       grid = self.greedy_charge(grid, t, limit = 1.0)
 
+      self.check_soc_p_mw(grid)
+
       return grid.net.load.p_mw.loc[grid.ev_index]#d.values
 
 ### household-oriented_feed-in_damping ###
@@ -105,13 +120,15 @@ class EV_P_control_hh_fid(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       #TODO
-      print('Warning: EV household-oriented_feed-in_damping control is not implemented')
+      print('Warning: EV household-oriented_feed-in_damping control is implemented, but not finally tested.')
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
 
   def pcontrol(self, grid, d, t):
       grid = EV_P_control.pcontrol(self, grid, d, t)
       grid = self.greedy_charge(grid, t, limit = self.ev_parameter['greedy_charge_limit'])
       grid = self.p_res_charge(grid, t, limit = 1.0)
+
+      self.check_soc_p_mw(grid)
 
       return grid.net.load.p_mw.loc[grid.ev_index]#d.values
 
@@ -122,17 +139,24 @@ class EV_P_control_hh_fid(EV_P_control):
 
       ev = grid.net.load.loc[grid.ev_index]
 
-      soc_increase_ref = (self.ev_parameter['charging_power'] * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+      # max. increase of soc
+      soc_increase_ref = ((self.ev_parameter['charging_power'] - ev.p_mw) * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
 
+      # soc increase due to surplus pv
       soc_increase = (self.p_res * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+      # no surplus pv power leads to no soc increase
       soc_increase[self.p_res < 0] = 0
+      # soc increase couln't be higher than max. soc increase due to max. charging power
       soc_increase[soc_increase > soc_increase_ref] = soc_increase_ref
+      # no parking ev no charging
       soc_increase[ev.ev_parking == 0] = 0
+      # soc increase until 'limit' is reached
       soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc < limit)] = limit - ev.ev_soc
+      # soc increase above 'limit' leads to no soc increase
       soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc >= limit)] = 0
 
       ev.ev_soc += soc_increase
-      ev.p_mw += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000     
+      ev.p_mw   += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000
 
       grid.net.load.loc[grid.ev_index] = ev
 
@@ -142,7 +166,7 @@ class EV_P_control_hh_fid(EV_P_control):
 ### grid-oriented_feed-in_damping ###
 class EV_P_control_grid_fid(EV_P_control):
 
-  def __init__(self, ev_parameter, grid, charging_demand, parking_time):
+  def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       #TODO
       print('Warning: EV grid-oriented_feed-in_damping control is not implemented')
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
@@ -150,6 +174,88 @@ class EV_P_control_grid_fid(EV_P_control):
   def pcontrol(self, grid, d, t):
       grid = EV_P_control.pcontrol(self, grid, d, t)
       grid = self.greedy_charge(grid, t, limit = self.ev_parameter['greedy_charge_limit'])
-      #self.p_res = grid.get_residualload_p_per_household()
+      grid = self.p_res_charge(grid, t, limit = self.ev_parameter['linear_charge_limit'])
+      grid = self.trafo_charge(grid, t, limit = 1.0)
+
+      self.check_soc_p_mw(grid)
 
       return grid.net.load.p_mw.loc[grid.ev_index]#d.values
+
+  def p_res_charge(self, grid, t, limit):
+      s_res, p_res = grid.get_residualload_s_sum()
+      p_res = -p_res
+
+      ev = grid.net.load.loc[grid.ev_index]
+
+      # max. increase of soc
+      soc_increase_ref = ((self.ev_parameter['charging_power'] - ev.p_mw) * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+
+      ev_available = (ev.ev_parking == True) & (ev.ev_soc < limit)
+      available_capacity = (limit - ev.ev_soc)*ev.ev_c_bat # in kWh
+      available_capacity[ev_available == False] = 0
+      available_capacity[available_capacity > 0] = available_capacity/available_capacity.sum() # in %
+
+      # soc increase due to surplus pv
+      soc_increase = (p_res * available_capacity * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+      # no surplus pv power leads to no soc increase
+      soc_increase[soc_increase < 0] = 0
+      # soc increase couln't be higher than max. soc increase due to max. charging power
+      soc_increase[soc_increase > soc_increase_ref] = soc_increase_ref
+      # no parking ev no charging
+      soc_increase[ev.ev_parking == 0] = 0
+      # soc increase until 'limit' is reached
+      soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc < limit)] = limit - ev.ev_soc
+      # soc increase above 'limit' leads to no soc increase
+      soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc >= limit)] = 0
+
+      ev.ev_soc += soc_increase
+      ev.p_mw   += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000
+
+      grid.net.load.loc[grid.ev_index] = ev
+
+      return grid
+
+  def trafo_charge(self, grid, t, limit = 1.0):
+      s_res, p_res = grid.get_residualload_s_sum()
+      p_res = -p_res
+
+      if grid.s_trafo_power < -s_res:
+         q_res_to_the_power_of_2 = s_res**2 - p_res**2
+         if q_res_to_the_power_of_2 < grid.s_trafo_power**2:
+            p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
+         else:
+            p_trafo_max = 0
+      else:
+         p_trafo_max = p_res
+
+      p_res = p_res - p_trafo_max
+
+      ev = grid.net.load.loc[grid.ev_index]
+
+      # max. increase of soc
+      soc_increase_ref = ((self.ev_parameter['charging_power'] - ev.p_mw) * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+
+      ev_available = (ev.ev_parking == True) & (ev.ev_soc < limit)
+      available_capacity = (limit - ev.ev_soc)*ev.ev_c_bat # in kWh
+      available_capacity[ev_available == False] = 0
+      available_capacity[available_capacity > 0] = available_capacity/available_capacity.sum() # in %
+
+      # soc increase due to surplus pv
+      soc_increase = (p_res * available_capacity * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
+      # no surplus pv power leads to no soc increase
+      soc_increase[soc_increase < 0] = 0
+      # soc increase couln't be higher than max. soc increase due to max. charging power
+      soc_increase[soc_increase > soc_increase_ref] = soc_increase_ref
+      # no parking ev no charging
+      soc_increase[ev.ev_parking == 0] = 0
+      # soc increase until 'limit' is reached
+      soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc < limit)] = limit - ev.ev_soc
+      # soc increase above 'limit' leads to no soc increase
+      soc_increase[(ev.ev_soc + soc_increase > limit) & (ev.ev_soc >= limit)] = 0
+
+      ev.ev_soc += soc_increase
+      ev.p_mw   += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000
+
+      grid.net.load.loc[grid.ev_index] = ev
+
+      return grid

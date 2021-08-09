@@ -97,6 +97,8 @@ class Grid:
         # needed to create HHL, HP, EV and BSS as each bus
         self.component_buses = self.net.load.bus
 
+        self.s_trafo_power = self.net.trafo.sn_mva.sum()
+
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
 
@@ -162,7 +164,7 @@ class Grid:
     if p_res < 0:
       s_res = -s_res
 
-    return s_res
+    return s_res, p_res
 
   def get_residualload_p_per_household(self):
     p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \
