@@ -12,7 +12,7 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
                'end_time'   : '2017-05-27 00:00:00+02:00',
-               't_freq'     : '10T'
+               't_freq'     : '1H'
              }
 
 # timescopes to examine
@@ -52,7 +52,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [4, 0, 0]
-#scenario = [7, 2, 0]
+scenario = [7, 2, 0]
 #######################
 
 ############################
@@ -82,7 +82,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 7
+net_number = 9
 ######################
 
 #######################

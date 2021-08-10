@@ -97,7 +97,7 @@ class EnergyCell():
                                          self.time_scope)
 
         self.pf = PowerFlow(self.output_dir)
-        self.energy_manager = EnergyManagement(self.scenario[0])
+        self.energy_manager = EnergyManagement(self.scenario)
 
         self.print_object_parameter()
 
