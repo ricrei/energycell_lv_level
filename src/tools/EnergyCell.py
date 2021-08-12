@@ -79,8 +79,8 @@ class EnergyCell():
 
         self.pv_controller = PVcontroller(grid=self.grid, control=control_parameter['PV_mod'], cos_phi=control_parameter['PV_cos_phi'])
         if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [0]):
-          self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
-          self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
+          self.ev_controller = EVcontroller(grid=self.grid, control='direct')
+          self.hp_controller = HPcontroller(grid=self.grid, control='direct')
           self.bss_controller = BSScontroller(grid=self.grid, control='simple')
         elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2]):
           mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']

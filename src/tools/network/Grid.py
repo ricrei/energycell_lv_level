@@ -59,27 +59,27 @@ class Grid:
         elif self.net_name == "simbench_rural_1":
             self.net = sb.get_simbench_net('1-LV-rural1--0-sw')
             self.category = 'rural'
-            self.rename_all_buses()
+            #self.rename_all_buses()
         elif self.net_name == "simbench_rural_2":
             self.net = sb.get_simbench_net('1-LV-rural2--0-sw')
             self.category = 'rural'
-            self.rename_all_buses()
+            #self.rename_all_buses()
         elif self.net_name == "simbench_rural_3":
             self.net = sb.get_simbench_net('1-LV-rural3--0-sw')
             self.category = 'rural'
-            self.rename_all_buses()
+            #self.rename_all_buses()
         elif self.net_name == "simbench_suburb_4":
             self.net = sb.get_simbench_net('1-LV-semiurb4--0-sw')
             self.category = 'suburban'
-            self.rename_all_buses()
+            #self.rename_all_buses()
         elif self.net_name == "simbench_suburb_5":
             self.net = sb.get_simbench_net('1-LV-semiurb5--0-sw')
             self.category = 'suburban'
-            self.rename_all_buses()
+            #self.rename_all_buses()
         elif self.net_name == "simbench_urban_6":
             self.net = sb.get_simbench_net('1-LV-urban6--0-sw')
             self.category = 'urban'
-            self.rename_all_buses()
+            #self.rename_all_buses()
         elif self.net_name == "test_net_one_load_branch":
             self.net = self.create_test_net_one_load_branch()
             self.category = 'rural'

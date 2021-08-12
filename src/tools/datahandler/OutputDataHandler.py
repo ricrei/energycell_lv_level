@@ -31,8 +31,9 @@ class OutputDataHandler():
         self.pv_reactive_power = pd.DataFrame(columns=grid.net.sgen.index)
         self.load_active_power = pd.DataFrame(columns=grid.net.load.index)
         self.load_reactive_power = pd.DataFrame(columns=grid.net.load.index)
+        self.ev_soc = pd.DataFrame(columns=grid.ev_index) ##
         self.storage_active_power = pd.DataFrame(columns=grid.net.storage.index)
-        self.storage_state_of_charge = pd.DataFrame(columns=grid.net.storage.index) #neu Tabea
+        self.storage_state_of_charge = pd.DataFrame(columns=grid.net.storage.index)
         self.trafo_active_power = pd.DataFrame(columns=grid.net.trafo.index)
         self.losses_active_power = pd.DataFrame(columns=['trafo','lines'])
         self.v_pu_ext_grid = pd.DataFrame(columns=['v_pu'])
@@ -45,6 +46,7 @@ class OutputDataHandler():
         self.pv_active_power.index.name = 'timestamp'
         self.load_active_power.index.name = 'timestamp'
         self.load_reactive_power.index.name = 'timestamp'
+        self.ev_soc.index.name = 'timestamp' ##
         self.storage_active_power.index.name = 'timestamp'
         self.storage_state_of_charge.index.name = 'timestamp' 
         self.trafo_active_power.index.name = 'timestamp'
@@ -64,6 +66,7 @@ class OutputDataHandler():
         self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
         self.load_active_power.loc[t] = grid.net.load['p_mw']
         self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
+        self.ev_soc.loc[t] = grid.net.load.ev_soc.loc[grid.ev_index] ##
         self.storage_active_power.loc[t] = grid.net.storage['p_mw']
         self.storage_state_of_charge.loc[t] = grid.net.storage['soc_percent']
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
@@ -88,6 +91,8 @@ class OutputDataHandler():
         self.load_active_power.round(6).to_csv(self.output_dir + 'load_active_power_MW.csv',
                                                mode=mode, header=header, index = True)
         self.load_reactive_power.round(6).to_csv(self.output_dir + 'load_reactive_power_MW.csv',
+                                               mode=mode, header=header, index = True)
+        self.ev_soc.round(3).to_csv(self.output_dir + 'ev_soc.csv',
                                                mode=mode, header=header, index = True)
         self.storage_active_power.round(6).to_csv(self.output_dir + 'storage_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)

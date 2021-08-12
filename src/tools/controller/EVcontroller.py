@@ -5,16 +5,16 @@ import tools.tools as tt
 
 class EVcontroller:
 
-  def __init__(self, grid, control='greedy'):
+  def __init__(self, grid, control='direct'):
       ### define ev parameter ###
       self.ev_parameter = {'charging_power' : .011,
                            'charging_efficiency' : .9,
-                           'greedy_charge_limit' : .8,
+                           'direct_charge_limit' : .8,
                            'linear_charge_limit' : .9}
 
       ### set control strategy ###
       self.set_ev = (grid.scenario[0] in [2, 4, 5, 6, 7, 8])
-      if (control=='greedy' or control=='household-oriented_feed-in_damping' or control=='grid-oriented_feed-in_damping'):
+      if (control=='direct' or control=='household-oriented_feed-in_damping' or control=='grid-oriented_feed-in_damping'):
         self.control = control
       else:
         raise ValueError('The entered EV control is not a valid option.')
@@ -37,8 +37,8 @@ class EVcontroller:
 
       ### initilize controller ###
       if self.set_ev == True:
-        if self.control == 'greedy':
-          self.P_controller = EV_P_control_greedy(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
+        if self.control == 'direct':
+          self.P_controller = EV_P_control_direct(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
         elif self.control == 'household-oriented_feed-in_damping':
           self.P_controller = EV_P_control_hh_fid(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
         elif self.control == 'grid-oriented_feed-in_damping':
@@ -46,8 +46,8 @@ class EVcontroller:
       else:
         self.P_controller = EV_P_control_no_ev(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
 
-  def get_active_power_greedy_charge(self, grid, t):
-      return self.P_controller.pcontrol_greedy_charge(grid, t, limit = self.P_controller.limit_greedy)
+  def get_active_power_direct_charge(self, grid, t):
+      return self.P_controller.pcontrol_direct_charge(grid, t, limit = self.P_controller.limit_direct)
 
   def get_active_power_p_res_charge(self, grid, t):
       return self.P_controller.pcontrol_p_res_charge(grid, t, limit = self.P_controller.limit_p_res)
@@ -69,10 +69,12 @@ class EV_P_control:
       grid.net.load.ev_soc.loc[grid.ev_index] -= (self.charging_demand[grid.net.load.loc[grid.ev_index].type].loc[t].values)/grid.net.load.ev_c_bat.loc[grid.ev_index]
       grid.net.load.p_mw.loc[grid.ev_index] = 0
 
+      self.check_soc_p_mw(grid)
+
       return grid.net.load.loc[grid.ev_index]
 
 
-  def pcontrol_greedy_charge(self, grid, t, limit):
+  def pcontrol_direct_charge(self, grid, t, limit):
 
       EV_P_control.pcontrol(self, grid, t)
 
@@ -89,6 +91,8 @@ class EV_P_control:
 
       grid.net.load.loc[grid.ev_index] = ev
 
+      self.check_soc_p_mw(grid)
+
       return grid.net.load.loc[grid.ev_index]
 
   def pcontrol_p_res_charge(self, grid, t, limit = 1.):
@@ -100,33 +104,32 @@ class EV_P_control:
   def check_soc_p_mw(self, grid):
       ev = grid.net.load.loc[grid.ev_index]
       if (ev.p_mw.round(3) > self.ev_parameter['charging_power']).any():
-         print('Warning: p_mw of ev exceeds max. charging power!')
-         print(ev.p_mw)
+         print('Warning: p_mw of ev exceeds max. charging power! ' + str(max(ev.p_mw)))
       if (ev.p_mw < 0).any():
-         print('Warning: p_mw of ev is below 0!')
+         print('Warning: ev p_mw is below 0! ' + str(min(ev.p_mw)))
       if (ev.ev_soc > 1).any():
-         print('Warning: soc of ev exceeds 1!')
+         print('Warning: ev soc exceeds 1! ' + str(max(ev.ev_soc)))
       if (ev.ev_soc < 0).any():
-         print('Warning: soc of ev is below 0!')
+         print('Warning: ev soc is below 0! ' + str(min(ev.ev_soc)))
 
 ### no ev ###
 class EV_P_control_no_ev(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
-      self.limit_greedy = 0.
+      self.limit_direct = 0.
       self.limit_p_res = 0.
       self.limit_trafo = 0.
 
-  def pcontrol_greedy_charge(self, grid, t, limit):
-      return super().pcontrol_greedy_charge(grid, t, limit = limit)
+  def pcontrol_direct_charge(self, grid, t, limit):
+      return super().pcontrol_direct_charge(grid, t, limit = limit)
 
-### greedy ###
-class EV_P_control_greedy(EV_P_control):
+### direct ###
+class EV_P_control_direct(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
-      self.limit_greedy = 1.
+      self.limit_direct = 1.
       self.limit_p_res = 0.
       self.limit_trafo = 0.
 
@@ -135,7 +138,7 @@ class EV_P_control_hh_fid(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
-      self.limit_greedy = self.ev_parameter['greedy_charge_limit']
+      self.limit_direct = self.ev_parameter['direct_charge_limit']
       self.limit_p_res = 0.
       self.limit_trafo = 0.
 
@@ -166,6 +169,8 @@ class EV_P_control_hh_fid(EV_P_control):
 
       grid.net.load.loc[grid.ev_index] = ev
 
+      self.check_soc_p_mw(grid)
+
       return grid.net.load.loc[grid.ev_index]
 
 
@@ -174,7 +179,7 @@ class EV_P_control_grid_fid(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
-      self.limit_greedy = self.ev_parameter['greedy_charge_limit']
+      self.limit_direct = self.ev_parameter['direct_charge_limit']
       self.limit_p_res = self.ev_parameter['linear_charge_limit']
       self.limit_trafo = 1.
 
@@ -209,6 +214,8 @@ class EV_P_control_grid_fid(EV_P_control):
       ev.p_mw   += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000
 
       grid.net.load.loc[grid.ev_index] = ev
+
+      self.check_soc_p_mw(grid)
 
       return grid.net.load.loc[grid.ev_index]
 
@@ -254,5 +261,7 @@ class EV_P_control_grid_fid(EV_P_control):
       ev.p_mw   += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000
 
       grid.net.load.loc[grid.ev_index] = ev
+
+      self.check_soc_p_mw(grid)
 
       return grid.net.load.loc[grid.ev_index]

@@ -31,6 +31,7 @@ class EvaluationSingleCase():
     self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
     self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
     self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
+    self.ev_soc = self.read_data(self.output_dir+'ev_soc.csv')
     self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
@@ -189,7 +190,7 @@ class EvaluationSingleCase():
     print('Line overloading events : %s %%' % (ll/(n_lines*n_timesteps)*100).round(3))
     print('Trafo overloading events: %s %%' % (tl/(n_timesteps)*100).round(3))
 
-
+  ### plots ###
   def plot_grid_issus_over_time(self):
     v = self.v
     ll = self.ll
@@ -254,6 +255,17 @@ class EvaluationSingleCase():
     #busses_num = len(grid.component_buses.index)
     #array_bus = np.arange(busses_num)
     soc = self.storage_soc
+    fig, ax = plt.subplots()
+    ax.plot(soc.index, soc)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('State of charge in %')
+    #plt.legend(grid.component_buses.index)
+    plt.show()
+
+  def plot_ev_soc(self):
+    #busses_num = len(grid.component_buses.index)
+    #array_bus = np.arange(busses_num)
+    soc = self.ev_soc
     fig, ax = plt.subplots()
     ax.plot(soc.index, soc)
     ax.set_xlabel('Time')
