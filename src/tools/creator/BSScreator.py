@@ -27,9 +27,37 @@ class BSScreator:
   
     #ec.grid.bss_controller.state_of_charge(grid)
 
-  def create_bss_at_one_bus(self, grid):
-      # create bss at bus 0
-      pp.create_storage(grid.net, grid.net.load.loc[0, "bus"], p_mw=0,\
-                            max_e_mwh=0.13, soc_percent=0 ,name='bss_'+str(grid.net.load.loc[0, "bus"]), type='bss')
-
+  def create_bss_at_lvbb(self, grid): 
+      # create  community bss at low voltage busbar (bus 0)
+      max_e_mwh = 0.01
+      
+      pp.create_storage(grid.net, 4 , p_mw=0,\
+                            max_e_mwh=max_e_mwh, soc_percent=0 ,name='bss_'+str(4), type='bss')
+      '''
+      pp.create_storage(grid.net, grid.net.trafo.lv_bus.sum(), p_mw=0,\
+                            max_e_mwh=max_e_mwh, soc_percent=0 ,name='bss_'+str(3), type='bss')
+      '''
+      grid.net.storage['efficiency_storage'] = 0.9
+      grid.net.storage['efficiency_inverter'] = 0.96
+      grid.net.storage['efficiency_mppt'] = 0.98
+      
       return grid
+
+  def create_bss_at_selected_busses(self, grid):
+      # create community bss at one or more busses
+      selected_busses = [1,2]# seperate several busses by ',' (f.i. [3,8])
+      
+      for x in selected_busses:
+         # pp.create_storage(grid.net, grid.net.load.loc[x, "bus"], p_mw=0,\
+                            #max_e_mwh=0.01, soc_percent=0 ,name='bss_'+str(grid.net.load.loc[x, "bus"]), type='bss')
+          pp.create_storage(grid.net, x, p_mw=0,\
+                            max_e_mwh=0.01, soc_percent=0 ,name='bss_'+str(x), type='bss')
+            
+      
+      grid.net.storage['efficiency_storage'] = 0.9
+      grid.net.storage['efficiency_inverter'] = 0.96
+      grid.net.storage['efficiency_mppt'] = 0.98
+      
+      grid.net.storage['location'] = selected_busses
+      return grid
+

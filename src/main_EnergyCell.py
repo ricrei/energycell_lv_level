@@ -89,7 +89,7 @@ if run_simulation == 0:
   e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   e.eva.plot_soc()
-  #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')
+  #e.eva.plot_grid(time_sample='2017-04-01 12:00:00+02:00')
 #############################
 
 ###############################
