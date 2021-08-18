@@ -28,8 +28,8 @@ net_name = ["kerber_rural_1", #0
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-04-01 00:00:00+01:00',
-               'end_time'   : '2017-04-02 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-05-26 00:00:00+01:00',
+               'end_time'   : '2017-05-27 00:00:00+01:00',
                't_freq'     : '1H'
              }
 
@@ -71,7 +71,7 @@ run_simulation = 0
 if run_simulation == 0:
 
   # Initialize EnergyCell
-  e = ec.EnergyCell(net_name = net_name[7], scenario = scenario, time_scope = time_scope)
+  e = ec.EnergyCell(net_name = net_name[9], scenario = scenario, time_scope = time_scope)
 
   # Run powerflow
   e.run_pf_timeseries()

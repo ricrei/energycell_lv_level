@@ -3,13 +3,14 @@ import pandas as pd
 
 class BSScontroller:
 
-  def __init__(self, grid, control='simple'):
+  def __init__(self, grid, control): #contr='simple'
       self.set_bss = (grid.scenario in [6])
       #self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
       #self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       #self.sunrise = grid.time_scope['time solar'].sunrise
       self.busses_num = len(grid.component_buses.index)
+      self.bss_num = len(grid.net.storage) #raus
 
       if (control=='simple'):
         self.control = control
@@ -44,9 +45,9 @@ class BSScontroller:
       return self.P_controller.soc_new
  
 class BSS_control:
-  def __init__(self, grid, intervall_in_seconds, busses_num): 
+  def __init__(self, grid, intervall_in_seconds, bss_num): 
       self.intervall = intervall_in_seconds
-      self.busses_num = busses_num
+      self.bss_num = len(grid.net.storage)# bss_num
       self.soc_start = grid.net.storage.soc_percent 
       self.e_mwh_start = self.soc_start/100 * grid.net.storage.max_e_mwh 
       self.soc_new = self.soc_start
@@ -93,7 +94,7 @@ class BSS_control:
       """
       e_mwh = self.e_mwh_start # [MWh]
       p_mw_dch = np.copy(p_mw_bss)
-      p_neg = np.less(p_mw_dch,np.zeros(self.busses_num))
+      p_neg = np.less(p_mw_dch,np.zeros(self.bss_num))
       p_mw_dch[p_neg] = p_mw_dch[p_neg] \
                           / (grid.net.storage.efficiency_storage[p_neg] \
                              * grid.net.storage.efficiency_inverter[p_neg])
@@ -158,8 +159,8 @@ class BSS_control_no_bss(BSS_control):
 
 ### SIMPLE ###
 class BSS_control_simple(BSS_control): 
-  def __init__(self, grid, intervall_in_seconds, busses_num): 
-      super().__init__(grid, intervall_in_seconds, busses_num)
+  def __init__(self, grid, intervall_in_seconds, bss_num): 
+      super().__init__(grid, intervall_in_seconds, bss_num)
 
   def pcontrol(self, grid):
       '''
@@ -173,6 +174,12 @@ class BSS_control_simple(BSS_control):
       p_mw_bss : numpy.ndarray
           power change at bus due to BSS [MW]
       '''
+      print(self.bss_num)# hier wird eine andere ANzahl angezeigt als bei len(grid.net.storage)
+      print(len(grid.net.storage))
+      bss_num = len(grid.net.storage)
+      print(bss_num)
+      #print(len(grid.component_buses.index))
+      
       BSS_control.pcontrol(self)
       
       residual_load_per_bus = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
@@ -187,32 +194,55 @@ class BSS_control_simple(BSS_control):
       self.soc_new = get_soc
             
       get_e_mwh=self.e_mwh_start
-    
+      
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
+      print('free:')
+      print(free_capacity)
+      
+        # test cases
+      '''
+      test_storage = ~np.in1d(grid.component_buses, grid.net.storage.bus)### community bss
+      p_mw_bss[test_storage] = 0### community bss
+      print('test:')
+      print(p_mw_bss)
+      '''
+      
+      
+      if self.bss_num < len(grid.component_buses.index):
+          print('hello')
+          p_mw_bss_tot = p_mw_bss.sum()
+          p_mw_bss = (p_mw_bss_tot / self.bss_num) * np.ones(self.bss_num)
+         # needed_capacity = (p_mw_bss_tot * self.intervall / (3600 * self.bss_num)) * np.ones(self.bss_num) # später AUfteilung anpassen
+     # elif self.bss_num == len(grid.component_buses.index):
+         # needed_capacity = p_mw_bss * self.intervall / 3600
+      print('p_mw:')
+      print(p_mw_bss)
       needed_capacity = p_mw_bss * self.intervall / 3600
+      print('needed:')
+      print(needed_capacity)
       
       # test cases
-      test_storage = ~np.in1d(grid.component_buses, grid.net.storage.bus)### community bss
+      #test_storage = ~np.in1d(grid.component_buses, grid.net.storage.bus)### community bss
       
-      solar_excess_1 = np.greater(p_mw_bss,np.zeros(self.busses_num)) & \
-                       np.less(get_soc,np.ones(self.busses_num)*100) & \
+      solar_excess_1 = np.greater(p_mw_bss,np.zeros(self.bss_num)) & \
+                       np.less(get_soc,np.ones(self.bss_num)*100) & \
                        np.less(free_capacity, needed_capacity)
-      solar_excess_2 = np.greater(np.ones(self.busses_num)*grid.net.storage.max_e_mwh, np.zeros(self.busses_num)) & \
-                       np.greater(p_mw_bss,np.zeros(self.busses_num)) & \
-                       np.greater_equal(get_soc,np.ones(self.busses_num)*100)
+      solar_excess_2 = np.greater(np.ones(self.bss_num)*grid.net.storage.max_e_mwh, np.zeros(self.bss_num)) & \
+                       np.greater(p_mw_bss,np.zeros(self.bss_num)) & \
+                       np.greater_equal(get_soc,np.ones(self.bss_num)*100)
 
-      load_excess_1 = np.greater(np.ones(self.busses_num)*grid.net.storage.max_e_mwh, np.zeros(self.busses_num)) & \
-                      np.less(p_mw_bss,np.zeros(self.busses_num)) & \
-                      np.greater(get_soc,np.zeros(self.busses_num)) & \
+      load_excess_1 = np.greater(np.ones(self.bss_num)*grid.net.storage.max_e_mwh, np.zeros(self.bss_num)) & \
+                      np.less(p_mw_bss,np.zeros(self.bss_num)) & \
+                      np.greater(get_soc,np.zeros(self.bss_num)) & \
                       np.less(get_e_mwh,-needed_capacity \
                               / (grid.net.storage.efficiency_storage \
                                 * grid.net.storage.efficiency_inverter))
-      load_excess_2 = np.greater(np.ones(self.busses_num)*grid.net.storage.max_e_mwh, np.zeros(self.busses_num)) & \
-                      np.less(p_mw_bss,np.zeros(self.busses_num)) & \
-                      np.less_equal(get_soc,np.zeros(self.busses_num))    
+      load_excess_2 = np.greater(np.ones(self.bss_num)*grid.net.storage.max_e_mwh, np.zeros(self.bss_num)) & \
+                      np.less(p_mw_bss,np.zeros(self.bss_num)) & \
+                      np.less_equal(get_soc,np.zeros(self.bss_num))    
       
       # No storage connected:  
-      p_mw_bss[test_storage] = 0### community bss
+      #p_mw_bss[test_storage] = 0### community bss
       
       # Excess in solar power:
       p_mw_bss[solar_excess_1] = free_capacity[solar_excess_1] * 3600 \
@@ -229,9 +259,9 @@ class BSS_control_simple(BSS_control):
 
       get_e_mwh = self.stored_energy(grid, p_mw_bss)
       
-      print(p_mw_bss[3])
+      #print(p_mw_bss[3])
       #print(grid.net.storage.max_e_mwh)
-
+      print('done')
       return p_mw_bss
 
 

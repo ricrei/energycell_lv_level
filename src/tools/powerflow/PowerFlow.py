@@ -107,7 +107,7 @@ class PowerFlow:
 
     grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
     grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
-
+     
     grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t])
     grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t])
 
@@ -119,10 +119,6 @@ class PowerFlow:
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
     grid = curtail_controller.curtail(grid)
-
-    b = grid.get_residualload_s_sum()
-    #print(grid.get_residualload_s_per_bus())
-    a = grid.get_residualload_s_per_household()
 
     return grid.net
 
