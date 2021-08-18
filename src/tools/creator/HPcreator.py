@@ -8,7 +8,6 @@ class HPcreator:
   def __init__(self):
         self.hp_data_file = 'input-files/13_hp_short.pbz2'
         self.hp = tt.decompress_pickle(self.hp_data_file)
-        #self.hp_para = {'hp_types' : self.hp.columns[self.hp.columns.str.contains('Demand_el_')], 'cos_phi' : .95}
         self.hp_para = {}
         self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
         self.hp_para['cos_phi'] = .95

@@ -155,7 +155,7 @@ class EV_P_control_hh_fid(EV_P_control):
       soc_increase = (self.p_res * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) *1000 / ev.ev_c_bat
       # no surplus pv power leads to no soc increase
       soc_increase[self.p_res < 0] = 0
-      # soc increase couln't be higher than max. soc increase due to max. charging power
+      # soc increase couldn't be higher than max. soc increase due to max. charging power
       soc_increase[soc_increase > soc_increase_ref] = soc_increase_ref
       # no parking ev no charging
       soc_increase[ev.ev_parking == 0] = 0

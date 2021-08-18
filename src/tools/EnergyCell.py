@@ -123,7 +123,7 @@ class EnergyCell():
         self.output_data_handler.create_output_dataframes(self.grid)
 
         # Save net to pickle
-        pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
+        #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
 
 
     def __repr__(self):

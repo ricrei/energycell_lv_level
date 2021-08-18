@@ -13,7 +13,7 @@ class EnergyManagement:
   def __init__(self, scenario):
     self.scenario = scenario
     if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) & (self.scenario[1] in [0]):
-      self.energy_manager = EnergyManagementBasic()
+      self.energy_manager = EnergyManagementTest()
     elif (self.scenario[0] in [6, 7, 8]) & (self.scenario[1] in [1, 2]):
       self.energy_manager = EnergyManagementTest()
 
@@ -157,6 +157,7 @@ class EnergyManagement8(EnergyManagementParent):
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_p_res_charge(grid, t)
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
 
+
     grid.net.storage = bss_controller.get_active_power_linear_charge(grid)
     grid.net.storage = bss_controller.get_active_power_trafo_charge(grid)
 
@@ -198,6 +199,8 @@ class EnergyManagementTest(EnergyManagementParent):
     -------
     grid.net : pandapower network
     '''
+
+    grid = grid.reset_all_power_values()
 
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
     grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)

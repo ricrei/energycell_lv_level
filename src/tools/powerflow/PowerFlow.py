@@ -68,7 +68,6 @@ class PowerFlow:
                   print(tt.textred('Power Flow nr did not converge at ' + str(t)))
                   self.logger.error('Power Flow nr did not converge at ' + str(t))
 
-              #print(t)
               # write result into DataFrame
               output_data_handler.write_output_into_dataframe(grid, t)
 

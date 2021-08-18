@@ -52,7 +52,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [4, 0, 0]
-scenario = [7, 2, 0]
+#scenario = [7, 2, 0]
 #######################
 
 ############################
@@ -100,7 +100,7 @@ if run_simulation == 0:
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope)
-
+  
   # Run powerflow
   e.run_pf_timeseries()
 
@@ -110,12 +110,12 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload()
-  e.eva.plot_ev_soc()
+  e.eva.plot_residualload()
+  #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  e.eva.plot_grid_issus_over_time()
+  #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
   #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')

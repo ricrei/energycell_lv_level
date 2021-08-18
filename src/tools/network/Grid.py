@@ -134,6 +134,16 @@ class Grid:
     for i in self.net.bus.index:
       self.net.bus.name[i] = str(self.net.bus.subnet[i]) + ' Bus ' + str(i)
 
+  def reset_all_power_values(self):
+    self.net.load.p_mw = 0
+    self.net.load.q_mvar = 0
+    self.net.sgen.p_mw = 0
+    self.net.sgen.q_mvar = 0
+    self.net.storage.p_mw = 0
+    self.net.storage.q_mvar = 0
+
+    return self
+
   def get_vm_pu_ext_grid(self, grid):
     '''
     Returns the voltage in pu at the external grid.  
@@ -149,6 +159,7 @@ class Grid:
 
     return nominal_voltage + voltage_deviation
 
+  # only use with 'grid-oriented feed-in damping'
   def get_residualload_s_sum(self):
     line_losses_p = self.net.res_line.pl_mw
     line_losses_q = self.net.res_line.ql_mvar
@@ -166,6 +177,7 @@ class Grid:
 
     return s_res, p_res
 
+  # only use with 'household-oriented feed-in damping'
   def get_residualload_p_per_household(self):
     p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \
             self.net.load.loc[self.hp_index, 'p_mw'].values + \
@@ -174,7 +186,7 @@ class Grid:
             self.net.storage['p_mw'].values
     return p_res
 
-
+  # only use with 'household-oriented feed-in damping'
   def get_residualload_q_per_household(self):
     q_res = self.net.load.loc[self.load_index, 'q_mvar'].values + \
             self.net.load.loc[self.hp_index, 'q_mvar'].values + \
@@ -183,6 +195,7 @@ class Grid:
             self.net.storage['q_mvar'].values
     return q_res
 
+  # only use with 'household-oriented feed-in damping'
   def get_residualload_s_per_household(self):
     p_res = self.get_residualload_p_per_household()
     q_res = self.get_residualload_q_per_household()
