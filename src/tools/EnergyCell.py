@@ -10,6 +10,8 @@ import time
 import sys
 import pandas as pd
 import tools.tools as tt
+import pvlib ###
+import datetime ###
 
 #temp
 import pandapower as pp
@@ -53,6 +55,12 @@ class EnergyCell():
           self.time_scope = time_scope
           self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
           self.time_scope['intervall_in_seconds'] = self.intervall_in_seconds
+           #neu:
+          timestamp_start_str = time_scope['start_time'][:19]
+          timestamp_start_obj = datetime.datetime.strptime(timestamp_start_str, '%Y-%m-%d %X')
+          timestamp_obj_tz = pd.DatetimeIndex([timestamp_start_obj]).tz_localize('Europe/Berlin')
+          self.time_solar = pvlib.solarposition.sun_rise_set_transit_spa(times=timestamp_obj_tz, latitude=52.5162, longitude=13.3777) ### pv-daten
+          self.time_scope['time solar'] = self.time_solar
         else:
           raise ValueError('time_scope is not properly defined. \
                             start_time, end_time and t_freq is needed.')
