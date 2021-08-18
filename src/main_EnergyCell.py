@@ -102,7 +102,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
