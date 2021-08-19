@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
+import tools.tools as tt
 
 class BSScontroller:
 
   def __init__(self, grid, control):
-      self.set_bss = (grid.scenario[0] in [6])
+      self.set_bss = (grid.scenario[0] in [6,8])
 
       #self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
       #self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds
@@ -21,7 +22,7 @@ class BSScontroller:
         self.control = 'simple'
         #raise ValueError('household-oriented_feed-in_damping control is not implemented.')
       elif control == 'grid-oriented_feed-in_damping':
-        self.control = 'simple'
+        self.control = control#'simple'
         #raise ValueError('grid-oriented_feed-in_damping control is not implemented.')
       else:
         raise ValueError('The entered BSS control is not a valid option.')
@@ -35,6 +36,11 @@ class BSScontroller:
           self.P_controller = BSS_control_feed_in_damping(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num)
+              
+        elif self.control == 'grid-oriented_feed-in_damping':
+          self.P_controller = BSS_P_control_grid_fid(grid, \
+                                                 self.intervall_in_seconds, \
+                                                 self.busses_num)
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
         elif self.control == ' ':
@@ -42,8 +48,11 @@ class BSScontroller:
       else:
         self.P_controller = BSS_control_no_bss(grid, self.intervall_in_seconds, self.busses_num)
 
-  def get_active_power(self, grid):
-      return self.P_controller.pcontrol(grid)
+  def get_active_power(self, grid, t): #t
+      return self.P_controller.pcontrol(grid, t) #t
+  
+ # def get_active_power_direct_charge(self, grid):
+ #     return self.P_controller.pcontrol_direct_charge(grid) 
   
   def get_e_mwh(self, grid):
       return self.P_controller.e_mwh_start
@@ -168,8 +177,8 @@ class BSS_control_no_bss(BSS_control):
 class BSS_control_simple(BSS_control): 
   def __init__(self, grid, intervall_in_seconds, bss_num): 
       super().__init__(grid, intervall_in_seconds, bss_num)
-
-  def pcontrol(self, grid):
+  #def pcontrol_direct_charge(self, grid,t): #eigentlich brauche ich t nicht
+  def pcontrol(self, grid, t):
       '''
       Calculation of the change of residual laod caused by the BSS at each bus
       Parameters
@@ -181,10 +190,10 @@ class BSS_control_simple(BSS_control):
       p_mw_bss : numpy.ndarray
           power change at bus due to BSS [MW]
       '''
-      print(self.bss_num)# hier wird eine andere ANzahl angezeigt als bei len(grid.net.storage)
-      print(len(grid.net.storage))
-      bss_num = len(grid.net.storage)
-      print(bss_num)
+      #print(self.bss_num)# hier wird eine andere ANzahl angezeigt als bei len(grid.net.storage)
+      #print(len(grid.net.storage))
+      #bss_num = len(grid.net.storage)
+      #print(bss_num)
       #print(len(grid.component_buses.index))
       
       BSS_control.pcontrol(self)
@@ -195,7 +204,7 @@ class BSS_control_simple(BSS_control):
                               grid.net.sgen['p_mw'].values
                            
       p_mw_bss = -residual_load_per_bus      
-      
+     
       get_soc=self.state_of_charge(grid)
       #get_soc=get_soc.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0
       self.soc_new = get_soc
@@ -203,10 +212,8 @@ class BSS_control_simple(BSS_control):
       get_e_mwh=self.e_mwh_start
       
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
-      print('free:')
-      print(free_capacity)
-      
-        # test cases
+   
+      # test cases
       '''
       test_storage = ~np.in1d(grid.component_buses, grid.net.storage.bus)### community bss
       p_mw_bss[test_storage] = 0### community bss
@@ -214,39 +221,31 @@ class BSS_control_simple(BSS_control):
       print(p_mw_bss)
       '''
       
-      
+      #------Abfrage wird nicht benötigt ... woanders? --------------
+      ''' 
       if self.bss_num < len(grid.component_buses.index):
           print('hello')
           p_mw_bss_tot = p_mw_bss.sum()
           p_mw_bss = (p_mw_bss_tot / self.bss_num) * np.ones(self.bss_num)
-         # needed_capacity = (p_mw_bss_tot * self.intervall / (3600 * self.bss_num)) * np.ones(self.bss_num) # später AUfteilung anpassen
-     # elif self.bss_num == len(grid.component_buses.index):
-         # needed_capacity = p_mw_bss * self.intervall / 3600
-      print('p_mw:')
-      print(p_mw_bss)
+      '''  
+      #--------------------------------------------------------------
+
       needed_capacity = p_mw_bss * self.intervall / 3600
-      print('needed:')
-      print(needed_capacity)
-      
+  
       # test cases
-      #test_storage = ~np.in1d(grid.component_buses, grid.net.storage.bus)### community bss
-      
-      solar_excess_1 = np.greater(p_mw_bss,np.zeros(self.bss_num)) & \
+      solar_excess_1 = np.greater(p_mw_bss,np.zeros(len(p_mw_bss))) & \
                        np.less(get_soc,np.ones(self.bss_num)*100) & \
                        np.less(free_capacity, needed_capacity)
-      solar_excess_2 = np.greater(np.ones(self.bss_num)*grid.net.storage.max_e_mwh, np.zeros(self.bss_num)) & \
-                       np.greater(p_mw_bss,np.zeros(self.bss_num)) & \
+      solar_excess_2 = np.greater(p_mw_bss,np.zeros(self.bss_num)) & \
                        np.greater_equal(get_soc,np.ones(self.bss_num)*100)
 
-      load_excess_1 = np.greater(np.ones(self.bss_num)*grid.net.storage.max_e_mwh, np.zeros(self.bss_num)) & \
-                      np.less(p_mw_bss,np.zeros(self.bss_num)) & \
+      load_excess_1 = np.less(p_mw_bss,np.zeros(self.bss_num)) & \
                       np.greater(get_soc,np.zeros(self.bss_num)) & \
                       np.less(get_e_mwh,-needed_capacity \
                               / (grid.net.storage.efficiency_storage \
                                 * grid.net.storage.efficiency_inverter))
-      load_excess_2 = np.greater(np.ones(self.bss_num)*grid.net.storage.max_e_mwh, np.zeros(self.bss_num)) & \
-                      np.less(p_mw_bss,np.zeros(self.bss_num)) & \
-                      np.less_equal(get_soc,np.zeros(self.bss_num))    
+      load_excess_2 = np.less(p_mw_bss,np.zeros(self.bss_num)) & \
+                      np.less_equal(get_soc,np.zeros(self.bss_num))       
       
       # No storage connected:  
       #p_mw_bss[test_storage] = 0### community bss
@@ -263,17 +262,20 @@ class BSS_control_simple(BSS_control):
                                   * 3600 \
                                   / self.intervall
       p_mw_bss[load_excess_2] = 0
-
-      get_e_mwh = self.stored_energy(grid, p_mw_bss)
       
-      #print(p_mw_bss[3])
-      #print(grid.net.storage.max_e_mwh)
-      print('done')
+      get_e_mwh = self.stored_energy(grid, p_mw_bss)
+    
+      #print(self.soc_new)
+      #print(residual_load_per_bus)
+      #print(p_mw_bss)
+      ###grid.net.storage['soc_percent'] = bss_controller.get_soc(grid)
+      grid.net.storage.p_mw = p_mw_bss
+      #return grid.net.storage
       return p_mw_bss
 
 
 ### FEED IN DAMPING ###
-class BSS_control_feed_in_damping2(BSS_control): 
+class BSS_P_control_grid_fid(BSS_control):#BSS_control_feed_in_damping(BSS_control): 
   def __init__(self, grid, intervall_in_seconds, busses_num): 
       super().__init__(grid, intervall_in_seconds, busses_num)
       
@@ -282,7 +284,7 @@ class BSS_control_feed_in_damping2(BSS_control):
       self.trafo_load_percent = grid.net.res_trafo.loading_percent
   
 
-  def pcontrol(self, grid):
+  def pcontrol(self, grid, t):
       
       
       #p_mw_bss = - self.residual_load_per_bus(grid)#np.zeros(self.busses_num)#
@@ -290,11 +292,17 @@ class BSS_control_feed_in_damping2(BSS_control):
       #residual_load_trafo_q_mvar = grid.net.load.q_mvar.sum()
       #residual_load_trafo_s_mva = (residual_load_trafo_p_mw**2 + residual_load_trafo_q_mvar**2)**(.5)
       
+      #ts=tt.get_time_sun()
+      #print(ts)
+      
+      #------------------ersetzen------------------------------------------
+      '''
       sunrise = grid.time_scope['time solar'].sunrise #wie aktualisieren über mehrere Tage?
       sunset = grid.time_scope['time solar'].sunset
       daylight = sunset - sunrise
       daylight_s = daylight[0].total_seconds()
-      #print(daylight)
+      '''
+      #--------------------------------------------------------------------
       
       p_mw_bss = - self.residual_load_per_bus(grid) 
      # print(p_mw_bss)
@@ -367,17 +375,18 @@ class BSS_control_feed_in_damping2(BSS_control):
       #weitere Szenarien für Scheinleistung > Scheinleistung_nenn
       
       #feed-in damping:
-      residual_load_trafo_s_mva = grid.get_residualload_s_sum()
+      residual_load_trafo_s_mva = grid.get_residualload_s_sum() # warum bekomme ich hier array mit 2 einträgen? [s_res, p_res]
       print('trafo real:')
-      print(residual_load_trafo_s_mva)
+      print(residual_load_trafo_s_mva[0])
       print('trafo nenn:')
       print(self.trafo_sn_mva)
       
-      diff_trafo = self.trafo_sn_mva - residual_load_trafo_s_mva
+      diff_trafo = self.trafo_sn_mva - residual_load_trafo_s_mva[0]
       print('diff trafo:')
       print(diff_trafo)
       
-      p_mw_damped = (diff_trafo * np.ones(self.busses_num))/200 # später anpassen
+      busses_num = len(grid.component_buses.index) # nur vorübergehend
+      p_mw_damped = (diff_trafo * np.ones(busses_num))/200 # später anpassen
           
       
       
@@ -397,7 +406,7 @@ class BSS_control_feed_in_damping2(BSS_control):
      ### p_mw_bss[c_trafo_ol_fi] = (diff_trafo * np.ones(self.busses_num))[c_trafo_ol_fi]
      ### p_mw_bss[c_trafo_ol_fi] = (diff_trafo * np.ones(self.busses_num))[c_trafo_ol_fi] p_mw_bss[c_trafo_ol_gs] = (diff_trafo * np.ones(self.busses_num))[c_trafo_ol_gs]
       
-      if (-residual_load_trafo_s_mva > self.trafo_sn_mva) :
+      if (-residual_load_trafo_s_mva[0] > self.trafo_sn_mva) :
           
           needed_capacity = p_mw_bss * self.intervall / 3600
       
@@ -431,7 +440,8 @@ class BSS_control_feed_in_damping2(BSS_control):
       #if residual_load_trafo_s_mva > self.trafo_sn_mva:
          # print('Überlastung')
       else: #LINEAR CHARGING
-          #linear charging:    
+          #linear charging:  
+          daylight_s = 12*3600 #nur bis sunrise und sunset umgesetzt
           p_mw_lin = (grid.net.storage.max_e_mwh * 3600)/ daylight_s #Cannot divide float64 data by TimedeltaArray
           #print(p_mw_lin)
           case_lin = np.less(p_mw_lin, p_mw_bss) # & Scheinliestung kleiner Scheinleistung_nenn
@@ -487,31 +497,59 @@ class BSS_P_control_hh_fid(BSS_control):
       #TODO
       print('Warning: BSS household-oriented_feed-in_damping control is not implemented.')
       super().__init__(grid)
+      #Methode lineares Laden
 
   def pcontrol(self, grid, d):
       BSS_P_control.pcontrol(self)
       return d.values
 
 ### grid-oriented_feed-in_damping ###
-class BSS_P_control_grid_fid(BSS_control):
+class BSS_P_control_grid_fid2(BSS_control):
+  def __init__(self, grid, intervall_in_seconds, busses_num): 
+      super().__init__(grid, intervall_in_seconds, busses_num)
+      #Methode lineares Laden
+      #Metode feed-in damping
+  
+  '''  
+  def __init__(self, grid):
+      #TODO
+      print('Warning: EV grid-oriented_feed-in_damping control is not implemented.')
+      super().__init__(grid)
+  '''
+  def pcontrol(self, grid, t): #t
+      BSS_control.pcontrol(self)
+      #BSS_P_control.pcontrol(self)
+      
+      ts=tt.get_time_sun()
+      print(ts.loc['2017-12-28 00:00:00+01:00'])
+      #print(ts.sunrise-ts.sunset)
+      z=1
+      return z#d.values
+  
+'''
+class BSS_P_control_grid_fid_original(BSS_control):
 
   def __init__(self, grid):
       #TODO
       print('Warning: EV grid-oriented_feed-in_damping control is not implemented.')
       super().__init__(grid)
-
+  
   def pcontrol(self, grid, d):
       BSS_P_control.pcontrol(self)
+      
       return d.values
-  
+'''  
     
-class BSS_control_feed_in_damping(BSS_control): 
+class BSS_control_feed_in_damping2(BSS_control): 
   def __init__(self, grid, intervall_in_seconds, busses_num): 
       super().__init__(grid, intervall_in_seconds, busses_num)
       
       #self.trafo_mw_rat = 0.16
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum() # .sum()?
       self.trafo_load_percent = grid.net.res_trafo.loading_percent
+      
+      #ts=tt.get_time_sun()
+      #print(ts)
   
 
   def pcontrol(self, grid):

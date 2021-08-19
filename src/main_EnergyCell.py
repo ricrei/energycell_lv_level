@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
-               'end_time'   : '2017-05-27 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-04-01 00:00:00+02:00',
+               'end_time'   : '2017-04-02 00:00:00+02:00',
                't_freq'     : '1H'
              }
 
@@ -51,7 +51,7 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0, 0]
+scenario = [6, 2, 0]
 #scenario = [7, 2, 0]
 #######################
 
@@ -82,7 +82,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 9
+net_number = 7
 ######################
 
 #######################
@@ -117,7 +117,7 @@ if run_simulation == 0:
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_soc()
+  e.eva.plot_soc()
   #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')
 #############################
 
