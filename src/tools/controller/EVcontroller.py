@@ -122,7 +122,9 @@ class EV_P_control_no_ev(EV_P_control):
       self.limit_trafo = 0.
 
   def pcontrol_direct_charge(self, grid, t, limit):
-      return super().pcontrol_direct_charge(grid, t, limit = limit)
+      ev = grid.net.load[grid.ev_index]
+      ev.p_mw = 0
+      return ev
 
 ### direct ###
 class EV_P_control_direct(EV_P_control):

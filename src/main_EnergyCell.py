@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00',
-               'end_time'   : '2017-05-27 00:00:00+02:00',
+time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
+               'end_time'   : '2018-01-01 00:00:00+01:00',
                't_freq'     : '1H'
              }
 
@@ -35,7 +35,7 @@ time_scope_autumn = { 'start_time' : '2017-10-23 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope
+time_scope = time_scope_autumn
 ###########################################
 
 #######################
@@ -82,7 +82,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 9
+net_number = 8
 ######################
 
 #######################
@@ -102,7 +102,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -111,13 +111,14 @@ if run_simulation == 0:
   #e.eva.calculate_net_problems()
 
   e.eva.plot_residualload()
-  #e.eva.plot_ev_soc()
+  e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
+  #e.eva.calculate_storage_sizing()
   #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')
 #############################
 

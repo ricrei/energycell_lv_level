@@ -112,6 +112,9 @@ def calculate_net_problems_overall_eva(v, ll, tl):
 
   return sum_v_under, sum_v_over, v_events, sum_ll, ll_events, sum_tl, tl_events
 
+def calculate_max_trafo_load():
+  pass
+
 
 ### Output plots ###
 def plot_generation_consumption_as_heat_map_overall_eva(power, save_fig_dir=None):

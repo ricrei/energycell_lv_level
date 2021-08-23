@@ -56,6 +56,8 @@ df_eva_t = tt.decompress_pickle(output_df_dir + 'evaluation_df_t.pbz2')
 n = 2    # Number of timescopes
 m = 2*4  # Number of timescopes * Number of scenarios
 
+### Calculations ###
+
 
 ### Violin plots ###
 #evaluation.plot_violin_overall_eva(df_eva_v=df_eva_v, df_eva_l=df_eva_l, save_fig_dir=save_fig_dir)
