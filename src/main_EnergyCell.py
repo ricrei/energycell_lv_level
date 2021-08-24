@@ -82,7 +82,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 8
+net_number = 7
 ######################
 
 #######################
@@ -102,7 +102,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -111,14 +111,14 @@ if run_simulation == 0:
   #e.eva.calculate_net_problems()
 
   e.eva.plot_residualload()
-  e.eva.plot_ev_soc()
+  #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
-  #e.eva.calculate_storage_sizing()
+  e.eva.calculate_storage_sizing()
   #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')
 #############################
 
@@ -127,19 +127,19 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter]:
+  for time_scope_i in [time_scope_winter, time_scope_summer]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
+      for scenario_i in [[4,0,0]]:#[[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
-        e = ec.EnergyCell(net_name = net_name_i,
+        e = ec.EnergyCell(net_name = net_name[net_name_i],
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i)
         e.run_pf_timeseries()
 
-  #elif run_simulation == 11:
+elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = [10, 20, 30, 40, 41],

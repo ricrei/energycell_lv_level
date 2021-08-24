@@ -224,6 +224,9 @@ class EvaluationSingleCase():
     else:
       p_max = abs(p_res_neg_max.values) - self.grid.net.trafo.sn_mva.values
 
+    if p_max < 0:
+      p_max[0] = 0
+
     p_res_pos_overload = p_res - self.grid.net.trafo.sn_mva.values
     p_res_neg_overload = p_res + self.grid.net.trafo.sn_mva.values
 
@@ -264,7 +267,7 @@ class EvaluationSingleCase():
     print('P_max per HH: ' + str((p_max[0]*1000/n_HH).round(2)) + ' kW')
     print('E_max per HH: ' + str((e_max[0]*1000/n_HH).round(2)) + ' kWh')
 
-    # Sizing according to installed PV power#
+    # Sizing according to installed PV power
     ratio = 1  # kWh_BSS/kW_PV
     c_rate = 1 # kW_BSS/kWh_BSS
     
@@ -279,25 +282,48 @@ class EvaluationSingleCase():
     print('E_max per HH (on average): ' + str((e_bss.sum()/n_HH).round(2)) + ' kWh')
 
     # Sizing according to FFT-Analysis
-    p_res = self.trafo_p
-    '''
-    p_res_freq = np.fft.fft(p_res)
-    freq = np.fft.fftfreq(p_res.index.shape[-1])
-    print(freq)
-    '''
-    N = len(p_res)
-    T = 1/N
-    x = np.linspace(0.0, N*T, N, endpoint=False)
-    y = p_res.values
-    yf = fft(y)
-    xf = fftfreq(N,T)
 
-    fig, ax = plt.subplots()
-    ax.semilogx(xf, 2/N*np.abs(yf)) # ax.semilogx(p_res_freq)
-    ax.set_xlabel('Frequency')
-    ax.set_ylabel(' ')
+    p_res = self.trafo_p
+    sample_rate = 1/self.grid.time_scope['intervall_in_seconds'] # in Hz
+    duration = len(p_res)*self.grid.time_scope['intervall_in_seconds'] # in seconds
+
+    # Number of sample points
+    N = sample_rate*duration
+
+    # sample spacing
+    T = 1/sample_rate
+
+    y = p_res['0'].to_numpy()
+
+    yf = fft(y)
+    yf = 2/N*np.abs(yf[0:int(N)//2])
+
+    xf = fftfreq(int(N), T)[:int(N)//2]*3600*24
+    '''
+    plt.semilogx(1/xf[1:], yf[1:], marker='o')
+    plt.grid()
     plt.show()
+    '''
+    p_res_f = pd.DataFrame(columns=['1/xf', 'yf'])
+    p_res_f['1/xf'] = 1/xf[1:]
+    p_res_f['yf'] = yf[1:]
+    p_res_f = p_res_f.set_index('1/xf')
+
+    p_bss_index = p_res_f.idxmax()
+    p_bss = p_res_f.loc[p_bss_index].values
+    T_period = 24 # h
+    e_bss = p_bss*T_period/np.pi
+
+    print('')
+    print('Sizing according to Fourier Analysis:')
+    print('P_max total: ' + str(float((p_bss*1000).round(2))) + ' kW')
+    print('E_max total: ' + str(float((e_bss*1000).round(2))) + ' kWh')
+    print('P_max per HH (on average): ' + str(float((p_bss*1000/n_HH).round(2))) + ' kW')
+    print('E_max per HH (on average): ' + str(float((e_bss*1000/n_HH).round(2))) + ' kWh')
     
+    print(' ')
+    print('Total installed PV Power: ' + str(self.grid.total_installed_pv_power) + ' kW')
+
 
   ### plots ###
   def plot_grid_issus_over_time(self):
