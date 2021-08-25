@@ -10,10 +10,15 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
-               'end_time'   : '2018-01-01 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-05-26 00:00:00+01:00',
+               'end_time'   : '2018-05-27 00:00:00+01:00',
                't_freq'     : '1H'
              }
+
+time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
+                    'end_time'   : '2018-01-01 00:00:00+01:00',
+                    't_freq'     : '1H'
+                  }
 
 # timescopes to examine
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
@@ -29,13 +34,13 @@ time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'name'       : 'summer'
                     }
 
-time_scope_autumn = { 'start_time' : '2017-10-23 00:00:00+02:00',
-                      'end_time'   : '2017-10-30 00:00:00+02:00',
+time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
+                      'end_time'   : '2017-10-28 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope_autumn
+time_scope = time_scope_year
 ###########################################
 
 #######################
@@ -82,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 7
+net_number = 11
 ######################
 
 #######################
@@ -127,7 +132,7 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer]:
+  for time_scope_i in [time_scope_year]:
     for net_name_i in [7, 8, 9, 10, 11]:
       for scenario_i in [[4,0,0]]:#[[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
         print(' ')

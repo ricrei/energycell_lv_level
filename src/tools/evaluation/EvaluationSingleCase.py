@@ -299,11 +299,14 @@ class EvaluationSingleCase():
     yf = 2/N*np.abs(yf[0:int(N)//2])
 
     xf = fftfreq(int(N), T)[:int(N)//2]*3600*24
-    '''
-    plt.semilogx(1/xf[1:], yf[1:], marker='o')
+    
+    fig, ax = plt.subplots()
+    plt.semilogx(1/xf[1:], yf[1:]*1000, marker='o')
+    ax.set_xlabel('Period T in days')
+    ax.set_ylabel('Power in kW')
     plt.grid()
     plt.show()
-    '''
+    
     p_res_f = pd.DataFrame(columns=['1/xf', 'yf'])
     p_res_f['1/xf'] = 1/xf[1:]
     p_res_f['yf'] = yf[1:]
