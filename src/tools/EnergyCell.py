@@ -73,23 +73,20 @@ class EnergyCell():
         self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
         #self.grid = self.bss_creator.create_bss_at_one_bus(self.grid)
 
-        #Paul workaround wegen: TypeError: 'int' object is not subscriptable
-        #self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[1]))
         self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = 0)
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control='cos_phi', cos_phi=.9)
+        self.pv_controller = PVcontroller(grid=self.grid, control='qu', cos_phi=.9)
         self.ev_controller = EVcontroller(grid=self.grid, control='greedy')
-
-        self.hp_controller = HPcontroller(grid=self.grid, control='evu_lock')
-        self.bss_controller = BSScontroller(grid=self.grid, control='simple')
 
         self.input_data_handler = InputDataHandler()
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
-        self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
+        #self.hp_controller = HPcontroller(grid=self.grid, control='greedy')
+        #self.hp_controller = HPcontroller(grid=self.grid, control='evu_lock')
+        self.hp_controller = HPcontroller(grid=self.grid, control='resi_load_driven')
         self.bss_controller = BSScontroller(grid=self.grid, control='simple') 
 
         self.output_data_handler = OutputDataHandler()
