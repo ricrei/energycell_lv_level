@@ -124,3 +124,14 @@ def progress(count, total, status=''):
     sys.stdout.flush()  # As suggested by Rom Ruben (see: http://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console/27871113#comment50529068_27871113) https://gist.github.com/vladignatyev/06860ec2040cb497f0f3
 # █
 
+####################################################
+###                   load data                  ###
+####################################################
+def get_time_sun():
+    file_sun_set_rise = 'input-files/16_t_sun_rise_set_transit.pbz2'
+    return decompress_pickle(file_sun_set_rise)
+
+def get_amb_temp():
+    file_ambient_temp = 'input-files/15_temperature_ambient_short.pbz2'
+    return decompress_pickle(file_ambient_temp)
+

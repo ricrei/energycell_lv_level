@@ -10,7 +10,7 @@ class OutputDataHandler():
   ### create output_dir ###
   #########################
   def create_output_dir(self, net_name, scenario_frame, time_scope):
-        self.output_dir = os.path.join("./", "output-files/"+str(scenario_frame[0])+str(scenario_frame[1])+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
+        self.output_dir = os.path.join("./", "output-files/"+str(scenario_frame[0])+str(scenario_frame[1])+str(scenario_frame[2])+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
         # Create output directory
         if not os.path.isdir(self.output_dir):
           try:
@@ -31,7 +31,9 @@ class OutputDataHandler():
         self.pv_reactive_power = pd.DataFrame(columns=grid.net.sgen.index)
         self.load_active_power = pd.DataFrame(columns=grid.net.load.index)
         self.load_reactive_power = pd.DataFrame(columns=grid.net.load.index)
+        self.ev_soc = pd.DataFrame(columns=grid.ev_index) ##
         self.storage_active_power = pd.DataFrame(columns=grid.net.storage.index)
+        self.storage_state_of_charge = pd.DataFrame(columns=grid.net.storage.index)
         self.trafo_active_power = pd.DataFrame(columns=grid.net.trafo.index)
         self.losses_active_power = pd.DataFrame(columns=['trafo','lines'])
         self.v_pu_ext_grid = pd.DataFrame(columns=['v_pu'])
@@ -44,7 +46,9 @@ class OutputDataHandler():
         self.pv_active_power.index.name = 'timestamp'
         self.load_active_power.index.name = 'timestamp'
         self.load_reactive_power.index.name = 'timestamp'
+        self.ev_soc.index.name = 'timestamp' ##
         self.storage_active_power.index.name = 'timestamp'
+        self.storage_state_of_charge.index.name = 'timestamp' 
         self.trafo_active_power.index.name = 'timestamp'
         self.losses_active_power.index.name = 'timestamp'
         self.v_pu_ext_grid.index.name  = 'timestamp'
@@ -62,7 +66,9 @@ class OutputDataHandler():
         self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
         self.load_active_power.loc[t] = grid.net.load['p_mw']
         self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
+        self.ev_soc.loc[t] = grid.net.load.ev_soc.loc[grid.ev_index] ##
         self.storage_active_power.loc[t] = grid.net.storage['p_mw']
+        self.storage_state_of_charge.loc[t] = grid.net.storage['soc_percent']
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
         self.losses_active_power.loc[t] = [grid.net.res_trafo.pl_mw.sum(),
                                            grid.net.res_line.pl_mw.sum()]
@@ -86,8 +92,12 @@ class OutputDataHandler():
                                                mode=mode, header=header, index = True)
         self.load_reactive_power.round(6).to_csv(self.output_dir + 'load_reactive_power_MW.csv',
                                                mode=mode, header=header, index = True)
+        self.ev_soc.round(3).to_csv(self.output_dir + 'ev_soc.csv',
+                                               mode=mode, header=header, index = True)
         self.storage_active_power.round(6).to_csv(self.output_dir + 'storage_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
+        self.storage_state_of_charge.round(6).to_csv(self.output_dir + 'storage_state_of_charge_percent.csv',
+                                                  mode=mode, header=header, index = True) 
         self.trafo_active_power.round(6).to_csv(self.output_dir + 'trafo_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.losses_active_power.round(6).to_csv(self.output_dir + 'losses_active_power_MW.csv',

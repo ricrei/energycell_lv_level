@@ -12,8 +12,7 @@ class PVcreator:
     self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
                         'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                        'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10,
-                        'cos_phi' : 1}
+                        'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10}
     #TODO: power urban has to be verified
     self.pv_data_file = 'input-files/12_pv_short.pbz2'
 
@@ -113,14 +112,11 @@ class PVcreator:
     df_power_by_orientation['installed_power_scaling'] = self.pv_para['installed_power_scaling']
     df_power_by_orientation['power_per_orientation'] = df_power_by_orientation['installed_power_scaling']*self.pv_para['power_'+str(grid.category)]
     grid.total_installed_pv_power = 0
+    grid.net.sgen['installed_power'] = 0
+    index = 0
     for pv_type in grid.net.sgen.type:
-      grid.total_installed_pv_power += int(df_power_by_orientation['power_per_orientation'][str(pv_type) == df_power_by_orientation['orientation']].values)
+      grid.net.sgen['installed_power'].loc[index] = int(df_power_by_orientation['power_per_orientation'][str(pv_type) == df_power_by_orientation['orientation']].values)
+      index += 1
+    grid.total_installed_pv_power = grid.net.sgen['installed_power'].sum()
 
     return grid
-    
-
-
-
-
-
-

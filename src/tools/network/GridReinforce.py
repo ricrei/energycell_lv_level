@@ -166,15 +166,15 @@ class GridReinforce:
     elif self.net_name == "kerber_suburb_2":
       return self.grid.net.trafo.std_type.loc[0]
     elif self.net_name == "simbench_rural_1":
-      return None#['0.25 MVA 20/0.4 kV']
+      return ['0.25 MVA 20/0.4 kV']
     elif self.net_name == "simbench_rural_2":
       return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_rural_3":
-      return ['0.63 MVA 20/0.4 kV']
+      return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.25 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_4":
       return ['0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_5":
-      return None
+      return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_urban_6":
       return None
     elif self.net_name == "test_net_one_load_branch":
@@ -258,16 +258,37 @@ class GridReinforce:
       # Strang 3
       self.connect_buses(bus_to_trafo=19, former_bus=37, line_type='NAYY 4x150SE 0.6/1kV')
       # Strang 4
-      self.connect_buses(bus_to_trafo=71, former_bus=28, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=41, former_bus=36, line_type='NAYY 4x185SE 0.6/1kV')
       self.connect_buses(bus_to_trafo=75, former_bus=80, line_type='NAYY 4x300SE 0.6/1kV')
-      #self.connect_buses(bus_to_trafo=75, former_bus=None, line_type='NAYY 4x300SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=10, former_bus=71, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo= 5, former_bus=17, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo= 6, former_bus=92, line_type='NAYY 4x150SE 0.6/1kV')
       return None
     elif self.net_name == "simbench_rural_3":
+      # Strang 1
+      self.connect_buses(bus_to_trafo=74, former_bus=58, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=37, former_bus=126, line_type='NAYY 4x150SE 0.6/1kV')
+      # Strang 6
+      self.connect_buses(bus_to_trafo=46, former_bus=61, line_type='NAYY 4x150SE 0.6/1kV')
+      # Strang 7
+      self.connect_buses(bus_to_trafo=108, former_bus=33, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=125, former_bus=53, line_type='NAYY 4x185SE 0.6/1kV')
+      # Strang 8
+      self.connect_buses(bus_to_trafo=95, former_bus=92, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=102, former_bus=41, line_type='NAYY 4x150SE 0.6/1kV')
+      # Strang 9
+      self.connect_buses(bus_to_trafo=111, former_bus=31, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=48, former_bus=107, line_type='NAYY 4x150SE 0.6/1kV')
       return None
     elif self.net_name == "simbench_suburb_4":
+      # Strang 3
+      self.connect_buses(bus_to_trafo=22, former_bus=10, line_type='NAYY 4x150SE 0.6/1kV')
       return None
     elif self.net_name == "simbench_suburb_5":
+      # Strang 2
+      self.connect_buses(bus_to_trafo=79, former_bus=2, line_type='NAYY 4x185SE 0.6/1kV')
+      # Strang 4
+      self.connect_buses(bus_to_trafo=56, former_bus=10, line_type='NAYY 4x150SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=80, former_bus=59, line_type='NAYY 4x150SE 0.6/1kV')
       return None
     elif self.net_name == "simbench_urban_6":
       return None
@@ -312,11 +333,6 @@ class GridReinforce:
 
   def final_grid_check(self):
     everything_ok = True
-    if (self.line_overloading > 100):
-      print(tt.textred('Lineoverloading  at %s: %s %%' % (self.line_overloading_time, self.line_overloading)))
-      self.fill_grid_with_power_values(self.line_overloading_time)
-      pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
-      everything_ok = False
     if (self.overvoltage > 1.1):
       print(tt.textred('Overvoltage      at %s: %s' % (self.overvoltage_time, self.overvoltage)))
       self.fill_grid_with_power_values(self.overvoltage_time)
@@ -325,6 +341,11 @@ class GridReinforce:
     if (self.undervoltage < .9):
       print(tt.textred('Undervoltage     at %s: %s' % (self.undervoltage_time, self.undervoltage)))
       self.fill_grid_with_power_values(self.undervoltage_time)
+      pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
+      everything_ok = False
+    if (self.line_overloading > 100):
+      print(tt.textred('Lineoverloading  at %s: %s %%' % (self.line_overloading_time, self.line_overloading)))
+      self.fill_grid_with_power_values(self.line_overloading_time)
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       everything_ok = False
     if (self.trafo_overloading > 100).any():

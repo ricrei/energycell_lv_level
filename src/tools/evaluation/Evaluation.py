@@ -13,6 +13,19 @@ from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
 
+SMALL_SIZE = 8
+MEDIUM_SIZE = 10
+BIGGER_SIZE = 12
+
+plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+
 ### Helper Methods ###
 
 def read_data(filename):
@@ -99,6 +112,9 @@ def calculate_net_problems_overall_eva(v, ll, tl):
 
   return sum_v_under, sum_v_over, v_events, sum_ll, ll_events, sum_tl, tl_events
 
+def calculate_max_trafo_load():
+  pass
+
 
 ### Output plots ###
 def plot_generation_consumption_as_heat_map_overall_eva(power, save_fig_dir=None):
@@ -110,7 +126,7 @@ def plot_generation_consumption_as_heat_map_overall_eva(power, save_fig_dir=None
   ax.set_xlabel('Day').set_size(20)
   ax.set_ylabel('Hour').set_size(20)
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir)
+     plt.savefig(save_fig_dir, bbox_inches='tight')
 
 def plot_residualload_overall_eva(power, save_fig_dir=None):
 
@@ -134,7 +150,7 @@ def plot_residualload_overall_eva(power, save_fig_dir=None):
   ax.set(xlim=(power.index[0], power.index[-1]), ylim=(-1750, 400))
   plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Residual Load'], loc='lower right')
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir)
+     plt.savefig(save_fig_dir, bbox_inches='tight')
 
 def plot_residualload_subplot_overall_eva(power_summer, power_winter, save_fig_dir=None):
 
@@ -164,7 +180,46 @@ def plot_residualload_subplot_overall_eva(power_summer, power_winter, save_fig_d
   ax[1].set_xlabel('Winter')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir)
+     plt.savefig(save_fig_dir, bbox_inches='tight')
+
+def plot_residualload_subplot_overall_eva_timeslot(power_summer, power_winter, save_fig_dir=None):
+
+  power_summer = -power_summer*1
+  power_winter = -power_winter*1
+  power = [power_summer, power_winter]
+
+  fig, ax = plt.subplots(1, 2, figsize=(10,5), sharey=True,  gridspec_kw={'wspace': .05})
+  for i in [0,1]:
+    ax[i].fill_between(power[i].index, 0, power[i].pv, alpha=0.7)
+    ax[i].plot(power[i].index, power[i].pv, lw=.6)
+    ax[i].fill_between(power[i].index, 0, -power[i].ev, alpha=0.7)
+    ax[i].plot(power[i].index, -power[i].ev, lw=.6)
+    ax[i].fill_between(power[i].index, -power[i].ev, -power[i].load-power[i].ev, alpha=0.7)
+    ax[i].plot(power[i].index, -power[i].load-power[i].ev, lw=.6)
+    ax[i].fill_between(power[i].index, -power[i].load-power[i].ev, -power[i].hp-power[i].load-power[i].ev, alpha=0.7)
+    ax[i].plot(power[i].index, -power[i].hp-power[i].load-power[i].ev, lw=.6)
+    power[i] = shorted_data(power[i], '10T')
+    ax[i].plot(power[i].index, power[i].pv-power[i].hp-power[i].load-power[i].ev, color='black', lw=1)
+    ax[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
+    ax[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
+    ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-2.000, .500))
+    plt.legend(['PV Generation','EV Load','Household Load','HP Load', 'Residual Load'], loc='lower right', shadow=True, markerscale=1.0)
+
+  ax[0].set_ylabel('Power in MW')
+  ax[0].set_xlabel('Summer')
+  ax[1].set_xlabel('Winter')
+
+  time_min_winter = pd.to_datetime('2017-01-05 00:00:00+01:00', utc=True)
+  time_max_winter = pd.to_datetime('2017-01-07 00:00:00+01:00', utc=True)
+
+  time_min_summer = pd.to_datetime('2017-05-27 00:00:00+01:00', utc=True)
+  time_max_summer = pd.to_datetime('2017-05-29 00:00:00+01:00', utc=True)
+
+  ax[0].set_xlim(time_min_summer, time_max_summer)
+  ax[1].set_xlim(time_min_winter, time_max_winter)
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir, bbox_inches='tight')
 
 def plot_violin_overall_eva(df_eva_v, df_eva_l, save_fig_dir=None):
   print('Create Violin plots')
@@ -172,13 +227,13 @@ def plot_violin_overall_eva(df_eva_v, df_eva_l, save_fig_dir=None):
   ax = sns.violinplot(x="gridID", y="voltage", hue='timescope', data=df_eva_v, palette="muted", split=True, inner="quartile", cut=0)
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'violin_voltage.png')
+     plt.savefig(save_fig_dir + 'violin_voltage.png', bbox_inches='tight')
 
   plt.figure()
   ax = sns.violinplot(x="gridID", y="lineloading", hue='timescope', data=df_eva_l, palette="muted", split=True, inner="quartile", cut=0)
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'violin_lineloading.png')
+     plt.savefig(save_fig_dir + 'violin_lineloading.png', bbox_inches='tight')
 
 def plot_barplots_overall_eva(eva, n, save_fig_dir=None):
   print('Create Bar plots')
@@ -230,21 +285,21 @@ def plot_barplots_overall_eva(eva, n, save_fig_dir=None):
   ax.set(xlabel='Scenario', ylabel='Overload in min per unit')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'bar_scenario.png')
+     plt.savefig(save_fig_dir + 'bar_scenario.png', bbox_inches='tight')
 
   plt.figure()
   ax = sns.barplot(x = 'gridID', y = 'value', hue = 'type', data = df_bar_2)
   ax.set(xlabel='GridID', ylabel='Overload in min per unit')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'bar_gridID.png')
+     plt.savefig(save_fig_dir + 'bar_gridID.png', bbox_inches='tight')
 
   plt.figure()
   ax = sns.barplot(x = 'type', y = 'value', hue = 'scenario', data = df_bar_1)
   ax.set(xlabel='Overload type', ylabel='Overload in min per unit')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'bar_issus.png')
+     plt.savefig(save_fig_dir + 'bar_issus.png', bbox_inches='tight')
 
 
 def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
@@ -282,7 +337,7 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
   vmin = 0
   
   plt.figure()
-  ax = sns.heatmap(df_v_heatmap/v_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True)#, fmt=".0f")
+  ax = sns.heatmap(df_v_heatmap/v_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
@@ -290,12 +345,12 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
   #ax.set_title('Voltage Violation in Minutes per Week and Bus')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_voltage.png')
+     plt.savefig(save_fig_dir + 'heatmap_voltage.png', bbox_inches='tight')
 
   #"YlOrBr"
 
   plt.figure()
-  ax = sns.heatmap(df_l_heatmap/l_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True)#, fmt=".0f")
+  ax = sns.heatmap(df_l_heatmap/l_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
@@ -303,10 +358,10 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
   #ax.set_title('Line Overloading in Minutes per Week and Line')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_lineloading.png')
+     plt.savefig(save_fig_dir + 'heatmap_lineloading.png', bbox_inches='tight')
 
   plt.figure()
-  ax = sns.heatmap(df_t_heatmap/t_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True)#, fmt=".0f")
+  ax = sns.heatmap(df_t_heatmap/t_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
@@ -314,7 +369,7 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
   #ax.set_title('Line Overloading in Minutes per Week and Line')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_trafoloading.png')
+     plt.savefig(save_fig_dir + 'heatmap_trafoloading.png', bbox_inches='tight')
 
 def plot_grid_issus_over_power(eva, save_fig_dir=None):
 
@@ -343,7 +398,7 @@ def plot_grid_issus_over_power(eva, save_fig_dir=None):
   plt.grid(True)
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir)
+     plt.savefig(save_fig_dir, bbox_inches='tight')
 
 def plot_grid_issus_over_time(eva, save_fig_dir=None):
   power = eva['power']
@@ -351,6 +406,11 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   v = eva['v']
   ll = eva['ll']
   tl = eva['tl']
+
+  power = shorted_data(power, 'H')
+  v = shorted_data(v, 'H')
+  ll = shorted_data(ll, 'H')
+  tl = shorted_data(tl, 'H')
 
   line_v_o = power*0 + 1.1
   line_v_u = power*0 + .9
@@ -361,7 +421,7 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   ll_max = ll.T.max().T
   tl_max = tl.T.max().T
 
-  fig, (ax1, ax2, ax3) = plt.subplots(3)
+  fig, (ax3, ax1, ax2) = plt.subplots(3)
   fig.suptitle(' ')
   l1 = ax1.plot(v_min, 'r')[0]
   ax1.plot(line_v_u, '--k', lw=.5)
@@ -372,7 +432,7 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
   l5 = ax3.plot(power, 'k')[0]
   ax1.legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right")
-  ax2.legend(handles=[l4, l3, l_limit2], labels=['Line Overload', 'Trafo Overload', 'Overload Limit'] ,loc="upper right")
+  ax2.legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right")
   ax3.legend(handles=[l5], labels=['Residualload'] ,loc="lower right")
   ax1.set_xlabel('Time')
   ax1.set_ylabel('Voltage\nin p.u.')
@@ -389,9 +449,9 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   ax3.set(xlim=(power.index[0], power.index[-1]), ylim=(-2.1, 1))
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir)
+     plt.savefig(save_fig_dir, bbox_inches='tight')
 
-def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, save_fig_dir=None):
+def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, save_fig_dir=None):
   power_summer = eva_summer['power']
   power_summer = power_summer.load+power_summer.hp+power_summer.ev-power_summer.pv
   v_summer = eva_summer['v']
@@ -403,6 +463,21 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, save_fig_dir=None)
   v_winter = eva_winter['v']
   ll_winter = eva_winter['ll']
   tl_winter = eva_winter['tl']
+
+  if detailed!=None:
+    t_freq_new = '10T'
+  else:
+    t_freq_new = '30T'
+
+  power_summer = shorted_data(power_summer, t_freq_new)
+  v_summer = shorted_data(v_summer, t_freq_new)
+  ll_summer = shorted_data(ll_summer, t_freq_new)
+  tl_summer = shorted_data(tl_summer, t_freq_new)
+
+  power_winter = shorted_data(power_winter, t_freq_new)
+  v_winter = shorted_data(v_winter, t_freq_new)
+  ll_winter = shorted_data(ll_winter, t_freq_new)
+  tl_winter = shorted_data(tl_winter, t_freq_new)
 
   line_v_o_winter = power_winter*0 + 1.1
   line_v_u_winter = power_winter*0 + .9
@@ -423,9 +498,9 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, save_fig_dir=None)
   power = [power_summer, power_winter]
 
   fig, ax = plt.subplots(3, 2, figsize=(10,5), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05})
-  ax1 = ax[0]
-  ax2 = ax[1]
-  ax3 = ax[2]
+  ax1 = ax[1] # Voltage
+  ax2 = ax[2] # Line and Trafo
+  ax3 = ax[0] # Residualload
   for i in [0, 1]:
     l1 = ax1[i].plot(v_min[i], 'r')[0]
     ax1[i].plot(line_v_u[i], '--k', lw=.5)
@@ -444,21 +519,50 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, save_fig_dir=None)
     ax2[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
     ax3[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
     ax3[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
-    ax1[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(.87, 1.2))
-    ax2[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(0, 7.0))
-    ax3[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-2.2, 1)) 
-  ax3[0].set_xlabel('Summer')
-  ax3[1].set_xlabel('Winter')
+    if detailed == None:
+      ax1[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(.85, 1.15))
+      ax2[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(0, 7.0))
+      ax3[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-2.2, 1))
+
+      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right", shadow=True)
+      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right", shadow=True)
+      ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True)
+
+    else:
+      time_min_winter = pd.to_datetime('2017-01-05 00:00:00+01:00', utc=True)
+      time_max_winter = pd.to_datetime('2017-01-07 00:00:00+01:00', utc=True)
+
+      time_min_summer = pd.to_datetime('2017-05-27 00:00:00+01:00', utc=True)
+      time_max_summer = pd.to_datetime('2017-05-29 00:00:00+01:00', utc=True)
+
+      time_min = [time_min_summer, time_min_winter]
+      time_max = [time_max_summer, time_max_winter]
+
+      ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15))
+      ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(0, 7.0))
+      ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-2.2, 1))
+
+      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper left", shadow=True)
+      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper left", shadow=True)
+      ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower left", shadow=True)
+
+      if save_fig_dir is not None:
+        save_fig_dir = save_fig_dir[:-4]+'_detailed'+save_fig_dir[-4:]
+
+  ax2[0].set_xlabel('Summer')
+  ax2[1].set_xlabel('Winter')
   ax1[0].set_ylabel('Voltage\nin p.u.')
   ax2[0].set_ylabel('Line and Trafo\nLoading in p.u.')
-  ax3[0].set_ylabel('Power\nin p.u.')
+  ax3[0].set_ylabel('Power\nin MW')
 
+  '''
   ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right", shadow=True)
-  ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Line Overload', 'Trafo Overload', 'Overload Limit'] ,loc="upper right", shadow=True)
+  ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right", shadow=True)
   ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True)
+  '''
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir)
+     plt.savefig(save_fig_dir, bbox_inches='tight')
 
 def plot_hist_grid_issus(eva, save_fig_dir=None):
   power = eva['power']
@@ -508,7 +612,7 @@ def plot_hist_grid_issus_voltage(eva1, eva2, save_fig_dir=None):
   legend = ax1.legend(shadow=True)
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir)
+     plt.savefig(save_fig_dir, bbox_inches='tight')
 
 
 
@@ -625,14 +729,15 @@ def plot_curtailed_power(eva, save_fig_dir=None):
   df_winter_load = df_winter_load.drop('feed-in_power_pv', axis=1)
   df_winter_load = df_winter_load.drop('self-consumed_power_pv', axis=1)
   
-  plot_clustered_stacked([df_winter_pv, df_summer_pv], ['curtailed','feed-in','self-consumed'], ['winter', 'summer'], title='Photovoltaic Generation')
+  plot_clustered_stacked([df_winter_pv, df_summer_pv], ['curtailed','feed-in','self-consumed'], ['winter', 'summer'], title=' ')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir+'curtailed_PV_power.png')
+     plt.savefig(save_fig_dir+'curtailed_PV_power.png', bbox_inches='tight')
 
-  plot_clustered_stacked([df_winter_load, df_summer_load], ['curtailed','grid-obtained','self-consumed'], ['winter', 'summer'], title='Consumption')
+  plot_clustered_stacked([df_winter_load, df_summer_load], ['curtailed','grid-obtained','self-consumed'], ['winter', 'summer'], title=' ')
+
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir+'curtailed_Load_power.png')
+     plt.savefig(save_fig_dir+'curtailed_Load_power.png', bbox_inches='tight')
 
 
 
