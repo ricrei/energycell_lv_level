@@ -87,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 7
+net_number = 10
 ######################
 
 #######################
@@ -107,7 +107,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -115,16 +115,16 @@ if run_simulation == 0:
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload()
+  e.eva.plot_residualload()
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
   #e.eva.calculate_storage_sizing()
-  e.eva.plot_grid(time_sample='2017-05-26 13:00:00+02:00')
+  e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')
 #############################
 
 ###############################

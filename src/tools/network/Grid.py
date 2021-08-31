@@ -99,7 +99,7 @@ class Grid:
 
         self.s_trafo_power = self.net.trafo.sn_mva.sum()
 
-        self.get_busses_per_feeder()
+        self.get_buses_per_feeder()
 
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
@@ -135,6 +135,8 @@ class Grid:
   def rename_all_buses(self):
     for i in self.net.bus.index:
       self.net.bus.name[i] = str(self.net.bus.subnet[i]) + ' Bus ' + str(i)
+    for i in self.net.line.index:
+      self.net.line.name[i] = str(self.net.bus.subnet[i]) + ' Line ' + str(i)
 
   def reset_all_power_values(self):
     self.net.load.p_mw = 0
@@ -206,7 +208,12 @@ class Grid:
 
     return s_res
 
-  def get_busses_per_feeder(self):
+
+  def get_buses_per_feeder(self):
+    '''
+    Traces along the feeders within the network, allocate each bus to a feeder number, write the result into self.grid.net.bus.feeder.
+    Store all lines connected with the trafo in self.monitored_lines.
+    '''
     def trace_feeder_path(line, bus, index, feeder):
       if self.net.bus.loc[self.net.bus.index == bus, 'feeder'].values == 0:
         self.net.bus.loc[self.net.bus.index == bus, 'feeder'] = feeder
@@ -226,9 +233,11 @@ class Grid:
     self.monitored_lines = self.net.line.loc[int(self.net.trafo.lv_bus.values) == self.net.line.from_bus]
     self.monitored_lines = self.monitored_lines.append(self.net.line.loc[int(self.net.trafo.lv_bus.values) == self.net.line.to_bus])
     self.net.bus['feeder'] = 0
+    self.monitored_lines['feeder'] = 0
 
     feeder = 1
     for i in self.monitored_lines.index:
+      self.monitored_lines.feeder.loc[i] = feeder
       if self.monitored_lines.loc[i].from_bus != int(self.net.trafo.lv_bus.values):
         trace_feeder_path(self.monitored_lines.loc[i], self.monitored_lines.loc[i].from_bus, i, feeder)
       if self.monitored_lines.loc[i].to_bus != int(self.net.trafo.lv_bus.values):

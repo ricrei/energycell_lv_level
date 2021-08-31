@@ -26,11 +26,37 @@ class Curtailment:
     self.sf_pv =  .95 # safty factor
     self.sf_load =  .95 # safty factor
 
+    #print(grid.net.res_line)
+    #print(grid.net.line)
+
     #print(grid.net.bus.feeder)
-    #print(grid.monitored_lines)
+    #print(grid.monitored_lines.feeder)
 
   def curtail(self,grid):
+    '''
+    res_s_per_hh = grid.get_residualload_s_per_household()
+    print(res_s_per_hh)
 
+    # Line overloading
+    if (grid.net.res_line.loading_percent > 100.).any():
+     line_overload = grid.monitored_lines.loc[grid.net.res_line.loading_percent > 100.]
+     line_overload_value = grid.net.res_line.loading_percent.loc[line_overload.index]
+     feeder_overload = pd.concat([line_overload, line_overload_value], axis=1)
+
+     for i in feeder_overload.index:
+       buses_curtail = grid.net.bus.loc[feeder_overload.feeder.loc[i] == grid.net.bus.feeder].index
+       sgen_index_curtail = grid.net.sgen[grid.net.sgen.bus.isin(buses_curtail)].index
+       overloading = feeder_overload.loading_percent
+       curtail_factor = 100/overloading
+       #print(curtail_factor)
+
+       grid.net.sgen.p_mw[sgen_index_curtail] = grid.net.sgen.p_mw[sgen_index_curtail]*curtail_factor.values
+       grid.net.sgen.q_mvar[sgen_index_curtail] = grid.net.sgen.q_mvar[sgen_index_curtail]*curtail_factor.values
+
+       #print(grid.net.sgen)
+
+    '''
+    # Trafo overloading
     res_s, res_p = grid.get_residualload_s_sum()
 
     if (-res_s > self.trafo_power*self.sf_pv):
@@ -58,7 +84,7 @@ class Curtailment:
       grid.curtailed_load_power = total_load_power_mw - grid.net.load.p_mw.sum()
     else:
       grid.curtailed_load_power = 0
-
+    
     return grid
 
 class NO_Curtailment:
