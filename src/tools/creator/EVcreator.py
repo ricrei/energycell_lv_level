@@ -6,8 +6,8 @@ import tools.tools as tt
 class EVcreator:
 
   def __init__(self):
-    self.usable_c_bat = 1 # 0-1
-    self.ev_start_soc = 1 # 0-1
+    self.usable_c_bat = 100 # in %
+    self.ev_start_soc = 100 # in %
 
 
   ###########################################
@@ -41,7 +41,7 @@ class EVcreator:
                          )
 
 
-          grid.net.load['ev_c_bat'].loc[index_ev] = int(grid.net.load.type[index_ev][7:10])*self.usable_c_bat
+          grid.net.load['ev_c_bat'].loc[index_ev] = int(grid.net.load.type[index_ev][7:10])*self.usable_c_bat/100
           grid.net.load['ev_soc'].loc[index_ev] = self.ev_start_soc
 
       return grid
