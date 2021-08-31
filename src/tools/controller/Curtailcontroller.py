@@ -26,9 +26,12 @@ class Curtailment:
     self.sf_pv =  .95 # safty factor
     self.sf_load =  .95 # safty factor
 
+    #print(grid.net.bus.feeder)
+    #print(grid.monitored_lines)
+
   def curtail(self,grid):
 
-    res_s = grid.get_residualload_s_sum()
+    res_s, res_p = grid.get_residualload_s_sum()
 
     if (-res_s > self.trafo_power*self.sf_pv):
       #print('PV:')

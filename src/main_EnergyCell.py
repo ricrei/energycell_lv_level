@@ -12,7 +12,7 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-26 00:00:00+01:00',
                'end_time'   : '2017-05-27 00:00:00+01:00',
-               't_freq'     : '30T'
+               't_freq'     : '1H'
              }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -56,8 +56,8 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0, 0]
-scenario = [7, 2, 0]
+scenario = [4, 0, 1]
+#scenario = [7, 2, 0]
 #######################
 
 ############################
@@ -107,16 +107,16 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
+  #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload()
-  e.eva.plot_ev_soc()
+  #e.eva.plot_residualload()
+  #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
@@ -124,7 +124,7 @@ if run_simulation == 0:
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
   #e.eva.calculate_storage_sizing()
-  #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')
+  e.eva.plot_grid(time_sample='2017-05-26 13:00:00+02:00')
 #############################
 
 ###############################

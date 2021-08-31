@@ -149,7 +149,34 @@ class BSS_control:
       p_mw_bss[load_excess_2] = 0
 
   # Ricardo:
-  #def 
+  def get_solar_load_excess(self, grid):
+
+      p_mw_bss = -grid.get_residualload_p_per_household()
+
+      get_soc=self.state_of_charge(grid)
+      self.soc_new = get_soc
+            
+      get_e_mwh=self.e_mwh_start
+      
+      free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
+
+      needed_capacity = p_mw_bss * self.intervall / 3600
+
+      solar_excess_1 = (p_mw_bss > 0) & \
+                       (get_soc < 100) & \
+                       (free_capacity < needed_capacity)
+
+      solar_excess_2 = (p_mw_bss > 0) & \
+                       (get_soc >= 100)
+
+      load_excess_1 = (p_mw_bss < 0) & \
+                      (get_soc > 0) & \
+                      (get_e_mwh < -needed_capacity/(grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter))
+
+      load_excess_2 = (p_mw_bss < 0) & \
+                      (get_soc <= 0)
+
+      return solar_excess_1, solar_excess_2, load_excess_1, load_excess_2
   
   def residual_load_per_bus(self, grid):
       residual_load_per_bus = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
@@ -230,32 +257,27 @@ class BSS_control_simple(BSS_control):
       needed_capacity = p_mw_bss * self.intervall / 3600
       #print('needed:')
       #print(needed_capacity)
-      
       # test cases
       #test_storage = ~np.in1d(grid.component_buses, grid.net.storage.bus)### community bss
-      '''
-      solar_excess_1 = np.greater(p_mw_bss,np.zeros(self.bss_num)) & \
-                       np.less(get_soc,np.ones(self.bss_num)*100) & \
-                       np.less(free_capacity, needed_capacity)
-      '''
       solar_excess_1 = (p_mw_bss > 0) & \
                        (get_soc < 100) & \
                        (free_capacity < needed_capacity)
-      
-      solar_excess_2 = np.greater(p_mw_bss,np.zeros(self.bss_num)) & \
-                       np.greater_equal(get_soc,np.ones(self.bss_num)*100)
 
-      load_excess_1 = np.less(p_mw_bss,np.zeros(self.bss_num)) & \
-                      np.greater(get_soc,np.zeros(self.bss_num)) & \
-                      np.less(get_e_mwh,-needed_capacity \
-                              / (grid.net.storage.efficiency_storage \
-                                * grid.net.storage.efficiency_inverter))
-      load_excess_2 = np.less(p_mw_bss,np.zeros(self.bss_num)) & \
-                      np.less_equal(get_soc,np.zeros(self.bss_num))    
-      
+      solar_excess_2 = (p_mw_bss > 0) & \
+                       (get_soc >= 100)
+
+      load_excess_1 = (p_mw_bss < 0) & \
+                      (get_soc > 0) & \
+                      (get_e_mwh < -needed_capacity/(grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter))
+
+      load_excess_2 = (p_mw_bss < 0) & \
+                      (get_soc <= 0)
+
       # No storage connected:  
       #p_mw_bss[test_storage] = 0### community bss
       
+      solar_excess_1, solar_excess_2, load_excess_1, load_excess_2 = self.get_solar_load_excess(grid)
+
       # Excess in solar power:
       p_mw_bss[solar_excess_1] = free_capacity[solar_excess_1] * 3600 \
                                   / self.intervall

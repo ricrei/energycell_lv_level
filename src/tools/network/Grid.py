@@ -59,27 +59,27 @@ class Grid:
         elif self.net_name == "simbench_rural_1":
             self.net = sb.get_simbench_net('1-LV-rural1--0-sw')
             self.category = 'rural'
-            #self.rename_all_buses()
+            self.rename_all_buses()
         elif self.net_name == "simbench_rural_2":
             self.net = sb.get_simbench_net('1-LV-rural2--0-sw')
             self.category = 'rural'
-            #self.rename_all_buses()
+            self.rename_all_buses()
         elif self.net_name == "simbench_rural_3":
             self.net = sb.get_simbench_net('1-LV-rural3--0-sw')
             self.category = 'rural'
-            #self.rename_all_buses()
+            self.rename_all_buses()
         elif self.net_name == "simbench_suburb_4":
             self.net = sb.get_simbench_net('1-LV-semiurb4--0-sw')
             self.category = 'suburban'
-            #self.rename_all_buses()
+            self.rename_all_buses()
         elif self.net_name == "simbench_suburb_5":
             self.net = sb.get_simbench_net('1-LV-semiurb5--0-sw')
             self.category = 'suburban'
-            #self.rename_all_buses()
+            self.rename_all_buses()
         elif self.net_name == "simbench_urban_6":
             self.net = sb.get_simbench_net('1-LV-urban6--0-sw')
             self.category = 'urban'
-            #self.rename_all_buses()
+            self.rename_all_buses()
         elif self.net_name == "test_net_one_load_branch":
             self.net = self.create_test_net_one_load_branch()
             self.category = 'rural'
@@ -98,6 +98,8 @@ class Grid:
         self.component_buses = self.net.load.bus
 
         self.s_trafo_power = self.net.trafo.sn_mva.sum()
+
+        self.get_busses_per_feeder()
 
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
@@ -203,6 +205,38 @@ class Grid:
     s_res[p_res < 0] = -s_res[p_res < 0]
 
     return s_res
+
+  def get_busses_per_feeder(self):
+    def trace_feeder_path(line, bus, index, feeder):
+      if self.net.bus.loc[self.net.bus.index == bus, 'feeder'].values == 0:
+        self.net.bus.loc[self.net.bus.index == bus, 'feeder'] = feeder
+      else:
+        raise ValueError('Network topology appears to have rings. Tracing of net topology aborted')
+      new_line = self.net.line.loc[bus == self.net.line.from_bus]
+      new_line = new_line.append(self.net.line.loc[bus == self.net.line.to_bus])
+      if line.name in new_line.name:        
+        new_line = new_line.drop(index=index)
+
+      for i in new_line.index:
+        if new_line.loc[i].from_bus != bus:
+          trace_feeder_path(new_line.loc[i], new_line.loc[i].from_bus, i, feeder)
+        if new_line.loc[i].to_bus != bus:
+          trace_feeder_path(new_line.loc[i], new_line.loc[i].to_bus, i, feeder)
+
+    self.monitored_lines = self.net.line.loc[int(self.net.trafo.lv_bus.values) == self.net.line.from_bus]
+    self.monitored_lines = self.monitored_lines.append(self.net.line.loc[int(self.net.trafo.lv_bus.values) == self.net.line.to_bus])
+    self.net.bus['feeder'] = 0
+
+    feeder = 1
+    for i in self.monitored_lines.index:
+      if self.monitored_lines.loc[i].from_bus != int(self.net.trafo.lv_bus.values):
+        trace_feeder_path(self.monitored_lines.loc[i], self.monitored_lines.loc[i].from_bus, i, feeder)
+      if self.monitored_lines.loc[i].to_bus != int(self.net.trafo.lv_bus.values):
+        trace_feeder_path(self.monitored_lines.loc[i], self.monitored_lines.loc[i].to_bus, i, feeder)
+      feeder += 1
+
+    return 0
+
 
   def create_test_net_one_load_branch(self):
     '''
