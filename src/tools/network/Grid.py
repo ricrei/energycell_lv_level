@@ -2,6 +2,8 @@ import pandapower as pp
 import pandapower.networks as pn
 import simbench as sb
 
+import pandas as pd
+
 class Grid:
 
   def __init__(self, net_name, scenario, time_scope):
@@ -235,17 +237,30 @@ class Grid:
     self.net.bus['feeder'] = 0
     self.monitored_lines['feeder'] = 0
 
-    feeder = 1
+    feeder = 0
     for i in self.monitored_lines.index:
+      feeder += 1
       self.monitored_lines.feeder.loc[i] = feeder
       if self.monitored_lines.loc[i].from_bus != int(self.net.trafo.lv_bus.values):
         trace_feeder_path(self.monitored_lines.loc[i], self.monitored_lines.loc[i].from_bus, i, feeder)
       if self.monitored_lines.loc[i].to_bus != int(self.net.trafo.lv_bus.values):
         trace_feeder_path(self.monitored_lines.loc[i], self.monitored_lines.loc[i].to_bus, i, feeder)
-      feeder += 1
 
-    return 0
+    self.feeder = {'n_feeder' : feeder,
+                   'buses_in_feeder' : pd.DataFrame(columns=['buses'], index=range(1,feeder+1)),
+                   'load_index_in_feeder' : pd.DataFrame(columns=['load_index'], index=range(1,feeder+1)),
+                   'sgen_index_in_feeder' : pd.DataFrame(columns=['sgen_index'], index=range(1,feeder+1))}
 
+    #print(self.monitored_lines)
+    #print(self.monitored_lines.to_bus)
+    #print(self.monitored_lines.from_bus)
+    #print(self.net.bus.vn_kv)
+
+  def get_load_sgen_index_per_feeder(self):
+    for i in range(1,self.feeder['n_feeder'] + 1):
+       self.feeder['buses_in_feeder'].loc[i]['buses'] = self.net.bus.loc[i == self.net.bus.feeder].index
+       self.feeder['load_index_in_feeder'].loc[i]['load_index'] = self.net.load[self.net.load.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
+       self.feeder['sgen_index_in_feeder'].loc[i]['sgen_index'] = self.net.sgen[self.net.sgen.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
 
   def create_test_net_one_load_branch(self):
     '''

@@ -78,6 +78,7 @@ class EnergyCell():
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
+        self.grid.get_load_sgen_index_per_feeder()
 
         self.pv_controller = PVcontroller(grid=self.grid, control=control_parameter['PV_mod'], cos_phi=control_parameter['PV_cos_phi'])
         if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [0]):
