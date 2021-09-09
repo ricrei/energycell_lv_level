@@ -15,6 +15,8 @@ register_matplotlib_converters()
 
 import tools.tools as tt
 
+#import BSS_sizing_helper as BSS_sizing
+
 class EvaluationSingleCase():
   
   def __init__(self, grid, output_dir, net_name, scenario, time_scope): 
@@ -192,142 +194,6 @@ class EvaluationSingleCase():
     print('Line overloading events : %s %%' % (ll/(n_lines*n_timesteps)*100).round(3))
     print('Trafo overloading events: %s %%' % (tl/(n_timesteps)*100).round(3))
 
-  ### calculate storage parameters ###
-  def calculate_storage_sizing(self):
-    print(' ')
-    print('Hint: No Efficiency considered! No reactive power considered!')
-    print('Total installed PV-power: ' + str(self.grid.total_installed_pv_power) + ' kW')
-    # Sizing according to maximum transformer load
-    p_res = self.trafo_p
-    p_res_pos = 0*p_res
-    p_res_neg = 0*p_res
-    p_res_pos[p_res > 0]  = p_res
-    p_res_neg[p_res <= 0] = p_res
-
-    e_pos = p_res_pos.resample('1D').sum()*self.grid.time_scope['intervall_in_seconds']/3600 # in MWh
-    e_neg   = p_res_neg.resample('1D').sum()*self.grid.time_scope['intervall_in_seconds']/3600 # in MWh
-
-    '''
-    fig, ax = plt.subplots()
-    ax.stem(e_pos)
-    ax.stem(e_neg)
-    ax.set_xlabel('Time')
-    ax.set_ylabel(' ')
-    plt.show()
-    '''
-
-    p_res_pos_max = p_res.max()
-    p_res_neg_max = p_res.min()
-
-    if abs(p_res_pos_max.values) > abs(p_res_neg_max.values):
-      p_max = abs(p_res_pos_max.values) - self.grid.net.trafo.sn_mva.values
-    else:
-      p_max = abs(p_res_neg_max.values) - self.grid.net.trafo.sn_mva.values
-
-    if p_max < 0:
-      p_max[0] = 0
-
-    p_res_pos_overload = p_res - self.grid.net.trafo.sn_mva.values
-    p_res_neg_overload = p_res + self.grid.net.trafo.sn_mva.values
-
-    p_res_pos_overload[p_res_pos_overload < 0] = 0
-    p_res_neg_overload[p_res_neg_overload > 0] = 0
-    '''
-    fig, ax = plt.subplots()
-    ax.plot(p_res_pos_overload)
-    ax.plot(p_res_neg_overload)
-    ax.set_xlabel('Time')
-    ax.set_ylabel(' ')
-    plt.show()
-    '''
-
-    e_load = p_res_pos_overload.resample('1D').sum()*self.grid.time_scope['intervall_in_seconds']/3600 # in MWh
-    e_pv   = p_res_neg_overload.resample('1D').sum()*self.grid.time_scope['intervall_in_seconds']/3600 # in MWh
-
-    '''
-    fig, ax = plt.subplots()
-    ax.plot(p_res_pos_overload)
-    ax.plot(p_res_neg_overload)
-    ax.set_xlabel('Time')
-    ax.set_ylabel(' ')
-    plt.show()
-    '''
-
-    if abs(e_load).max().values > abs(e_pv).max().values:
-      e_max = abs(e_load).max().values
-    else:
-      e_max = abs(e_pv).max().values
-
-    n_HH = len(self.grid.load_index)
-
-    print('')
-    print('Sizing according to maximum transformer load:')
-    print('P_max total: ' + str((p_max[0]*1000).round(2)) + ' kW')
-    print('E_max total: ' + str((e_max[0]*1000).round(2)) + ' kWh')
-    print('P_max per HH: ' + str((p_max[0]*1000/n_HH).round(2)) + ' kW')
-    print('E_max per HH: ' + str((e_max[0]*1000/n_HH).round(2)) + ' kWh')
-
-    # Sizing according to installed PV power
-    ratio = 1  # kWh_BSS/kW_PV
-    c_rate = 1 # kW_BSS/kWh_BSS
-    
-    e_bss = self.grid.net.sgen['installed_power']*ratio
-    p_bss = e_bss*c_rate
-
-    print('')
-    print('Sizing according to installed PV power:')
-    print('P_max total: ' + str((p_bss.sum()).round(2)) + ' kW')
-    print('E_max total: ' + str((e_bss.sum()).round(2)) + ' kWh')
-    print('P_max per HH (on average): ' + str((p_bss.sum()/n_HH).round(2)) + ' kW')
-    print('E_max per HH (on average): ' + str((e_bss.sum()/n_HH).round(2)) + ' kWh')
-
-    # Sizing according to FFT-Analysis
-
-    p_res = self.trafo_p
-    sample_rate = 1/self.grid.time_scope['intervall_in_seconds'] # in Hz
-    duration = len(p_res)*self.grid.time_scope['intervall_in_seconds'] # in seconds
-
-    # Number of sample points
-    N = sample_rate*duration
-
-    # sample spacing
-    T = 1/sample_rate
-
-    y = p_res['0'].to_numpy()
-
-    yf = fft(y)
-    yf = 2/N*np.abs(yf[0:int(N)//2])
-
-    xf = fftfreq(int(N), T)[:int(N)//2]*3600*24
-    
-    fig, ax = plt.subplots()
-    plt.semilogx(1/xf[1:], yf[1:]*1000, marker='o')
-    ax.set_xlabel('Period T in days')
-    ax.set_ylabel('Power in kW')
-    plt.grid()
-    plt.show()
-    
-    p_res_f = pd.DataFrame(columns=['1/xf', 'yf'])
-    p_res_f['1/xf'] = 1/xf[1:]
-    p_res_f['yf'] = yf[1:]
-    p_res_f = p_res_f.set_index('1/xf')
-
-    p_bss_index = p_res_f.idxmax()
-    p_bss = p_res_f.loc[p_bss_index].values
-    T_period = 24 # h
-    e_bss = p_bss*T_period/np.pi
-
-    print('')
-    print('Sizing according to Fourier Analysis:')
-    print('P_max total: ' + str(float((p_bss*1000).round(2))) + ' kW')
-    print('E_max total: ' + str(float((e_bss*1000).round(2))) + ' kWh')
-    print('P_max per HH (on average): ' + str(float((p_bss*1000/n_HH).round(2))) + ' kW')
-    print('E_max per HH (on average): ' + str(float((e_bss*1000/n_HH).round(2))) + ' kWh')
-    
-    print(' ')
-    print('Total installed PV Power: ' + str(self.grid.total_installed_pv_power) + ' kW')
-
-
   ### plots ###
   def plot_grid_issus_over_time(self):
     v = self.v
@@ -433,6 +299,5 @@ class EvaluationSingleCase():
     #print(self.grid.net.res_trafo.p_hv_mw)
     #print(self.grid.net.res_trafo.p_lv_mw)
 
-    
 
 

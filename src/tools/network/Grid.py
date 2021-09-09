@@ -249,7 +249,8 @@ class Grid:
     self.feeder = {'n_feeder' : feeder,
                    'buses_in_feeder' : pd.DataFrame(columns=['buses'], index=range(1,feeder+1)),
                    'load_index_in_feeder' : pd.DataFrame(columns=['load_index'], index=range(1,feeder+1)),
-                   'sgen_index_in_feeder' : pd.DataFrame(columns=['sgen_index'], index=range(1,feeder+1))}
+                   'sgen_index_in_feeder' : pd.DataFrame(columns=['sgen_index'], index=range(1,feeder+1)),
+                   'storage_index_in_feeder' : pd.DataFrame(columns=['storage_index'], index=range(1,feeder+1))}
 
     #print(self.monitored_lines)
     #print(self.monitored_lines.to_bus)
@@ -261,6 +262,7 @@ class Grid:
        self.feeder['buses_in_feeder'].loc[i]['buses'] = self.net.bus.loc[i == self.net.bus.feeder].index
        self.feeder['load_index_in_feeder'].loc[i]['load_index'] = self.net.load[self.net.load.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
        self.feeder['sgen_index_in_feeder'].loc[i]['sgen_index'] = self.net.sgen[self.net.sgen.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
+       self.feeder['storage_index_in_feeder'].loc[i]['storage_index'] = self.net.sgen[self.net.storage.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
 
   def create_test_net_one_load_branch(self):
     '''

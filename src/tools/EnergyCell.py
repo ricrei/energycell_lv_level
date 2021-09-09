@@ -39,6 +39,7 @@ from tools.datahandler.OutputDataHandler import OutputDataHandler
 from tools.datahandler.InputDataHandler import InputDataHandler
 
 from tools.evaluation.EvaluationSingleCase import EvaluationSingleCase
+from tools.evaluation.EvaBSSsizing import EvaBSSsizing
 
 class EnergyCell():
 
@@ -126,7 +127,7 @@ class EnergyCell():
         self.output_data_handler.create_output_dataframes(self.grid)
 
         # Save net to pickle
-        #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
+        pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
 
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'
@@ -172,6 +173,11 @@ class EnergyCell():
     def initiate_evaluation(self):
         self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope)
 
+    ####################################################
+    ### initiate evaluation object for a single case ###
+    ####################################################
+    def initiate_BSS_sizing(self):
+        self.bss_sizing = EvaBSSsizing(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope)
 
     ############################
     ### calculate time delta ###

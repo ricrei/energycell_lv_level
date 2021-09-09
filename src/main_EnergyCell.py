@@ -56,7 +56,7 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0, 1]
+scenario = [4, 0, 0]
 #scenario = [7, 2, 0]
 #######################
 
@@ -87,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 10
+net_number = 8
 ######################
 
 #######################
@@ -107,12 +107,12 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
+  #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   #e.eva.plot_residualload()
@@ -120,11 +120,13 @@ if run_simulation == 0:
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  e.eva.plot_grid_issus_over_time()
+  #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_soc()
-  #e.eva.calculate_storage_sizing()
-  e.eva.plot_grid(time_sample='2017-05-26 14:00:00+02:00')
+  #e.eva.plot_grid(time_sample='2017-05-26 14:00:00+02:00')
+
+  e.initiate_BSS_sizing()
+  e.bss_sizing.calculate_storage_sizing()
 #############################
 
 ###############################
