@@ -43,6 +43,8 @@ class EvaBSSsizing():
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
     #self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
 
+    self.n_HH = len(self.grid.load_index)
+
   ### Helper Methods ###
   def read_data(self, filename):
     data = pd.read_csv(filename, delimiter = ',', low_memory=False)
@@ -55,7 +57,9 @@ class EvaBSSsizing():
   def calculate_storage_sizing(self):
     print(' ')
     print('Hint: No Efficiency considered! No reactive power considered!')
-    print('Total installed PV-power: ' + str(self.grid.total_installed_pv_power) + ' kW')
+    #print('Total installed PV-power: ' + str(self.grid.total_installed_pv_power) + ' kW')
+
+  def bss_sizing_trafo(self):
     # Sizing according to maximum transformer load
     p_res = self.trafo_p
     p_res_pos = 0*p_res
@@ -117,15 +121,17 @@ class EvaBSSsizing():
     else:
       e_max = abs(e_pv).max().values
 
-    n_HH = len(self.grid.load_index)
-
     print('')
     print('Sizing according to maximum transformer load:')
     print('P_max total: ' + str((p_max[0]*1000).round(2)) + ' kW')
     print('E_max total: ' + str((e_max[0]*1000).round(2)) + ' kWh')
-    print('P_max per HH: ' + str((p_max[0]*1000/n_HH).round(2)) + ' kW')
-    print('E_max per HH: ' + str((e_max[0]*1000/n_HH).round(2)) + ' kWh')
+    print('P_max per HH: ' + str((p_max[0]*1000/self.n_HH).round(2)) + ' kW')
+    print('E_max per HH: ' + str((e_max[0]*1000/self.n_HH).round(2)) + ' kWh')
 
+  def bss_sizing_line(self):
+    pass
+
+  def bss_sizing_voltage(self):
     # Sizing according to maximum voltage violation
     def calculate_sum_resistence(net, feeder, i_feeder):
        bus_trafo = int(net.trafo.lv_bus.values)
@@ -151,7 +157,6 @@ class EvaBSSsizing():
          bus_distances = pp.topology.calc_distance_to_bus(net, bus_trafo)
          bus_dist = bus_distances.loc[feeder['buses_in_feeder'].bus_dv_max.loc[i_feeder]]
          feeder['buses_in_feeder'].p_bss.loc[i_feeder] = alpha * feeder['buses_in_feeder'].dv_max.loc[i_feeder]*v_ref / bus_dist # MAm*kV/km = MW
-    
        return feeder
 
     def set_bss_power(net, feeder, i_feeder):
@@ -162,53 +167,74 @@ class EvaBSSsizing():
          net.storage.p_mw[index] += feeder['buses_in_feeder'].p_bss.loc[i_feeder]
        return net
 
-    ### Constraints sgen ###
-    self.grid.net.sgen.p_mw = .01
-    self.grid.net.sgen.q_mvar = 0
+    def load_scenario_output_data():
+      # check if scenario 4 exists and load data
+      if self.output_dir:
+         try:
+           self.v_pu = tt.read_data(self.output_dir + 'res_bus_vm_pu.csv')
+           self.ll = tt.read_data(self.output_dir+'res_line_load_percent.csv')
+           self.tl = tt.read_data(self.output_dir+'res_trafo_load_percent.csv')
+           self.load_p = tt.read_data(self.output_dir+'load_active_power_MW.csv')
+           self.load_q = tt.read_data(self.output_dir+'load_reactive_power_MW.csv')
+           self.pv_p = tt.read_data(self.output_dir+'pv_active_power_MW.csv')
+           self.pv_q = tt.read_data(self.output_dir+'pv_reactive_power_MW.csv')
+           self.v_pu_ext_grid = tt.read_data(self.output_dir+'v_pu_ext_grid.csv')
+         except:
+           raise KeyError('Run first Scenario 4')         
+      else:
+         raise KeyError('Run first Scenario 4')
 
-    ### Constraints load ###
-    self.grid.net.load.p_mw = 0.
-    self.grid.net.load.q_mvar = 0
+    def fill_grid_with_power_values(timestep):
+      self.grid.net.sgen['p_mw'] = self.pv_p.loc[timestep].values
+      self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values
+      self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values
+      self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values
+      self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values
 
-    ### Constraints ext_grid ###
-    self.grid.net.ext_grid.vm_pu = 1.04
+    load_scenario_output_data()
 
-    ### Constraints storage ###
-    self.grid.net.storage.p_mw = .0
-
-
-    ### Run PF ###
-    pp.runpp(self.grid.net)
-
-    ### BBS_Sizing ###
-    #self.grid.net, self.grid.feeder = get_buses_per_feeder(self.grid.net)
+    for i_feeder in range(1,self.grid.feeder['n_feeder']+1):
+      self.grid.feeder = calculate_sum_resistence(self.grid.net, self.grid.feeder, i_feeder)
 
     BESS_pos = 0 # 0: HH, 1: Community storage
 
-    self.grid.feeder['buses_in_feeder']['l_sum'] = 0
-    self.grid.feeder['buses_in_feeder']['dv_max'] = 0
-    self.grid.feeder['buses_in_feeder']['bus_dv_max'] = np.nan
-    self.grid.feeder['buses_in_feeder']['p_bss'] = 0
+    time = self.v_pu.index
 
-    v_max = self.grid.net.res_bus.vm_pu.max()
-    i = 1
-    while v_max > 1.1:
-        bus_v_max = self.grid.net.res_bus.vm_pu.idxmax()
-        for f in range(1,self.grid.feeder['n_feeder']+1):
-          if bus_v_max in self.grid.feeder['buses_in_feeder'].loc[f]['buses']:
-            i_feeder = f
-        self.grid.feeder = calculate_sum_resistence(self.grid.net, self.grid.feeder, i_feeder)
-        self.grid.feeder = calculate_max_v_deviation(self.grid.net, self.grid.feeder, i_feeder)
-        self.grid.feeder = calculate_BSS_power(self.grid.net, self.grid.feeder, i_feeder)
-        self.grid.net = set_bss_power(self.grid.net, self.grid.feeder, i_feeder)
+    self.storage_p = pd.DataFrame(index=time, columns=self.grid.net.storage.index).fillna(0)
+
+    for timestep in time:
+      v_max = self.v_pu.loc[timestep].max()
+      if v_max > 1.1:
+        self.grid.net.storage.p_mw = 0.
+        bus_v_max = int(self.v_pu.loc[timestep].idxmax())
+        fill_grid_with_power_values(timestep)
         pp.runpp(self.grid.net)
-        v_max = self.grid.net.res_bus.vm_pu.max()
-        i += 1
+        i = 0
+        while v_max > 1.1:
+          i_feeder = self.grid.net.bus.feeder.loc[bus_v_max]
+          self.grid.feeder = calculate_max_v_deviation(self.grid.net, self.grid.feeder, i_feeder)
+          self.grid.feeder = calculate_BSS_power(self.grid.net, self.grid.feeder, i_feeder)
+          self.grid.net = set_bss_power(self.grid.net, self.grid.feeder, i_feeder)
+          pp.runpp(self.grid.net)
+          v_max = self.grid.net.res_bus.vm_pu.max()
+          bus_v_max = self.grid.net.res_bus.vm_pu.idxmax()
+          i += 1
+        #print(str(timestep) + ' Durchläufe: ' + str(i) + ' Total BSS Power: ' + str(self.grid.net.storage.p_mw.sum()))
+        self.storage_p.loc[timestep] = self.grid.net.storage.p_mw
+    
+    p_bss = self.storage_p.sum(axis=1).max()*1000
+    e_bss = self.storage_p.resample('1D').sum()*self.grid.time_scope['intervall_in_seconds']/3600 # in MWh
+    e_bss = e_bss.sum(axis=1).max()*1000
+    #pf_res_plotly(self.grid.net, aspectratio=(1,1))
 
-    #print(i)
-    #print(self.grid.feeder['buses_in_feeder'])
-    pf_res_plotly(self.grid.net, aspectratio=(1,1))
+    print('')
+    print('Sizing according to maximum voltage violation:')
+    print('P_max total: ' + str((p_bss).round(2)) + ' kW')
+    print('E_max total: ' + str((e_bss).round(2)) + ' kWh')
+    print('P_max per HH (on average): ' + str((p_bss/self.n_HH).round(2)) + ' kW')
+    print('E_max per HH (on average): ' + str((e_bss/self.n_HH).round(2)) + ' kWh')
 
+  def bss_sizing_pv(self):
     # Sizing according to installed PV power
     ratio = 1  # kWh_BSS/kW_PV
     c_rate = 1 # kW_BSS/kWh_BSS
@@ -220,9 +246,10 @@ class EvaBSSsizing():
     print('Sizing according to installed PV power:')
     print('P_max total: ' + str((p_bss.sum()).round(2)) + ' kW')
     print('E_max total: ' + str((e_bss.sum()).round(2)) + ' kWh')
-    print('P_max per HH (on average): ' + str((p_bss.sum()/n_HH).round(2)) + ' kW')
-    print('E_max per HH (on average): ' + str((e_bss.sum()/n_HH).round(2)) + ' kWh')
+    print('P_max per HH (on average): ' + str((p_bss.sum()/self.n_HH).round(2)) + ' kW')
+    print('E_max per HH (on average): ' + str((e_bss.sum()/self.n_HH).round(2)) + ' kWh')
 
+  def bss_sizing_fft(self):
     # Sizing according to FFT-Analysis
 
     p_res = self.trafo_p
@@ -241,14 +268,16 @@ class EvaBSSsizing():
     yf = 2/N*np.abs(yf[0:int(N)//2])
 
     xf = fftfreq(int(N), T)[:int(N)//2]*3600*24
-    
+
+    '''
     fig, ax = plt.subplots()
     plt.semilogx(1/xf[1:], yf[1:]*1000, marker='o')
     ax.set_xlabel('Period T in days')
     ax.set_ylabel('Power in kW')
     plt.grid()
     plt.show()
-    
+    '''
+
     p_res_f = pd.DataFrame(columns=['1/xf', 'yf'])
     p_res_f['1/xf'] = 1/xf[1:]
     p_res_f['yf'] = yf[1:]
@@ -263,8 +292,8 @@ class EvaBSSsizing():
     print('Sizing according to Fourier Analysis:')
     print('P_max total: ' + str(float((p_bss*1000).round(2))) + ' kW')
     print('E_max total: ' + str(float((e_bss*1000).round(2))) + ' kWh')
-    print('P_max per HH (on average): ' + str(float((p_bss*1000/n_HH).round(2))) + ' kW')
-    print('E_max per HH (on average): ' + str(float((e_bss*1000/n_HH).round(2))) + ' kWh')
+    print('P_max per HH (on average): ' + str(float((p_bss*1000/self.n_HH).round(2))) + ' kW')
+    print('E_max per HH (on average): ' + str(float((e_bss*1000/self.n_HH).round(2))) + ' kWh')
     
     print(' ')
     print('Total installed PV Power: ' + str(self.grid.total_installed_pv_power) + ' kW')

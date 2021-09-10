@@ -125,8 +125,15 @@ if run_simulation == 0:
   #e.eva.plot_soc()
   #e.eva.plot_grid(time_sample='2017-05-26 14:00:00+02:00')
 
+  # Initialize BSS Sizing
   e.initiate_BSS_sizing()
   e.bss_sizing.calculate_storage_sizing()
+  e.bss_sizing.bss_sizing_trafo()
+  e.bss_sizing.bss_sizing_line()
+  e.bss_sizing.bss_sizing_voltage()
+  e.bss_sizing.bss_sizing_pv()
+  e.bss_sizing.bss_sizing_fft()
+
 #############################
 
 ###############################

@@ -3,6 +3,7 @@ import pandapower.networks as pn
 import simbench as sb
 
 import pandas as pd
+import numpy as np
 
 class Grid:
 
@@ -210,7 +211,6 @@ class Grid:
 
     return s_res
 
-
   def get_buses_per_feeder(self):
     '''
     Traces along the feeders within the network, allocate each bus to a feeder number, write the result into self.grid.net.bus.feeder.
@@ -263,6 +263,11 @@ class Grid:
        self.feeder['load_index_in_feeder'].loc[i]['load_index'] = self.net.load[self.net.load.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
        self.feeder['sgen_index_in_feeder'].loc[i]['sgen_index'] = self.net.sgen[self.net.sgen.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
        self.feeder['storage_index_in_feeder'].loc[i]['storage_index'] = self.net.sgen[self.net.storage.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
+
+    self.feeder['buses_in_feeder']['l_sum'] = 0
+    self.feeder['buses_in_feeder']['dv_max'] = 0
+    self.feeder['buses_in_feeder']['bus_dv_max'] = np.nan
+    self.feeder['buses_in_feeder']['p_bss'] = 0
 
   def create_test_net_one_load_branch(self):
     '''
