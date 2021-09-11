@@ -252,11 +252,6 @@ class Grid:
                    'sgen_index_in_feeder' : pd.DataFrame(columns=['sgen_index'], index=range(1,feeder+1)),
                    'storage_index_in_feeder' : pd.DataFrame(columns=['storage_index'], index=range(1,feeder+1))}
 
-    #print(self.monitored_lines)
-    #print(self.monitored_lines.to_bus)
-    #print(self.monitored_lines.from_bus)
-    #print(self.net.bus.vn_kv)
-
   def get_load_sgen_index_per_feeder(self):
     for i in range(1,self.feeder['n_feeder'] + 1):
        self.feeder['buses_in_feeder'].loc[i]['buses'] = self.net.bus.loc[i == self.net.bus.feeder].index

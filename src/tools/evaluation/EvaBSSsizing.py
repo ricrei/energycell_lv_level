@@ -129,7 +129,112 @@ class EvaBSSsizing():
     print('E_max per HH: ' + str((e_max[0]*1000/self.n_HH).round(2)) + ' kWh')
 
   def bss_sizing_line(self):
-    pass
+    def load_scenario_output_data():
+      # check if scenario 4 exists and load data
+      if self.output_dir:
+         try:
+           self.v_pu = tt.read_data(self.output_dir + 'res_bus_vm_pu.csv')
+           self.ll = tt.read_data(self.output_dir+'res_line_load_percent.csv')
+           self.tl = tt.read_data(self.output_dir+'res_trafo_load_percent.csv')
+           self.load_p = tt.read_data(self.output_dir+'load_active_power_MW.csv')
+           self.load_q = tt.read_data(self.output_dir+'load_reactive_power_MW.csv')
+           self.pv_p = tt.read_data(self.output_dir+'pv_active_power_MW.csv')
+           self.pv_q = tt.read_data(self.output_dir+'pv_reactive_power_MW.csv')
+           self.v_pu_ext_grid = tt.read_data(self.output_dir+'v_pu_ext_grid.csv')
+         except:
+           raise KeyError('Run first Scenario 4')         
+      else:
+         raise KeyError('Run first Scenario 4')
+
+    def fill_grid_with_power_values(timestep):
+      self.grid.net.sgen['p_mw'] = self.pv_p.loc[timestep].values
+      self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values
+      self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values
+      self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values
+      self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values
+
+    load_scenario_output_data()
+
+    time = self.v_pu.index
+
+    self.storage_p = pd.DataFrame(index=time, columns=self.grid.net.storage.index).fillna(0)
+
+    delta_I_pv = pd.DataFrame(index=time, columns=range(1,self.grid.feeder['n_feeder']+1)).fillna(0)
+    delta_I_load = pd.DataFrame(index=time, columns=range(1,self.grid.feeder['n_feeder']+1)).fillna(0)
+
+    p_bss_pv = pd.DataFrame(index=time, columns=range(1,self.grid.feeder['n_feeder']+1)).fillna(0)
+    p_bss_load = pd.DataFrame(index=time, columns=range(1,self.grid.feeder['n_feeder']+1)).fillna(0)
+
+    for i in range(1,self.grid.feeder['n_feeder']+1):
+       load_index = self.grid.feeder['load_index_in_feeder'].loc[i]['load_index']
+       sgen_index = self.grid.feeder['sgen_index_in_feeder'].loc[i]['sgen_index']
+
+       bus1 = self.grid.monitored_lines.to_bus[self.grid.monitored_lines.feeder == i].values
+       bus2 = self.grid.monitored_lines.from_bus[self.grid.monitored_lines.feeder == i].values
+       #print(bus1, bus2)
+       i_max = self.grid.monitored_lines.max_i_ka[self.grid.monitored_lines.feeder == i].values
+
+       j = 0
+       for timestep in time:
+         fill_grid_with_power_values(timestep)
+         p_res = self.grid.net.load.p_mw.loc[load_index].sum()   - self.grid.net.sgen.p_mw.loc[sgen_index].sum()
+         q_res = self.grid.net.load.q_mvar.loc[load_index].sum() - self.grid.net.sgen.q_mvar.loc[sgen_index].sum()
+         s_res = (p_res**2 + q_res**2)**.5
+
+         v1 = self.v_pu[str(int(bus1))].loc[timestep]*.4
+         v2 = self.v_pu[str(int(bus2))].loc[timestep]*.4
+
+         v_max = np.array([v1, v2]).max()
+
+         i_line_1 = s_res/(3**.5 * v1)
+         i_line_2 = s_res/(3**.5 * v2)
+
+         i_line = np.array([i_line_1, i_line_2]).max()
+
+         #print('i_line: ' + str(i_line) + 'kA')
+
+         if i_line > i_max:
+           #overloading = i_line/self.grid.monitored_lines.max_i_ka[self.grid.monitored_lines.feeder == i].values
+           #curtail_factor_line = 1/overloading
+           if p_res <= 0:
+               #print('Line PV')
+               #self.grid.net.storage.p_mw += self.grid.net.sgen.p_mw[sgen_index]*(1-curtail_factor_line)
+               delta_I_pv[i].loc[timestep] = float(i_line - i_max)
+               p_bss_pv[i].loc[timestep] = delta_I_pv[i].loc[timestep]*(3**.5 * v_max)
+           else:
+               #print('Line Load')
+               #self.storage_p.loc[timestep] += -self.grid.net.load.p_mw[load_index]*(1-curtail_factor_line)
+               delta_I_load[i].loc[timestep] = float(i_line - i_max)
+               p_bss_load[i].loc[timestep] = delta_I_load[i].loc[timestep]*(3**.5 * v_max)
+         
+         #self.grid.net.storage.p_mw.loc[sgen_index] = (delta_I_pv[i].loc[timestep]*(3**.5 * v_max))/len(sgen_index)
+         '''
+         j += 1
+         if j == 12:
+           #if i == 3:
+           pp.runpp(self.grid.net)
+           pf_res_plotly(self.grid.net, aspectratio=(1,1))
+           print(len(sgen_index))
+           print(len(self.grid.feeder['buses_in_feeder'].loc[i]['buses']))
+         '''
+
+    p_max = np.array([p_bss_pv.max().sum(), p_bss_load.max().sum()]).max()
+
+    e_pv   = p_bss_load.resample('1D').sum()*self.grid.time_scope['intervall_in_seconds']/3600 # in MWh
+    e_load = p_bss_pv.resample('1D').sum()*self.grid.time_scope['intervall_in_seconds']/3600 # in MWh
+
+    e_max = np.array([e_pv, e_load]).max()
+
+    #pp.runpp(self.grid.net)
+    #pf_res_plotly(self.grid.net, aspectratio=(1,1))
+
+    print('')
+    print('Sizing according to maximum line load:')
+    print('P_max total: ' + str((p_max*1000).round(2)) + ' kW')
+    print('E_max total: ' + str((e_max*1000).round(2)) + ' kWh')
+    print('P_max per HH (on average): ' + str((p_max*1000/self.n_HH).round(2)) + ' kW')
+    print('E_max per HH (on average): ' + str((e_max*1000/self.n_HH).round(2)) + ' kWh')
+    
 
   def bss_sizing_voltage(self):
     # Sizing according to maximum voltage violation

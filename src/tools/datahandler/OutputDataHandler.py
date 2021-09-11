@@ -31,7 +31,7 @@ class OutputDataHandler():
         self.pv_reactive_power = pd.DataFrame(columns=grid.net.sgen.index)
         self.load_active_power = pd.DataFrame(columns=grid.net.load.index)
         self.load_reactive_power = pd.DataFrame(columns=grid.net.load.index)
-        self.ev_soc = pd.DataFrame(columns=grid.ev_index) ##
+        self.ev_soc = pd.DataFrame(columns=grid.ev_index)
         self.storage_active_power = pd.DataFrame(columns=grid.net.storage.index)
         self.storage_state_of_charge = pd.DataFrame(columns=grid.net.storage.index)
         self.trafo_active_power = pd.DataFrame(columns=grid.net.trafo.index)
@@ -46,7 +46,7 @@ class OutputDataHandler():
         self.pv_active_power.index.name = 'timestamp'
         self.load_active_power.index.name = 'timestamp'
         self.load_reactive_power.index.name = 'timestamp'
-        self.ev_soc.index.name = 'timestamp' ##
+        self.ev_soc.index.name = 'timestamp'
         self.storage_active_power.index.name = 'timestamp'
         self.storage_state_of_charge.index.name = 'timestamp' 
         self.trafo_active_power.index.name = 'timestamp'
@@ -66,7 +66,7 @@ class OutputDataHandler():
         self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
         self.load_active_power.loc[t] = grid.net.load['p_mw']
         self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
-        self.ev_soc.loc[t] = grid.net.load.ev_soc.loc[grid.ev_index] ##
+        self.ev_soc.loc[t] = grid.net.load.ev_soc.loc[grid.ev_index]
         self.storage_active_power.loc[t] = grid.net.storage['p_mw']
         self.storage_state_of_charge.loc[t] = grid.net.storage['soc_percent']
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
