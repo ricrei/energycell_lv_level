@@ -35,7 +35,7 @@ time_scope_autumn = { 'start_time' : '2017-10-23 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope
+#time_scope = time_scope
 ###########################################
 
 #######################
@@ -51,7 +51,7 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 2, 0]
+scenario = [6, 1, 0]#[4, 0, 0]#[6, 2, 0]
 #scenario = [7, 2, 0]
 #######################
 
@@ -82,13 +82,13 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 7
+net_number = 13
 ######################
 
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 0
+run_simulation = 0    # 0!!!
 #######################
 
 #############################
@@ -99,7 +99,7 @@ if run_simulation == 0:
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
-                    time_scope = time_scope)
+                    time_scope = time_scope) #_summer
   
   # Run powerflow
   e.run_pf_timeseries()
@@ -108,17 +108,17 @@ if run_simulation == 0:
   e.initiate_evaluation()
 
   e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  e.eva.calculate_net_problems() #
 
   e.eva.plot_residualload()
   #e.eva.plot_ev_soc()
-  #e.eva.plot_generation_consumption_as_heat_map()
-  #e.eva.plot_colorbar_seaborn()
-  #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
-  #e.eva.plot_pv_reactive_power()
+  #e.eva.plot_generation_consumption_as_heat_map() #
+  #e.eva.plot_colorbar_seaborn() #
+  #e.eva.plot_grid_issus_over_power() #
+  #e.eva.plot_grid_issus_over_time() #
+  #e.eva.plot_pv_reactive_power() #
   e.eva.plot_soc()
-  #e.eva.plot_grid(time_sample='2017-05-26 10:00:00+02:00')
+  #e.eva.plot_grid(time_sample='2017-04-01 00:00:00+02:00')
 #############################
 
 ###############################
@@ -126,24 +126,31 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter]:
+  for time_scope_i in [time_scope_winter, time_scope_summer]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
+      for scenario_i in [[4,0,0]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
-        e = ec.EnergyCell(net_name = net_name_i,
+        e = ec.EnergyCell(net_name = net_name[net_name_i],
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i)
         e.run_pf_timeseries()
+        #------------
+        e.initiate_evaluation()
+        e.eva.calculate_relevant_outputdata()
+        #e.eva.calculate_net_problems()
+        e.eva.plot_residualload()
+        #-------------
 
   #elif run_simulation == 11:
+  '''
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = [10, 20, 30, 40, 41],
                                  time_scopes = [time_scope_winter, time_scope_summer])
-
+  '''
   print('Done')
 ###############################
 
