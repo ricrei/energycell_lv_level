@@ -40,7 +40,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope
+time_scope = time_scope_summer
 ###########################################
 
 #######################
@@ -87,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 8
+net_number = 9
 ######################
 
 #######################
@@ -127,12 +127,12 @@ if run_simulation == 0:
 
   # Initialize BSS Sizing
   e.initiate_BSS_sizing()
-  e.bss_sizing.calculate_storage_sizing()
-  e.bss_sizing.bss_sizing_trafo()
-  e.bss_sizing.bss_sizing_line()
+  #e.bss_sizing.calculate_storage_sizing()
+  #e.bss_sizing.bss_sizing_trafo()
+  #e.bss_sizing.bss_sizing_line()
   e.bss_sizing.bss_sizing_voltage()
-  e.bss_sizing.bss_sizing_pv()
-  e.bss_sizing.bss_sizing_fft()
+  #e.bss_sizing.bss_sizing_pv()
+  #e.bss_sizing.bss_sizing_fft()
 
 #############################
 
