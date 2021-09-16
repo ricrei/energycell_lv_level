@@ -47,11 +47,12 @@ class EnergyCell():
         self.run_time('start')
 
         self.net_name = net_name
+
         if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2])) or ((scenario[0] in [1, 2, 3, 4, 5, 6]) and (scenario[1] == 0)):
           self.scenario = scenario
         else:
           raise ValueError('Scenario number and controll mode do not match: ' + str(scenario))
-
+        
         if ('start_time' in time_scope) and ('end_time' in time_scope) and ('t_freq' in time_scope):
           self.time_scope = time_scope
           self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()

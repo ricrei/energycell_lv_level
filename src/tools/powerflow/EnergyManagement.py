@@ -208,8 +208,8 @@ class EnergyManagementTest(EnergyManagementParent):
     grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
     grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
-    grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t])
-    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t])
+    grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t], t)
+    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
 
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_p_res_charge(grid, t)

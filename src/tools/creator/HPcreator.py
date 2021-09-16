@@ -28,7 +28,9 @@ class HPcreator:
       # create hp-loads at each bus
       for index in grid.component_buses.index:
           # calculate distribution of heatpump types and building types within the grid
-          pp.create_load(grid.net, grid.net.load.loc[index, "bus"], 0.0, name='hp_'+str(grid.net.load.loc[index, "bus"]), type='hp_'+self.hp_para['hp_types'][index%len(self.hp_para['hp_types'])])
+          pp.create_load(grid.net, grid.net.load.loc[index, "bus"], 0.0, \
+                         name='hp_'+str(grid.net.load.loc[index, "bus"]), \
+                             type='hp_'+self.hp_para['hp_types'][index%len(self.hp_para['hp_types'])])
 
       return grid
 

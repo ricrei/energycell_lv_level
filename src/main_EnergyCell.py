@@ -57,7 +57,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [4, 0, 0]
-scenario = [7, 1, 0]
+#scenario = [7, 2, 0]
 #######################
 
 ############################
@@ -133,8 +133,8 @@ if run_simulation == 0:
   #e.bss_sizing.bss_sizing_voltage()
   #e.bss_sizing.bss_sizing_pv()
   #e.bss_sizing.bss_sizing_fft()
-
 #############################
+
 
 ###############################
 ### Run Multiple Simulation ###
@@ -162,3 +162,20 @@ elif run_simulation == 11:
   print('Done')
 ###############################
 
+'''
+i = 0
+CGREEN = '\33[32m'
+CEND   = '\33[0m'
+for time_scope_i in [time_scope_winter, time_scope_summer]:
+  for net_name_i in [7, 8, 9, 10, 11]:
+    for scenario_i in [1, 2, 3, 4]:
+      print(' ')
+      print(CGREEN + 'Durchlauf: ' + str(i) + CEND)
+      i += 1
+      e = ec.EnergyCell(net_name = net_name[net_name_i],
+                        scenario = scenario_i,
+                        time_scope = time_scope_i)
+      e.run_pf_timeseries()
+
+print('Done')
+'''
