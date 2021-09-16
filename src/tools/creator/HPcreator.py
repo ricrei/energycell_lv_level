@@ -13,6 +13,8 @@ class HPcreator:
         self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
         self.hp_para['cos_phi'] = .95
         self.hp_para['tan_phi'] = np.tan(np.arccos(self.hp_para['cos_phi']))
+        self.hp_para['hp_max_p_kw'] = 10
+        self.hp_para['hp_cop'] = 4
 
 
   ###########################################
@@ -25,6 +27,13 @@ class HPcreator:
           self.hp_para['hp_types'] = self.hp_para['hp_types'][self.hp_para['hp_types'].str.contains('DE_HMF')]
       else:
           raise ValueError('No valid grid.category defined. Not able to choose HP type.')
+
+      #create columns for HPs grid.net.load
+      grid.net.load['hp_el_capacity_kwh'] = np.nan
+      grid.net.load['hp_soc_kwh'] = np.nan
+      grid.net.load['hp_self_dis_per_day'] = np.nan
+      grid.net.load['hp_max_p_kw'] = np.nan
+      grid.net.load['hp_cop'] = np.nan
 
       # create hp-loads at each bus
       for index in grid.component_buses.index:

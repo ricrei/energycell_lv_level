@@ -133,50 +133,95 @@ class HP_P_control_resi_load_driven(HP_P_control):
 
         hp_load_new = d.copy()
 
+        hps = grid.net.load.loc[grid.hp_index]
+
+        #residualload greater zero -> demand from grid
+        #residualload less_equal zero -> feed into grid
         residual_load_per_hh =  grid.net.load.loc[grid.load_index, 'p_mw'].values + \
                                 grid.net.load.loc[grid.hp_index, 'p_mw'].values + \
                                 grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
                                 grid.net.sgen['p_mw'].values
+                                
+        hp_soc_kwh_ref = residual_load_per_hh
+        hp_soc_kwh_ref[hps.hp_soc_kwh + hp_soc_kwh_ref > hps.hp_el_capacity_kwh] = \
+            hps.hp_el_capacity_kwh[hps.hp_soc_kwh + hp_soc_kwh_ref > hps.hp_el_capacity_kwh]
+        hp_soc_kwh_ref[hps.hp_soc_kwh + hp_soc_kwh_ref <= 0] = 0
         
+        hps.p_mw = hp_soc_kwh_ref * 0.001
+        hps.hp_soc_kwh += hp_soc_kwh_ref
+        grid.net.load.loc[grid.hp_index] = hps
+
+        '''
+        df_resiload = pd.DataFrame(data = residual_load_per_hh)
+        df_resiload = df_resiload.set_index(grid.hp_index)
+
         #check residualload greater zero -> demand from grid
         greater = np.greater(residual_load_per_hh, np.zeros(len(grid.component_buses)))
+        #greater = df_resiload > 0
+        
         #check residualload less_equal zero -> feed into grid
         less_equal = np.less_equal(residual_load_per_hh, np.zeros(len(grid.component_buses)))
-        #check for full storages
-        full = np.greater(self.HP_storages.get_level(grid, grid.hp_index).values,
-                            self.HP_storages.get_capacity(grid, grid.hp_index).values)
-        #check for empty storages
-        empty = np.less_equal(self.HP_storages.get_level(grid, grid.hp_index).values,
-                              np.zeros(len(hp_load_new)))
+        #less_equal = df_resiload <= 0
 
-        chargeable = np.logical_not(full) & np.logical_not(empty)
+        #check for full storages
+        #full = np.greater(self.HP_storages.get_level(grid, grid.hp_index).values,
+        #                    self.HP_storages.get_capacity(grid, grid.hp_index).values)
+        #full = self.HP_storages.get_level(grid, grid.hp_index) >= \
+        #           self.HP_storages.get_capacity(grid, grid.hp_index)
+        #full = hps.set_index(grid.load_index).hp_soc_kwh >= \
+        #        hps.set_index(grid.load_index).hp_el_capacity_kwh
+        full = np.greater(hps.set_index(grid.load_index).hp_soc_kwh.values, \
+                hps.set_index(grid.load_index).hp_el_capacity_kwh.values)
+
+
+
+        #check for empty storages
+        #empty = np.less_equal(self.HP_storages.get_level(grid, grid.hp_index).values,
+        #                      np.zeros(len(hp_load_new)))
+
+        #empty = self.HP_storages.get_level(grid, grid.hp_index) <= \
+        #            self.HP_storages.get_capacity(grid, grid.hp_index)        
+        #empty = hps.set_index(grid.load_index).hp_soc_kwh <= \
+        #        hps.set_index(grid.load_index).hp_el_capacity_kwh
+        empty = np.less(hps.set_index(grid.load_index).hp_soc_kwh.values, \
+                hps.set_index(grid.load_index).hp_el_capacity_kwh.values)
+                
 
         #case1 resiload[greater] & storage[full] -> feed out from storage, reduce demand from grid
         case1 = greater & np.logical_not(empty)
         hp_load_new[case1] = d[case1] - 0.001
-        self.HP_storages.feed_out(grid, case1, 0.001)
-                
+        df_case1 = pd.DataFrame(data = case1)
+        #self.HP_storages.feed_out(grid, df_case1.set_index(grid.hp_index), 0.001)
+
+        hps.set_index(grid.load_index).hp_soc_kwh[case1] = \
+            hps.set_index(grid.load_index).hp_soc_kwh[case1]
+
         #case2 resiload[greater] & storage[empty] -> demand only from grid
-        case2 = greater & empty
+        #case2 = greater & empty
 
         #case3 resiload[less_equal] & storage[full] -> feed in to grid
-        case3 = less_equal & full
+        #case3 = less_equal & full
 
         #case4 resiload[less_equal] & storage[empty] -> feed into storage
         case4 = less_equal & np.logical_not(full)
-        hp_load_new[case4] = d[case4] + 0.001
-        self.HP_storages.feed_in(grid, case4, 0.001)
+        #df_case4 = pd.DataFrame(data = case4)
+        #hp_load_new[df_case4] = d[df_case4.set_index(grid.load_index)] + 0.001
+        #self.HP_storages.feed_in(grid, df_case4, 0.001)
 
+
+        hps.hp_soc_kwh[hps.hp_soc_kwh < hps.hp_el_capacity_kwh] = \
+            hps.hp_soc_kwh + residual_load_per_hh
+        '''
 
         #print(' ')
         print('Durchlauf')
         print(t)
         print(residual_load_per_hh)
-        print(self.HP_storages.get_level(grid, grid.hp_index).values)
-        print(case1)
-        print(case2)
-        print(case4)
-        print(case4)
+        print(hps.hp_soc_kwh.values)
+        #print(case1)
+        #print(case2)
+        #print(case4)
+        #print(case4)
 #        print(self.HP_storages.get_capacity(grid, grid.hp_index).values)
 #        print(full)
 #        print(empty)
