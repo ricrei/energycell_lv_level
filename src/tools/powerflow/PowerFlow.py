@@ -38,6 +38,7 @@ class PowerFlow:
       output_data_handler.write_dataframe_to_csv(mode='w', header=True, grid=grid)
 
       self.set_time_step_array(df)
+
       rest_time = ''
       i = 0
       ### main loop: try to avoid 'if', 'for', ... statments ###
@@ -45,7 +46,7 @@ class PowerFlow:
       for k in self.time_step_array:
           for j in range(k):
               start = time.time()
-              #tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
+              tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
 
               t = self.time_series[i]
 

@@ -74,7 +74,7 @@ class EvaluationSingleCase():
     ax.plot(power.index, power.hp+power.load+power.ev, lw=.6)
     ax.plot(storage.index, storage)
     power = self.shorted_data(power, '1H')
-    ax.plot(power.index, -power.pv+power.hp+power.load+power.ev, color='black', lw=.5)
+    ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')
     #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])

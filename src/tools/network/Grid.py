@@ -4,6 +4,9 @@ import simbench as sb
 
 import pandas as pd
 import numpy as np
+import datetime
+
+import tools.tools as tt
 
 class Grid:
 
@@ -27,6 +30,8 @@ class Grid:
 
     self.curtailed_pv_power = 0
     self.curtailed_load_power = 0
+
+    self.df_solar = tt.get_time_sun()
 
   ######################
   ### create network ###
@@ -263,6 +268,15 @@ class Grid:
     self.feeder['buses_in_feeder']['dv_max'] = 0
     self.feeder['buses_in_feeder']['bus_dv_max'] = np.nan
     self.feeder['buses_in_feeder']['p_bss'] = 0
+
+  def get_timedelta(self, t):
+      sunrise = datetime.datetime.combine(t.date(), self.df_solar.loc[t.date()].sunrise)
+      sunset = datetime.datetime.combine(t.date(), self.df_solar.loc[t.date()].sunset)
+      t = t.tz_localize(None)
+      timedelta_sunrise_sunset_s = (sunset - sunrise).total_seconds()
+      timedelta_day_s = abs((sunset - t).total_seconds())
+      timedelta_night_s = abs((sunrise - t).total_seconds())
+      return timedelta_day_s, timedelta_night_s, timedelta_sunrise_sunset_s
 
   def create_test_net_one_load_branch(self):
     '''

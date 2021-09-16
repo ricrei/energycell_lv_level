@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import tools.tools as tt
 
+import datetime
+import pytz
+
 class BSScontroller:
 
   def __init__(self, grid, control):
@@ -521,7 +524,6 @@ class BSS_P_control_hh_fid(BSS_control):
       super().__init__(grid, intervall_in_seconds, bss_num)
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum()
-      self.df_solar = tt.get_time_sun()
       #Methode lineares Laden
 
   #def pcontrol(self, grid, t): #d?
@@ -541,11 +543,7 @@ class BSS_P_control_hh_fid(BSS_control):
       #LINEAR CHARGING:
       
       # Temporal parameters:
-      sunrise = self.df_solar.loc[str(t.date())].sunrise
-      sunset = self.df_solar.loc[str(t.date())].sunset
-      timedelta_sunrise_sunset_s = (sunset - sunrise).total_seconds()
-      timedelta_day_s = abs((sunset - t).total_seconds())
-      timedelta_night_s = abs((sunrise - t).total_seconds())
+      timedelta_day_s, timedelta_night_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t)
 
       # power and test cases for linear charging and discharging: 
       p_mw_lin_ch = (free_capacity * 3600)/ timedelta_day_s # hier läuft was verkehrt!!!
@@ -593,7 +591,6 @@ class BSS_P_control_grid_fid(BSS_control):
       #Methode feed-in damping
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum()
-      self.df_solar = tt.get_time_sun()
 
   '''  
   def __init__(self, grid):
@@ -617,11 +614,7 @@ class BSS_P_control_grid_fid(BSS_control):
       #LINEAR CHARGING:
       
       # Temporal parameters:    
-      sunrise = self.df_solar.loc[str(t.date())].sunrise
-      sunset = self.df_solar.loc[str(t.date())].sunset
-      timedelta_sunrise_sunset_s = (sunset - sunrise).total_seconds()
-      timedelta_day_s = abs((sunset - t).total_seconds())
-      timedelta_night_s = abs((sunrise - t).total_seconds())
+      timedelta_day_s, timedelta_night_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t)
 
       # power and test cases for linear charging and discharging: 
       p_mw_lin_ch = (free_capacity * 3600)/ timedelta_day_s # hier läuft was verkehrt!!!
