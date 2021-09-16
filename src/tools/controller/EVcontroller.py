@@ -16,6 +16,8 @@ class EVcontroller:
       self.set_ev = (grid.scenario[0] in [2, 4, 5, 6, 7, 8])
       if (control=='direct' or control=='household-oriented_feed-in_damping' or control=='grid-oriented_feed-in_damping'):
         self.control = control
+        if grid.scenario[0]==6:
+            self.control = 'direct'
       else:
         raise ValueError('The entered EV control is not a valid option.')
 

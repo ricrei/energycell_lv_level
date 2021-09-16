@@ -39,9 +39,8 @@ class EvaluationSingleCase():
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
-    #self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
+    self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
-    #self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
 
   ### Helper Methods ###
   def read_data(self, filename):

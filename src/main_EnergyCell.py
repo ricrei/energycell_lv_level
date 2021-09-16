@@ -56,8 +56,8 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0, 0]
-#scenario = [7, 2, 0]
+scenario = [6, 0, 0]
+scenario = [6, 1, 0]
 #######################
 
 ############################
@@ -115,7 +115,7 @@ if run_simulation == 0:
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload()
+  e.eva.plot_residualload()
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -141,9 +141,9 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_year]:
+  for time_scope_i in [time_scope_winter, time_scope_summer]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[4,0,0]]:#[[1, 0], [2, 0], [3, 0], [4, 0], [4, 1]]:
+      for scenario_i in [[4,0,0]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -152,6 +152,13 @@ elif run_simulation == 1:
                           control_parameter = control_parameter,
                           time_scope = time_scope_i)
         e.run_pf_timeseries()
+        #------------
+        e.initiate_evaluation()
+        e.eva.calculate_relevant_outputdata()
+        #e.eva.calculate_net_problems()
+        e.eva.plot_residualload()
+        #-------------
+
 
 elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
