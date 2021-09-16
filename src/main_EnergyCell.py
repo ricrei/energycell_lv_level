@@ -40,7 +40,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope_summer
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -57,7 +57,7 @@ time_scope = time_scope_summer
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [4, 0, 0]
-#scenario = [7, 2, 0]
+scenario = [7, 1, 0]
 #######################
 
 ############################
@@ -87,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 9
+net_number = 7
 ######################
 
 #######################
@@ -107,7 +107,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -126,11 +126,11 @@ if run_simulation == 0:
   #e.eva.plot_grid(time_sample='2017-05-26 14:00:00+02:00')
 
   # Initialize BSS Sizing
-  e.initiate_BSS_sizing()
+  #e.initiate_BSS_sizing()
   #e.bss_sizing.calculate_storage_sizing()
   #e.bss_sizing.bss_sizing_trafo()
   #e.bss_sizing.bss_sizing_line()
-  e.bss_sizing.bss_sizing_voltage()
+  #e.bss_sizing.bss_sizing_voltage()
   #e.bss_sizing.bss_sizing_pv()
   #e.bss_sizing.bss_sizing_fft()
 
