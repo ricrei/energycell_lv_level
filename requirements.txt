@@ -126,7 +126,7 @@ olefile @ file:///home/conda/feedstock_root/build_artifacts/olefile_160286652116
 omi==0.0.6
 packaging==20.8
 pandapower==2.4.0
-pandas==1.1.0
+pandas==1.1.5
 pandocfilters==1.4.3
 parso==0.7.0
 pathspec==0.8.1
