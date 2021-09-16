@@ -216,8 +216,10 @@ class EnergyManagementTest(EnergyManagementParent):
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_p_res_charge(grid, t)
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
 
-    #grid.net.storage.loc[grid.bss_index] = bss_controller.get_active_power_direct_charge(grid)##
-    grid.net.storage['p_mw'] = bss_controller.get_active_power(grid,t) #t
+    #grid.net.storage = bss_controller.get_active_power_direct_charge(grid)##
+    ###grid.net.storage['p_mw'] = bss_controller.get_active_power_direct_charge(grid)
+    grid.net.storage = bss_controller.get_active_power_linear_charge(grid, t)
+    #grid.net.storage['p_mw'] = bss_controller.get_active_power(grid,t) #t
     grid.net.storage['soc_percent'] = bss_controller.get_soc(grid)
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)

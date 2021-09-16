@@ -19,7 +19,7 @@ class BSScontroller:
       elif (control=='feed_in_damping'):
         self.control = control
       elif control == 'household-oriented_feed-in_damping':
-        self.control = 'simple'
+        self.control = control#'simple'
         #raise ValueError('household-oriented_feed-in_damping control is not implemented.')
       elif control == 'grid-oriented_feed-in_damping':
         self.control = control#'simple'
@@ -32,8 +32,8 @@ class BSScontroller:
           self.P_controller = BSS_control_simple(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num)
-        elif self.control == 'feed_in_damping':
-          self.P_controller = BSS_control_feed_in_damping(grid, \
+        elif self.control == 'household-oriented_feed-in_damping': # 'feed_in_damping'  #BSS_control_feed_in_damping
+          self.P_controller = BSS_P_control_hh_fid(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num)
               
@@ -51,9 +51,15 @@ class BSScontroller:
   def get_active_power(self, grid, t): #t
       return self.P_controller.pcontrol(grid, t) #t
   
- # def get_active_power_direct_charge(self, grid):
- #     return self.P_controller.pcontrol_direct_charge(grid) 
+  def get_active_power_direct_charge(self, grid):
+      return self.P_controller.pcontrol_direct_charge(grid) 
   
+  def get_active_power_linear_charge(self, grid, t):
+      return self.P_controller.pcontrol_linear_charge(grid, t)
+  '''
+  def get_active_power_trafo_charge(self, grid, t):
+      return self.P_controller.pcontrol(grid, t)
+  '''
   def get_e_mwh(self, grid):
       return self.P_controller.e_mwh_start
   
@@ -66,10 +72,7 @@ class BSS_control:
       self.bss_num = len(grid.net.storage)# bss_num
       self.soc_start = grid.net.storage.soc_percent 
       self.e_mwh_start = self.soc_start/100 * grid.net.storage.max_e_mwh 
-      self.soc_new = self.soc_start
-      
-      
-      
+      self.soc_new = self.soc_start  
       pass
 
   def pcontrol(self):
@@ -207,8 +210,8 @@ class BSS_control_simple(BSS_control):
   def __init__(self, grid, intervall_in_seconds, bss_num): 
       super().__init__(grid, intervall_in_seconds, bss_num)
       
-  #def pcontrol_direct_charge(self, grid,t): #eigentlich brauche ich t nicht
-  def pcontrol(self, grid, t):
+  def pcontrol_direct_charge(self, grid): #eigentlich brauche ich t nicht
+  #def pcontrol(self, grid, t):
       '''
       Calculation of the change of residual laod caused by the BSS at each bus
       Parameters
@@ -222,6 +225,7 @@ class BSS_control_simple(BSS_control):
       '''
       
       BSS_control.pcontrol(self)
+      bss = grid.net.storage
       
       # Residual load at each bus and resulting charging/discharging power:
       residual_load_per_bus = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
@@ -257,9 +261,11 @@ class BSS_control_simple(BSS_control):
       # New energy content and SOC of BSS:
       get_e_mwh = self.stored_energy(grid, p_mw_bss)    
       ###grid.net.storage['soc_percent'] = bss_controller.get_soc(grid)
-      grid.net.storage.p_mw = p_mw_bss
-      #return grid.net.storage
-      return p_mw_bss
+      bss.p_mw = p_mw_bss
+      
+      grid.net.storage = bss
+      return grid.net.storage
+      #return p_mw_bss
 
 
 ### FEED IN DAMPING ###
@@ -480,18 +486,20 @@ class BSS_P_control_grid_fid2(BSS_control):#BSS_control_feed_in_damping(BSS_cont
 ### household-oriented_feed-in_damping ###
 class BSS_P_control_hh_fid(BSS_control):
 
-  def __init__(self, grid):
+  def __init__(self, grid, intervall_in_seconds, bss_num):
       #TODO
       print('Warning: BSS household-oriented_feed-in_damping control is not implemented.')
-      super().__init__(grid)
+      super().__init__(grid, intervall_in_seconds, bss_num)
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum()
       self.df_solar = tt.get_time_sun()
       #Methode lineares Laden
 
-  def pcontrol(self, grid, t): #d?
+  #def pcontrol(self, grid, t): #d?
+  def pcontrol_linear_charge(self, grid, t):
       BSS_control.pcontrol(self)
       #BSS_P_control.pcontrol(self)
+      bss = grid.net.storage
       
       p_mw_bss = - self.residual_load_per_bus(grid) 
       
@@ -537,11 +545,15 @@ class BSS_P_control_hh_fid(BSS_control):
       p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch]
       if timedelta_sunrise_sunset_s < (12*3600):
           p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]
-              
+            
+      bss.p_mw = p_mw_bss
+      grid.net.storage = bss
+      
       # calculate new energy content:
       get_e_mwh = - self.stored_energy(grid, p_mw_bss)
       
-      return p_mw_bss #d.values
+      return grid.net.storage
+      #return p_mw_bss #d.values
   
 
 ### grid-oriented_feed-in_damping ###
@@ -560,9 +572,10 @@ class BSS_P_control_grid_fid(BSS_control):
       print('Warning: EV grid-oriented_feed-in_damping control is not implemented.')
       super().__init__(grid)
   '''
-  def pcontrol(self, grid, t): #t
+  def pcontrol_linear_charge(self, grid, t): #pcontrol(self, grid, t): #t
       BSS_control.pcontrol(self)
       #BSS_P_control.pcontrol(self)
+      bss = grid.net.storage
       
       p_mw_bss = - self.residual_load_per_bus(grid) 
       
@@ -608,13 +621,30 @@ class BSS_P_control_grid_fid(BSS_control):
       p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch]
       if timedelta_sunrise_sunset_s < (12*3600):
           p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]
-               
+      
+      bss.p_mw = p_mw_bss
+      grid.net.storage = bss    
+      
       # calculate new energy content:
       get_e_mwh = - self.stored_energy(grid, p_mw_bss)
       
-      return p_mw_bss
-      
+      #return p_mw_bss
+      return grid.net.storage
+  
    
+  def pcontrol_xxx_charge(self, grid, t): #pcontrol(self, grid, t): #t
+      BSS_control.pcontrol(self)
+      #BSS_P_control.pcontrol(self)
+      bss = grid.net.storage
+      
+      p_mw_bss = - self.residual_load_per_bus(grid) 
+      
+      # Current parameters of BSS:
+      get_soc=self.state_of_charge(grid)
+      self.soc_new = get_soc
+      get_e_mwh = self.e_mwh_start          
+      free_capacity = grid.net.storage.max_e_mwh - get_e_mwh    
+  #-----------
       #FEED-IN DAMPING:
                
       #-----------------ev

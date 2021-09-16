@@ -51,7 +51,7 @@ time_scope_autumn = { 'start_time' : '2017-10-23 00:00:00+02:00',
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 1, 0]#[4, 0, 0]#[6, 2, 0]
+scenario = [6, 2, 0]#[4, 0, 0]#[6, 2, 0]
 #scenario = [7, 2, 0]
 #######################
 
