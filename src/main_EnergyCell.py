@@ -56,7 +56,7 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [4, 0, 0]
+scenario = [6, 0, 0]
 #scenario = [6, 2, 0]
 #######################
 
@@ -115,7 +115,7 @@ if run_simulation == 0:
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload()
+  e.eva.plot_residualload()
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
