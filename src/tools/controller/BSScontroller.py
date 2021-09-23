@@ -638,7 +638,7 @@ class BSS_P_control_grid_fid(BSS_control):
                                   * 3600 \
                                   / self.intervall
       p_mw_bss[load_excess_2] = 0
-      
+
       # Linear charging and discharging:
       p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch]
       if timedelta_sunrise_sunset_s < (12*3600):

@@ -11,7 +11,7 @@ import _pickle as cPickle
 
 class EvaluationAllCases():
   def __init__(self, net_names, scenarios, time_scopes):
-    output_df_dir = 'output-files/'
+    output_df_dir = 'output-files/000_evaluation_dicts/'
 
     eva = {}
     df_eva_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
@@ -24,9 +24,9 @@ class EvaluationAllCases():
     df_helper_t = pd.DataFrame(columns=['time', 'trafoloading', 'scenario', 'timescope', 'gridID', 'trafoID'])
 
     print('Load Output Data')
-    for time_scope_i in time_scopes:#[time_scope_winter, time_scope_summer]:
-      for net_name_i in [7, 8, 9, 10, 11]:
-        for scenario_i in scenarios:#[10, 20, 30, 40, 41]:
+    for scenario_i in scenarios:
+      for time_scope_i in time_scopes:
+        for net_name_i in [7, 8, 9, 10, 11]:
           output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_names[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
           index = 's' + str(scenario_i) + 'n' + str(net_name_i) + str(time_scope_i['name'])
           print('create: ' + str(index))
@@ -39,11 +39,14 @@ class EvaluationAllCases():
           eva[index]['v'] = self.read_data(output_dir+'res_bus_vm_pu.csv')
           eva[index]['ll'] = self.read_data(output_dir+'res_line_load_percent.csv')
           eva[index]['tl'] = self.read_data(output_dir+'res_trafo_load_percent.csv')
-          eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= self.calculate_relevant_outputdata(eva[index]['power'])
+          trafo_p = self.read_data(output_dir+'trafo_active_power_MW.csv')
+          losses = self.read_data(output_dir+'losses_active_power_MW.csv')
+          eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= self.calculate_relevant_outputdata(eva[index]['power'], losses, trafo_p)
           eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
           eva[index]['curtailed_power'] = self.read_data(output_dir+'curtailed_power_MW.csv')
 
-      
+          tt.compress_pickle(output_df_dir + str(index)+'.pbz2', eva[index])
+    '''      
           v = self.read_data(output_dir+'res_bus_vm_pu.csv')
           v = v.stack().reset_index()
           df_helper_v['voltage'] = v[0]
@@ -78,11 +81,10 @@ class EvaluationAllCases():
     df_eva_l.reset_index(drop=True, inplace=True)
     df_eva_t.reset_index(drop=True, inplace=True)
 
-    tt.compress_pickle(output_df_dir + 'evaluation_dict.pbz2', eva)
-    tt.compress_pickle(output_df_dir + 'evaluation_df_v.pbz2', df_eva_v)
-    tt.compress_pickle(output_df_dir + 'evaluation_df_l.pbz2', df_eva_l)
-    tt.compress_pickle(output_df_dir + 'evaluation_df_t.pbz2', df_eva_t)
-
+    #tt.compress_pickle(output_df_dir + 'evaluation_df_v.pbz2', df_eva_v)
+    #tt.compress_pickle(output_df_dir + 'evaluation_df_l.pbz2', df_eva_l)
+    #tt.compress_pickle(output_df_dir + 'evaluation_df_t.pbz2', df_eva_t)
+    '''
 
   ### Helper Methods ###
 
@@ -110,8 +112,8 @@ class EvaluationAllCases():
     return data_shorted
 
   ### Calculate Output Data ###
-  def calculate_relevant_outputdata(self, power):
-
+  def calculate_relevant_outputdata(self, power, losses, trafo_p):
+    '''
     sum_pv = power.pv.sum()
     sum_hp = power.hp.sum()
     sum_ev = power.ev.sum()
@@ -127,6 +129,29 @@ class EvaluationAllCases():
       PVConsumption = (sum_pv - Res_pos.sum())*100/sum_pv
     else:
       PVConsumption = 0
+    '''
+
+    #power = self.shorted_data(power, '1H')
+    #losses = self.shorted_data(losses, '1H')
+    #trafo_p = self.shorted_data(trafo_p, '1H')
+
+    losses = losses.sum().sum()
+    sum_pv = power.pv.sum()
+    sum_hp = power.hp.sum()
+    sum_ev = power.ev.sum()
+    sum_load = power.load.sum()
+    sum_total_load = sum_hp + sum_load + sum_ev
+
+    Res = -1*trafo_p.values
+    
+    Res_pos = Res[Res > 0]
+    Res_neg = Res[Res < 0]
+
+    SelfSufficiancy = (sum_total_load + losses + Res_neg.sum())*100/(sum_total_load + losses)
+    if sum_pv > 0:
+      PVConsumption = (sum_pv - Res_pos.sum())*100/sum_pv
+    else:
+      PVConsumption = sum_pv*0.0
 
     return SelfSufficiancy, PVConsumption
 

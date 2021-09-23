@@ -5,6 +5,7 @@ from scipy.fft import fft, fftfreq
 import pandapower as pp
 from pandapower.plotting.plotly import simple_plotly
 from pandapower.plotting.plotly import pf_res_plotly
+import pandapower.plotting as ppplt
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -60,21 +61,48 @@ class EvaluationSingleCase():
   ### Output plots / Inputdata ###
   def plot_residualload(self):
     power = self.power*1000
-    storage = -self.storage_p.sum(axis=1)*1000
     curtailed = self.curtailed_power*1000
-    
+
+    '''
+    storage = -self.storage_p.sum(axis=1)*1000
+    storage_sum = storage.copy()
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = pd.Series(storage_charge[0])
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = pd.Series(storage_discharge[0])
+    '''
+    storage = -self.storage_p*1000
+    storage_sum = storage.sum(axis=1)
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
     fig, ax = plt.subplots()
-    ax.fill_between(power.index, 0, -power.pv, alpha=0.7)
-    ax.fill_between(power.index, 0, power.ev, alpha=0.7)
-    ax.fill_between(power.index, power.ev, power.load+power.ev, alpha=0.7)
-    ax.fill_between(power.index, power.load+power.ev, power.hp+power.load+power.ev, alpha=0.7)
-    ax.plot(power.index, -power.pv, lw=.6)
-    ax.plot(power.index, power.ev, lw=.6)
-    ax.plot(power.index, power.load+power.ev, lw=.6)
-    ax.plot(power.index, power.hp+power.load+power.ev, lw=.6)
-    ax.plot(storage.index, storage)
-    power = self.shorted_data(power, '1H')
-    ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage, color='black', lw=.5)
+    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7)
+    ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7)
+    ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7)
+    ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7)
+    ax.fill_between(power.index, 0 , storage_charge     , alpha=0.4, color='purple')
+    ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.4, color='purple')
+
+    ax.plot(power.index, -storage_discharge-power.pv, lw=.6)
+    ax.plot(power.index, storage_charge+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.load+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.hp+power.load+power.ev, lw=.6)
+    ax.plot(storage.index, storage_charge    , lw=.6)
+    ax.plot(storage.index, -storage_discharge, lw=.6)
+
+    #power = self.shorted_data(power, '1H')
+    #storage = self.shorted_data(storage, '1H')
+    ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')
     #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
@@ -237,6 +265,23 @@ class EvaluationSingleCase():
     plt.grid(True)
     plt.show()
 
+  def plot_bss_active_power(self):
+    fig, ax = plt.subplots()
+    line = ax.plot(self.storage_p)
+    plt.xlabel('Time')
+    plt.ylabel('Storage active power in MW')
+    plt.grid(True)
+    plt.show()
+
+  def plot_pv_active_power(self):
+    fig, ax = plt.subplots()
+    line = ax.plot(self.pv_p)
+    plt.xlabel('Time')
+    plt.ylabel('PV active power in MW')
+    plt.grid(True)
+    plt.show()
+
+
   def plot_pv_reactive_power(self):
     p = self.pv_p
     q = self.pv_q
@@ -298,5 +343,33 @@ class EvaluationSingleCase():
     #print(self.grid.net.res_trafo.p_hv_mw)
     #print(self.grid.net.res_trafo.p_lv_mw)
 
+  def plot_grid_2(self):
+    time_sample = pd.to_datetime('2017-05-26 14:00:00+02:00')
+    colors = sns.color_palette()
+
+    def run_pp(timestep):
+      self.grid.net.sgen['p_mw'] = self.pv_p.loc[timestep].values
+      self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values
+      self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values
+      self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values
+      self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values
+      pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
+
+    net = self.grid.net
+    bc = ppplt.create_bus_collection(net, buses=net.bus.index, patch_type='rect', size=.00005, color=colors[2], zorder=1)
+    lc = ppplt.create_line_collection(net, lines=net.line.index, color='grey', zorder=2)
+    tc = ppplt.create_trafo_collection(net, trafos=net.trafo.index, size=.0001, color=colors[1], zorder=3)
+
+    run_pp(time_sample)
+
+    buses_over = net.bus[net.res_bus.vm_pu > 1.05]
+    bc_over = ppplt.create_bus_collection(net, buses=buses_over.index, patch_type='rect', size=.00005, color=colors[3], zorder=4)
+
+    lines_over = net.line[net.res_line.loading_percent > 50]
+    lc_over = ppplt.create_line_collection(net, lines=lines_over.index, color=colors[3], zorder=5)
+
+
+    ppplt.draw_collections([bc, lc, tc, bc_over, lc_over])
+    plt.show()
 
 

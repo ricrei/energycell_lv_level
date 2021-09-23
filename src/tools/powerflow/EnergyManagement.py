@@ -16,6 +16,8 @@ class EnergyManagement:
       self.energy_manager = EnergyManagementTest()
     elif (self.scenario[0] in [6, 7, 8]) & (self.scenario[1] in [1, 2]):
       self.energy_manager = EnergyManagementTest()
+    else:
+      raise ValueError('No appropriate scenario to choose EnergyManagement.')
 
   def control_components(self,
                          input_dict,
@@ -89,19 +91,20 @@ class EnergyManagementBasic(EnergyManagementParent):
     grid.net : pandapower network
     '''
 
+    grid = grid.reset_all_power_values()
+
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
     grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
 
     grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
     grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
-    grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t])
-    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t])
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power_direct_charge(grid, t)
 
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
 
-    grid.net.storage['p_mw'] = bss_controller.get_active_power(grid)
-    grid.net.storage['soc_percent'] = bss_controller.get_soc(grid)
+    grid.net.storage = bss_controller.get_active_power_direct_charge(grid, t)
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
@@ -109,8 +112,8 @@ class EnergyManagementBasic(EnergyManagementParent):
 
     return grid.net
 
-### EnergeManagement 8 ###
-class EnergyManagement8(EnergyManagementParent):
+### EnergeManagement 6, 7, 8 ###
+class EnergyManagementAdvanced(EnergyManagementParent):
   def __init__(self):
     super().__init__()
 
@@ -125,7 +128,7 @@ class EnergyManagement8(EnergyManagementParent):
                          t):
     '''
     Set the sequence in which the components are loaded. This is done in a basic manner. PV, HP and EV are driven in a simple way. The BSS act like its specified mode in bss_controller.
-    Only used in scenario 1 to 6.
+    Only used in scenario 6 to 8.
 
     Parameters
     ----------
@@ -142,25 +145,33 @@ class EnergyManagement8(EnergyManagementParent):
     grid.net : pandapower network
     '''
 
+    grid = grid.reset_all_power_values()
+
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
     grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
 
     grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
     grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
+    # direct
     grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, t)
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_p_res_charge(grid, t)
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_trafo_charge(grid, t)
-
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t])
-
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power_direct_charge(grid, t)
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
-    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_p_res_charge(grid, t)
-    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
+    grid.net.storage                 = bss_controller.get_active_power_direct_charge(grid, t)
 
-    grid.net.storage = bss_controller.get_active_power_linear_charge(grid)
-    grid.net.storage = bss_controller.get_active_power_trafo_charge(grid)
-    #grid.net.storage['soc_percent'] = bss_controller.get_soc(grid) #
+    # linear
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_linear_charge(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power(grid, t)
+    grid.net.storage                 = bss_controller.get_active_power_linear_charge(grid, t)
+
+    # pv excess
+    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_p_res_charge(grid, t)
+
+    # trafo overload
+    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_trafo_charge(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power(grid, t)
+    grid.net.storage                 = bss_controller.get_active_power_trafo_charge(grid,t)
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
@@ -217,9 +228,9 @@ class EnergyManagementTest(EnergyManagementParent):
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
 
     #grid.net.storage = bss_controller.get_active_power_direct_charge(grid, t)##
+    grid.net.storage = bss_controller.get_active_power(grid, t)
     ###grid.net.storage['p_mw'] = bss_controller.get_active_power_direct_charge(grid)
     #grid.net.storage = bss_controller.get_active_power_linear_charge(grid, t)
-    grid.net.storage = bss_controller.get_active_power(grid, t)
     #grid.net.storage['p_mw'] = bss_controller.get_active_power(grid,t) #t
     grid.net.storage['soc_percent'] = bss_controller.get_soc(grid)
 

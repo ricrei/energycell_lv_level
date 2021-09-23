@@ -20,6 +20,16 @@ import tools.tools as tt
 import bz2
 import _pickle as cPickle
 
+### RUN in develpment mode ###
+'''
+run script to load data
+ python -i main_EVA.py
+import importlib once
+ import importlib
+to excecute method run this command everytime
+ importlib.reload(evaluation), evaluation.plot_curtailed_power(eva, save_fig_dir=save_fig_dir)
+'''
+
 #############################
 ### Define all gird names ###
 net_name = ["kerber_rural_1", #0
@@ -41,16 +51,23 @@ net_name = ["kerber_rural_1", #0
 # Image output directory
 save_fig_dir = 'img/'
 
-output_df_dir = 'output-files/'
-print('Load eva dict ...')
-eva = tt.decompress_pickle(output_df_dir + 'evaluation_dict.pbz2')
+output_df_dir = 'output-files/000_evaluation_dicts/'
+
+print('Load eva dicts ...')
+files = os.listdir(output_df_dir)
+eva = {}
+for index in files:
+  print('Load: '+str(index))
+  name = index[0:-5]
+  eva[str(name)] = tt.decompress_pickle(output_df_dir + index)
+
 '''
-print('Load eva df_eva_v ...')
-df_eva_v = tt.decompress_pickle(output_df_dir + 'evaluation_df_v.pbz2')
-print('Load eva df_eva_l ...')
-df_eva_l = tt.decompress_pickle(output_df_dir + 'evaluation_df_l.pbz2')
-print('Load eva df_eva_t ...')
-df_eva_t = tt.decompress_pickle(output_df_dir + 'evaluation_df_t.pbz2')
+#print('Load eva df_eva_v ...')
+#df_eva_v = tt.decompress_pickle(output_df_dir + 'evaluation_df_v.pbz2')
+#print('Load eva df_eva_l ...')
+#df_eva_l = tt.decompress_pickle(output_df_dir + 'evaluation_df_l.pbz2')
+#print('Load eva df_eva_t ...')
+#df_eva_t = tt.decompress_pickle(output_df_dir + 'evaluation_df_t.pbz2')
 '''
 
 n = 2    # Number of timescopes
@@ -71,62 +88,26 @@ evaluation.plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=save_fig_dir)
 
 ### Others ###
 print('Create Other plots')
-evaluation.plot_residualload_subplot_overall_eva(
-                             eva['s40n8summer']['power'],
-                             eva['s40n8winter']['power'],
-                             save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8.png')
-evaluation.plot_residualload_subplot_overall_eva(
-                             eva['s41n8summer']['power'],
-                             eva['s41n8winter']['power'],
-                             save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8.png')
+evaluation.plot_residualload_subplot_overall_eva(eva['s400n8summer']['power'], eva['s400n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8.png')
+evaluation.plot_residualload_subplot_overall_eva(eva['s401n8summer']['power'], eva['s401n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8.png')
 
-evaluation.plot_residualload_subplot_overall_eva_timeslot(
-                             eva['s40n8summer']['power'],
-                             eva['s40n8winter']['power'],
-                             save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8_detailed.png')
-evaluation.plot_residualload_subplot_overall_eva_timeslot(
-                             eva['s41n8summer']['power'],
-                             eva['s41n8winter']['power'],
-                             save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8_detailed.png')
+evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s400n8summer']['power'], eva['s400n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8_detailed.png')
+evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s401n8summer']['power'], eva['s401n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8_detailed.png')
 
-evaluation.plot_generation_consumption_as_heat_map_overall_eva(
-                             eva['s40n9winter']['power'],
-                             save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
-evaluation.plot_generation_consumption_as_heat_map_overall_eva(
-                             eva['s40n9summer']['power'],
-                             save_fig_dir=save_fig_dir+'gen_con_heatmap_summer.png')
+evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s400n9winter']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
+evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s400n9summer']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_summer.png')
 
-evaluation.plot_grid_issus_over_power(
-                             eva['s40n8winter'],
-                             save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
+evaluation.plot_grid_issus_over_power(eva['s400n8winter'], save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
 
-evaluation.plot_grid_issus_over_time_subplot(
-                             eva_summer=eva['s40n8summer'],
-                             eva_winter=eva['s40n8winter'],
-                             save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s40n8.png')
-evaluation.plot_grid_issus_over_time_subplot(
-                             eva_summer=eva['s41n8summer'],
-                             eva_winter=eva['s41n8winter'],
-                             save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s41n8.png')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n8summer'], eva_winter=eva['s400n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s40n8.png')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n8summer'], eva_winter=eva['s401n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s41n8.png')
 
-evaluation.plot_grid_issus_over_time_subplot(
-                             eva_summer=eva['s40n8summer'],
-                             eva_winter=eva['s40n8winter'],
-                             detailed=True,
-                             save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s40n8.png')
-evaluation.plot_grid_issus_over_time_subplot(
-                             eva_summer=eva['s41n8summer'],
-                             eva_winter=eva['s41n8winter'],
-                             detailed=True,
-                             save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s41n8.png')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n8summer'], eva_winter=eva['s400n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s40n8.png')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n8summer'], eva_winter=eva['s401n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s41n8.png')
 
-evaluation.plot_curtailed_power(
-                             eva,
-                             save_fig_dir=save_fig_dir)
+evaluation.plot_curtailed_power(eva, scenario=401 , save_fig_dir=save_fig_dir)
+evaluation.plot_curtailed_power(eva, scenario=601 , save_fig_dir=save_fig_dir)
 
 '''
-evaluation.plot_hist_grid_issus_voltage(
-                             eva['s40n9summer'],
-                             eva['s40n9winter'],
-                             save_fig_dir+ 'hist_grid_issus_voltage.png')
+evaluation.plot_hist_grid_issus_voltage(eva['s40n9summer'], eva['s40n9winter'], save_fig_dir+ 'hist_grid_issus_voltage.png')
 '''

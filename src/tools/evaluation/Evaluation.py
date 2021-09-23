@@ -307,15 +307,15 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
 
   minutes_per_week = 7*24*60
 
-  df_v_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[10,20,30,40]).fillna(0)
-  df_l_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[10,20,30,40]).fillna(0)
-  df_t_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[10,20,30,40]).fillna(0)
-  v_events = pd.DataFrame(index=[net_name[7:12]], columns=[10,20,30,40]).fillna(0)
-  l_events = pd.DataFrame(index=[net_name[7:12]], columns=[10,20,30,40]).fillna(0)
-  t_events = pd.DataFrame(index=[net_name[7:12]], columns=[10,20,30,40]).fillna(0)
+  df_v_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
+  df_l_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
+  df_t_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
+  v_events = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
+  l_events = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
+  t_events = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
 
   for index in eva:
-   if eva[index]['scenario'] in [10,20,30,40]:
+   if eva[index]['scenario'] in [100,200,300,400]:
     df_v_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += (eva[index]['v_under'] + eva[index]['v_over'])/n
     df_l_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['ll_over']/n
     df_t_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['tl_over']/n
@@ -668,20 +668,20 @@ H is the hatch used for identification of the different dataframe"""
     axe.add_artist(l1)
     axe.set_xlabel('Grid')
     axe.set_ylabel('Energy in MWh')
-    axe.set_xticklabels(['rural 1', 'rural 2', 'rural 3', 'suburban 1', 'suburban 2'])
+    axe.set_xticklabels(df.index)#['rural 1', 'rural 2', 'rural 3', 'suburban 1', 'suburban 2'])
     axe.set_ylim([0, 120])
     return axe
 
 
-def plot_curtailed_power(eva, save_fig_dir=None):
+def plot_curtailed_power(eva, scenario, save_fig_dir=None):
 
   df = pd.DataFrame(columns=['gridID', 'time_scope', 'curtailed_power_pv', 'feed-in_power_pv', 'self-consumed_power_pv', 'curtailed_power_load', 'grid_obtained_power_load', 'self-consumed_power_load'], index=range(10))
   
-  scale_factor_energy = 1/60
+  scale_factor_energy = 1/60 # kWmin -> kWh
 
   i = 0
   for index in eva:
-    if eva[index]['scenario'] == 41:
+    if eva[index]['scenario'] == scenario:
       df['gridID'].iloc[i] = eva[index]['net_name']
       df['time_scope'].iloc[i] = eva[index]['time_scope_name']
       curtailed_power = eva[index]['curtailed_power'].sum()
@@ -728,16 +728,23 @@ def plot_curtailed_power(eva, save_fig_dir=None):
   df_winter_load = df_winter_load.drop('curtailed_power_pv', axis=1)
   df_winter_load = df_winter_load.drop('feed-in_power_pv', axis=1)
   df_winter_load = df_winter_load.drop('self-consumed_power_pv', axis=1)
+
+  df_summer_pv = df_summer_pv.sort_index()
+  df_winter_pv = df_winter_pv.sort_index()
+  df_summer_load = df_summer_load.sort_index()
+  df_winter_load = df_winter_load.sort_index()
   
   plot_clustered_stacked([df_winter_pv, df_summer_pv], ['curtailed','feed-in','self-consumed'], ['winter', 'summer'], title=' ')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir+'curtailed_PV_power.png', bbox_inches='tight')
+     plt.savefig(save_fig_dir+'curtailed_PV_power_'+str(scenario)+'.png', bbox_inches='tight')
+  else:
+     plt.show()
 
   plot_clustered_stacked([df_winter_load, df_summer_load], ['curtailed','grid-obtained','self-consumed'], ['winter', 'summer'], title=' ')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir+'curtailed_Load_power.png', bbox_inches='tight')
+     plt.savefig(save_fig_dir+'curtailed_Load_power_'+str(scenario)+'.png', bbox_inches='tight')
 
 
 
