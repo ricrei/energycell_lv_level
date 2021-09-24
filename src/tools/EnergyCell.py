@@ -120,8 +120,8 @@ class EnergyCell():
                                          self.output_dir_worst_case,
                                          self.output_dir,
                                          use_data_of_scenario)
-          self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
-          self.grid = self.grid_reinforce.reinforce_lines(self.grid)
+          #self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
+          #self.grid = self.grid_reinforce.reinforce_lines(self.grid)
           self.grid_reinforce.final_grid_check()
           sys.exit(0)
 

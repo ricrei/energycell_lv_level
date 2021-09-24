@@ -56,7 +56,7 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 0, 0]
+scenario = [6, 2, 0]
 #scenario = [6, 2, 0]
 #######################
 
@@ -113,7 +113,7 @@ if run_simulation == 0:
   e.initiate_evaluation()
 
   #e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  e.eva.calculate_net_problems()
 
   e.eva.plot_residualload()
   #e.eva.plot_ev_soc()
@@ -122,7 +122,7 @@ if run_simulation == 0:
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_soc()
+  e.eva.plot_soc()
   #e.eva.plot_grid(time_sample='2017-05-26 14:00:00+02:00')
 
   # Initialize BSS Sizing

@@ -61,7 +61,7 @@ class BSScontroller:
       return self.P_controller.pcontrol_linear_charge(grid, t)
   ###
   def get_active_power_trafo_charge(self, grid, t):
-      return self.P_controller.pcontrol(grid, t)
+      return self.P_controller.pcontrol_trafo_charge(grid, t) #
   
   def get_e_mwh(self, grid):
       return self.P_controller.e_mwh_start
@@ -186,6 +186,7 @@ class BSS_control:
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
 
       needed_capacity = p_mw_bss * self.intervall / 3600
+     # needed_capacity = (p_mw_bss/(grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter)) * self.intervall / 3600
 
       solar_excess_1 = (p_mw_bss > 0) & \
                        (get_soc < 100) & \
@@ -197,7 +198,8 @@ class BSS_control:
       load_excess_1 = (p_mw_bss < 0) & \
                       (get_soc > 0) & \
                       (get_e_mwh < -needed_capacity/(grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter))
-
+                      #(get_e_mwh < -needed_capacity)
+                      
       load_excess_2 = (p_mw_bss < 0) & \
                       (get_soc <= 0)
 
@@ -251,11 +253,11 @@ class BSS_control_no_bss(BSS_control):
   def pcontrol_linear_charge(self, grid, t):
       BSS_control.pcontrol(self, grid, t)
       return grid.net.storage
-'''  
+
   def pcontrol_trafo_charge(self, grid, t):
       BSS_control.pcontrol(self, grid, t)
       return grid.net.storage
-'''
+
 ### SIMPLE ###
 class BSS_control_simple(BSS_control): 
   def __init__(self, grid, intervall_in_seconds, bss_num): 
@@ -289,6 +291,7 @@ class BSS_control_simple(BSS_control):
       get_soc=self.state_of_charge(grid) # state of charge [%]    
       self.soc_new = get_soc # soc to dataframe ?      
       get_e_mwh=self.e_mwh_start # energy content [MWh]
+      #print('emwh_direct_start: ' + str(get_e_mwh)) 
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh #
       needed_capacity = p_mw_bss * self.intervall / 3600 #
 
@@ -310,7 +313,8 @@ class BSS_control_simple(BSS_control):
       p_mw_bss[load_excess_2] = 0
       
       # New energy content and SOC of BSS:
-      get_e_mwh = self.stored_energy(grid, p_mw_bss)    
+      get_e_mwh = self.stored_energy(grid, p_mw_bss)   
+      print('emwh_direct_end: ' + str(get_e_mwh)) 
       ###grid.net.storage['soc_percent'] = bss_controller.get_soc(grid)
       bss.p_mw = p_mw_bss
       
@@ -320,11 +324,11 @@ class BSS_control_simple(BSS_control):
   def pcontrol_linear_charge(self, grid, t):
       BSS_control.pcontrol(self, grid, t)
       return grid.net.storage
-'''  
+ 
   def pcontrol_trafo_charge(self, grid, t):
       BSS_control.pcontrol(self, grid, t)
       return grid.net.storage
-'''
+
 
 ### FEED IN DAMPING ###
 class BSS_P_control_grid_fid2(BSS_control):#BSS_control_feed_in_damping(BSS_control): 
@@ -612,11 +616,11 @@ class BSS_P_control_hh_fid(BSS_control):
       return grid.net.storage
       #return p_mw_bss #d.values
 
-'''  
+ 
   def pcontrol_trafo_charge(self, grid, t):
       BSS_control.pcontrol(self, grid, t)
       return grid.net.storage
-'''
+
 
 ### grid-oriented_feed-in_damping ###
 class BSS_P_control_grid_fid(BSS_control):
@@ -625,7 +629,7 @@ class BSS_P_control_grid_fid(BSS_control):
       #Methode lineares Laden
       #Methode feed-in damping
       
-      self.trafo_sn_mva = grid.net.trafo.sn_mva.sum()
+      self.trafo_sn_mva = grid.net.trafo.sn_mva.sum() # oder grid.s_trafo_power ()ist das gleiche
 
   '''  
   def __init__(self, grid):
@@ -647,8 +651,10 @@ class BSS_P_control_grid_fid(BSS_control):
       
       # Current parameters of BSS:
       get_soc=self.state_of_charge(grid)
+     # print('soc_lin: '+ str(get_soc))
       self.soc_new = get_soc
-      get_e_mwh = self.e_mwh_start          
+      get_e_mwh = self.e_mwh_start  
+      #print('emwh_start_lin: ' + str(get_e_mwh))
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
       
       #LINEAR CHARGING:
@@ -681,80 +687,86 @@ class BSS_P_control_grid_fid(BSS_control):
       
       # Linear charging and discharging:
       p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch]
-      if timedelta_sunrise_sunset_s < (12*3600):
+      if timedelta_sunrise_sunset_s < (12*3600): #Kriterium Tageslänge
           p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]
       
       bss.p_mw = p_mw_bss
       grid.net.storage = bss    
       
+      
+      #get_soc=self.state_of_charge(grid)
+      #print('soc_lin_end: '+ str(get_soc))
       # calculate new energy content:
-      get_e_mwh = - self.stored_energy(grid, p_mw_bss)
+      get_e_mwh = self.stored_energy(grid, p_mw_bss) #- self.stored_energy(grid, p_mw_bss)
+      #grid.net.storage['e_mwh'] = get_e_mwh #nochmal anders aufschreiben
+      
+      #print('emwh_end_lin: ' + str(get_e_mwh))
       
       #return p_mw_bss
       return grid.net.storage
   
    
-  def pcontrol_xxx_charge(self, grid, t): #pcontrol(self, grid, t): #t
+  def pcontrol_trafo_charge(self, grid, t): #pcontrol(self, grid, t): #t
+  
       BSS_control.pcontrol(self, grid, t)
       #BSS_P_control.pcontrol(self)
       bss = grid.net.storage
-      
-      p_mw_bss = - self.residual_load_per_bus(grid) 
-      
+
+      p_mw_bss = bss.p_mw
+     
       # Current parameters of BSS:
-      get_soc=self.state_of_charge(grid)
-      self.soc_new = get_soc
-      get_e_mwh = self.e_mwh_start          
-      free_capacity = grid.net.storage.max_e_mwh - get_e_mwh    
-  #-----------
+      get_soc = self.state_of_charge(grid)
+      get_e_mwh = self.e_mwh_start 
+      free_capacity = grid.net.storage.max_e_mwh - get_e_mwh 
+
       #FEED-IN DAMPING:
                
       #-----------------ev
       s_res, p_res = grid.get_residualload_s_sum() #residual_load_trafo_s_mva
-      p_res = -p_res
+      p_res = -p_res # warum? weil eingespeichert werden muss? jepp
 
-      if grid.s_trafo_power < -s_res:
-         q_res_to_the_power_of_2 = s_res**2 - p_res**2
-         if q_res_to_the_power_of_2 < grid.s_trafo_power**2:
-            p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
-         else:
-            p_trafo_max = 0
-      else:
-         p_trafo_max = p_res
+      #free_capacity = grid.net.storage.max_e_mwh - get_e_mwh #
+    
+      if grid.s_trafo_power < -s_res: # Fall Trafoüberlastung bei Solarüberschuss, oder?
+          #print('trafo ueberlastet')
+          q_res_to_the_power_of_2 = s_res**2 - p_res**2
+          if q_res_to_the_power_of_2 < grid.s_trafo_power**2: 
+              p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
+          else:
+              p_trafo_max = 0
+            
+          p_total_bss = p_res - p_trafo_max  
+         
+          # damping:
+          damping_faktor = free_capacity / (free_capacity.sum())
+          p_mw_damped = damping_faktor * p_total_bss
+         
+          needed_capacity = p_mw_damped * self.intervall / 3600 # oder needed_capacity = p_mw_damped + p_mw_bss / ... ? nein
+         
+          solar_excess_fid_1 = (get_soc < 100) & \
+                      (needed_capacity <= free_capacity)
+          solar_excess_fid_2 = (get_soc < 100) & \
+                      (needed_capacity > free_capacity)
+          solar_test = (get_soc <= 0)
 
-      p_total_bss = p_res - p_trafo_max
-      print('p total:')
-      print(p_total_bss)
-      
-      #---------------------ev
-          
-      #residual_load_trafo_s_mva = grid.get_residualload_s_sum() # warum bekomme ich hier array mit 2 einträgen? [s_res, p_res]
-      #print('trafo real:')
-      #print(residual_load_trafo_s_mva[0])
-      #print('trafo nenn:')
-      #print(self.trafo_sn_mva)
-      
-      ##diff_s_trafo = self.trafo_sn_mva - s_res #residual_load_trafo_s_mva[0]
-      #print('diff trafo:')
-      #print(diff_trafo)
-      
-      busses_num = len(grid.component_buses.index) # nur vorübergehend
-      p_mw_damped =(p_total_bss * np.ones(self.busses_num))/200 # später anpassen !!! hier weiter!
-      
-      #if (-residual_load_trafo_s_mva[0] > self.trafo_sn_mva) :
-      if (-s_res > self.trafo_sn_mva): 
-          
-          needed_capacity = p_mw_bss * self.intervall / 3600
-      
-      # test cases
-      solar_excess_1, solar_excess_2, load_excess_1, load_excess_2 = \
-          self.get_solar_load_excess(grid)
+          p_mw_damped[solar_excess_fid_2] = (free_capacity[solar_excess_fid_2] * 3600 \
+                                         / self.intervall)
+          p_mw_damped[solar_test] = 0
 
-         # p_mw_bss = (diff_trafo * np.ones(self.busses_num))/200
-      #if (res_s > self.trafo_power*self.sf_load): dieser Fall muss noch beprochen werden
+      else: 
+          p_mw_damped = np.zeros(len(grid.net.storage))
       
+        
+      p_mw_bss = p_mw_bss + p_mw_damped
+      bss.p_mw = p_mw_bss
+      grid.net.storage = bss    
+      
+      # calculate new energy content:
+      get_e_mwh = self.stored_energy(grid, p_mw_damped)
+  
 
-      return p_mw_bss#d.values
+      return grid.net.storage
+      #return p_mw_bss#d.values
 
 '''
 class BSS_P_control_grid_fid_original(BSS_control):
