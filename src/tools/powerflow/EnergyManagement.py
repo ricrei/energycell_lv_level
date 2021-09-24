@@ -211,7 +211,7 @@ class EnergyManagementTest(EnergyManagementParent):
     -------
     grid.net : pandapower network
     '''
-
+    
     grid = grid.reset_all_power_values()
 
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
@@ -227,8 +227,8 @@ class EnergyManagementTest(EnergyManagementParent):
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_p_res_charge(grid, t)
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
 
-    #grid.net.storage = bss_controller.get_active_power_direct_charge(grid, t)##
-    grid.net.storage = bss_controller.get_active_power(grid, t)
+    grid.net.storage = bss_controller.get_active_power_direct_charge(grid, t)##
+    #grid.net.storage = bss_controller.get_active_power(grid, t)
     ###grid.net.storage['p_mw'] = bss_controller.get_active_power_direct_charge(grid)
     #grid.net.storage = bss_controller.get_active_power_linear_charge(grid, t)
     #grid.net.storage['p_mw'] = bss_controller.get_active_power(grid,t) #t

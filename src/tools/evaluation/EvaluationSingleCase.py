@@ -59,7 +59,10 @@ class EvaluationSingleCase():
     return data_shorted
 
   ### Output plots / Inputdata ###
-  def plot_residualload(self):
+  def plot_residualload(self, add_curtail):
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    c = prop_cycle.by_key()['color']
+
     power = self.power*1000
     curtailed = self.curtailed_power*1000
 
@@ -86,12 +89,15 @@ class EvaluationSingleCase():
     storage_discharge = storage_discharge.sum(axis=1)
 
     fig, ax = plt.subplots()
-    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7)
-    ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7)
-    ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7)
-    ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7)
-    ax.fill_between(power.index, 0 , storage_charge     , alpha=0.4, color='purple')
-    ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.4, color='purple')
+    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
+    ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7, color=c[1])
+    ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7, color=c[2])
+    ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7, color=c[3])
+    ax.fill_between(power.index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    if add_curtail:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
+      ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
 
     ax.plot(power.index, -storage_discharge-power.pv, lw=.6)
     ax.plot(power.index, storage_charge+power.ev, lw=.6)
@@ -177,8 +183,8 @@ class EvaluationSingleCase():
     print('Curtailed Load Energy: %s MWh' % sum_curtailed_load.round(2))
     print(' ')
     print('Generation/Consumption ratio: %s %%' % ((sum_pv/sum_total_load*100).round(1)))
-    print('Self-sufficiancy: %s %%' % ((SelfSufficiancy).round(1)))
-    print('PV consumption rate: %s %%' % ((PVConsumption).round(1)))
+    print('Self-sufficiancy: %s %%' % ((SelfSufficiancy).round(2)))
+    print('PV consumption rate: %s %%' % ((PVConsumption).round(2)))
     print(' ')
 
   def calculate_net_problems(self):
@@ -330,6 +336,7 @@ class EvaluationSingleCase():
       self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values
       self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values
       self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values
+      self.grid.net.storage['p_mw'] = self.storage_p.loc[timestep].values
       self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values
 
     time_sample = pd.to_datetime(time_sample)
@@ -340,8 +347,6 @@ class EvaluationSingleCase():
 
     pf_res_plotly(self.grid.net, aspectratio=(1,1))
 
-    #print(self.grid.net.res_trafo.p_hv_mw)
-    #print(self.grid.net.res_trafo.p_lv_mw)
 
   def plot_grid_2(self):
     time_sample = pd.to_datetime('2017-05-26 14:00:00+02:00')
@@ -352,6 +357,7 @@ class EvaluationSingleCase():
       self.grid.net.sgen['q_mvar'] = self.pv_q.loc[timestep].values
       self.grid.net.load['p_mw'] = self.load_p.loc[timestep].values
       self.grid.net.load['q_mvar'] = self.load_q.loc[timestep].values
+      self.grid.net.storage['p_mw'] = self.storage_p.loc[timestep].values
       self.grid.net.ext_grid.vm_pu = self.v_pu_ext_grid.loc[timestep].values
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
 
