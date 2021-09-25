@@ -39,6 +39,7 @@ class OutputDataHandler():
         self.losses_active_power = pd.DataFrame(columns=['trafo','lines'])
         self.v_pu_ext_grid = pd.DataFrame(columns=['v_pu'])
         self.curtailed_power = pd.DataFrame(columns=['curtail_pv', 'curtail_load'])
+        self.hp_soc = pd.DataFrame(columns=grid.hp_index)
         self.vm_pu.index.name = 'timestamp'
         self.li_lo.index.name = 'timestamp'
         self.tr_lo.index.name = 'timestamp'
@@ -55,7 +56,8 @@ class OutputDataHandler():
         self.losses_active_power.index.name = 'timestamp'
         self.v_pu_ext_grid.index.name  = 'timestamp'
         self.curtailed_power.index.name  = 'timestamp'
-
+        self.hp_soc.index.name  = 'timestamp'
+        
   def write_output_into_dataframe(self, grid, t):
         self.vm_pu.loc[t] = grid.net.res_bus.vm_pu
         self.li_lo.loc[t] = grid.net.res_line.loading_percent
@@ -77,7 +79,8 @@ class OutputDataHandler():
                                            grid.net.res_line.pl_mw.sum()]
         self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
         self.curtailed_power.loc[t] = [grid.curtailed_pv_power, grid.curtailed_load_power]
-
+        self.hp_soc.loc[t] = grid.net.load.hp_soc_kwh.loc[grid.hp_index]
+        
   def write_dataframe_to_csv(self, mode, header, grid):
         self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',
                                    mode=mode, header=header, index = True)
@@ -111,5 +114,7 @@ class OutputDataHandler():
                                                   mode=mode, header=header, index = True)
         self.curtailed_power.round(6).to_csv(self.output_dir + 'curtailed_power_MW.csv',
                                                   mode=mode, header=header, index = True)
+        self.hp_soc.round(6).to_csv(self.output_dir + 'hp_soc.csv',
+                                               mode=mode, header=header, index = True)
 
         self.create_output_dataframes(grid)

@@ -56,10 +56,53 @@ class HP_P_control_direct(HP_P_control):
 
   def __init__(self, grid):
       super().__init__(grid)
+      self.HP_storages = HPstorages()
+      self.HP_storages.create_hp_storages(grid)
 
   def pcontrol(self, grid, d, t):
-      HP_P_control.pcontrol(self)
-      return d.values
+    
+      #residualload negativ -> demand from grid
+      #residualload positiv -> feed into grid
+      hp_power_ref = -grid.get_residualload_p_per_household()
+      hps = grid.net.load.loc[grid.hp_index]                  
+      hp_el_demand = d.copy().values
+      
+      ### put data into dataframe to set new index
+      df_hp_demand = pd.DataFrame(hp_el_demand, columns=['p_mw'])
+      df_hp_demand = df_hp_demand.set_index(hps.index)
+      df_resi_load = pd.DataFrame(hp_power_ref, columns=['e_mwh'])
+      df_resi_load = df_resi_load.set_index(hps.index)
+
+      #hp_power_ref = hp_power_ref - hp_el_demand
+      hp_power_ref[hp_power_ref > 0] = hp_power_ref - hp_el_demand
+
+      ### a try with dfs
+      #df_resi_load[df_resi_load > 0] = df_resi_load - df_hp_demand
+      #df_resi_load[df_resi_load > 0] = df_resi_load + df_hp_demand
+      
+      ### storage full
+      #hp_power_ref[hps.hp_soc_kwh + hp_power_ref > hps.hp_el_capacity_kwh] = \
+      #hps.hp_el_capacity_kwh[hps.hp_soc_kwh + hp_power_ref > hps.hp_el_capacity_kwh]
+      
+      ### storage emtpy
+      #hp_power_ref[hps.hp_soc_kwh + hp_power_ref <= 0] = 0
+      
+      hps.p_mw = hp_el_demand + hp_power_ref
+      hps.hp_soc_kwh += hp_power_ref
+      
+      
+      
+      grid.net.load.loc[grid.hp_index] = hps
+      
+      print( )
+      print(t)
+      print(hp_power_ref)
+      print(hp_el_demand)
+      print(hps.p_mw)
+      print(hps.hp_soc_kwh)
+    
+      #HP_P_control.pcontrol(self)
+      return grid.net.load.loc[grid.hp_index]
 
 ### household-oriented_feed-in_damping ###
 class HP_P_control_hh_fid(HP_P_control):

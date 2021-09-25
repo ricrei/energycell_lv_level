@@ -49,31 +49,24 @@ class HPstorages():
         '''
         print("Create HP-Storage")
 
-        self.hp_storages['name'] = grid.net.load.loc[grid.hp_index, 'name']
-        self.hp_storages['bus'] = grid.net.load.loc[grid.hp_index, 'bus']
-        self.hp_storages['capacity'] = self.hp_stor_para.get('el_capacity')[0]
-        self.hp_storages['level'] = self.hp_stor_para.get('start_level')[0]
-        self.hp_storages['max_flow'] = self.hp_stor_para.get('max_flow')[0]
-        self.hp_storages['comfort_level'] = self.hp_storages['capacity'] * 0.7
-
-        print(self.hp_storages)
-
         grid.net.load.loc[grid.hp_index, 'hp_el_capacity_kwh'] = \
-            self.hp_stor_para['hp_el_capacity_kwh']
+            self.hp_stor_para['hp_el_capacity_kwh'] * 0.001
         grid.net.load.loc[grid.hp_index, 'hp_soc_kwh'] = \
             grid.net.load.loc[grid.hp_index, 'hp_el_capacity_kwh'] \
                 * self.hp_stor_para['hp_start_soc']
         grid.net.load.loc[grid.hp_index, 'hp_self_dis_per_day'] = \
             self.hp_stor_para['hp_self_dis_per_day']
         grid.net.load.loc[grid.hp_index, 'hp_max_p_kw'] = \
-            self.hp_stor_para['hp_max_p_kw']
+            self.hp_stor_para['hp_max_p_kw'] * 0.001
         grid.net.load.loc[grid.hp_index, 'hp_cop'] = \
             self.hp_stor_para['hp_cop']
+
+        print(grid.net.load.loc[grid.hp_index])
 
         return 0
 
     def get_level(self, grid, index):
-        '''
+        '''hp_start_soc
         Returns level of storages by index
         -------
         Input grid

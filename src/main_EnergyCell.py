@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-26 00:00:00+01:00',
-               'end_time'   : '2017-05-27 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-01-05 00:00:00+01:00',
+               'end_time'   : '2017-01-06 00:00:00+01:00',
                't_freq'     : '1H'
              }
 
@@ -57,7 +57,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [4, 0, 0]
-#scenario = [6, 2, 0]
+scenario = [6, 0, 0]
 #######################
 
 ############################
@@ -87,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 7
+net_number = 13
 ######################
 
 #######################
@@ -112,10 +112,11 @@ if run_simulation == 0:
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload()
+  e.eva.plot_residualload()
+  e.eva.plot_hp_soc()
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
