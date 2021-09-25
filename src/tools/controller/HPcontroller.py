@@ -63,7 +63,8 @@ class HP_P_control_direct(HP_P_control):
     
       #residualload negativ -> demand from grid
       #residualload positiv -> feed into grid
-      hp_power_ref = -grid.get_residualload_p_per_household()
+      resi_load = -grid.get_residualload_p_per_household()
+      hp_power_ref = resi_load
       hps = grid.net.load.loc[grid.hp_index]                  
       hp_el_demand = d.copy().values
       
@@ -73,21 +74,25 @@ class HP_P_control_direct(HP_P_control):
       df_resi_load = pd.DataFrame(hp_power_ref, columns=['e_mwh'])
       df_resi_load = df_resi_load.set_index(hps.index)
 
+      ### calculate amount of energy charge/discharge
       #hp_power_ref = hp_power_ref - hp_el_demand
       hp_power_ref[hp_power_ref > 0] = hp_power_ref - hp_el_demand
+      hp_power_ref[hp_power_ref <= 0] = - hp_el_demand
 
       ### a try with dfs
       #df_resi_load[df_resi_load > 0] = df_resi_load - df_hp_demand
       #df_resi_load[df_resi_load > 0] = df_resi_load + df_hp_demand
       
       ### storage full
-      #hp_power_ref[hps.hp_soc_kwh + hp_power_ref > hps.hp_el_capacity_kwh] = \
-      #hps.hp_el_capacity_kwh[hps.hp_soc_kwh + hp_power_ref > hps.hp_el_capacity_kwh]
-      
+      hp_power_ref[hps.hp_soc_kwh + hp_power_ref > hps.hp_el_capacity_kwh] = \
+          hps.hp_el_capacity_kwh - hps.hp_soc_kwh
+    
       ### storage emtpy
-      #hp_power_ref[hps.hp_soc_kwh + hp_power_ref <= 0] = 0
+      hp_power_ref[hps.hp_soc_kwh + hp_power_ref < 0] = -hps.hp_soc_kwh
       
+      ### set power of hp additional the charge of storage
       hps.p_mw = hp_el_demand + hp_power_ref
+      ### set soc of storage
       hps.hp_soc_kwh += hp_power_ref
       
       
@@ -96,6 +101,7 @@ class HP_P_control_direct(HP_P_control):
       
       print( )
       print(t)
+      print(resi_load)
       print(hp_power_ref)
       print(hp_el_demand)
       print(hps.p_mw)
