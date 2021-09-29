@@ -21,7 +21,9 @@ class BSScreator:
       #max_e_mwh = grid.net.sgen.installed_power * self.sizing_factor # [MWh]
       max_e_mwh = 0.02 #später raus
       max_p_mw = 0.02 #max_e_mwh # [MW]
-      
+      #max_e_mwh = grid.net.sgen.installed_power * 10**(-3) * self.sizing_factor # [MWh]
+      #max_p_mw = grid.net.sgen.installed_power * 10**(-3) # [MW] # später anpassen
+      '''
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
@@ -29,7 +31,7 @@ class BSScreator:
                             soc_percent = self.soc_percent , \
                             name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
                             type = 'bss', \
-                            max_p_mw = max_p_mw)
+                            max_p_mw = max_p_mw[])
       
       grid.net.storage['efficiency_storage'] = 0.9
       grid.net.storage['efficiency_inverter'] = 0.96
@@ -40,18 +42,18 @@ class BSScreator:
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
-                            max_e_mwh = grid.net.sgen.installed_power.loc[index] * self.sizing_factor, \
+                            max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.sizing_factor, \
                             soc_percent = self.soc_percent , \
                             name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
                             type = 'bss', \
-                            max_p_mw = max_p_mw)
+                            max_p_mw = grid.net.sgen.installed_power.loc[index] * 10**(-3))
       
       grid.net.storage['efficiency_storage'] = 0.9
       grid.net.storage['efficiency_inverter'] = 0.96
       grid.net.storage['efficiency_mppt'] = 0.98
       grid.net.storage['e_mwh'] =  0 ###
       #grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100)
-      '''
+      
       return grid
       
   
