@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-03 00:00:00+01:00', #'2017-05-26 00:00:00+01:00'
-               'end_time'   : '2017-01-04 00:00:00+01:00', #'2017-05-27 00:00:00+01:00'
+time_scope = { 'start_time' : '2017-05-26 00:00:00+01:00', #'2017-05-26 00:00:00+01:00'
+               'end_time'   : '2017-05-27 00:00:00+01:00', #'2017-05-27 00:00:00+01:00'
                't_freq'     : '1H'
              }
 

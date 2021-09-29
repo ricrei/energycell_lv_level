@@ -76,7 +76,7 @@ class EnergyCell():
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
-        self.grid = self.bss_creator.create_bss_at_lvbb(self.grid)
+        self.grid = self.bss_creator.create_bss_at_selected_buses(self.grid)
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
