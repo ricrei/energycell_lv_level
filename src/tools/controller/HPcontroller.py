@@ -63,49 +63,57 @@ class HP_P_control_direct(HP_P_control):
     
       #residual_load positiv -> demand from grid
       #residual_load negativ -> feed into grid
-      resi_load = grid.get_residualload_p_per_household()
+      resi_load = grid.get_residualload_p_per_household() #array of float
       hp_soc_change = -resi_load
       hps = grid.net.load.loc[grid.hp_index]                  
       hp_el_demand = d.copy().values
       
       ### put data into dataframe to set new index
       df_hp_demand = pd.DataFrame(hp_el_demand, columns=['p_mw'])
-      df_hp_demand = df_hp_demand.set_index(hps.index)
+      df_hp_demand = df_hp_demand.set_index(hps.index.values)
       df_hp_soc_change = pd.DataFrame(hp_soc_change, columns=['e_mwh'])
-      df_hp_soc_change = df_hp_soc_change.set_index(hps.index)
+      df_hp_soc_change = df_hp_soc_change.set_index(hps.index.values)
 
       ### calculate amount of energy charge/discharge
-      #hp_soc_change = hp_soc_change - hp_el_demand
-      hp_soc_change[hp_soc_change > 0] = hp_soc_change - hp_el_demand
-      hp_soc_change[hp_soc_change <= 0] = - hp_el_demand
-
-      ### a try with dfs
-      #df_hp_soc_change[df_hp_soc_change > 0] = df_hp_soc_change - df_hp_demand
-      #df_hp_soc_change[df_hp_soc_change < 0] = - df_hp_demand
+      hp_soc_change[hp_soc_change > 0] = hp_soc_change[hp_soc_change > 0] - hp_el_demand[hp_soc_change > 0]
+      hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
       
       ### storage full
       hp_soc_change[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh] = \
-          hps.hp_el_capacity_kwh - hps.hp_soc_kwh
+          hps.hp_el_capacity_kwh[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh] - \
+            hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh]
     
       ### storage emtpy
-      hp_soc_change[hps.hp_soc_kwh + hp_soc_change < 0] = -hps.hp_soc_kwh
+      hp_soc_change[hps.hp_soc_kwh + hp_soc_change < 0] =\
+          -hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change < 0]
       
       ### set power of hp additional the charge of storage
       hps.p_mw = hp_el_demand + hp_soc_change
       ### set soc of storage
       hps.hp_soc_kwh += hp_soc_change
+
+      ### calculate amount of energy charge/discharge
+      ### a try with df
+      #print(df_hp_soc_change, '--> df_hp_soc_change')
+      #df_hp_soc_change[df_hp_soc_change.e_mwh > 0] = df_hp_soc_change.e_mwh - df_hp_demand.p_mw
+      #df_hp_soc_change[df_hp_soc_change.e_mwh < 0] = -df_hp_demand.p_mw.values
       
-      
+      ### set power of hp additional the charge of storage
+      #hps.p_mw = df_hp_demand.p_mw + df_hp_soc_change.e_mwh
+      ### set soc of storage
+      #hps.hp_soc_kwh += df_hp_soc_change.e_mwh
       
       grid.net.load.loc[grid.hp_index] = hps
       
       print( )
       print(t)
-      print(resi_load)
-      print(hp_soc_change)
-      print(hp_el_demand)
-      print(hps.p_mw)
-      print(hps.hp_soc_kwh)
+      print(resi_load, '--> resi_load')
+      print(hp_soc_change, '--> hp_soc_change')
+      print(hp_el_demand, '--> hp_el_demand')
+      print(df_hp_soc_change, '--> df_hp_soc_change')
+      print(df_hp_demand, '--> df_hp_demand')
+      print(hps.p_mw, '--> hps.p_mw')
+      print(hps.hp_soc_kwh, '--> hps.hp_soc_kwh')
     
       #HP_P_control.pcontrol(self)
       return grid.net.load.loc[grid.hp_index]
@@ -134,14 +142,7 @@ class HP_P_control_grid_fid(HP_P_control):
       HP_P_control.pcontrol(self)
       return d.values
 
-class HP_P_control_greedy(HP_P_control):
 
-    def __init__(self, grid):
-        super().__init__(grid)
-
-    def pcontrol(self, grid, d, t):
-        HP_P_control.pcontrol(self)
-        return d.values
 
 
 class HP_P_control_evu_lock(HP_P_control):

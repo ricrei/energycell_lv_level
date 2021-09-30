@@ -87,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 13
+net_number = 7
 ######################
 
 #######################
