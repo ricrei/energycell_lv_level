@@ -128,7 +128,7 @@ class EnergyCell():
         self.output_data_handler.create_output_dataframes(self.grid)
 
         # Save net to pickle
-        pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
+        #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
 
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'

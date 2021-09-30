@@ -303,7 +303,7 @@ def plot_barplots_overall_eva(eva, n, save_fig_dir=None):
 
 
 def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
-  print('Create Heatmap plots')
+  print('Create Heatmap plots grid issus')
 
   minutes_per_week = 7*24*60
 
@@ -370,6 +370,90 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_trafoloading.png', bbox_inches='tight')
+
+
+def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
+  print('Create Heatmap plots curtailed power')
+
+  minutes_per_week = 7*24*60
+
+  curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+
+  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+
+  for index in eva:
+    if eva[index]['scenario'] in [401,601,611,621]:
+      curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
+      curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_load.sum()
+      if eva[index]['time_scope_name'] == 'summer':
+        curtailed_power_summer[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
+      elif eva[index]['time_scope_name'] == 'winter':
+        curtailed_power_winter[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
+
+  x_ticklabels = ['401', '601', '611', '621']
+  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
+
+  vmax_summer = curtailed_power_summer.max().max()/1000
+  vmax_winter = curtailed_power_winter.max().max()/1000
+  vmax_season = np.array([vmax_summer, vmax_winter]).max()
+
+  vmax_pv = curtailed_power_pv.max().max()/1000
+  vmax_load = curtailed_power_load.max().max()/1000
+  vmax_pv_load = np.array([vmax_pv, vmax_load]).max()
+
+  vmin = 0
+  
+  plt.figure()
+  ax = sns.heatmap(curtailed_power_summer/1000, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
+  ax.set(xlabel='Scenario', ylabel='Grid')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  ax.set_title('Curtailed energy in summer in MWh')
+  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + 'heatmap_curtailed_power_summer.png', bbox_inches='tight')
+
+  #"YlOrBr"
+
+  plt.figure()
+  ax = sns.heatmap(curtailed_power_winter/1000, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
+  ax.set(xlabel='Scenario', ylabel='Grid')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  ax.set_title('Curtailed energy in winter in MWh')
+  #ax.set_title('Line Overloading in Minutes per Week and Line')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + 'heatmap_curtailed_power_winter.png', bbox_inches='tight')
+
+  plt.figure()
+  ax = sns.heatmap(curtailed_power_pv/1000, vmax = vmax_pv_load, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
+  ax.set(xlabel='Scenario', ylabel='Grid')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  ax.set_title('Curtailed pv energy in MWh')
+  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + 'heatmap_curtailed_power_pv.png', bbox_inches='tight')
+
+  #"YlOrBr"
+
+  plt.figure()
+  ax = sns.heatmap(curtailed_power_load/1000, vmax = vmax_pv_load, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
+  ax.set(xlabel='Scenario', ylabel='Grid')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  ax.set_title('Curtailed load energy in MWh')
+  #ax.set_title('Line Overloading in Minutes per Week and Line')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + 'heatmap_curtailed_power_load.png', bbox_inches='tight')
+
+
 
 def plot_grid_issus_over_power(eva, save_fig_dir=None):
 

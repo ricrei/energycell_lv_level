@@ -28,6 +28,7 @@ class GridReinforce:
 
     self.trafo_overloading = self.tl.max().max()
     self.trafo_overloading_time = pd.to_datetime(self.tl.max(axis=1).idxmax())
+    self.keep_trafo = False
 
     self.line_overloading = self.ll.max().max()
     self.line_overloading_time = pd.to_datetime(self.ll.max(axis=1).idxmax())
@@ -126,7 +127,8 @@ class GridReinforce:
       hv_bus = int(self.grid.net.trafo.hv_bus.values)
       transformer_types = self.get_transformer_type()
       if transformer_types != None:
-        self.grid.net.trafo.drop(0, inplace=True)
+        if self.keep_trafo == False:
+          self.grid.net.trafo.drop(0, inplace=True)
         for trafo_type in transformer_types:
           pp.create_transformer(self.grid.net, hv_bus, lv_bus, trafo_type)
       else:
@@ -170,7 +172,8 @@ class GridReinforce:
     elif self.net_name == "simbench_rural_2":
       return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_rural_3":
-      return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.25 MVA 20/0.4 kV']
+      self.keep_trafo = True
+      return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']#, '0.25 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_4":
       return ['0.63 MVA 20/0.4 kV']
     elif self.net_name == "simbench_suburb_5":
@@ -359,7 +362,9 @@ class GridReinforce:
     total_line_costs = self.result_lines.total_costs.sum()
     total_trafo_costs = self.result_trafo.costs.sum()
 
+    print('Total Transformercosts          : %s Euro' % (round(float(total_trafo_costs))))
+    print('Total Linecosts                 : %s Euro' % (round(float(total_line_costs))))
     print('Total line- and transformercosts: %s Euro' % (round(float(total_line_costs + total_trafo_costs))))
 
-    pf_res_plotly(self.grid.net, aspectratio=(1,1))
+    #pf_res_plotly(self.grid.net, aspectratio=(1,1))
 
