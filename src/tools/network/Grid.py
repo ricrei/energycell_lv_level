@@ -275,7 +275,7 @@ class Grid:
       t = t.tz_localize(None)
       timedelta_sunrise_sunset_s = (sunset - sunrise).total_seconds()
       timedelta_day_s = abs((sunset - t).total_seconds())
-      timedelta_night_s = abs((sunrise - t).total_seconds())
+      timedelta_night_s = abs((sunrise - t).total_seconds()) ### timedelta next day
       return sunrise, sunset, timedelta_day_s, timedelta_night_s, timedelta_sunrise_sunset_s
 
   def create_test_net_one_load_branch(self):

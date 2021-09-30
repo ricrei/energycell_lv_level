@@ -70,7 +70,7 @@ class EnergyCell():
         self.pv_creator = PVcreator()
         self.hp_creator = HPcreator()
         self.ev_creator = EVcreator()
-        self.bss_creator = BSScreator()
+        self.bss_creator = BSScreator(self.net_name)#net_name
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)

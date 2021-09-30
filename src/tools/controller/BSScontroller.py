@@ -361,8 +361,10 @@ class BSS_control_simple(BSS_control):
       p_mw_bss[load_excess_2] = 0
       
       #print('p_mw_max: ' + str(bss.max_p_mw))
+      
+      # Limitation by maximum power:
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
-      #begrenzung entladen !!!
+      p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
       
       # New energy content and SOC of BSS:
       get_e_mwh = self.stored_energy(grid, p_mw_bss)    
@@ -701,12 +703,16 @@ class BSS_P_control_hh_fid(BSS_control):
           print('Tag')
       print('p_mw_bss_Wahl: '+ str(p_mw_bss[94]))
       
+      # Limitation by maximum power:
+      p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
+      p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
+      
       bss.p_mw = p_mw_bss
       grid.net.storage = bss
       
       # calculate new energy content:
       get_e_mwh = self.stored_energy(grid, p_mw_bss) #-
-      
+      print(grid.net.storage.p_mw)
       return grid.net.storage
       #return p_mw_bss #d.values
 
@@ -765,12 +771,14 @@ class BSS_P_control_grid_fid(BSS_control):
       #case_lin_ch = np.less(p_mw_lin_ch, p_mw_bss) # & Scheinliestung kleiner Scheinleistung_nenn
       #case_lin_dch = np.greater(p_mw_lin_dch, p_mw_bss) 
      
+      distribution_factor_ch = free_capacity/free_capacity.sum()
+      distribution_factor_ch = distribution_factor_ch.fillna(0)
       if (p_mw_bss_total > 0) and (p_mw_bss_total >= p_mw_lin_ch_total) :
           p_mw_bss_total = p_mw_lin_ch_total
-          p_mw_lin_ch = p_mw_bss_total * free_capacity/free_capacity.sum()
+          p_mw_lin_ch = p_mw_bss_total * distribution_factor_ch
           p_mw_bss = p_mw_lin_ch
       elif (p_mw_bss_total > 0) and (p_mw_bss_total < p_mw_lin_ch_total) :
-          p_mw_lin_ch = p_mw_bss_total * free_capacity/free_capacity.sum()
+          p_mw_lin_ch = p_mw_bss_total * distribution_factor_ch
           p_mw_bss = p_mw_lin_ch
       elif (p_mw_bss_total < 0): #direkt
           distribution_factor_dch = get_e_mwh/get_e_mwh.sum()
@@ -838,7 +846,7 @@ class BSS_P_control_grid_fid(BSS_control):
       # calculate new energy content:
       get_e_mwh = self.stored_energy(grid, p_mw_bss) #- self.stored_energy(grid, p_mw_bss)
       #grid.net.storage['e_mwh'] = get_e_mwh #nochmal anders aufschreiben
-      
+      print(grid.net.storage.p_mw)
       #return p_mw_bss
       return grid.net.storage
   
@@ -974,6 +982,7 @@ class BSS_P_control_grid_fid(BSS_control):
          
           # damping:
           damping_faktor = free_capacity / (free_capacity.sum())
+          damping_faktor = damping_faktor.fillna(0)
           p_mw_damped = damping_faktor * p_total_bss
          
           needed_capacity = p_mw_damped * self.intervall / 3600 # oder needed_capacity = p_mw_damped + p_mw_bss / ... ? nein
