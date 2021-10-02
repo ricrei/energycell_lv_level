@@ -342,7 +342,7 @@ class GridReinforce:
       print(tt.textred('Undervoltage     at %s: %s' % (self.undervoltage_time, self.undervoltage)))
       self.fill_grid_with_power_values(self.undervoltage_time)
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
-      everything_ok = False 
+      everything_ok = False  
     if (self.line_overloading > 100):
       print(tt.textred('Lineoverloading  at %s: %s %%' % (self.line_overloading_time, self.line_overloading)))
       self.fill_grid_with_power_values(self.line_overloading_time)

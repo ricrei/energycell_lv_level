@@ -2,29 +2,26 @@ import numpy as np
 import pandapower as pp
 
 import tools.tools as tt
-from tools.controller.BSScontroller import BSScontroller #neu
+from tools.controller.BSScontroller import BSScontroller
 
 class BSScreator:
 
-  def __init__(self, net_name): #net_name
+  def __init__(self, net_name, grid): #net_name
         self.bss_para = {}
         self.net_name = net_name
         self.soc_max_brutto = 70
         self.soc_min_brutto = 30
         self.soc_percent = 0
-        #self.sizing_factor = 0.6
         self.c_rate = 0.6
+        self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
+        self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3) 
 
   ###########################################
-  ### Create Loads at each bus for all HP ###
+  ### Create Loads at each bus for all HP ### # anpassen
   ###########################################
   def create_bss_at_each_bus(self, grid): 
       # create bss at each bus 
-      #max_e_mwh = grid.net.sgen.installed_power * self.sizing_factor # [MWh]
-      #max_e_mwh = 0.02 #später raus
-     # max_p_mw = 0.02 #max_e_mwh # [MW]
-      #max_e_mwh = grid.net.sgen.installed_power * 10**(-3) * self.sizing_factor # [MWh]
-      #max_p_mw = grid.net.sgen.installed_power * 10**(-3) # [MW] # später anpassen
+
       '''
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
@@ -58,13 +55,13 @@ class BSScreator:
       
       return grid
       
-  
-    #ec.grid.bss_controller.state_of_charge(grid)
 
   def create_bss_at_lvbb(self, grid): 
-      # create  community bss at low voltage busbar (bus 0)
+      # create  community bss at low voltage busbar
+      
       max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * self.c_rate # [MWh]
       max_p_mw = grid.net.sgen.installed_power.sum() * 10**(-3) # [MW] # später anpassen
+      max_p_mw = min(max_p_mw, self.p_max_feeder_mw * grid.feeder['n_feeder'])
       '''
       pp.create_storage(grid.net, 4 , p_mw=0,\
                             max_e_mwh=max_e_mwh, soc_percent=0 ,name='bss_'+str(4), type='bss')
@@ -81,16 +78,14 @@ class BSScreator:
       grid.net.storage['efficiency_inverter'] = 0.96
       grid.net.storage['efficiency_mppt'] = 0.98
       grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) # anpassen
-      
       return grid
 
   def create_bss_at_selected_buses(self, grid): 
       # create community bss at one or more buses  
-      
-      #sizing_factor =
+
       if self.net_name == "simbench_rural_1":
           selected_buses = [int(grid.net.trafo.lv_bus.sum())]
-          hh_per_line = [0]
+          hh_per_line = [0] # per feeder?
           print('No scenario for CBSS in power line implemented')# wird nicht ausgegeben
           #raise ValueError('No scenario for CBSS in power line implemented' )
       elif self.net_name == "simbench_rural_2":
@@ -112,6 +107,9 @@ class BSScreator:
           max_e_mwh = np.nan_to_num(max_e_mwh)
           max_p_mw = grid.net.sgen.installed_power.sum() * 10**(-3) * hh_per_line[i]/sum(hh_per_line) # [MW] # später anpassen
           max_p_mw = np.nan_to_num(max_p_mw)
+          #print('max_p_mw_start: ')
+          #print(max_p_mw)
+          max_p_mw = min(max_p_mw, self.p_max_feeder_mw)
           pp.create_storage(grid.net, x, \
                             p_mw = 0,\
                             max_e_mwh = max_e_mwh, \
@@ -126,7 +124,7 @@ class BSScreator:
       grid.net.storage['efficiency_inverter'] = 0.96
       grid.net.storage['efficiency_mppt'] = 0.98
       grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) # anpassen
-      
-      #grid.net.storage['location'] = selected_buses
+      #print('max_p_mw_end: ')
+      #print(grid.net.storage.max_p_mw)
       return grid
 
