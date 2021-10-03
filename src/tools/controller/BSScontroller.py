@@ -732,22 +732,23 @@ class BSS_P_control_grid_fid(BSS_control):
       get_soc=self.state_of_charge(grid)
       self.soc_new = get_soc
       get_e_mwh = self.e_mwh_start  
+      print('get_e_mwh: '+ str(get_e_mwh))
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh  
       
       print('Distribution of residual load over CBSS')
-      # Distribution of residual load over CBSS: muss auch in solar_load_excess() !!!
-      bss_num = len(bss) 
+      # Distribution of residual load over CBSS: muss auch in solar_load_excess() !!! 
       
       if free_capacity.sum() == 0.0:
           distribution_factor_ch = np.zeros(len(bss)) # np.zeros[len()]
       else:
           distribution_factor_ch = free_capacity/free_capacity.sum()
           distribution_factor_ch = distribution_factor_ch.fillna(0)
+          #print('distribution factor ch: ' + str(distribution_factor_ch))
       
       '''
       #alt:
       distribution_factor_ch = free_capacity / free_capacity.sum()
-      print('type distribution factor: ' + str(type(distribution_factor_ch)))
+      #print('type distribution factor: ' + str(type(distribution_factor_ch)))
       distribution_factor_ch = distribution_factor_ch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0 auch gür HBSS!!!
       '''
       '''
@@ -757,13 +758,16 @@ class BSS_P_control_grid_fid(BSS_control):
       
       distribution_factor_dch = get_e_mwh / get_e_mwh.sum()
       distribution_factor_dch = distribution_factor_dch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0 
+      distribution_factor_dch [distribution_factor_dch < 0] = 0 
+      print('distribution factor dch: ' + str(distribution_factor_dch))
       
-      if p_mw_bss_total > 0: # 0 muss auch noch abgefangen werden!!!
+      if p_mw_bss_total >= 0: # 0 muss auch noch abgefangen werden!!!
           print('p_mw_bss_total > 0')
           p_mw_bss = (p_mw_bss_total * distribution_factor_ch) #* np.ones(bss_num)
       
       elif p_mw_bss_total < 0:
           print('p_mw_bss_total < 0')
+          print('p_mw_bss_total: '+ str(p_mw_bss_total))
           p_mw_bss = (p_mw_bss_total * distribution_factor_dch) #* np.ones(bss_num)
       
       # needed capacity:
@@ -773,7 +777,10 @@ class BSS_P_control_grid_fid(BSS_control):
       
       # Temporal parameters:    
       sunrise, sunset, timedelta_day_s, timedelta_night_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
-             
+      print('sunrise 1: '+ str(sunrise))
+      sunrise2, sunset2, timedelta_day_s2, timedelta_night_s2, timedelta_sunrise_sunset_s2 = grid.get_timedelta(t + datetime.timedelta(days = 1))       
+      print('sunrise 2: '+ str(sunrise2))
+      
       # test cases for solar excess and load excess:
       solar_excess_1, solar_excess_2, load_excess_1, load_excess_2 = \
           self.get_solar_load_excess_cbss(grid) 
@@ -798,6 +805,8 @@ class BSS_P_control_grid_fid(BSS_control):
       # power and test cases for linear charging and discharging:              
       p_mw_lin_ch = (free_capacity * 3600)/ timedelta_day_s 
       p_mw_lin_dch = -(get_e_mwh * 3600)/ timedelta_night_s
+      print('timedelta_night: '+ str(timedelta_night_s))
+      #p_mw_lin_dch = p_mw_lin_dch.fillna(0) # evtl garnicht benötigt
       case_lin_ch = (p_mw_lin_ch < p_mw_bss)
       #case_lin_dch = (p_mw_lin_dch > p_mw_bss) #nochmal testen
 
@@ -806,15 +815,23 @@ class BSS_P_control_grid_fid(BSS_control):
 
      # Adjustment of power to linear discharging:
       time = t.tz_localize(None)
+      print('time: '+ str(time))
+      print('sunset: '+ str(sunset))
       if time <= sunrise or time >= sunset:
           print('Nacht')
           if timedelta_sunrise_sunset_s < (12*3600):
+              print('Winter')
               case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0)
               p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]
+              '''
+              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0)
+              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]
+              '''
               
       # Limitation by maximum power:     neu
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
+      print('p_mw_bss:' + str(p_mw_bss))
       
       bss.p_mw = p_mw_bss
       grid.net.storage = bss

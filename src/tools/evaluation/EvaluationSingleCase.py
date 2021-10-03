@@ -39,6 +39,7 @@ class EvaluationSingleCase():
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
+    self.bss_p = self.read_data(self.output_dir+'storage_active_power_MW.csv') ###
     self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
 
@@ -273,6 +274,15 @@ class EvaluationSingleCase():
     ax.plot(soc.index, soc)
     ax.set_xlabel('Time')
     ax.set_ylabel('State of charge in %')
+    #plt.legend(grid.component_buses.index)
+    plt.show()
+
+  def plot_bss_p_mw(self):
+    bss_p = self.bss_p
+    fig, ax = plt.subplots()
+    ax.plot(bss_p.index, bss_p)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Power in MW')
     #plt.legend(grid.component_buses.index)
     plt.show()
     
