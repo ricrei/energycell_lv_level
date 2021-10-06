@@ -9,10 +9,10 @@ class BSScreator:
   def __init__(self, net_name, grid): #net_name
         self.bss_para = {}
         self.net_name = net_name
-        self.soc_max_brutto = 70
-        self.soc_min_brutto = 30
+        self.soc_max_brutto = 80
+        self.soc_min_brutto = 20
         self.soc_percent = 0
-        self.c_rate = 0.6
+        self.sizing_factor = 0.6
         self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
         self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3) 
 
@@ -22,30 +22,14 @@ class BSScreator:
   def create_bss_at_each_bus(self, grid): 
       # create bss at each bus 
 
-      '''
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
-                            max_e_mwh = max_e_mwh, \
+                            max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3), \
                             soc_percent = self.soc_percent , \
                             name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
                             type = 'bss', \
-                            max_p_mw = max_p_mw[])
-      
-      grid.net.storage['efficiency_storage'] = 0.9
-      grid.net.storage['efficiency_inverter'] = 0.96
-      grid.net.storage['efficiency_mppt'] = 0.98
-      grid.net.storage['e_mwh'] =  0 ###
-      grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100)
-      '''
-      for index in grid.component_buses.index:
-          pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
-                            p_mw = 0, \
-                            max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.c_rate, \
-                            soc_percent = self.soc_percent , \
-                            name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
-                            type = 'bss', \
-                            max_p_mw = grid.net.sgen.installed_power.loc[index] * 10**(-3))
+                            max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3))
       
       grid.net.storage['efficiency_storage'] = 0.9
       grid.net.storage['efficiency_inverter'] = 0.96
@@ -59,8 +43,8 @@ class BSScreator:
   def create_bss_at_lvbb(self, grid): 
       # create  community bss at low voltage busbar
       
-      max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * self.c_rate # [MWh]
-      max_p_mw = grid.net.sgen.installed_power.sum() * 10**(-3) # [MW] # später anpassen
+      max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) # [MWh]
+      max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) # [MW] # später anpassen
       max_p_mw = min(max_p_mw, self.p_max_feeder_mw * grid.feeder['n_feeder'])
       '''
       pp.create_storage(grid.net, 4 , p_mw=0,\
@@ -103,13 +87,11 @@ class BSScreator:
       
       i = 0
       for x in selected_buses:
-          max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * self.c_rate * hh_per_line[i]/sum(hh_per_line) # später noch
+          max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * hh_per_line[i]/sum(hh_per_line) # später noch
           max_e_mwh = np.nan_to_num(max_e_mwh)
-          max_p_mw = grid.net.sgen.installed_power.sum() * 10**(-3) * hh_per_line[i]/sum(hh_per_line) # [MW] # später anpassen
+          max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * hh_per_line[i]/sum(hh_per_line) # [MW] # später anpassen
           max_p_mw = np.nan_to_num(max_p_mw)
-          #print('max_p_mw_start: ')
-          #print(max_p_mw)
-          max_p_mw = min(max_p_mw, self.p_max_feeder_mw)
+          max_p_mw = min(max_p_mw, self.p_max_feeder_mw * 2)
           pp.create_storage(grid.net, x, \
                             p_mw = 0,\
                             max_e_mwh = max_e_mwh, \
@@ -124,7 +106,5 @@ class BSScreator:
       grid.net.storage['efficiency_inverter'] = 0.96
       grid.net.storage['efficiency_mppt'] = 0.98
       grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) # anpassen
-      #print('max_p_mw_end: ')
-      #print(grid.net.storage.max_p_mw)
       return grid
 

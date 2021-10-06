@@ -10,7 +10,7 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-11-27 00:00:00+01:00', #'2017-05-26 00:00:00+01:00'
+time_scope = { 'start_time' : '2017-11-27 00:00:00+01:00', #'2017-05-26 00:00:00+01:00' # 2017-11-27 00:00:00+01:00
                'end_time'   : '2017-11-28 00:00:00+01:00', #'2017-05-27 00:00:00+01:00'
                't_freq'     : '1H'
              }
@@ -56,7 +56,7 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 2, 0]
+scenario = [6, 1, 0]
 #scenario = [6, 2, 0]
 #######################
 
