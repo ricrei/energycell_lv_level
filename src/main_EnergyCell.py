@@ -59,7 +59,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [3, 0, 1]
+scenario = [6, 0, 1]
 #######################
 
 ############################
@@ -117,7 +117,7 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True)
+  e.eva.plot_residualload(add_curtail=True)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
