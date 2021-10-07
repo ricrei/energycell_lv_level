@@ -8,6 +8,7 @@ from pandapower.plotting.plotly import pf_res_plotly
 import pandapower.plotting as ppplt
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import seaborn as sns
 
 # Handle date time conversions between pandas and matplotlib
@@ -60,12 +61,13 @@ class EvaluationSingleCase():
     return data_shorted
 
   ### Output plots / Inputdata ###
-  def plot_residualload(self, add_curtail):
+  def plot_residualload(self, add_curtail, add_losses):
     prop_cycle = plt.rcParams['axes.prop_cycle']
     c = prop_cycle.by_key()['color']
 
     power = self.power*1000
     curtailed = self.curtailed_power*1000
+    losses = self.losses_p.sum(axis=1)*1000
 
     '''
     storage = -self.storage_p.sum(axis=1)*1000
@@ -99,6 +101,8 @@ class EvaluationSingleCase():
     if add_curtail:
       ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
       ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
+    if add_losses:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + losses, alpha=0.7, color=c[8])
 
     ax.plot(power.index, -storage_discharge-power.pv, lw=.6)
     ax.plot(power.index, storage_charge+power.ev, lw=.6)
@@ -106,14 +110,67 @@ class EvaluationSingleCase():
     ax.plot(power.index, storage_charge+power.hp+power.load+power.ev, lw=.6)
     ax.plot(storage.index, storage_charge    , lw=.6)
     ax.plot(storage.index, -storage_discharge, lw=.6)
+    if add_losses:
+      ax.plot(power.index, storage_charge+power.hp+power.load+power.ev + losses, color=c[8], lw=.6)
 
     #power = self.shorted_data(power, '1H')
     #storage = self.shorted_data(storage, '1H')
     ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')
-    #ax.set_xticklabels(['', '00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00'])
-    plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage'])
+
+    patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle load'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Household load'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         mpatches.Patch(color=c[0], alpha=0.7, label='Curtailed energy'),
+         mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
+                 ]
+
+    if add_curtail and add_losses:
+      patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle load'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Household load'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         mpatches.Patch(color=c[0], alpha=0.7, label='Curtailed energy'),
+         mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
+                 ]
+      plt.legend(handles=patch_list)
+    if not add_curtail and add_losses:
+      patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle load'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Household load'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
+                 ]
+      plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage', 'Line and trafo losses'])
+    if add_curtail and not add_losses:
+      patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle load'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Household load'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         mpatches.Patch(color=c[0], alpha=0.7, label='Curtailed energy')
+                 ]
+
+      plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage', 'Curtailed energy'])
+    if not add_curtail and not add_losses:
+      patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle load'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Household load'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Storage')
+                 ]
+
+      plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage'])
     plt.show()
 
   def plot_generation_consumption_as_heat_map(self):

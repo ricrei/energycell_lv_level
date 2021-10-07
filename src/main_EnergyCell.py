@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-26 00:00:00+01:00',
-               'end_time'   : '2017-05-27 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-01-06 00:00:00+01:00',
+               'end_time'   : '2017-01-07 00:00:00+01:00',
                't_freq'     : '1H'
              }
 
@@ -59,7 +59,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [8, 1, 1]
+scenario = [8, 2, 1]
 #######################
 
 ###########################
@@ -117,7 +117,7 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True)
+  e.eva.plot_residualload(add_curtail=True, add_losses=True)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -149,7 +149,7 @@ elif run_simulation == 1:
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,1,1]]:
+      for scenario_i in [[6,1,1], [6,0,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1

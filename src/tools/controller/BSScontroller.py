@@ -601,12 +601,13 @@ class BSS_P_control_grid_fid(BSS_control):
           p_mw_damped[solar_test] = 0
           
       elif grid.s_trafo_power < s_res: # Fall Trafoüberlastung bei Netzbezug
-          q_res_to_the_power_of_2 = s_res**2 + p_res**2
+          q_res_to_the_power_of_2 = s_res**2 - p_res**2
           if q_res_to_the_power_of_2 < grid.s_trafo_power**2: 
-              p_trafo_max = (q_res_to_the_power_of_2 - grid.s_trafo_power**2)**(.5)
+              p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
           else:
-              p_trafo_max = 0 
-          p_total_bss = p_res - p_trafo_max  
+              p_trafo_max = 0
+          p_total_bss = p_res + p_trafo_max
+
          
           # damping:
           if free_capacity.sum() == 0.0:
