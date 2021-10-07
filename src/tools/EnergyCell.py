@@ -76,11 +76,12 @@ class EnergyCell():
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
-        self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
+        self.grid = self.bss_creator.create_bss_at_lvbb(self.grid)
+        #self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
-        #self.grid.get_load_sgen_index_per_feeder()
+        self.grid.get_load_sgen_index_per_feeder()
 
         self.pv_controller = PVcontroller(grid=self.grid, control=control_parameter['PV_mod'], cos_phi=control_parameter['PV_cos_phi'])
         if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [0]):
