@@ -85,6 +85,7 @@ evaluation.plot_barplots_overall_eva(eva, m, save_fig_dir=save_fig_dir)
 
 ### Heatmaps ###
 evaluation.plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=save_fig_dir)
+evaluation.plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=save_fig_dir)
 
 ### Others ###
 print('Create Other plots')
@@ -107,6 +108,7 @@ evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n8summer'], eva
 
 evaluation.plot_curtailed_power(eva, scenario=401 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=601 , save_fig_dir=save_fig_dir)
+evaluation.plot_curtailed_power(eva, scenario=611 , save_fig_dir=save_fig_dir)
 
 '''
 evaluation.plot_hist_grid_issus_voltage(eva['s40n9summer'], eva['s40n9winter'], save_fig_dir+ 'hist_grid_issus_voltage.png')

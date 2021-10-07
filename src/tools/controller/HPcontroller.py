@@ -8,7 +8,7 @@ class HPcontroller:
   def __init__(self, grid, control='direct'):
       self.set_hp = (grid.scenario[0] in [2, 4, 5, 6, 7, 8])
       if (control=='direct' or control=='household-oriented_feed-in_damping' or control=='grid-oriented_feed-in_damping'):
-        self.control = control
+        self.control = 'direct'#control
         self.cos_phi = .95
         self.tan_phi = np.tan(np.arccos(self.cos_phi))
       else:
@@ -26,6 +26,15 @@ class HPcontroller:
 
   def get_active_power(self, grid, d, t):
       return self.P_controller.pcontrol(grid, d, t)
+
+  def get_active_power_direct_charge(self, grid, d, t):
+      return self.P_controller.pcontrol(grid, d, t)
+
+  def get_active_power_linear_charge(self, grid, d, t):
+      return self.P_controller.pcontrol(grid, d, t)
+
+  def get_active_power_trafo_charge(self, grid, d, t):
+      return self.P_controller.get_q(grid, d, t, self.tan_phi)
 
   def get_reactive_power(self, grid, d, t):
       return self.P_controller.get_q(grid, d, t, self.tan_phi)

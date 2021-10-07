@@ -8,7 +8,7 @@ import pytz
 class BSScontroller:
 
   def __init__(self, grid, control):
-      self.set_bss = (grid.scenario[0] in [6,8])
+      self.set_bss = (grid.scenario[0] in [6, 8])
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
       self.bss_num = len(grid.net.storage) #raus

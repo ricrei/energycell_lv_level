@@ -48,7 +48,7 @@ class EnergyCell():
 
         self.net_name = net_name
 
-        if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2])) or ((scenario[0] in [1, 2, 3, 4, 5, 6]) and (scenario[1] == 0)):
+        if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2, 3, 4])) or ((scenario[0] in [1, 2, 3, 4, 5, 6]) and (scenario[1] == 0)):
           self.scenario = scenario
         else:
           raise ValueError('Scenario number and controll mode do not match: ' + str(scenario))
@@ -76,8 +76,14 @@ class EnergyCell():
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
-        self.grid = self.bss_creator.create_bss_at_lvbb(self.grid)
-        #self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
+        if (self.scenario[1] in [0, 1, 2]):
+          self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
+        elif (self.scenario[0] in [6, 8]) and (self.scenario[1] in [3]):
+          self.grid = self.bss_creator.create_bss_at_lvbb(self.grid)
+        elif (self.scenario[0] in [6, 8]) and (self.scenario[1] in [4]):
+          self.grid = self.bss_creator.create_bss_at_selected_buses(self.grid)
+        else:
+          raise ValueError('Scenario number and controll mode do not match: ' + str(scenario))
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
@@ -87,12 +93,14 @@ class EnergyCell():
         if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [0]):
           self.ev_controller = EVcontroller(grid=self.grid, control='direct')
           self.hp_controller = HPcontroller(grid=self.grid, control='direct')
-          self.bss_controller = BSScontroller(grid=self.grid, control='direct') #simple
-        elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2]):
-          mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
+          self.bss_controller = BSScontroller(grid=self.grid, control='simple')
+        elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2, 3, 4]):
+          mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
           self.ev_controller = EVcontroller(grid=self.grid, control=mode[scenario[1]])
           self.hp_controller = HPcontroller(grid=self.grid, control=mode[scenario[1]])
           self.bss_controller = BSScontroller(grid=self.grid, control=mode[scenario[1]])
+        else:
+          raise ValueError('Scenario number and controll mode do not match: ' + str(scenario))
 
         self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = int(scenario[2]))
 
@@ -129,7 +137,7 @@ class EnergyCell():
         self.output_data_handler.create_output_dataframes(self.grid)
 
         # Save net to pickle
-        pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
+        #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
 
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'

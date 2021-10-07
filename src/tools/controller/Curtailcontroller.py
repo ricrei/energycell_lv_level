@@ -24,8 +24,8 @@ class Curtailment:
 
   def __init__(self, grid):
     self.trafo_power = grid.net.trafo.sn_mva.sum()
-    self.sf_pv =  .95 # safty factor
-    self.sf_load =  .95 # safty factor
+    self.sf_pv =  1#.95 # safty factor
+    self.sf_load = 1#.95 # safty factor
 
   def curtail(self,grid):
 
@@ -70,8 +70,7 @@ class Curtailment:
 
        if i_line > grid.monitored_lines.max_i_ka[grid.monitored_lines.feeder == i].values:
          #print('i_line: ' + str(i_line) + 'kA')
-         overloading = i_line/grid.monitored_lines.max_i_ka[grid.monitored_lines.feeder == i].values
-         curtail_factor_line = 1/overloading
+         curtail_factor_line = grid.monitored_lines.max_i_ka[grid.monitored_lines.feeder == i].values/i_line
          if curtail_factor_line < curtail_factor_trafo:
           if p_res_feeder <= 0:
            #print('Line PV')
@@ -84,7 +83,6 @@ class Curtailment:
            grid.net.load.p_mw[load_index] = grid.net.load.p_mw[load_index]*curtail_factor_line
            grid.net.load.q_mvar[load_index] = grid.net.load.q_mvar[load_index]*curtail_factor_line
 
-    
     # Trafo overloading
     res_s, res_p = grid.get_residualload_s_sum()
     res_p_HH = grid.get_residualload_p_per_household()
@@ -115,7 +113,7 @@ class Curtailment:
       grid.curtailed_load_power += total_load_power_mw - grid.net.load.p_mw.sum()
     else:
       grid.curtailed_load_power += 0
-    
+
     return grid
 
 class NO_Curtailment:
