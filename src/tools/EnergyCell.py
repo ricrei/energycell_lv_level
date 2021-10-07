@@ -70,13 +70,14 @@ class EnergyCell():
         self.pv_creator = PVcreator()
         self.hp_creator = HPcreator()
         self.ev_creator = EVcreator()
-        self.bss_creator = BSScreator()
+        self.bss_creator = BSScreator(self.net_name, self.grid)#net_name
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
-        self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
+        self.grid = self.bss_creator.create_bss_at_lvbb(self.grid)
+        #self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
@@ -120,8 +121,8 @@ class EnergyCell():
                                          self.output_dir_worst_case,
                                          self.output_dir,
                                          use_data_of_scenario)
-          self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
-          self.grid = self.grid_reinforce.reinforce_lines(self.grid)
+          #self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
+          #self.grid = self.grid_reinforce.reinforce_lines(self.grid)
           self.grid_reinforce.final_grid_check()
           sys.exit(0)
 

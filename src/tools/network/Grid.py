@@ -262,7 +262,7 @@ class Grid:
        self.feeder['buses_in_feeder'].loc[i]['buses'] = self.net.bus.loc[i == self.net.bus.feeder].index
        self.feeder['load_index_in_feeder'].loc[i]['load_index'] = self.net.load[self.net.load.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
        self.feeder['sgen_index_in_feeder'].loc[i]['sgen_index'] = self.net.sgen[self.net.sgen.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
-       self.feeder['storage_index_in_feeder'].loc[i]['storage_index'] = self.net.sgen[self.net.storage.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
+       self.feeder['storage_index_in_feeder'].loc[i]['storage_index'] = self.net.storage[self.net.storage.bus.isin(self.feeder['buses_in_feeder'].loc[i]['buses'])].index
 
     self.feeder['buses_in_feeder']['l_sum'] = 0
     self.feeder['buses_in_feeder']['dv_max'] = 0
@@ -275,8 +275,8 @@ class Grid:
       t = t.tz_localize(None)
       timedelta_sunrise_sunset_s = (sunset - sunrise).total_seconds()
       timedelta_day_s = abs((sunset - t).total_seconds())
-      timedelta_night_s = abs((sunrise - t).total_seconds())
-      return timedelta_day_s, timedelta_night_s, timedelta_sunrise_sunset_s
+      timedelta_night_s = abs((sunrise - t).total_seconds()) ### timedelta next day
+      return sunrise, sunset, timedelta_day_s, timedelta_night_s, timedelta_sunrise_sunset_s
 
   def create_test_net_one_load_branch(self):
     '''

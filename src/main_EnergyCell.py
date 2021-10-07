@@ -60,7 +60,7 @@ scenario = [4, 0, 1]
 scenario = [6, 0, 1]
 #######################
 
-############################
+###########################
 ### Controller parameter ###
 # PV_mod: qu, cos_phi
 # PV_cos_phi: 0.9 - 1
@@ -125,6 +125,7 @@ if run_simulation == 0:
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()
+  #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+02:00')
   #e.eva.plot_grid_2() # Baustelle
 
