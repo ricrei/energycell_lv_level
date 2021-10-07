@@ -56,7 +56,7 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 1, 0]
+scenario = [6, 2, 0]
 #scenario = [6, 2, 0]
 #######################
 
@@ -87,7 +87,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 11
+net_number = 7
 ######################
 
 #######################

@@ -13,7 +13,7 @@ class BSScontroller:
       self.busses_num = len(grid.component_buses.index)
       self.bss_num = len(grid.net.storage) #raus
 
-      if (control=='simple'):
+      if (control=='direct'): #simple
         self.control = control
       elif (control=='feed_in_damping'):
         self.control = control
@@ -27,8 +27,8 @@ class BSScontroller:
         raise ValueError('The entered BSS control is not a valid option.')
 
       if self.set_bss == True:
-        if self.control == 'simple':
-          self.P_controller = BSS_control_simple(grid, \
+        if self.control == 'direct': #simple
+          self.P_controller = BSS_control_direct(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num)
         elif self.control == 'household-oriented_feed-in_damping': # 'feed_in_damping'  #BSS_control_feed_in_damping
@@ -78,9 +78,9 @@ class BSS_control:
       self.soc_new = self.soc_start  
       pass
 
-  def pcontrol(self, grid, t):#???
-      return grid.net.storage#???
-  
+  #def pcontrol(self, grid, t):#???
+      #return grid.net.storage#???
+  '''  
   def get_active_power_direct_charge(self, grid, t):
       return grid.net.storage
   
@@ -88,6 +88,18 @@ class BSS_control:
       return grid.net.storage
   
   def get_active_power_trafo_charge(self, grid, t):
+      return grid.net.storage
+  '''  
+  def pcontrol_direct_charge(self, grid, t):
+      #BSS_control.pcontrol(self, grid, t)
+      return grid.net.storage
+  
+  def pcontrol_linear_charge(self, grid, t):
+      #BSS_control.pcontrol(self, grid, t)
+      return grid.net.storage
+
+  def pcontrol_trafo_charge(self, grid, t):
+      #BSS_control.pcontrol(self, grid, t)
       return grid.net.storage
   
   def state_of_charge(self, grid): 
@@ -261,20 +273,8 @@ class BSS_control_no_bss(BSS_control):
   def __init__(self, grid, intervall_in_seconds, busses_num):
       super().__init__(grid, intervall_in_seconds, busses_num)
 
-  def pcontrol_direct_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
-  
-  def pcontrol_linear_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
-
-  def pcontrol_trafo_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
-
-### SIMPLE ###
-class BSS_control_simple(BSS_control): 
+### DIRECT ###
+class BSS_control_direct(BSS_control): #simple
   def __init__(self, grid, intervall_in_seconds, bss_num): 
       super().__init__(grid, intervall_in_seconds, bss_num)
       
@@ -292,7 +292,7 @@ class BSS_control_simple(BSS_control):
           power change at bus due to BSS [MW]
       '''
       
-      BSS_control.pcontrol(self, grid, t) #warum wird eigtl pcontrol aufgerufen?
+      #BSS_control.pcontrol(self, grid, t) #warum wird eigtl pcontrol aufgerufen?
       bss = grid.net.storage
       
       # Residual load at each bus and resulting charging/discharging power:
@@ -304,7 +304,8 @@ class BSS_control_simple(BSS_control):
      
       # Current parameters of BSS:  
       get_soc=self.state_of_charge(grid) # state of charge [%]    
-      self.soc_new = get_soc # soc to dataframe ?      
+      self.soc_new = get_soc # soc to dataframe ?
+      bss.soc_percent = get_soc    
       get_e_mwh=self.e_mwh_start # energy content [MWh]
       bss.e_mwh = get_e_mwh
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh # difference between surrent and maximum energy content [MWh]
@@ -338,18 +339,9 @@ class BSS_control_simple(BSS_control):
       
       grid.net.storage = bss
       return grid.net.storage
-  
-  def pcontrol_linear_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
- 
-  def pcontrol_trafo_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
 
 
 ### FEED IN DAMPING ###
-  
 
 ### household-oriented_feed-in_damping ###
 class BSS_P_control_hh_fid(BSS_control):
@@ -360,14 +352,9 @@ class BSS_P_control_hh_fid(BSS_control):
       super().__init__(grid, intervall_in_seconds, bss_num)
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum()
-      
-  def pcontrol_direct_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
 
-  #def pcontrol(self, grid, t): #d?
   def pcontrol_linear_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
+      #BSS_control.pcontrol(self, grid, t)
       #BSS_P_control.pcontrol(self)
       bss = grid.net.storage
       
@@ -376,6 +363,7 @@ class BSS_P_control_hh_fid(BSS_control):
       # Current parameters of BSS:
       get_soc=self.state_of_charge(grid)
       self.soc_new = get_soc
+      bss.soc_percent = get_soc 
       get_e_mwh = self.e_mwh_start  
       bss.e_mwh = get_e_mwh
       #get_e_mwh[get_e_mwh < 0] = 0 # sollte eigtl Rechenfehler abfangen
@@ -440,10 +428,6 @@ class BSS_P_control_hh_fid(BSS_control):
       
       return grid.net.storage
 
-  def pcontrol_trafo_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
-
 
 ### grid-oriented_feed-in_damping ###
 class BSS_P_control_grid_fid(BSS_control):
@@ -451,16 +435,9 @@ class BSS_P_control_grid_fid(BSS_control):
       super().__init__(grid, intervall_in_seconds, busses_num)
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum() # oder grid.s_trafo_power ()ist das gleiche
- 
-  def pcontrol_direct_charge(self, grid, t):
-      BSS_control.pcontrol(self, grid, t)
-      return grid.net.storage
-  
     
   def pcontrol_linear_charge(self, grid, t): #pcontrol_linear_charge_cbss
       
-      BSS_control.pcontrol(self, grid, t)
-      #BSS_P_control.pcontrol(self)
       bss = grid.net.storage
       
       s_res, p_res = grid.get_residualload_s_sum()
@@ -469,6 +446,7 @@ class BSS_P_control_grid_fid(BSS_control):
       # Current parameters of BSS:             
       get_soc=self.state_of_charge(grid)
       self.soc_new = get_soc
+      bss.soc_percent = get_soc 
       get_e_mwh = self.e_mwh_start  
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh  
       
@@ -569,8 +547,6 @@ class BSS_P_control_grid_fid(BSS_control):
    
   def pcontrol_trafo_charge(self, grid, t): #pcontrol(self, grid, t): #t
   
-      BSS_control.pcontrol(self, grid, t)
-      #BSS_P_control.pcontrol(self)
       bss = grid.net.storage
 
       p_mw_bss = bss.p_mw
