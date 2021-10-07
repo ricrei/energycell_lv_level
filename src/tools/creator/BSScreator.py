@@ -11,7 +11,7 @@ class BSScreator:
         self.net_name = net_name
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
-        self.soc_percent = 0
+        self.soc_percent = 50
         self.sizing_factor = 0.6
         self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
         self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3) 
@@ -45,7 +45,7 @@ class BSScreator:
       
       max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) # [MWh]
       max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) # [MW] # später anpassen
-      max_p_mw = min(max_p_mw, self.p_max_feeder_mw * grid.feeder['n_feeder'])
+      #max_p_mw = min(max_p_mw, self.p_max_feeder_mw * grid.feeder['n_feeder'])
       '''
       pp.create_storage(grid.net, 4 , p_mw=0,\
                             max_e_mwh=max_e_mwh, soc_percent=0 ,name='bss_'+str(4), type='bss')
@@ -91,7 +91,7 @@ class BSScreator:
           max_e_mwh = np.nan_to_num(max_e_mwh)
           max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * hh_per_line[i]/sum(hh_per_line) # [MW] # später anpassen
           max_p_mw = np.nan_to_num(max_p_mw)
-          max_p_mw = min(max_p_mw, self.p_max_feeder_mw * 2)
+          #max_p_mw = min(max_p_mw, self.p_max_feeder_mw * 2)
           pp.create_storage(grid.net, x, \
                             p_mw = 0,\
                             max_e_mwh = max_e_mwh, \
