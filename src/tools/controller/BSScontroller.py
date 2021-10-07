@@ -8,7 +8,7 @@ import pytz
 class BSScontroller:
 
   def __init__(self, grid, control):
-      self.set_bss = (grid.scenario[0] in [6,8])
+      self.set_bss = (grid.scenario[0] in [6, 8])
 
       #self.intervall=pd.to_timedelta(time_scope['t_freq']) # converts offset alias to time_delta object
       #self.intervall_in_seconds = self.intervall.total_seconds() # converts time_delta object to time in seconds

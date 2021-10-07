@@ -40,7 +40,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope_summer
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -54,10 +54,12 @@ time_scope = time_scope_summer
 ## 0: HP,EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
 ## 1: Household-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
+## 3: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS at LV-Busbar
+## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [6, 0, 1]
+scenario = [3, 0, 1]
 #######################
 
 ############################
@@ -107,7 +109,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
   
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -115,12 +117,12 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True)
+  #e.eva.plot_residualload(add_curtail=True)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  e.eva.plot_grid_issus_over_time()
+  #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()

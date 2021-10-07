@@ -14,7 +14,7 @@ class EnergyManagement:
     self.scenario = scenario
     if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) & (self.scenario[1] in [0]):
       self.energy_manager = EnergyManagementTest()
-    elif (self.scenario[0] in [6, 7, 8]) & (self.scenario[1] in [1, 2]):
+    elif (self.scenario[0] in [6, 7, 8]) & (self.scenario[1] in [1, 2, 3, 4]):
       self.energy_manager = EnergyManagementTest()
     else:
       raise ValueError('No appropriate scenario to choose EnergyManagement.')
@@ -147,9 +147,11 @@ class EnergyManagementAdvanced(EnergyManagementParent):
 
     grid = grid.reset_all_power_values()
 
+    # PV
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
     grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
 
+    # HH-Load
     grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
     grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
@@ -171,7 +173,7 @@ class EnergyManagementAdvanced(EnergyManagementParent):
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
     grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_trafo_charge(grid, t)
     grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power(grid, t)
-    grid.net.storage                 = bss_controller.get_active_power_trafo_charge(grid,t)
+    grid.net.storage                 = bss_controller.get_active_power_trafo_charge(grid, t)
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
