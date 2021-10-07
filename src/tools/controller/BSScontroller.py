@@ -152,7 +152,7 @@ class BSS_control:
 
       get_soc=self.state_of_charge(grid)
       self.soc_new = get_soc
-            
+
       get_e_mwh=self.e_mwh_start
       
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh

@@ -36,7 +36,7 @@ class BSScreator:
       grid.net.storage['efficiency_mppt'] = 0.98
       grid.net.storage['e_mwh'] =  0 ###
       grid.net.storage['max_e_mwh_brutto'] = grid.net.storage.max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100)
-      
+
       return grid
       
 
