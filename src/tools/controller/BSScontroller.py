@@ -12,6 +12,7 @@ class BSScontroller:
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
       self.bss_num = len(grid.net.storage) #raus
+      self.timedelta_charging_delay = 0 #[h]
 
       if (control=='direct'): #simple
         self.control = control
@@ -30,16 +31,19 @@ class BSScontroller:
         if self.control == 'direct': #simple
           self.P_controller = BSS_control_direct(grid, \
                                                  self.intervall_in_seconds, \
-                                                 self.busses_num)
+                                                 self.busses_num, \
+                                                 self.timedelta_charging_delay)
         elif self.control == 'household-oriented_feed-in_damping': # 'feed_in_damping'  #BSS_control_feed_in_damping
           self.P_controller = BSS_P_control_hh_fid(grid, \
                                                  self.intervall_in_seconds, \
-                                                 self.busses_num)
+                                                 self.busses_num, \
+                                                 self.timedelta_charging_delay)
               
         elif self.control == 'grid-oriented_feed-in_damping':
           self.P_controller = BSS_P_control_grid_fid(grid, \
                                                  self.intervall_in_seconds, \
-                                                 self.busses_num)
+                                                 self.busses_num, \
+                                                 self.timedelta_charging_delay)
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
         elif self.control == ' ':
@@ -70,12 +74,13 @@ class BSScontroller:
  
 # Parent
 class BSS_control:
-  def __init__(self, grid, intervall_in_seconds, bss_num): 
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay): 
       self.intervall = intervall_in_seconds
       self.bss_num = len(grid.net.storage)# bss_num
       self.soc_start = grid.net.storage.soc_percent 
       self.e_mwh_start = self.soc_start/100 * grid.net.storage.max_e_mwh 
       self.soc_new = self.soc_start  
+      self.timedelta_charging_delay = timedelta_charging_delay
       pass
 
   #def pcontrol(self, grid, t):#???
@@ -268,15 +273,65 @@ class BSS_control:
                       (get_soc <= 0)
 
       return solar_excess_1, solar_excess_2, load_excess_1, load_excess_2
-
+  
+  def timestamps_linear_charge(self, grid, t, timedelta_charging_delay):
+      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
+      t_start_linear_charge = sunrise + datetime.timedelta(hours = timedelta_charging_delay)
+      t_end_linear_charge = sunset - datetime.timedelta(hours = timedelta_charging_delay)
+      return t_start_linear_charge, t_end_linear_charge
+  
+  def timedelta_linear_charge(self, grid, t, timedelta_charging_delay):    
+      time = t.tz_localize(None)
+      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
+      sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + datetime.timedelta(days = 1))  
+      t_start_linear_charge, t_end_linear_charge = self.timestamps_linear_charge(grid, t, self.timedelta_charging_delay)
+      timedelta_lin_ch_summer_s = abs((t_end_linear_charge - time).total_seconds())
+      timedelta_lin_ch_winter_s = timedelta_day_s
+      timedelta_lin_dch_day1_s = abs((sunrise_next - time).total_seconds())
+      timedelta_lin_dch_day2_s = abs((sunrise - time).total_seconds())
+      return timedelta_lin_ch_summer_s, timedelta_lin_ch_winter_s, timedelta_lin_dch_day1_s, timedelta_lin_dch_day2_s
+  
+  def linear_charge(self, grid, t, p_mw_bss, get_e_mwh, free_capacity, timedelta_charging_delay):
+      time = t.tz_localize(None)
+      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
+      sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + datetime.timedelta(days = 1))
+      t_start_linear_charge = sunrise + datetime.timedelta(hours = timedelta_charging_delay)
+      t_end_linear_charge = sunset - datetime.timedelta(hours = timedelta_charging_delay)
+      timedelta_lin_ch_summer_s = abs((t_end_linear_charge - time).total_seconds())
+      timedelta_lin_ch_winter_s = timedelta_day_s
+      timedelta_lin_dch_day1_s = abs((sunrise_next - time).total_seconds())
+      timedelta_lin_dch_day2_s = abs((sunrise - time).total_seconds())
+      
+      # Linear charging and discharging:
+      if timedelta_sunrise_sunset_s < (12*3600):  #winter
+          p_mw_lin_ch = (free_capacity * 3600)/ timedelta_lin_ch_winter_s #timedelta_day_s        
+          if time <= sunrise or time >= sunset:             
+              if (sunset - time).total_seconds() > 0: # nach Mitternacht
+                  timedelta_night_s = timedelta_lin_dch_day2_s 
+              else: #vor Mitternacht
+                  timedelta_night_s = timedelta_lin_dch_day1_s                    
+              p_mw_lin_dch = -(get_e_mwh * 3600)/ timedelta_night_s
+              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) #<0 wichtig für Rechenfehler
+              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]  
+      else: # summer
+          if time >= t_start_linear_charge and time <= t_end_linear_charge: 
+              p_mw_lin_ch = (free_capacity * 3600)/ timedelta_lin_ch_summer_s
+          else:
+              p_mw_lin_ch = np.zeros(len(grid.net.storage))
+          
+      case_lin_ch = (p_mw_lin_ch < p_mw_bss) #& (p_mw_bss > 0)# 
+      p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch] 
+      
+      return p_mw_bss
+  
 class BSS_control_no_bss(BSS_control):
   def __init__(self, grid, intervall_in_seconds, busses_num):
       super().__init__(grid, intervall_in_seconds, busses_num)
 
 ### DIRECT ###
 class BSS_control_direct(BSS_control): #simple
-  def __init__(self, grid, intervall_in_seconds, bss_num): 
-      super().__init__(grid, intervall_in_seconds, bss_num)
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay): 
+      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay)
       
   def pcontrol_direct_charge(self, grid, t): 
   #def pcontrol(self, grid, t):
@@ -347,16 +402,13 @@ class BSS_control_direct(BSS_control): #simple
 ### household-oriented_feed-in_damping ###
 class BSS_P_control_hh_fid(BSS_control):
 
-  def __init__(self, grid, intervall_in_seconds, bss_num):
-      #TODO
-      #print('Warning: BSS household-oriented_feed-in_damping control is not implemented.')
-      super().__init__(grid, intervall_in_seconds, bss_num)
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay):
+      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay)
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum()
 
   def pcontrol_linear_charge(self, grid, t):
-      #BSS_control.pcontrol(self, grid, t)
-      #BSS_P_control.pcontrol(self)
+      
       bss = grid.net.storage
       
       p_mw_bss = - self.residual_load_per_bus(grid) 
@@ -364,28 +416,15 @@ class BSS_P_control_hh_fid(BSS_control):
       # Current parameters of BSS:
       get_soc=self.state_of_charge(grid)
       self.soc_new = get_soc
-      bss.soc_percent = get_soc 
-      get_e_mwh = self.e_mwh_start  
+      get_e_mwh = self.e_mwh_start
+      bss.soc_percent = get_soc   
       bss.e_mwh = get_e_mwh
       #get_e_mwh[get_e_mwh < 0] = 0 # sollte eigtl Rechenfehler abfangen
+      #get_e_mwh = get_e_mwh.fillna(0) # alterntive für negative Werte
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
       
-      #LINEAR CHARGING:
+      #DIRECT CHARGING:
       
-      # Temporal parameters:
-      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
-      sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + datetime.timedelta(days = 1))       
-      t = t.tz_localize(None)
-      timedelta_night_d1_s = abs((sunrise_next - t).total_seconds())
-      timedelta_night_d2_s = abs((sunrise - t).total_seconds())
-
-      # power and test cases for linear charging and discharging: 
-      p_mw_lin_ch = (free_capacity * 3600)/ timedelta_day_s # hier läuft was verkehrt!!!
-      #get_e_mwh = get_e_mwh.fillna(0) # alterntive für negative Werte
-      #p_mw_lin_dch_night = -(get_e_mwh * 3600)/ timedelta_night_s # kann später raus
-      case_lin_ch = (p_mw_lin_ch < p_mw_bss) #& (p_mw_bss > 0)# 
-      #case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) # <0 wichtig für Rechenfehler # rausnehmen
-             
       # test cases for solar excess and load excess:
       solar_excess_1, solar_excess_2, load_excess_1, load_excess_2 = \
           self.get_solar_load_excess(grid)    
@@ -403,19 +442,10 @@ class BSS_P_control_hh_fid(BSS_control):
                                   / self.intervall
       p_mw_bss[load_excess_2] = 0
       
-      # Linear charging and discharging:
-      p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch]
+      #LINEAR CHARGING:
       
-      time = t.tz_localize(None)
-      if time <= sunrise or time >= sunset:
-          if timedelta_sunrise_sunset_s < (12*3600):
-              if (sunset - t).total_seconds() > 0: # nach Mitternacht
-                  timedelta_night_s = timedelta_night_d2_s
-              else: #vor Mitternacht
-                  timedelta_night_s = timedelta_night_d1_s   
-              p_mw_lin_dch = -(get_e_mwh * 3600)/ timedelta_night_s
-              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0)
-              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]                
+      p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay)
+      
      
       # Limitation by maximum power:
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
@@ -432,8 +462,8 @@ class BSS_P_control_hh_fid(BSS_control):
 
 ### grid-oriented_feed-in_damping ###
 class BSS_P_control_grid_fid(BSS_control):
-  def __init__(self, grid, intervall_in_seconds, busses_num): 
-      super().__init__(grid, intervall_in_seconds, busses_num)
+  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay): 
+      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay)
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum() # oder grid.s_trafo_power ()ist das gleiche
     
@@ -484,14 +514,21 @@ class BSS_P_control_grid_fid(BSS_control):
       needed_capacity = p_mw_bss * self.intervall / 3600 #
       
       #DIRECT CHARGING:
-      
+      '''    
       # Temporal parameters:    
-      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
-      sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + datetime.timedelta(days = 1))       
-      t = t.tz_localize(None)
-      timedelta_night_d1_s = abs((sunrise_next - t).total_seconds())
-      timedelta_night_d2_s = abs((sunrise - t).total_seconds())
-      
+      sunrise, sunset, \
+          timedelta_day_s, timedelta_sunrise_sunset_s \
+              = grid.get_timedelta(t) 
+      sunrise_next, sunset_next,\
+          timedelta_day_next_s, timedelta_sunrise_sunset_next_s \
+              = grid.get_timedelta(t + datetime.timedelta(days = 1))             
+      t_start_linear_charge, t_end_linear_charge \
+          = self.timestamps_linear_charge(grid, t, self.timedelta_charging_delay)
+      timedelta_lin_ch_summer_s, timedelta_lin_ch_winter_s, \
+          timedelta_lin_dch_day1_s, timedelta_lin_dch_day2_s \
+              = self.timedelta_linear_charge(grid, t, self.timedelta_charging_delay)
+      time = t.tz_localize(None)
+      '''
       # test cases for solar excess and load excess:
       solar_excess_1, solar_excess_2, load_excess_1, load_excess_2 = \
           self.get_solar_load_excess_cbss(grid) 
@@ -513,28 +550,49 @@ class BSS_P_control_grid_fid(BSS_control):
       
       #LINEAR CHARGING AND DISCHARGING:
           
-      # power and test cases for linear charging and discharging:              
-      p_mw_lin_ch = (free_capacity * 3600)/ timedelta_day_s 
-      #p_mw_lin_dch = p_mw_lin_dch.fillna(0) # evtl garnicht benötigt
-      case_lin_ch = (p_mw_lin_ch < p_mw_bss)
-      #case_lin_dch = (p_mw_lin_dch > p_mw_bss) #nochmal testen
-
-      # Adjustment of power to linear charging:
-      p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch]
-
-     # Adjustment of power to linear discharging:
-      time = t.tz_localize(None)
-      if time <= sunrise or time >= sunset:
-          if timedelta_sunrise_sunset_s < (12*3600):
-              if (sunset - t).total_seconds() > 0: # nach Mitternacht
-                  timedelta_night_s = timedelta_night_d2_s
+      # Temporal parameters:    
+      sunrise, sunset, \
+          timedelta_day_s, timedelta_sunrise_sunset_s \
+              = grid.get_timedelta(t) 
+      sunrise_next, sunset_next,\
+          timedelta_day_next_s, timedelta_sunrise_sunset_next_s \
+              = grid.get_timedelta(t + datetime.timedelta(days = 1))             
+      t_start_linear_charge, t_end_linear_charge \
+          = self.timestamps_linear_charge(grid, t, self.timedelta_charging_delay)
+      timedelta_lin_ch_summer_s, timedelta_lin_ch_winter_s, \
+          timedelta_lin_dch_day1_s, timedelta_lin_dch_day2_s \
+              = self.timedelta_linear_charge(grid, t, self.timedelta_charging_delay)
+      time = t.tz_localize(None)    
+          
+      print('test')    
+      # Linear charging and discharging:
+      if timedelta_sunrise_sunset_s < (12*3600):  #winter
+          p_mw_lin_ch = (free_capacity * 3600)/ timedelta_lin_ch_winter_s #timedelta_day_s        
+          if time <= sunrise or time >= sunset:             
+              if (sunset - time).total_seconds() > 0: # nach Mitternacht
+                  timedelta_night_s = timedelta_lin_dch_day2_s 
               else: #vor Mitternacht
-                  timedelta_night_s = timedelta_night_d1_s   
+                  timedelta_night_s = timedelta_lin_dch_day1_s                    
               p_mw_lin_dch = -(get_e_mwh * 3600)/ timedelta_night_s
-
-              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0)
-              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]
+              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) #<0 wichtig für Rechenfehler
+              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]  
+      else:  
+          print('summer')
+          if time >= t_start_linear_charge and time <= t_end_linear_charge: 
+              p_mw_lin_ch = (free_capacity * 3600)/ timedelta_lin_ch_summer_s
               
+              #print('p_mw_lin_ch: ' + str(p_mw_lin_ch))
+          else:
+              p_mw_lin_ch = np.zeros(len(bss))
+              #print('p_mw_lin_ch_else: ' + str(p_mw_lin_ch))
+          
+      case_lin_ch = (p_mw_lin_ch < p_mw_bss) #& (p_mw_bss > 0)# 
+      p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch]       
+      '''    
+      # power and test cases for linear charging and discharging:                 
+      #p_mw_lin_dch = p_mw_lin_dch.fillna(0) # evtl garnicht benötigt
+      #case_lin_dch = (p_mw_lin_dch > p_mw_bss) #nochmal testen  
+      '''       
       # Limitation by maximum power:     neu
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
@@ -602,10 +660,13 @@ class BSS_P_control_grid_fid(BSS_control):
           
       elif grid.s_trafo_power < s_res: # Fall Trafoüberlastung bei Netzbezug
           q_res_to_the_power_of_2 = s_res**2 - p_res**2
+          print('q_res_to_the_power_of_2: '+ str(q_res_to_the_power_of_2))
           if q_res_to_the_power_of_2 < grid.s_trafo_power**2: 
               p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
           else:
               p_trafo_max = 0
+              
+          print('p_trafo_max: '+ str(p_trafo_max))
           p_total_bss = p_res + p_trafo_max
 
          

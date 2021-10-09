@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+01:00',
-               'end_time'   : '2017-01-07 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', # 2017-01-06 00:00:00+01:00
+               'end_time'   : '2017-05-27 00:00:00+02:00',
                't_freq'     : '1H'
              }
 
@@ -58,8 +58,8 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [5, 0, 0]
-scenario = [8, 2, 1]
+scenario = [6, 1, 1]
+#scenario = [8, 1, 1]
 #######################
 
 ###########################
@@ -126,7 +126,7 @@ if run_simulation == 0:
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
-  #e.eva.plot_soc()
+  e.eva.plot_soc()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+02:00')
   #e.eva.plot_grid_2() # Baustelle
@@ -148,8 +148,8 @@ elif run_simulation == 1:
 
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer]:
-    for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,1,1], [6,0,1]]:
+    for net_name_i in [8]: # [7, 8, 9, 10, 11]
+      for scenario_i in [[6,0,0]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
