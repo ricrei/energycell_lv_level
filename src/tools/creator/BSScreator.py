@@ -31,6 +31,7 @@ class BSScreator:
                             type = 'bss', \
                             max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3))
       
+      grid.net.storage['efficiency_charge'] = 0.949 # für jetzt  
       grid.net.storage['efficiency_storage'] = 0.9
       grid.net.storage['efficiency_inverter'] = 0.96
       grid.net.storage['efficiency_mppt'] = 0.98
