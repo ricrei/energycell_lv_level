@@ -9,6 +9,9 @@ class BSScreator:
   def __init__(self, net_name, grid): #net_name
         self.bss_para = {}
         self.net_name = net_name
+        self.efficiency_AC2Bat = 0.952 # für jetzt
+        self.efficiency_Bat2AC = 0.949 # für jetzt
+        self.efficiency_storage = 0.91
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
         self.soc_percent = 50
@@ -31,10 +34,11 @@ class BSScreator:
                             type = 'bss', \
                             max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3))
       
-      grid.net.storage['efficiency_charge'] = 0.949 # für jetzt  
-      grid.net.storage['efficiency_storage'] = 0.9
-      grid.net.storage['efficiency_inverter'] = 0.96
-      grid.net.storage['efficiency_mppt'] = 0.98
+      grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
+      grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC
+      grid.net.storage['efficiency_storage'] = self.efficiency_storage
+      #grid.net.storage['efficiency_inverter'] = 0.96
+      #grid.net.storage['efficiency_mppt'] = 0.98
       grid.net.storage['e_mwh'] =  0 ###
       grid.net.storage['max_e_mwh_brutto'] = grid.net.storage.max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100)
 

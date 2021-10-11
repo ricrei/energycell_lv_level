@@ -21,6 +21,19 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                   }
 
 # timescopes to examine
+time_scope_winter_soc = { 'start_time' : '2017-01-04 00:00:00+01:00',
+                      'end_time'   : '2017-01-07 00:00:00+01:00',
+                      't_freq'     : '1T',
+                      'name'       : 'winter'
+                    }
+
+
+time_scope_summer_soc = { 'start_time' : '2017-05-26 00:00:00+02:00',
+                      'end_time'   : '2017-05-29 00:00:00+02:00',
+                      't_freq'     : '1T',
+                      'name'       : 'summer'
+                    }
+
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
@@ -58,7 +71,7 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 1, 1]
+scenario = [6, 0, 1]
 #scenario = [8, 1, 1]
 #######################
 
@@ -89,13 +102,13 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 8
+net_number = 10
 ######################
 
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 0
+run_simulation = 11
 #######################
 
 #############################
@@ -148,9 +161,9 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer]:
-    for net_name_i in [8]: # [7, 8, 9, 10, 11]
-      for scenario_i in [[6,0,0]]:
+  for time_scope_i in [time_scope_winter_soc, time_scope_summer_soc]:
+    for net_name_i in [7, 8, 9, 10, 11]: # [7, 8, 9, 10, 11]
+      for scenario_i in [ [6,0,0],[6,0,1],[6,1,0],[6,1,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -162,12 +175,19 @@ elif run_simulation == 1:
         #------------
         e.initiate_evaluation()
         e.eva.calculate_relevant_outputdata()
-        #e.eva.calculate_net_problems()
-        #e.eva.plot_residualload()
+        e.eva.calculate_net_problems() # 
+        #e.eva.plot_soc()
+        #e.eva.plot_bss_e_mwh()
+        #e.eva.plot_bss_p_mw()
+        #e.eva.plot_residualload() 
+        e.eva.plot_residualload(add_curtail=True, add_losses=True)#
         #-------------
 
 
 elif run_simulation == 11:
+  scenarios = [400, 401
+  ]
+  ''' 
   scenarios = [
   100,
   200,
@@ -178,6 +198,7 @@ elif run_simulation == 11:
   710, 711, 720, 721,
   810, 811, 820, 821,
   ]
+  '''
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,

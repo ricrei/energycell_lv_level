@@ -13,6 +13,8 @@ class BSScontroller:
       self.busses_num = len(grid.component_buses.index)
       self.bss_num = len(grid.net.storage) #raus
       self.timedelta_charging_delay = 0 #[h]
+      self.efficiency_charge = grid.net.storage.efficiency_AC2Bat * grid.net.storage.efficiency_storage**0.5
+      self.efficiency_discharge = grid.net.storage.efficiency_Bat2AC * grid.net.storage.efficiency_storage**0.5
 
       if (control=='direct'): #simple
         self.control = control
@@ -32,12 +34,16 @@ class BSScontroller:
           self.P_controller = BSS_control_direct(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
-                                                 self.timedelta_charging_delay)
+                                                 self.timedelta_charging_delay, \
+                                                 self.efficiency_charge, \
+                                                 self.efficiency_discharge)
         elif self.control == 'household-oriented_feed-in_damping': # 'feed_in_damping'  #BSS_control_feed_in_damping
           self.P_controller = BSS_P_control_hh_fid(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
-                                                 self.timedelta_charging_delay)
+                                                 self.timedelta_charging_delay, \
+                                                 self.efficiency_charge, \
+                                                 self.efficiency_discharge)
               
         elif self.control == 'grid-oriented_feed-in_damping':
           self.P_controller = BSS_P_control_grid_fid(grid, \
@@ -49,7 +55,7 @@ class BSScontroller:
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
       else:
-        self.P_controller = BSS_control_no_bss(grid, self.intervall_in_seconds, self.busses_num)
+        self.P_controller = BSS_control_no_bss(grid, self.intervall_in_seconds, self.busses_num, self.timedelta_charging_delay, self.efficiency_charge, self.efficiency_discharge)
   
   def get_active_power_direct_charge(self, grid, t):
       return self.P_controller.pcontrol_direct_charge(grid, t) 
@@ -71,13 +77,15 @@ class BSScontroller:
  
 # Parent
 class BSS_control:
-  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay): 
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge): 
       self.intervall = intervall_in_seconds
       self.bss_num = len(grid.net.storage)# bss_num
       self.soc_start = grid.net.storage.soc_percent 
       self.e_mwh_start = self.soc_start/100 * grid.net.storage.max_e_mwh 
       self.soc_new = self.soc_start  
       self.timedelta_charging_delay = timedelta_charging_delay
+      self.efficiency_charge = efficiency_charge
+      self.efficiency_discharge = efficiency_discharge
       pass
 
   def pcontrol_direct_charge(self, grid, t):
@@ -126,12 +134,15 @@ class BSS_control:
       p_mw_dch = np.copy(p_mw_bss)
       p_neg = np.less(p_mw_dch,np.zeros(self.bss_num))
       case_p_pos = np.greater(p_mw_dch,np.zeros(self.bss_num))
-      
+      p_mw_dch[p_neg] = p_mw_dch[p_neg] \
+                          / self.efficiency_discharge[p_neg]
+      p_mw_dch[case_p_pos] = p_mw_dch[case_p_pos] * self.efficiency_charge[case_p_pos]
+      '''
       p_mw_dch[p_neg] = p_mw_dch[p_neg] \
                           / (grid.net.storage.efficiency_storage[p_neg] \
                              * grid.net.storage.efficiency_inverter[p_neg])
       p_mw_dch[case_p_pos] = p_mw_dch[case_p_pos] * grid.net.storage.efficiency_charge[case_p_pos]
-      
+      '''
       self.e_mwh_start = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh] nicht intervall in seconds?
       return e_mwh
 
@@ -172,7 +183,7 @@ class BSS_control:
   def direct_charge(self, grid, p_mw_bss): #p_mw_bss
 
       #p_mw_bss = -grid.get_residualload_p_per_household() # evtl ersetzen
-      efficiency_discharge = grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter
+      #efficiency_discharge = grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter
 
       get_soc=self.state_of_charge(grid)
       self.soc_new = get_soc
@@ -187,14 +198,16 @@ class BSS_control:
 
       solar_excess_1 = (p_mw_bss > 0) & \
                        (get_soc < 100) & \
-                       (free_capacity < needed_capacity * grid.net.storage.efficiency_charge) #* grid.net.storage.efficiency_charge
+                       (free_capacity < needed_capacity * self.efficiency_charge)
+                       #(free_capacity < needed_capacity * grid.net.storage.efficiency_charge) #* grid.net.storage.efficiency_charge
 
       solar_excess_2 = (p_mw_bss > 0) & \
                        (get_soc >= 100)
 
       load_excess_1 = (p_mw_bss < 0) & \
                       (get_soc > 0) & \
-                      (get_e_mwh < -needed_capacity / efficiency_discharge)
+                      (get_e_mwh < -needed_capacity / self.efficiency_discharge)
+                      #(get_e_mwh < -needed_capacity / efficiency_discharge)
                       #(get_e_mwh < -needed_capacity)
                       
       load_excess_2 = (p_mw_bss < 0) & \
@@ -203,12 +216,13 @@ class BSS_control:
       # Excess in solar power:
       p_mw_bss[solar_excess_1] = free_capacity[solar_excess_1] * 3600 \
                                   / (self.intervall \
-                                     * grid.net.storage.efficiency_charge[solar_excess_1])
+                                     * self.efficiency_charge[solar_excess_1])
+                                     #* grid.net.storage.efficiency_charge[solar_excess_1])
       p_mw_bss[solar_excess_2] = 0 
       
       # Excess in load: # später soc_min integrieren statt zeros ?
       p_mw_bss[load_excess_1] = - get_e_mwh[load_excess_1] \
-                                  * efficiency_discharge[load_excess_1]  \
+                                  * self.efficiency_discharge[load_excess_1]  \
                                   * 3600 \
                                   / self.intervall
       p_mw_bss[load_excess_2] = 0
@@ -325,6 +339,9 @@ class BSS_control:
       return timedelta_lin_ch_summer_s, timedelta_lin_ch_winter_s, timedelta_lin_dch_day1_s, timedelta_lin_dch_day2_s
   '''
   def linear_charge(self, grid, t, p_mw_bss, get_e_mwh, free_capacity, timedelta_charging_delay):
+      
+      #efficiency_discharge = grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter
+      
       time = t.tz_localize(None)
       sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
       sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + datetime.timedelta(days = 1))
@@ -337,18 +354,20 @@ class BSS_control:
       
       # Linear charging and discharging:
       if timedelta_sunrise_sunset_s < (12*3600):  #winter
-          p_mw_lin_ch = (free_capacity * 3600)/ timedelta_lin_ch_winter_s #timedelta_day_s        
+          p_mw_lin_ch = (free_capacity * 3600)/ (timedelta_lin_ch_winter_s * self.efficiency_charge) #timedelta_day_s # efficiency     
           if time <= sunrise or time >= sunset:             
               if (sunset - time).total_seconds() > 0: # nach Mitternacht
                   timedelta_night_s = timedelta_lin_dch_day2_s 
               else: #vor Mitternacht
                   timedelta_night_s = timedelta_lin_dch_day1_s                    
-              p_mw_lin_dch = -(get_e_mwh * 3600)/ timedelta_night_s
+              #p_mw_lin_dch = -(get_e_mwh * 3600)/ timedelta_night_s
+              p_mw_lin_dch = -(get_e_mwh * self.efficiency_discharge * 3600)/ timedelta_night_s
               case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) #<0 wichtig für Rechenfehler
               p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]  
       else: # summer
           if time >= t_start_linear_charge and time <= t_end_linear_charge: 
-              p_mw_lin_ch = (free_capacity * 3600)/ timedelta_lin_ch_summer_s
+              #p_mw_lin_ch = (free_capacity * 3600)/ timedelta_lin_ch_summer_s
+              p_mw_lin_ch = (free_capacity * 3600)/ (timedelta_lin_ch_summer_s * self.efficiency_charge)
           else:
               p_mw_lin_ch = np.zeros(len(grid.net.storage))
           
@@ -358,13 +377,13 @@ class BSS_control:
       return p_mw_bss
   
 class BSS_control_no_bss(BSS_control):
-  def __init__(self, grid, intervall_in_seconds, busses_num):
-      super().__init__(grid, intervall_in_seconds, busses_num)
+  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge):
+      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge)
 
 ### DIRECT ###
 class BSS_control_direct(BSS_control): #simple
-  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay): 
-      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay)
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge): 
+      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge)
       
   def pcontrol_direct_charge(self, grid, t): 
   #def pcontrol(self, grid, t):
@@ -419,8 +438,8 @@ class BSS_control_direct(BSS_control): #simple
 ### household-oriented_feed-in_damping ###
 class BSS_P_control_hh_fid(BSS_control):
 
-  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay):
-      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay)
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge):
+      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge)
 
   def pcontrol_linear_charge(self, grid, t):
       
