@@ -11,7 +11,7 @@ import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-scenarios = [600]
+scenarios = [600,601]
 days = 2
 timestep_min = 1
 winter_week = '2017-01-02_2017-01-11_1T'
@@ -63,10 +63,10 @@ for scenario_i in scenarios:
                         data_shortened.to_csv('../output-files/shortened_data/' \
                                       + str(scenario_i) +'/' + net_i + '/' \
                                       + week_shortened_i + '/' + str(output_data_i), \
-                                          sep=';', index = False)
+                                          sep=',', index = False)
                     elif week_shortened_i == summer_week_shortened and week_i == summer_week:
                         data_shortened.to_csv('../output-files/shortened_data/' \
                                       + str(scenario_i) +'/' + net_i + '/' \
                                       + week_shortened_i + '/' + str(output_data_i), \
-                                          sep=';', index = False)
+                                          sep=',', index = False)
 

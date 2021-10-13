@@ -34,27 +34,27 @@ time_scope_summer_soc = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'name'       : 'summer'
                     }
 
-time_scope_winter = { 'start_time' : '2017-01-02 00:00:00+01:00',
+time_scope_winter_with_extra_time = { 'start_time' : '2017-01-02 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
-time_scope_summer = { 'start_time' : '2017-05-24 00:00:00+02:00',
+time_scope_summer_with_extra_time = { 'start_time' : '2017-05-24 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'summer'
                     }
 
-time_scope_winter_original = { 'start_time' : '2017-01-04 00:00:00+01:00',
+time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
-time_scope_summer_original = { 'start_time' : '2017-05-26 00:00:00+02:00',
+time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'summer'
@@ -198,7 +198,7 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [600, 601, 610, 611
+  scenarios = [400, 401
   ]
   ''' 
   scenarios = [
@@ -215,7 +215,7 @@ elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,
-                                 time_scopes = [time_scope_winter_soc, time_scope_summer_soc])
+                                 time_scopes = [time_scope_winter, time_scope_summer])
 
   print('Done')
 ###############################

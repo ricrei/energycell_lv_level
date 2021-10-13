@@ -1,0 +1,52 @@
+HOW TO SHORTEN DATA (mit shorten_data.py)
+
+1) Unter output-files neuen Ordner 'shortened_data' anlegen. Hier werden die gekürzten Dateien abgelegt.
+
+2) Im neuen Ornder muss die gleiche Ordner-Struktur aufgebaut werden, wie in output_files:
+	- Pro Szenario ein Ordner (Bsp.: 
+		'600')
+
+		- Innerhalb jedes Szenarios ein Ordner für jedes Netz (Bsp.:
+			'simbench_rural_1'
+			'simbench_rural_2'
+			'simbench_rural_3'
+			'simbench_suburb_4'
+			'simbench_suburb_5')
+
+			- Innerhalb jedes Netz-Ordners ein Ornder pro untersuchtem Zeitraum (Bsp.:
+				'2017-05-24_2017-06-02_1T')
+
+3) shorten_data.py öffnen und Angaben zu den zu kürzenden Szenarien (scenarios), zur Anzahl der am Anfang der 
+   Datei wegzuschneidenden Tage (days), dem in der Simulation gewählten Zeitschritt (timestep_min) und dem 
+   bisherigen und angestrebten Zeitraum anpassen (Bsp.:
+	scenarios = [600,601]
+	days = 2
+	timestep_min = 1
+	winter_week = '2017-01-02_2017-01-11_1T'
+	summer_week = '2017-05-24_2017-06-02_1T'
+	winter_week_shortened = '2017-01-04_2017-01-11_1T'
+	summer_week_shortened = '2017-05-26_2017-06-02_1T')
+
+4) Skript durchlaufen lassen --> Die gekürten Dateien befinden sich nun im Odner 'shortened_data'
+
+
+WEITERE AUSWERTUNG MIT main_EVA.py
+
+5) main_EnergyCell.py:
+   Um run_simulation == 11 mit den gekürzten Daten ausführen zu können, müssen die Pfade in 
+   EvaluationAllCases.py und main_EVA.py angepasst werden.
+   ...
+
+6) '000_evaluation_dicts_shortened_data'
+   --> leere Datei mit erster pickle-file Benennung anlegen (Bsp.: s400n7summer.pbz2)
+
+7) Für Szenarien-vergleichende Graphiken, müssen auch die pickle-files der Daten in 
+   000_evaluation_dicts_shortened_data ebgelegt werden, welche ursprünglich nicht gekürzt wurden,
+	
+
+
+	
+			
+
+
+'000_evaluation_dicts_shortened_data'
