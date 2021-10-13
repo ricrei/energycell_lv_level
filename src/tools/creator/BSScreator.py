@@ -11,7 +11,7 @@ class BSScreator:
         self.net_name = net_name
         self.efficiency_AC2Bat = 0.952 # für jetzt
         self.efficiency_Bat2AC = 0.949 # für jetzt
-        self.efficiency_storage = 0.91
+        self.efficiency_storage = 0.915
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
         self.soc_percent = 50

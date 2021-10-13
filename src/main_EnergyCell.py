@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', # 2017-01-06 00:00:00+01:00
-               'end_time'   : '2017-05-27 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-05-26 12:00:00+02:00', # 2017-01-06 00:00:00+01:00
+               'end_time'   : '2017-05-28 12:00:00+02:00',
                't_freq'     : '1H'
              }
 
@@ -34,14 +34,27 @@ time_scope_summer_soc = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'name'       : 'summer'
                     }
 
-time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
+time_scope_winter = { 'start_time' : '2017-01-02 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
-time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
+time_scope_summer = { 'start_time' : '2017-05-24 00:00:00+02:00',
+                      'end_time'   : '2017-06-02 00:00:00+02:00',
+                      't_freq'     : '1T',
+                      'name'       : 'summer'
+                    }
+
+time_scope_winter_original = { 'start_time' : '2017-01-04 00:00:00+01:00',
+                      'end_time'   : '2017-01-11 00:00:00+01:00',
+                      't_freq'     : '1T',
+                      'name'       : 'winter'
+                    }
+
+
+time_scope_summer_original = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'summer'
@@ -102,7 +115,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 10
+net_number = 7
 ######################
 
 #######################
@@ -161,9 +174,9 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter_soc, time_scope_summer_soc]:
+  for time_scope_i in [time_scope_winter, time_scope_summer]:
     for net_name_i in [7, 8, 9, 10, 11]: # [7, 8, 9, 10, 11]
-      for scenario_i in [ [6,0,0],[6,0,1],[6,1,0],[6,1,1]]:
+      for scenario_i in [ [6,0,0],[6,0,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -176,7 +189,7 @@ elif run_simulation == 1:
         e.initiate_evaluation()
         e.eva.calculate_relevant_outputdata()
         e.eva.calculate_net_problems() # 
-        #e.eva.plot_soc()
+        e.eva.plot_soc()
         #e.eva.plot_bss_e_mwh()
         #e.eva.plot_bss_p_mw()
         #e.eva.plot_residualload() 
@@ -185,7 +198,7 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [400, 401
+  scenarios = [600, 601, 610, 611
   ]
   ''' 
   scenarios = [
@@ -202,7 +215,7 @@ elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,
-                                 time_scopes = [time_scope_winter, time_scope_summer])
+                                 time_scopes = [time_scope_winter_soc, time_scope_summer_soc])
 
   print('Done')
 ###############################

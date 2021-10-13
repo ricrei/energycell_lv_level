@@ -90,8 +90,8 @@ evaluation.plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=save_fig_
 ### Others ###
 print('Create Other plots')
 
-evaluation.plot_residualload_subplot_overall_eva(eva['s400n11summer']['power'], eva['s400n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s400n11.png')
-evaluation.plot_residualload_subplot_overall_eva(eva['s401n11summer']['power'], eva['s401n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s401n11.png')
+evaluation.plot_residualload_subplot_overall_eva(eva['s600n11summer']['power'], eva['s600n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n11.png')
+evaluation.plot_residualload_subplot_overall_eva(eva['s601n11summer']['power'], eva['s601n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s601n11.png')
 
 evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s400n11summer']['power'], eva['s400n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s400n11_detailed.png')
 evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s401n11summer']['power'], eva['s401n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s401n11_detailed.png')

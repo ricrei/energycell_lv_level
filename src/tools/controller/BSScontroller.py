@@ -12,7 +12,7 @@ class BSScontroller:
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
       self.bss_num = len(grid.net.storage) #raus
-      self.timedelta_charging_delay = 0 #[h]
+      self.timedelta_charging_delay = 2 #[h]
       self.efficiency_charge = grid.net.storage.efficiency_AC2Bat * grid.net.storage.efficiency_storage**0.5
       self.efficiency_discharge = grid.net.storage.efficiency_Bat2AC * grid.net.storage.efficiency_storage**0.5
 
