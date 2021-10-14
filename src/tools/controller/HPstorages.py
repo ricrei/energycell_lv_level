@@ -24,10 +24,16 @@ class HPstorages():
             })
 
         # Defines in kW
-        self.hp_stor_para = {'el_capacity': [10.0, 5.0, 3.0],
-                             'start_level': [5.0, 3.0, 1.0],
-                             'max_flow': [2, 1, 0.5],
-                             'hp_el_capacity_kwh': 10.0,
+        #self.hp_stor_para = {'el_capacity': [10.0, 5.0, 3.0],
+        #                     'start_level': [5.0, 3.0, 1.0],
+        #                     'max_flow': [2, 1, 0.5],
+        #                     'hp_el_capacity_kwh': 20.0,
+        #                     'hp_start_soc': 0.5,
+        #                     'hp_self_dis_per_day': 0.1,
+        #                     'hp_max_p_kw': 10,
+        #                     'hp_cop': 4}
+
+        self.hp_stor_para = {'hp_el_capacity_kwh': 10.0,
                              'hp_start_soc': 0.5,
                              'hp_self_dis_per_day': 0.1,
                              'hp_max_p_kw': 10,
