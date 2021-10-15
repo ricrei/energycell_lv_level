@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-26 12:00:00+02:00', # 2017-01-06 00:00:00+01:00
-               'end_time'   : '2017-05-28 12:00:00+02:00',
+time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', # 2017-01-06 00:00:00+01:00
+               'end_time'   : '2017-05-27 00:00:00+02:00',
                't_freq'     : '1H'
              }
 
@@ -84,7 +84,7 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 0, 1]
+scenario = [6, 2, 1]
 #scenario = [8, 1, 1]
 #######################
 
@@ -115,13 +115,13 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 7
+net_number = 8
 ######################
 
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 11
+run_simulation = 0
 #######################
 
 #############################
@@ -129,6 +129,7 @@ run_simulation = 11
 if run_simulation == 0:
 
   # Initialize EnergyCell
+  
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
@@ -141,7 +142,7 @@ if run_simulation == 0:
   e.initiate_evaluation()
 
   e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  e.eva.calculate_net_problems()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=True)
   #e.eva.plot_ev_soc()
@@ -174,9 +175,9 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer]:
+  for time_scope_i in [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time]:
     for net_name_i in [7, 8, 9, 10, 11]: # [7, 8, 9, 10, 11]
-      for scenario_i in [ [6,0,0],[6,0,1]]:
+      for scenario_i in [ [6,2,0],[6,2,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -198,7 +199,7 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [400, 401
+  scenarios = [620, 621
   ]
   ''' 
   scenarios = [

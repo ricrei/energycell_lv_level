@@ -181,19 +181,19 @@ def plot_residualload_subplot_overall_eva(power_summer, power_winter, save_fig_d
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight')
-     
-def plot_residualload_subplot_overall_eva_neu(power_summer, power_winter, save_fig_dir=None):
+'''     
+def plot_residualload_subplot_overall_eva_neu(power_summer, power_winter, save_fig_dir=None):#Tabea
     prop_cycle = plt.rcParams['axes.prop_cycle']
     c = prop_cycle.by_key()['color']
 
     power_summer = -power_summer*1
     power_winter = -power_winter*1
     power = [power_summer, power_winter]
-    '''
-    power = self.power*1000
-    curtailed = self.curtailed_power*1000
-    losses = self.losses_p.sum(axis=1)*1000
-    '''
+    
+    #power = self.power*1000
+    #curtailed = self.curtailed_power*1000
+    #losses = self.losses_p.sum(axis=1)*1000
+   
 
   fig, ax = plt.subplots(1, 2, figsize=(10,5), sharey=True,  gridspec_kw={'wspace': .05})
   for i in [0,1]:
@@ -218,8 +218,9 @@ def plot_residualload_subplot_overall_eva_neu(power_summer, power_winter, save_f
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight')
-     
-def plot_residualload_neu(self, add_curtail, add_losses):
+'''
+'''     
+def plot_residualload_neu(self, add_curtail, add_losses): #Tabea
     prop_cycle = plt.rcParams['axes.prop_cycle']
     c = prop_cycle.by_key()['color']
 
@@ -319,7 +320,7 @@ def plot_residualload_neu(self, add_curtail, add_losses):
 
       plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage'])
     plt.show()
-
+'''
 
 def plot_residualload_subplot_overall_eva_timeslot(power_summer, power_winter, save_fig_dir=None):
 

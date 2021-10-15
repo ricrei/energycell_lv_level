@@ -49,7 +49,9 @@ class BSScontroller:
           self.P_controller = BSS_P_control_grid_fid(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
-                                                 self.timedelta_charging_delay)
+                                                 self.timedelta_charging_delay,\
+                                                 self.efficiency_charge, \
+                                                 self.efficiency_discharge)
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
         elif self.control == ' ':
@@ -196,6 +198,80 @@ class BSS_control:
       #needed_capacity = p_mw_bss * grid.net.storage.efficiency_charge * self.intervall / 3600
      # needed_capacity = (p_mw_bss/(grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter)) * self.intervall / 3600
 
+      solar_excess_1 = (p_mw_bss > 0) & \
+                       (get_soc < 100) & \
+                       (free_capacity < needed_capacity * self.efficiency_charge)
+                       #(free_capacity < needed_capacity * grid.net.storage.efficiency_charge) #* grid.net.storage.efficiency_charge
+
+      solar_excess_2 = (p_mw_bss > 0) & \
+                       (get_soc >= 100)
+
+      load_excess_1 = (p_mw_bss < 0) & \
+                      (get_soc > 0) & \
+                      (get_e_mwh < -needed_capacity / self.efficiency_discharge)
+                      #(get_e_mwh < -needed_capacity / efficiency_discharge)
+                      #(get_e_mwh < -needed_capacity)
+                      
+      load_excess_2 = (p_mw_bss < 0) & \
+                      (get_soc <= 0)
+                      
+      # Excess in solar power:
+      p_mw_bss[solar_excess_1] = free_capacity[solar_excess_1] * 3600 \
+                                  / (self.intervall \
+                                     * self.efficiency_charge[solar_excess_1])
+                                     #* grid.net.storage.efficiency_charge[solar_excess_1])
+      p_mw_bss[solar_excess_2] = 0 
+      
+      # Excess in load: # später soc_min integrieren statt zeros ?
+      p_mw_bss[load_excess_1] = - get_e_mwh[load_excess_1] \
+                                  * self.efficiency_discharge[load_excess_1]  \
+                                  * 3600 \
+                                  / self.intervall
+      p_mw_bss[load_excess_2] = 0
+
+      return p_mw_bss
+  
+  def direct_charge_cbss(self, grid, p_mw_bss): #p_mw_bss
+
+      #p_mw_bss = -grid.get_residualload_p_per_household() # evtl ersetzen
+      #efficiency_discharge = grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter
+      s_res, p_res = grid.get_residualload_s_sum()
+      p_mw_bss_total = - p_res
+      
+      get_soc=self.state_of_charge(grid)
+      self.soc_new = get_soc
+
+      get_e_mwh=self.e_mwh_start
+      
+      free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
+
+      #needed_capacity = p_mw_bss * self.intervall / 3600 #bisher
+      #needed_capacity = p_mw_bss * grid.net.storage.efficiency_charge * self.intervall / 3600
+     # needed_capacity = (p_mw_bss/(grid.net.storage.efficiency_storage * grid.net.storage.efficiency_inverter)) * self.intervall / 3600
+      
+     # Distribution of residual load over CBSS: 
+      bss_num = len(grid.net.storage)
+      
+      if free_capacity.sum() == 0:
+          distribution_factor_ch = np.zeros(bss_num)
+      else:
+          distribution_factor_ch = free_capacity/free_capacity.sum()
+          distribution_factor_ch = distribution_factor_ch.fillna(0) 
+      '''
+      distribution_factor_ch = free_capacity / free_capacity.sum()
+      distribution_factor_ch = distribution_factor_ch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0   
+      '''
+      distribution_factor_dch = get_e_mwh / get_e_mwh.sum()
+      distribution_factor_dch = distribution_factor_dch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0
+      
+      if p_mw_bss_total > 0:
+          p_mw_bss = (p_mw_bss_total * distribution_factor_ch) * np.ones(bss_num)
+      
+      elif p_mw_bss_total < 0:
+          p_mw_bss = (p_mw_bss_total * distribution_factor_dch) * np.ones(bss_num)
+      
+      needed_capacity = p_mw_bss * self.intervall / 3600 #
+          
       solar_excess_1 = (p_mw_bss > 0) & \
                        (get_soc < 100) & \
                        (free_capacity < needed_capacity * self.efficiency_charge)
@@ -479,8 +555,8 @@ class BSS_P_control_hh_fid(BSS_control):
 
 ### grid-oriented_feed-in_damping ###
 class BSS_P_control_grid_fid(BSS_control):
-  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay): 
-      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay)
+  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge): 
+      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, efficiency_charge, efficiency_discharge)
       
       self.trafo_sn_mva = grid.net.trafo.sn_mva.sum() # oder grid.s_trafo_power ()ist das gleiche
   
@@ -500,8 +576,8 @@ class BSS_P_control_grid_fid(BSS_control):
       #self.soc_new = get_soc # wurde ursprünglich für plot gebraucht, oder? raus?
       #bss.soc_percent = get_soc 
       get_e_mwh = self.e_mwh_start 
-      print('soc_lin_start: ' + str(get_soc))
-      print('e_mwh_lin_start: ' + str(get_e_mwh))
+      #print('soc_lin_start: ' + str(get_soc))
+      #print('e_mwh_lin_start: ' + str(get_e_mwh))
      
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
       
@@ -542,11 +618,11 @@ class BSS_P_control_grid_fid(BSS_control):
           p_mw_bss = (p_mw_bss_total * distribution_factor_dch) #* np.ones(bss_num)
       
       # needed capacity:
-      needed_capacity = p_mw_bss * self.intervall / 3600 #
+      #needed_capacity = p_mw_bss * self.intervall / 3600 #
       
       #DIRECT CHARGING:
-          
-      p_mw_bss = self.direct_charge(grid, p_mw_bss)  
+      p_mw_bss = self.direct_charge(grid, p_mw_bss)    
+      #p_mw_bss = self.direct_charge_cbss(grid, p_mw_bss)  
       
       #LINEAR CHARGING AND DISCHARGING:
 
@@ -566,8 +642,8 @@ class BSS_P_control_grid_fid(BSS_control):
       bss.soc_percent = get_soc
       bss.p_mw = p_mw_bss
       grid.net.storage = bss
-      print('soc_lin: ' + str(bss.soc_percent))
-      print('e_mwh_lin: ' + str(bss.e_mwh))
+      #print('soc_lin: ' + str(bss.soc_percent))
+      #print('e_mwh_lin: ' + str(bss.e_mwh))
       
       # calculate new energy content:
       get_e_mwh = self.stored_energy(grid, p_mw_bss)
@@ -672,8 +748,8 @@ class BSS_P_control_grid_fid(BSS_control):
       # Current parameters of BSS:
       get_soc = self.state_of_charge(grid)
       get_e_mwh = self.e_mwh_start 
-      print('soc_fid: ' + str(get_soc))
-      print('e_mwh_fid: ' + str(get_e_mwh))
+      #print('soc_fid: ' + str(get_soc))
+      #print('e_mwh_fid: ' + str(get_e_mwh))
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh 
 
       #FEED-IN DAMPING:
@@ -706,17 +782,17 @@ class BSS_P_control_grid_fid(BSS_control):
           p_mw_damped = damping_faktor * p_total_bss
          
           needed_capacity = p_mw_damped * self.intervall / 3600 # oder needed_capacity = p_mw_damped + p_mw_bss / ... ? nein
-         
-          solar_excess_fid_1 = (get_soc < 100) & \
-                      (needed_capacity <= free_capacity)
-          solar_excess_fid_2 = (get_soc < 100) & \
-                      (needed_capacity > free_capacity)
-          solar_test = (get_soc <= 0)
-
-          p_mw_damped[solar_excess_fid_2] = (free_capacity[solar_excess_fid_2] * 3600 \
-                                         / self.intervall)
-          p_mw_damped[solar_test] = 0
           
+          solar_excess_fid_1 = (get_soc < 100) & \
+                               (needed_capacity * self.efficiency_charge <= free_capacity)
+          solar_excess_fid_2 = (get_soc < 100) & \
+                               (needed_capacity * self.efficiency_charge > free_capacity)
+          solar_test = (get_soc <= 0)
+          
+          p_mw_damped[solar_excess_fid_2] = free_capacity[solar_excess_fid_2] * 3600 \
+                                         / (self.intervall * self.efficiency_charge[solar_excess_fid_2])
+          p_mw_damped[solar_test] = 0
+
       elif grid.s_trafo_power < s_res: # Fall Trafoüberlastung bei Netzbezug
           q_res_to_the_power_of_2 = s_res**2 - p_res**2
           print('q_res_to_the_power_of_2: '+ str(q_res_to_the_power_of_2))
@@ -725,7 +801,7 @@ class BSS_P_control_grid_fid(BSS_control):
           else:
               p_trafo_max = 0
               
-          print('p_trafo_max: '+ str(p_trafo_max))
+          #print('p_trafo_max: '+ str(p_trafo_max))
           p_total_bss = p_res + p_trafo_max
 
          
@@ -744,15 +820,16 @@ class BSS_P_control_grid_fid(BSS_control):
          
           needed_capacity = p_mw_damped * self.intervall / 3600 # oder needed_capacity = p_mw_damped + p_mw_bss / ... ? nein
          
-          solar_excess_fid_1 = (get_soc < 100) & \
-                      (needed_capacity <= free_capacity)
-          solar_excess_fid_2 = (get_soc < 100) & \
-                      (needed_capacity > free_capacity)
-          solar_test = (get_soc <= 0)
+          load_excess_fid_1 = (get_soc > 0) & \
+                               (needed_capacity / self.efficiency_discharge <= get_e_mwh)
+          load_excess_fid_2 = (get_soc > 0) & \
+                               (needed_capacity / self.efficiency_discharge > get_e_mwh)
 
-          p_mw_damped[solar_excess_fid_2] = (free_capacity[solar_excess_fid_2] * 3600 \
+          load_test = (get_soc <= 0)
+
+          p_mw_damped[load_excess_fid_2] = (free_capacity[load_excess_fid_2] * 3600 * self.efficiency_discharge[load_excess_fid_2] \
                                          / self.intervall)
-          p_mw_damped[solar_test] = 0
+          p_mw_damped[load_test] = 0
 
       else: 
           p_mw_damped = np.zeros(len(grid.net.storage))

@@ -454,5 +454,3 @@ class EvaluationSingleCase():
 
     ppplt.draw_collections([bc, lc, tc, bc_over, lc_over])
     plt.show()
-
-
