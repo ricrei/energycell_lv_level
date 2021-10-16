@@ -56,6 +56,7 @@ output_df_dir = 'output-files/000_evaluation_dicts_shortened_data/' #Tabea
 
 print('Load eva dicts ...')
 files = os.listdir(output_df_dir)
+
 eva = {}
 for index in files:
   print('Load: '+str(index))
@@ -111,6 +112,9 @@ evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s601n11summer'], ev
 evaluation.plot_curtailed_power(eva, scenario=401 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=601 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=611 , save_fig_dir=save_fig_dir)
+evaluation.plot_curtailed_power(eva, scenario=621 , save_fig_dir=save_fig_dir)
+evaluation.plot_curtailed_power(eva, scenario=631 , save_fig_dir=save_fig_dir)
+#evaluation.plot_curtailed_power(eva, scenario=641 , save_fig_dir=save_fig_dir)
 
 
 '''

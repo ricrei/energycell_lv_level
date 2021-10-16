@@ -517,31 +517,42 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
 
   #minutes_per_week = 7*24*60
 
-  pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  #pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  #load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  
+  pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
 
   # Curtailed pv power
-  curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  #curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  #curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
 
-  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  #curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0) 
+  #curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
 
   for index in eva:
-    if eva[index]['scenario'] in [401,601,611,621]:
+    #if eva[index]['scenario'] in [401,601,611,621]:
+    if eva[index]['scenario'] in [401,601,611,621,631,641]: #Tabea
       curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
       curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_load.sum()
       pv_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum()
       load_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()
       if eva[index]['time_scope_name'] == 'summer':
         curtailed_power_summer[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
+        print('summer')
       elif eva[index]['time_scope_name'] == 'winter':
         curtailed_power_winter[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
+        print('winter')
 
   curtailed_power_pv_per_cent = curtailed_power_pv/(pv_power+curtailed_power_pv)*100
   curtailed_power_load_per_cent = curtailed_power_load/(load_power+curtailed_power_load)*100
 
-  x_ticklabels = ['401', '601', '611', '621']
+  #x_ticklabels = ['401', '601', '611', '621']
+  x_ticklabels = ['401', '601', '611', '621', '631', '641'] #Tabea
   y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
 
   vmax_summer = curtailed_power_summer.max().max()/1000
@@ -592,6 +603,7 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
   #"YlOrBr"
 
@@ -605,6 +617,7 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
   plt.figure()
   ax = sns.heatmap(curtailed_power_pv/1000, vmax = vmax_pv_load, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
@@ -616,6 +629,7 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
   #"YlOrBr"
 
@@ -629,6 +643,7 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
 def plot_grid_issus_over_power(eva, save_fig_dir=None):
 
@@ -971,6 +986,10 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
   df_winter_pv = df_winter
   df_summer_load = df_summer
   df_winter_load = df_winter
+  
+  print(df_summer) #Tabea
+  df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', \
+                                          sep=',', index = False)
 
   df_summer_pv = df_summer_pv.drop('curtailed_power_load', axis=1)
   df_summer_pv = df_summer_pv.drop('grid_obtained_power_load', axis=1)

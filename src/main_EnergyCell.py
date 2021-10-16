@@ -84,7 +84,7 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 2, 1]
+scenario = [6, 3, 1]
 #scenario = [8, 1, 1]
 #######################
 
@@ -121,7 +121,7 @@ net_number = 8
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 0
+run_simulation = 11
 #######################
 
 #############################
@@ -177,7 +177,7 @@ elif run_simulation == 1:
   i = 1
   for time_scope_i in [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time]:
     for net_name_i in [7, 8, 9, 10, 11]: # [7, 8, 9, 10, 11]
-      for scenario_i in [ [6,2,0],[6,2,1]]:
+      for scenario_i in [ [6,3,0],[6,3,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -199,7 +199,7 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [620, 621
+  scenarios = [630, 631
   ]
   ''' 
   scenarios = [
@@ -216,7 +216,7 @@ elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,
-                                 time_scopes = [time_scope_winter, time_scope_summer])
+                                 time_scopes = [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time])
 
   print('Done')
 ###############################
