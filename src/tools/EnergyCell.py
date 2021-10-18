@@ -81,7 +81,7 @@ class EnergyCell():
         elif (self.scenario[0] in [6, 8]) and (self.scenario[1] in [3]):
           self.grid = self.bss_creator.create_bss_at_lvbb(self.grid)
         elif (self.scenario[0] in [6, 8]) and (self.scenario[1] in [4]):
-          self.grid = self.bss_creator.create_bss_at_each_bus(self.grid) #####PRÜFEN!!!
+          self.grid = self.bss_creator.create_bss_at_selected_buses(self.grid) #####PRÜFEN!!!
         else:
           raise ValueError('Scenario number and controll mode do not match: ' + str(scenario))
 

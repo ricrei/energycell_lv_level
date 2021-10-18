@@ -82,16 +82,16 @@ class BSScreator:
           print('No scenario for CBSS in power line implemented')# wird nicht ausgegeben
           #raise ValueError('No scenario for CBSS in power line implemented' )
       elif self.net_name == "simbench_rural_2":
-          selected_buses = [9,19,46,75]
+          selected_buses = [9,19,46,42]#[9,19,46,75] 75!!! 75 austauschen --> 42
           hh_per_line = [48,45,141,63] 
       elif self.net_name == "simbench_rural_3":
-          selected_buses = [74,93,95,108,111]
+          selected_buses = [75,93,95,108,111]#[74,93,95,108,111] #74 austauschen --> 75
           hh_per_line = [66,30,63,84,72]
       elif self.net_name == "simbench_suburb_4":
           selected_buses = [2]
           hh_per_line = [81]
       elif self.net_name == "simbench_suburb_5":
-          selected_buses = [2,10]
+          selected_buses = [79,56] # beide austauschen [2,10] --> [79,56]
           hh_per_line = [102,111]
       
       i = 0
