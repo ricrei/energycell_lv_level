@@ -118,7 +118,7 @@ class EvaluationSingleCase():
     ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')
-
+    '''
     patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
          mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle load'),
@@ -128,6 +128,7 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[0], alpha=0.7, label='Curtailed energy'),
          mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
                  ]
+    '''
 
     if add_curtail and add_losses:
       patch_list = [
@@ -136,10 +137,11 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[2], alpha=0.7, label='Household load'),
          mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
-         mpatches.Patch(color=c[0], alpha=0.7, label='Curtailed energy'),
+         mpatches.Patch(color=c[0], alpha=0.2, label='Curtailed energy'),
          mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
                  ]
       plt.legend(handles=patch_list)
+
     if not add_curtail and add_losses:
       patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
@@ -149,7 +151,8 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
          mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
                  ]
-      plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage', 'Line and trafo losses'])
+      plt.legend(handles=patch_list)
+
     if add_curtail and not add_losses:
       patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
@@ -157,10 +160,10 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[2], alpha=0.7, label='Household load'),
          mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
-         mpatches.Patch(color=c[0], alpha=0.7, label='Curtailed energy')
+         mpatches.Patch(color=c[0], alpha=0.2, label='Curtailed energy')
                  ]
+      plt.legend(handles=patch_list)
 
-      plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage', 'Curtailed energy'])
     if not add_curtail and not add_losses:
       patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
@@ -169,8 +172,8 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage')
                  ]
+      plt.legend(handles=patch_list)
 
-      plt.legend(['Photovoltaic generation','E-vehicle load','Household load','Heat pump load', 'Storage'])
     plt.show()
 
   def plot_generation_consumption_as_heat_map(self):
