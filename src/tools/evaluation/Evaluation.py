@@ -1169,6 +1169,10 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
       
   df_summer = df[df['time_scope'] == 'summer']
   df_winter = df[df['time_scope'] == 'winter']
+  
+  print(df_summer) #Tabea
+  df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', \
+                                          sep=',', index = False)
 
   df_summer = df_summer.set_index('gridID')
   df_winter = df_winter.set_index('gridID')
@@ -1181,9 +1185,9 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
   df_summer_load = df_summer
   df_winter_load = df_winter
   
-  print(df_summer) #Tabea
-  df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', \
-                                          sep=',', index = False)
+  #print(df_summer) #Tabea
+  #df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', \
+                                          #sep=',', index = False)
 
   df_summer_pv = df_summer_pv.drop('curtailed_power_load', axis=1)
   df_summer_pv = df_summer_pv.drop('grid_obtained_power_load', axis=1)

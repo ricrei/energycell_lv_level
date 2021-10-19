@@ -86,6 +86,7 @@ m = 2*4  # Number of timescopes * Number of scenarios
 evaluation.plot_barplots_overall_eva(eva, m, save_fig_dir=save_fig_dir)
 
 ### Heatmaps ###
+plot_generation_consumption_as_heat_map_overall_eva(power, save_fig_dir=None) ###
 #evaluation.plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=save_fig_dir)
 evaluation.plot_heatmap_grid_issus_with_bss(eva, net_name, n, save_fig_dir=save_fig_dir)
 evaluation.plot_heatmap_grid_issus_with_bss_curtailed(eva, net_name, n, save_fig_dir=save_fig_dir)
@@ -93,8 +94,9 @@ evaluation.plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=save_fig_
 evaluation.plot_heatmap_self_sufficiency(eva, net_name, n, save_fig_dir=save_fig_dir)
 '''
 ### Others ###
+#####evaluation.plot_grid_issus_over_time(eva, save_fig_dir=save_fig_dir)
 print('Create Other plots')
-
+'''
 #evaluation.plot_residualload_subplot_overall_eva(eva['s600n11summer']['power'], eva['s600n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n11.png')
 #evaluation.plot_residualload_subplot_overall_eva(eva['s601n11summer']['power'], eva['s601n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s601n11.png')
 evaluation.plot_residualload_subplot_overall_eva(eva['s600n7summer']['power'], eva['s600n7winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n7.svg')
@@ -102,22 +104,24 @@ evaluation.plot_residualload_subplot_overall_eva(eva['s600n8summer']['power'], e
 evaluation.plot_residualload_subplot_overall_eva(eva['s600n9summer']['power'], eva['s600n9winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n9.svg')
 evaluation.plot_residualload_subplot_overall_eva(eva['s600n10summer']['power'], eva['s600n10winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n10.svg')
 evaluation.plot_residualload_subplot_overall_eva(eva['s600n11summer']['power'], eva['s600n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n11.svg')
-
+'''
 #evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s600n11summer']['power'], eva['s600n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n11_detailed.png')
 #evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s601n11summer']['power'], eva['s601n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s601n11_detailed.png')
-'''
-evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s400n9winter']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
-evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s400n9summer']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_summer.png')
+
+evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s400n8winter']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
+evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s400n8summer']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_summer.png')
 
 evaluation.plot_grid_issus_over_power(eva['s400n8winter'], save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
-'''
+evaluation.plot_grid_issus_over_power(eva['s400n8summer'], save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
+
 #evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s600n11summer'], eva_winter=eva['s600n11winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s600n11.png')
 #evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s601n11summer'], eva_winter=eva['s601n11winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s601n11.png')
 
 #evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s600n11summer'], eva_winter=eva['s600n11winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s600n11.png')
 #evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s601n11summer'], eva_winter=eva['s601n11winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s601n11.png')
-'''
+
 evaluation.plot_curtailed_power(eva, scenario=401 , save_fig_dir=save_fig_dir)
+'''
 evaluation.plot_curtailed_power(eva, scenario=601 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=611 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=621 , save_fig_dir=save_fig_dir)

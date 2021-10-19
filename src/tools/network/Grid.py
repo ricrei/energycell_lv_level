@@ -194,6 +194,7 @@ class Grid:
     
     #--------neu Tabea----------------
     if len(self.net.storage) < len(self.net.load.loc[self.hp_index]): 
+        '''
         p_bss_hh_mw = np.zeros(len(self.net.load.loc[self.hp_index]))
         p_bss_sorted_mw = np.ones(len(self.net.storage))
         test_storage = np.in1d(self.net.load.loc[self.hp_index].bus, self.net.storage.bus)
@@ -206,12 +207,11 @@ class Grid:
             p_bss_sorted_mw[index_bss] = p_shared_bus_mw
 
         p_bss_hh_mw[test_storage] = p_bss_sorted_mw
-        
+        '''
         p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \
             self.net.load.loc[self.hp_index, 'p_mw'].values + \
             self.net.load.loc[self.ev_index, 'p_mw'].values - \
-            self.net.sgen['p_mw'].values + \
-            p_bss_hh_mw
+            self.net.sgen['p_mw'].values
             
     else:
         p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \

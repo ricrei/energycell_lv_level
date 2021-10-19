@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', # 2017-01-06 00:00:00+01:00
-               'end_time'   : '2017-05-27 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-01-05 00:00:00+01:00', # 2017-01-06 00:00:00+01:00
+               'end_time'   : '2017-01-06 12:00:00+01:00',
                't_freq'     : '1H'
              }
 
@@ -84,7 +84,7 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 4, 1]
+scenario = [6, 2, 1]
 #scenario = [8, 1, 1]
 #######################
 
@@ -154,7 +154,7 @@ if run_simulation == 0:
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
   e.eva.plot_soc()
-  #e.eva.plot_bss_e_mwh()
+  e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
