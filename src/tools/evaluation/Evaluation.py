@@ -152,32 +152,77 @@ def plot_residualload_overall_eva(power, save_fig_dir=None):
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight')
 
-def plot_residualload_subplot_overall_eva(power_summer, power_winter, save_fig_dir=None):
+def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
 
-  power_summer = -power_summer*1
-  power_winter = -power_winter*1
-  power = [power_summer, power_winter]
+  prop_cycle = plt.rcParams['axes.prop_cycle']
+  c = prop_cycle.by_key()['color']
+
+  power_1 = eva1['power']*1
+  power_2 = eva2['power']*1
+  power = [power_1, power_2]
+  storage_1 = -eva1['storage_power']*1
+  storage_2 = -eva2['storage_power']*1
+  storage = [storage_1, storage_2]
+  curtailed_power_1 = eva1['curtailed_power']
+  curtailed_power_2 = eva2['curtailed_power']
+  curtailed = [curtailed_power_1, curtailed_power_2]
 
   fig, ax = plt.subplots(1, 2, figsize=(10,5), sharey=True,  gridspec_kw={'wspace': .05})
   for i in [0,1]:
-    ax[i].fill_between(power[i].index, 0, power[i].pv, alpha=0.7)
-    ax[i].plot(power[i].index, power[i].pv, lw=.6)
-    ax[i].fill_between(power[i].index, 0, -power[i].ev, alpha=0.7)
-    ax[i].plot(power[i].index, -power[i].ev, lw=.6)
-    ax[i].fill_between(power[i].index, -power[i].ev, -power[i].load-power[i].ev, alpha=0.7)
-    ax[i].plot(power[i].index, -power[i].load-power[i].ev, lw=.6)
-    ax[i].fill_between(power[i].index, -power[i].load-power[i].ev, -power[i].hp-power[i].load-power[i].ev, alpha=0.7)
-    ax[i].plot(power[i].index, -power[i].hp-power[i].load-power[i].ev, lw=.6)
+    storage_sum = storage[i].sum(axis=1)
+    storage_charge = storage[i].copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage[i].copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    ax[i].fill_between(power[i].index,                     -storage_discharge,                     -storage_discharge - power[i].pv, alpha=0.7, color=c[0])
+    ax[i].fill_between(power[i].index,                         storage_charge,                         power[i].ev + storage_charge, alpha=0.7, color=c[1])
+    ax[i].fill_between(power[i].index,              power[i].ev + storage_charge,            power[i].load + power[i].ev + storage_charge, alpha=0.7, color=c[2])
+    ax[i].fill_between(power[i].index, power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge, alpha=0.7, color=c[3])
+    ax[i].fill_between(power[i].index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    ax[i].fill_between(power[i].index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    # curtailed power
+    ax[i].fill_between(power[i].index, power[i].hp + power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].curtail_load, alpha=0.2, color=c[7])
+    ax[i].fill_between(power[i].index,                     -storage_discharge - power[i].pv,                       -storage_discharge - power[i].pv - curtailed[i].curtail_pv, alpha=0.2, color=c[7])
+
+    ax[i].plot(power[i].index, -storage_discharge-power[i].pv, lw=.6)
+    ax[i].plot(power[i].index, storage_charge+power[i].ev, lw=.6)
+    ax[i].plot(power[i].index, storage_charge+power[i].load+power[i].ev, lw=.6)
+    ax[i].plot(power[i].index, storage_charge+power[i].hp+power[i].load+power[i].ev, lw=.6)
+    ax[i].plot(storage[i].index, storage_charge    , lw=.6)
+    ax[i].plot(storage[i].index, -storage_discharge, lw=.6)
+
     power[i] = shorted_data(power[i], 'H')
-    ax[i].plot(power[i].index, power[i].pv-power[i].hp-power[i].load-power[i].ev, color='black', lw=1)
+    storage_sum = shorted_data(storage_sum, 'H')
+
+    ax[i].plot(power[i].index, -(power[i].pv-power[i].hp-power[i].load-power[i].ev+storage_sum), color='black', lw=1)
+    
     ax[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
     ax[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
-    ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-2.000, .500))
-    plt.legend(['PV Generation','EV Load','Household Load','HP Load', 'Residual Load'], loc='lower right', shadow=True, markerscale=1.0)
+    ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-1.100, .850))
+    patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushalt'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpe'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Speicher'),
+         mpatches.Patch(color=c[7], alpha=0.2, label='Abregelung')
+                 ]
+    ax[0].legend(handles=patch_list)
 
   ax[0].set_ylabel('Power in MW')
-  ax[0].set_xlabel('Summer')
-  ax[1].set_xlabel('Winter')
+  ax[0].set_xlabel('Without BSS')
+  ax[1].set_xlabel('With BSS')
+
+  time_min_1 = pd.to_datetime('2017-01-06 00:00:00+01:00', utc=True)
+  time_max_1 = pd.to_datetime('2017-01-07 00:00:00+01:00', utc=True)
+
+  ax[0].set_xlim(time_min_1, time_max_1)
+  ax[1].set_xlim(time_min_1, time_max_1)
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight')
