@@ -10,9 +10,9 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-04 00:00:00+01:00', # 2017-01-06 00:00:00+01:00
-               'end_time'   : '2017-01-07 00:00:00+01:00',
-               't_freq'     : '1H' #1H
+time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', 
+               'end_time'   : '2017-05-30 00:00:00+02:00',
+               't_freq'     : '1H' 
              } 
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -21,19 +21,6 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                   }
 
 # timescopes to examine
-time_scope_winter_soc = { 'start_time' : '2017-01-04 00:00:00+01:00',
-                      'end_time'   : '2017-01-07 00:00:00+01:00',
-                      't_freq'     : '1T',
-                      'name'       : 'winter'
-                    }
-
-
-time_scope_summer_soc = { 'start_time' : '2017-05-26 00:00:00+02:00',
-                      'end_time'   : '2017-05-29 00:00:00+02:00',
-                      't_freq'     : '1T',
-                      'name'       : 'summer'
-                    }
-
 time_scope_winter_with_extra_time = { 'start_time' : '2017-01-02 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
@@ -84,7 +71,7 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 2, 1]
+scenario = [6, 4, 1]
 #scenario = [8, 1, 1]
 #######################
 
