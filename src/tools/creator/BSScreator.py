@@ -14,7 +14,7 @@ class BSScreator:
         self.efficiency_storage = 0.915
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
-        self.soc_percent = 50
+        self.soc_percent = 0
         self.sizing_factor = 0.6
         self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
         self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3) 

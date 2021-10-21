@@ -80,7 +80,7 @@ m = 2*4  # Number of timescopes * Number of scenarios
 
 ### Violin plots ###
 #evaluation.plot_violin_overall_eva(df_eva_v=df_eva_v, df_eva_l=df_eva_l, save_fig_dir=save_fig_dir)
-
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, n, save_fig_dir=save_fig_dir)
 '''
 ### Barplot ###
 evaluation.plot_barplots_overall_eva(eva, m, save_fig_dir=save_fig_dir)
