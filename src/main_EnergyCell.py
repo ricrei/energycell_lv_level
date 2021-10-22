@@ -36,14 +36,14 @@ time_scope_summer_with_extra_time = { 'start_time' : '2017-05-24 00:00:00+02:00'
 
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
-                      't_freq'     : '1H', #1T
+                      't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
 time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : '1H', #1T
+                      't_freq'     : '1T',
                       'name'       : 'summer'
                     }
 
