@@ -240,28 +240,19 @@ class BSS_control:
           else:
               p_mw_lin_ch = np.zeros(len(grid.net.storage))
           
-          # discharge day
-          if time >= sunrise and time < t_start_linear_discharge:
-              p_mw_lin_dch = -((get_e_mwh - soc_reserve * grid.net.storage.max_e_mwh) * self.efficiency_discharge * 3600)/ timedelta_lin_dch_winter_day_s
-              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) & (get_e_mwh >= soc_reserve * grid.net.storage.max_e_mwh)
-              case_lin_dch2 = (p_mw_bss < 0) & (get_e_mwh < soc_reserve * grid.net.storage.max_e_mwh)#<0 wichtig für Rechenfehler
-              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]    
-              p_mw_bss[case_lin_dch2] = 0
-          
-          #discharge: #Nacht
-          if time <= sunrise or time >= t_start_linear_discharge: # Nacht , bisher: time >=sunset:   
-              if (t_start_linear_discharge - time).total_seconds() > 0: # nach Mitternacht
-                  timedelta_night_s = timedelta_lin_dch_day2_s 
-                  if timedelta_night_s < self.intervall:  
-                      timedelta_night_s = self.intervall
-              else: #vor Mitternacht
-                  timedelta_night_s = timedelta_lin_dch_day1_s   
-          
-              p_mw_lin_dch = -((get_e_mwh - soc_reserve * grid.net.storage.max_e_mwh) * self.efficiency_discharge * 3600)/ timedelta_night_s
-              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) & (get_e_mwh >= soc_reserve * grid.net.storage.max_e_mwh)
-              case_lin_dch2 = (p_mw_bss < 0) & (get_e_mwh < soc_reserve * grid.net.storage.max_e_mwh)#<0 wichtig für Rechenfehler
-              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]    
-              p_mw_bss[case_lin_dch2] = 0
+          #discharge
+          if (sunrise - time).total_seconds() > 0: # nach Mitternacht vor Tagesanbruch
+              timedelta_night_s = timedelta_lin_dch_day2_s
+              if timedelta_night_s < self.intervall:  
+                  timedelta_night_s = self.intervall  
+          else: #vor Mitternacht
+              timedelta_night_s = timedelta_lin_dch_day1_s
+                  
+          p_mw_lin_dch = -((get_e_mwh - soc_reserve * grid.net.storage.max_e_mwh) * self.efficiency_discharge * 3600)/ timedelta_night_s
+          case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) & (get_e_mwh >= soc_reserve * grid.net.storage.max_e_mwh)
+          case_lin_dch2 = (p_mw_bss < 0) & (get_e_mwh < soc_reserve * grid.net.storage.max_e_mwh)#<0 wichtig für Rechenfehler
+          p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]    
+          p_mw_bss[case_lin_dch2] = 0
               
       # Summer - Temoral parameters
       else:

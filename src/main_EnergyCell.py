@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00', 
-               'end_time'   : '2017-01-07 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-01-04 00:00:00+02:00', 
+               'end_time'   : '2017-01-11 00:00:00+02:00',
                't_freq'     : '1H' 
              } 
 
@@ -72,7 +72,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [6, 0, 1]
+scenario = [6, 2, 1]
 #######################
 
 ###########################
@@ -139,8 +139,8 @@ if run_simulation == 0:
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_bss_active_power()
-  #e.eva.plot_soc()
+  e.eva.plot_bss_active_power()
+  e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')#2017-01-06 12:00:00+02:00
