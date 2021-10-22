@@ -72,7 +72,7 @@ time_scope = time_scope
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [6, 2, 1]
+scenario = [6, 0, 1]
 #######################
 
 ###########################

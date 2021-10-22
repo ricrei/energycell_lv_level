@@ -41,6 +41,8 @@ class BSScontroller:
                                                  self.timedelta_charging_delay, \
                                                  self.timedelta_charging_delay_winter, \
                                                  self.timedelta_early_discharge, \
+                                                 self.efficiency_charge, \
+                                                 self.efficiency_discharge, \
                                                  self.soc_reserve_percent)
         elif self.control == 'household-oriented_feed-in_damping': 
           self.P_controller = BSS_P_control_hh_fid(grid, \
