@@ -45,8 +45,8 @@ class PowerFlow:
       ###           Processing time is valuable!             ###
       for k in self.time_step_array:
           for j in range(k):
-              start = time.time()
-              tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
+              ###start = time.time()
+              ###tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
 
               t = self.time_series[i]
 
@@ -72,8 +72,8 @@ class PowerFlow:
               # write result into DataFrame
               output_data_handler.write_output_into_dataframe(grid, t)
 
-              end = time.time()
-              rest_time = int(round((end - start)*(self.timesteps - i), 0))
+              ###end = time.time()
+              ###rest_time = int(round((end - start)*(self.timesteps - i), 0))
               i += 1
           # write results dataframe into csv
           output_data_handler.write_dataframe_to_csv(mode='a', header=False, grid=grid)
