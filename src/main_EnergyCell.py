@@ -95,7 +95,7 @@ net_number = 9
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 11
+run_simulation = 0
 #######################
 
 #############################
@@ -117,7 +117,7 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=True)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -126,7 +126,7 @@ if run_simulation == 0:
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
-  e.eva.plot_soc()
+  #e.eva.plot_soc()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+02:00')
   #e.eva.plot_grid_2() # Baustelle

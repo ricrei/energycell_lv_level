@@ -115,7 +115,10 @@ class EvaluationSingleCase():
 
     #power = self.shorted_data(power, '1H')
     #storage = self.shorted_data(storage, '1H')
-    ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5)
+    if add_losses:
+      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5)
+    else:
+      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in kW')
     '''
