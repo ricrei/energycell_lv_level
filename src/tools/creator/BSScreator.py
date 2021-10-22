@@ -74,7 +74,7 @@ class BSScreator:
           selected_buses = [int(grid.net.trafo.lv_bus.sum())]
           hh_per_line = [0] # per feeder?
           print('No scenario for CBSS in power line implemented')# wird nicht ausgegeben
-          raise ValueError('No scenario for CBSS in power line implemented' )
+          #raise ValueError('No scenario for CBSS in power line implemented' )
       elif self.net_name == "simbench_rural_2":
           selected_buses = [9,19,46,75]
           hh_per_line = [48,45,141,63] 

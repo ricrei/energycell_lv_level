@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed March 17 11:08:14 2020
+Created on Fr October 22 11:08:14 2021
 
 @authors: ricardo, tabea, paul
 """
@@ -11,8 +11,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 ##########################################
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-26 00:00:00+02:00', 
-               'end_time'   : '2017-05-30 00:00:00+02:00',
-               't_freq'     : '1H' 
+               'end_time'   : '2017-05-27 00:00:00+02:00',
+               't_freq'     : '1T' 
              } 
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -30,20 +30,20 @@ time_scope_winter_with_extra_time = { 'start_time' : '2017-01-02 00:00:00+01:00'
 
 time_scope_summer_with_extra_time = { 'start_time' : '2017-05-24 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '1T', 
                       'name'       : 'summer'
                     }
 
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '1H', #1T
                       'name'       : 'winter'
                     }
 
 
 time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '1H', #1T
                       'name'       : 'summer'
                     }
 
@@ -71,7 +71,7 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [6, 4, 1]
+scenario = [6, 2, 1]
 #scenario = [8, 1, 1]
 #######################
 
@@ -162,9 +162,9 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time]:
+  for time_scope_i in [time_scope_winter, time_scope_summer]:
     for net_name_i in [7, 8, 9, 10, 11]: # [7, 8, 9, 10, 11]
-      for scenario_i in [ [6,4,0], [6,4,1]]:
+      for scenario_i in [ [6,0,1], [6,1,1], [6,2,1], [6,3,1], [6,4,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -177,11 +177,11 @@ elif run_simulation == 1:
         e.initiate_evaluation()
         e.eva.calculate_relevant_outputdata()
         e.eva.calculate_net_problems() # 
-        e.eva.plot_soc()
+        #e.eva.plot_soc()
         #e.eva.plot_bss_e_mwh()
         #e.eva.plot_bss_p_mw()
         #e.eva.plot_residualload() 
-        e.eva.plot_residualload(add_curtail=True, add_losses=True)#
+        #e.eva.plot_residualload(add_curtail=True, add_losses=True)#
         #-------------
 
 

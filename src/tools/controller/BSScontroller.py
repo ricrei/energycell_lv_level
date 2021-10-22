@@ -11,9 +11,10 @@ class BSScontroller:
       self.set_bss = (grid.scenario[0] in [6, 8])
       
       #Choice of temporal parameters and reserved soc for linear charge:
-      self.timedelta_charging_delay = 2 #[h] Sommer
-      self.timedelta_charging_delay_winter = 1 #[h]
-      self.soc_reserve_percent = 20
+      self.timedelta_charging_delay = 0.125#2 #[h] Sommer 12 %
+      self.timedelta_charging_delay_winter = 0.125#1 #[h] Versuch: %
+      self.timedelta_early_discharge = 0.25#2 #[-]
+      self.soc_reserve_percent = 20 #[%]
       
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
@@ -33,21 +34,21 @@ class BSScontroller:
         raise ValueError('The entered BSS control is not a valid option.')
 
       if self.set_bss == True:
-        if self.control == 'direct': #simple
+        if self.control == 'direct': 
           self.P_controller = BSS_control_direct(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
                                                  self.timedelta_charging_delay, \
                                                  self.timedelta_charging_delay_winter, \
-                                                 self.efficiency_charge, \
-                                                 self.efficiency_discharge, \
+                                                 self.timedelta_early_discharge, \
                                                  self.soc_reserve_percent)
-        elif self.control == 'household-oriented_feed-in_damping': # 'feed_in_damping'  #BSS_control_feed_in_damping
+        elif self.control == 'household-oriented_feed-in_damping': 
           self.P_controller = BSS_P_control_hh_fid(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
                                                  self.timedelta_charging_delay, \
                                                  self.timedelta_charging_delay_winter, \
+                                                 self.timedelta_early_discharge, \
                                                  self.efficiency_charge, \
                                                  self.efficiency_discharge, \
                                                  self.soc_reserve_percent)
@@ -58,6 +59,7 @@ class BSScontroller:
                                                  self.busses_num, \
                                                  self.timedelta_charging_delay,\
                                                  self.timedelta_charging_delay_winter, \
+                                                 self.timedelta_early_discharge, \
                                                  self.efficiency_charge, \
                                                  self.efficiency_discharge, \
                                                  self.soc_reserve_percent)
@@ -66,7 +68,7 @@ class BSScontroller:
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
       else:
-        self.P_controller = BSS_control_no_bss(grid, self.intervall_in_seconds, self.busses_num, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.efficiency_charge, self.efficiency_discharge, self.soc_reserve_percent)
+        self.P_controller = BSS_control_no_bss(grid, self.intervall_in_seconds, self.busses_num, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.timedelta_early_discharge, self.efficiency_charge, self.efficiency_discharge, self.soc_reserve_percent)
   
   def get_active_power_direct_charge(self, grid, t):
       return self.P_controller.pcontrol_direct_charge(grid, t) 
@@ -88,7 +90,7 @@ class BSScontroller:
  
 # Parent
 class BSS_control:
-  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
       self.intervall = intervall_in_seconds#self.intervall_in_seconds #?????? neu 20.10
       self.bss_num = len(grid.net.storage)# bss_num
       self.soc_start = grid.net.storage.soc_percent 
@@ -96,6 +98,7 @@ class BSS_control:
       self.soc_new = self.soc_start  
       self.timedelta_charging_delay = timedelta_charging_delay
       self.timedelta_charging_delay_winter = timedelta_charging_delay_winter
+      self.timedelta_early_discharge = timedelta_early_discharge
       self.efficiency_charge = efficiency_charge
       self.efficiency_discharge = efficiency_discharge
       self.soc_reserve_percent = soc_reserve_percent
@@ -200,23 +203,31 @@ class BSS_control:
 
       return p_mw_bss
  
-  def linear_charge(self, grid, t, p_mw_bss, get_e_mwh, free_capacity, timedelta_charging_delay, timedelta_charging_delay_winter, soc_reserve_percent):
+  def linear_charge(self, grid, t, p_mw_bss, get_e_mwh, free_capacity, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, soc_reserve_percent):
       
-      soc_reserve_percent = 20
+      #soc_reserve_percent = 20
       soc_reserve = soc_reserve_percent/100
       
       time = t.tz_localize(None)
       sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t) 
       sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + datetime.timedelta(days = 1))
-      t_start_linear_charge_summer = sunrise + datetime.timedelta(hours = timedelta_charging_delay)
-      t_start_linear_charge_winter = sunrise + datetime.timedelta(hours = timedelta_charging_delay_winter)
-      t_end_linear_charge_summer = sunset - datetime.timedelta(hours = timedelta_charging_delay)
-      t_end_linear_charge_winter = sunset - datetime.timedelta(hours = timedelta_charging_delay_winter)
-      t_start_linear_discharge = sunset - datetime.timedelta(hours = self.timedelta_charging_delay)
+      
+      timedelta_charging_delay_winter_h = timedelta_charging_delay_winter * timedelta_sunrise_sunset_s / 3600 #[h]
+      timedelta_charging_delay_summer_h = timedelta_charging_delay * timedelta_sunrise_sunset_s / 3600 #[h]
+      timedelta_early_discharge = timedelta_early_discharge * timedelta_sunrise_sunset_s / 3600 #[h]
+
+      t_start_linear_charge_summer = sunrise + datetime.timedelta(hours = timedelta_charging_delay_summer_h)
+      t_start_linear_charge_winter = sunrise + datetime.timedelta(hours = timedelta_charging_delay_winter_h)
+      t_end_linear_charge_summer = sunset - datetime.timedelta(hours = timedelta_charging_delay_summer_h)
+      t_end_linear_charge_winter = sunset - datetime.timedelta(hours = timedelta_charging_delay_winter_h)
+           
+      t_start_linear_discharge = sunset - datetime.timedelta(hours = self.timedelta_early_discharge)
       timedelta_lin_ch_summer_s = abs((t_end_linear_charge_summer - time).total_seconds())
-      timedelta_lin_ch_winter_s = abs((t_end_linear_charge_winter - time).total_seconds())#timedelta_day_s
+      timedelta_lin_ch_winter_s = abs((t_end_linear_charge_winter - time).total_seconds())
       timedelta_lin_dch_day1_s = abs((sunrise_next - time).total_seconds())
       timedelta_lin_dch_day2_s = abs((sunrise - time).total_seconds())
+      timedelta_lin_dch_winter_day_s = abs((t_start_linear_discharge - time).total_seconds())
+      #print('timedelta_lin_ch_winter: ' + str(timedelta_lin_ch_winter_s))
       
       # Winter - Temporal parameters and discharge:
       if timedelta_sunrise_sunset_s < (12*3600):  #winter
@@ -227,7 +238,15 @@ class BSS_control:
           else:
               p_mw_lin_ch = np.zeros(len(grid.net.storage))
           
-          #discharge:
+          # discharge day
+          if time >= sunrise and time < t_start_linear_discharge:
+              p_mw_lin_dch = -((get_e_mwh - soc_reserve * grid.net.storage.max_e_mwh) * self.efficiency_discharge * 3600)/ timedelta_lin_dch_winter_day_s
+              case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) & (get_e_mwh >= soc_reserve * grid.net.storage.max_e_mwh)
+              case_lin_dch2 = (p_mw_bss < 0) & (get_e_mwh < soc_reserve * grid.net.storage.max_e_mwh)#<0 wichtig für Rechenfehler
+              p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]    
+              p_mw_bss[case_lin_dch2] = 0
+          
+          #discharge: #Nacht
           if time <= sunrise or time >= t_start_linear_discharge: # Nacht , bisher: time >=sunset:   
               if (t_start_linear_discharge - time).total_seconds() > 0: # nach Mitternacht
                   timedelta_night_s = timedelta_lin_dch_day2_s 
@@ -258,13 +277,13 @@ class BSS_control:
  
   
 class BSS_control_no_bss(BSS_control):
-  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent):
-      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent)
+  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent):
+      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
 
 ### DIRECT ###
 class BSS_control_direct(BSS_control): #simple
-  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
-      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent)
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
+      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
       
   def pcontrol_direct_charge(self, grid, t): 
       '''
@@ -316,8 +335,8 @@ class BSS_control_direct(BSS_control): #simple
 ### household-oriented_feed-in_damping ###
 class BSS_P_control_hh_fid(BSS_control):
 
-  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay,timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent):
-      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent)
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay,timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent):
+      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
 
   def pcontrol_linear_charge(self, grid, t):
       
@@ -340,7 +359,7 @@ class BSS_P_control_hh_fid(BSS_control):
       p_mw_bss = self.direct_charge(grid, p_mw_bss)
   
       #LINEAR CHARGING:     
-      p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.soc_reserve_percent)
+      p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.timedelta_early_discharge, self.soc_reserve_percent)
       
       # Limitation by maximum power:
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
@@ -358,8 +377,8 @@ class BSS_P_control_hh_fid(BSS_control):
 
 ### grid-oriented_feed-in_damping ###
 class BSS_P_control_grid_fid(BSS_control):
-  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
-      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, efficiency_charge, efficiency_discharge, soc_reserve_percent)
+  def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
+      super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
       
       #self.trafo_sn_mva = grid.net.trafo.sn_mva.sum() # oder grid.s_trafo_power ()ist das gleiche
   
@@ -403,7 +422,7 @@ class BSS_P_control_grid_fid(BSS_control):
       p_mw_bss = self.direct_charge(grid, p_mw_bss)     
       
       #LINEAR CHARGING AND DISCHARGING:
-      p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.soc_reserve_percent)
+      p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.timedelta_early_discharge, self.soc_reserve_percent)
        
       # Limitation by maximum power:     
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
