@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed March 17 11:08:14 2020
+Created on Fr October 22 11:08:14 2021
 
 @authors: ricardo, tabea, paul
 """
@@ -10,10 +10,10 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+01:00',
-               'end_time'   : '2017-01-07 00:00:00+01:00',
-               't_freq'     : '1H'
-             }
+time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00', 
+               'end_time'   : '2017-01-07 00:00:00+02:00',
+               't_freq'     : '1H' 
+             } 
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2018-01-01 00:00:00+01:00',
@@ -21,16 +21,29 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                   }
 
 # timescopes to examine
-time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
+time_scope_winter_with_extra_time = { 'start_time' : '2017-01-02 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
+time_scope_summer_with_extra_time = { 'start_time' : '2017-05-24 00:00:00+02:00',
+                      'end_time'   : '2017-06-02 00:00:00+02:00',
+                      't_freq'     : '1T', 
+                      'name'       : 'summer'
+                    }
+
+time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
+                      'end_time'   : '2017-01-11 00:00:00+01:00',
+                      't_freq'     : '1H', #1T
+                      'name'       : 'winter'
+                    }
+
+
 time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '1H', #1T
                       'name'       : 'summer'
                     }
 
@@ -40,7 +53,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope_winter
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -103,19 +116,20 @@ run_simulation = 0
 if run_simulation == 0:
 
   # Initialize EnergyCell
+  
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope)
   
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
 
   e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  e.eva.calculate_net_problems()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=True)
   #e.eva.plot_ev_soc()
@@ -126,9 +140,10 @@ if run_simulation == 0:
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
-  #e.eva.plot_soc()
-  #e.eva.plot_bss_p_mw()
-  #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+02:00')
+  e.eva.plot_soc()
+  #e.eva.plot_bss_e_mwh()
+  e.eva.plot_bss_p_mw()
+  #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
   # Initialize BSS Sizing
@@ -148,8 +163,8 @@ elif run_simulation == 1:
 
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer]:
-    for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,0,1], [6,1,1], [6,2,1]]:
+    for net_name_i in [7, 8, 9, 10, 11]: # [7, 8, 9, 10, 11]
+      for scenario_i in [ [6,0,1], [6,1,1], [6,2,1], [6,3,1], [6,4,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -161,12 +176,19 @@ elif run_simulation == 1:
         #------------
         e.initiate_evaluation()
         e.eva.calculate_relevant_outputdata()
-        #e.eva.calculate_net_problems()
-        #e.eva.plot_residualload()
+        e.eva.calculate_net_problems() # 
+        #e.eva.plot_soc()
+        #e.eva.plot_bss_e_mwh()
+        #e.eva.plot_bss_p_mw()
+        #e.eva.plot_residualload() 
+        #e.eva.plot_residualload(add_curtail=True, add_losses=True)#
         #-------------
 
 
 elif run_simulation == 11:
+  scenarios = [640, 641
+  ]
+  ''' 
   scenarios = [
   #100,
   #200,
@@ -177,10 +199,11 @@ elif run_simulation == 11:
   #710, 711, 720, 721,
   810, 811, 820, 821#, 830, 831, 840, 841,
   ]
+  '''
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,
-                                 time_scopes = [time_scope_winter, time_scope_summer])
+                                 time_scopes = [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time])
 
   print('Done')
 ###############################

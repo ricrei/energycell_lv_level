@@ -12,6 +12,7 @@ import _pickle as cPickle
 class EvaluationAllCases():
   def __init__(self, net_names, scenarios, time_scopes):
     output_df_dir = 'output-files/000_evaluation_dicts/'
+    #output_df_dir = 'output-files/000_evaluation_dicts_shortened_data/' #Tabea
 
     eva = {}
     df_eva_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
@@ -28,6 +29,7 @@ class EvaluationAllCases():
       for time_scope_i in time_scopes:
         for net_name_i in [7, 8, 9, 10, 11]:
           output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_names[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
+          #output_dir = os.path.join("./", "output-files/shortened_data/"+str(scenario_i)+"/"+str(net_names[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/") #Tabea
           index = 's' + str(scenario_i) + 'n' + str(net_name_i) + str(time_scope_i['name'])
           print('create: ' + str(index))
           eva[index] = {}
@@ -45,6 +47,7 @@ class EvaluationAllCases():
           eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
           eva[index]['curtailed_power'] = self.read_data(output_dir+'curtailed_power_MW.csv')
           eva[index]['storage_power'] = self.read_data(output_dir+'storage_active_power_MW.csv')
+          #eva[index]['soc_bss'] = self.read_data(output_dir+'storage_state_of_charge_percent.csv') #Tabea
 
           tt.compress_pickle(output_df_dir + str(index)+'.pbz2', eva[index])
     '''      
