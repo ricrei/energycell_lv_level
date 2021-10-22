@@ -10,9 +10,9 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-04 00:00:00+02:00', 
-               'end_time'   : '2017-01-11 00:00:00+02:00',
-               't_freq'     : '1H' 
+time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00', 
+               'end_time'   : '2017-01-07 00:00:00+02:00',
+               't_freq'     : '1T' 
              } 
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -108,7 +108,7 @@ net_number = 9
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 0
+run_simulation = 1
 #######################
 
 #############################
@@ -139,7 +139,7 @@ if run_simulation == 0:
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  e.eva.plot_bss_active_power()
+  #e.eva.plot_bss_active_power()
   e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
@@ -164,7 +164,7 @@ elif run_simulation == 1:
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,0,1], [6,1,1], [6,2,1]]:
+      for scenario_i in [[6,1,1], [6,2,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
