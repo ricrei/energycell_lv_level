@@ -186,9 +186,6 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [640, 641
-  ]
-  ''' 
   scenarios = [
   #100,
   #200,
@@ -197,13 +194,13 @@ elif run_simulation == 11:
   #500,
   600, 601, 610, 611, 620, 621,# 630, 631, 640, 641,
   #710, 711, 720, 721,
-  810, 811, 820, 821#, 830, 831, 840, 841,
+  #810, 811, 820, 821#, 830, 831, 840, 841,
   ]
-  '''
+
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,
-                                 time_scopes = [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time])
+                                 time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn])
 
   print('Done')
 ###############################
