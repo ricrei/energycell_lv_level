@@ -10,10 +10,10 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00', 
+time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00',
                'end_time'   : '2017-01-07 00:00:00+02:00',
-               't_freq'     : '1T' 
-             } 
+               't_freq'     : '1T'
+             }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2018-01-01 00:00:00+01:00',
@@ -30,7 +30,7 @@ time_scope_winter_with_extra_time = { 'start_time' : '2017-01-02 00:00:00+01:00'
 
 time_scope_summer_with_extra_time = { 'start_time' : '2017-05-24 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : '1T', 
+                      't_freq'     : '1T',
                       'name'       : 'summer'
                     }
 
@@ -53,7 +53,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -108,7 +108,7 @@ net_number = 9
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 1
+run_simulation = 0
 #######################
 
 #############################
@@ -116,14 +116,14 @@ run_simulation = 1
 if run_simulation == 0:
 
   # Initialize EnergyCell
-  
+
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope)
-  
+
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -176,11 +176,11 @@ elif run_simulation == 1:
         #------------
         #e.initiate_evaluation()
         #e.eva.calculate_relevant_outputdata()
-        #e.eva.calculate_net_problems() # 
+        #e.eva.calculate_net_problems() #
         #e.eva.plot_soc()
         #e.eva.plot_bss_e_mwh()
         #e.eva.plot_bss_p_mw()
-        #e.eva.plot_residualload() 
+        #e.eva.plot_residualload()
         #e.eva.plot_residualload(add_curtail=True, add_losses=True)#
         #-------------
 
@@ -190,9 +190,15 @@ elif run_simulation == 11:
   #100,
   #200,
   #300,
-  400, 401,
+  #400,
+  401,
   #500,
-  600, 601, 610, 611, 620, 621,# 630, 631, 640, 641,
+  #600,
+  601,
+  #610,
+  611,
+  #620,
+  621,# 630, 631, 640, 641,
   #710, 711, 720, 721,
   #810, 811, 820, 821#, 830, 831, 840, 841,
   ]
@@ -204,3 +210,4 @@ elif run_simulation == 11:
 
   print('Done')
 ###############################
+
