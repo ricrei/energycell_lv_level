@@ -102,13 +102,13 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 9
+net_number = 8
 ######################
 
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 0
+run_simulation = 11
 #######################
 
 #############################
@@ -162,9 +162,9 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn]:
+  for time_scope_i in [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,0,1], [6,1,1], [6,2,1]]:
+      for scenario_i in [[6,1,1], [6,2,1], [6,3,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -186,13 +186,13 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [
+  scenarios = [611,621,631
   #100,
   #200,
   #300,
-  400, 401,
+  #400, 401,
   #500,
-  600, 601, 610, 611, 620, 621,# 630, 631, 640, 641,
+  #600, 601, 610, 611, 620, 621,# 630, 631, 640, 641,
   #710, 711, 720, 721,
   #810, 811, 820, 821#, 830, 831, 840, 841,
   ]
@@ -200,7 +200,7 @@ elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,
-                                 time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn])
+                                 time_scopes = [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time])
 
   print('Done')
 ###############################
