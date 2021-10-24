@@ -108,7 +108,7 @@ net_number = 8
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 
+run_simulation = 0
 #######################
 
 #############################
@@ -164,7 +164,7 @@ elif run_simulation == 1:
   i = 1
   for time_scope_i in [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,4,0], [6,4,1]]:
+      for scenario_i in [[6,1,0], [6,2,0]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -186,7 +186,7 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [640,641
+  scenarios = [610,620
   #100,
   #200,
   #300,
