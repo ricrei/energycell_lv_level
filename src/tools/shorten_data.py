@@ -11,7 +11,7 @@ import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-scenarios = [610,620] #[630,631]
+scenarios = [630] #[630,631]
 days = 2
 timestep_min = 1
 winter_week = '2017-01-02_2017-01-11_1T'
