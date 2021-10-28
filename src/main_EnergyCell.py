@@ -54,6 +54,8 @@ time_scope = time_scope
 ## 0: HP,EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
 ## 1: Household-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
+## 3: Residual-load driven (only in scenario[0] 6, 7, 8)
+## 4: EVU-Lock (only in scenario[0] 6, 7, 8)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [4, 0, 0]
@@ -87,7 +89,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 8
+net_number = 7
 ######################
 
 #######################

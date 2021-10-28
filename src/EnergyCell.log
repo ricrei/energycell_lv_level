@@ -23569,3 +23569,7 @@
 2021-10-14 15:43:38,838 - PowerFlow_Logger - ERROR - ./output-files/600/test_net_one_load_branch/2017-01-05_2017-01-07_30T/- Power Flow nr did not converge at 2017-01-05 18:30:00+01:00
 2021-10-14 15:43:38,838 - PowerFlow_Logger - ERROR - ./output-files/600/test_net_one_load_branch/2017-01-05_2017-01-07_30T/- Power Flow nr did not converge at 2017-01-05 18:30:00+01:00
 2021-10-14 15:43:38,838 - PowerFlow_Logger - ERROR - ./output-files/600/test_net_one_load_branch/2017-01-05_2017-01-07_30T/- Power Flow nr did not converge at 2017-01-05 18:30:00+01:00
+2021-10-28 13:52:51,553 - PowerFlow_Logger - ERROR - ./output-files/810/test_net_one_load_branch/2017-01-05_2017-01-07_30T/- Power Flow nr did not converge at 2017-01-06 01:30:00+01:00
+2021-10-28 13:52:51,553 - PowerFlow_Logger - ERROR - ./output-files/810/test_net_one_load_branch/2017-01-05_2017-01-07_30T/- Power Flow nr did not converge at 2017-01-06 01:30:00+01:00
+2021-10-28 13:52:51,553 - PowerFlow_Logger - ERROR - ./output-files/600/test_net_one_load_branch/2017-01-05_2017-01-07_30T/- Power Flow nr did not converge at 2017-01-06 01:30:00+01:00
+2021-10-28 13:52:51,553 - PowerFlow_Logger - ERROR - ./output-files/600/test_net_one_load_branch/2017-01-05_2017-01-07_15T/- Power Flow nr did not converge at 2017-01-06 01:30:00+01:00

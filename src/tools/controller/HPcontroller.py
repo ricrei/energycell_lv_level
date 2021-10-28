@@ -61,6 +61,7 @@ class HP_P_control_direct(HP_P_control):
 
   def pcontrol(self, grid, d, t):
     
+      '''
       ### Power an energy is measured in MW or MWh
       
       #residual_load positiv -> demand from grid
@@ -92,19 +93,16 @@ class HP_P_control_direct(HP_P_control):
       hps.hp_soc_kwh += hp_soc_change 
       
       grid.net.load.loc[grid.hp_index] = hps
+       '''     
+      hps = grid.net.load.loc[grid.hp_index]
       
-      '''
-      print( )
-      print(t)
-      print(resi_load, '--> resi_load')
-      print(hp_soc_change, '--> hp_soc_change')
-      print(hp_el_demand, '--> hp_el_demand')
-      print(hps.p_mw, '--> hps.p_mw')
-      print(hps.hp_soc_kwh, '--> hps.hp_soc_kwh')
-      print(self.intervall_in_seconds)
-      '''
+      hp_el_demand = d.copy().values * (self.intervall_in_seconds / 3600)
+      hps.p_mw = hp_el_demand / (self.intervall_in_seconds / 3600)
       
-      #HP_P_control.pcontrol(self)
+      grid.net.load.loc[grid.hp_index] = hps
+      
+      HP_P_control.pcontrol(self)
+      
       return grid.net.load.loc[grid.hp_index]
 
 ### household-oriented_feed-in_damping ###
@@ -196,37 +194,36 @@ class HP_P_control_resi_load_driven(HP_P_control):
 
     def pcontrol(self, grid, d, t):
 
-        hp_load_new = d.copy()
-
-        hps = grid.net.load.loc[grid.hp_index]
-
-        #residualload greater zero -> demand from grid
-        #residualload less_equal zero -> feed into grid
-        residual_load_per_hh =  grid.net.load.loc[grid.load_index, 'p_mw'].values + \
-                                grid.net.load.loc[grid.hp_index, 'p_mw'].values + \
-                                grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
-                                grid.net.sgen['p_mw'].values
-
-        #Änderungen
-        hp_soc_kwh_ref = -1 * residual_load_per_hh * 1000
-        #Speicher voll
-        hp_soc_kwh_ref[hps.hp_soc_kwh + hp_soc_kwh_ref > hps.hp_el_capacity_kwh] = \
-            hps.hp_el_capacity_kwh[hps.hp_soc_kwh + hp_soc_kwh_ref > hps.hp_el_capacity_kwh]
-        #Speicher leer
-        hp_soc_kwh_ref[hps.hp_soc_kwh + hp_soc_kwh_ref <= 0] = 0
+        ### Power an energy is measured in MW or MWh
         
-        hps.p_mw = hp_soc_kwh_ref * 0.001
-        #hp_load_new = hp_soc_kwh_ref * 0.001
-        hps.hp_soc_kwh += hp_soc_kwh_ref
+        #residual_load positiv -> demand from grid
+        #residual_load negativ -> feed into grid
+        resi_load = grid.get_residualload_p_per_household() #array of float
+        hp_soc_change = -resi_load * (self.intervall_in_seconds / 3600)
+        hps = grid.net.load.loc[grid.hp_index]
+        hp_el_demand = d.copy().values * (self.intervall_in_seconds / 3600)
+  
+        ### calculate amount of possible energy charge
+        hp_soc_change[hp_soc_change > 0] = hp_soc_change[hp_soc_change > 0] - hp_el_demand[hp_soc_change > 0]
+        ### calculate amount of possible energy discharge
+        hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
+        
+        ### storage full
+        #limit increase hp_soc untill [hp_soc + soc_change > hp_capacity]
+        hp_soc_change[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh] = \
+            hps.hp_el_capacity_kwh[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh] - \
+              hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh]
+  
+        ### storage emtpy
+        #decrease hp_soc untill [hp_soc + soc_change < 0]
+        hp_soc_change[hps.hp_soc_kwh + hp_soc_change < 0] =\
+            -hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change < 0]
+  
+        ### set power of hp additional the charge of storage
+        hps.p_mw = (hp_el_demand + hp_soc_change) / (self.intervall_in_seconds / 3600)
+        ### set soc of storage
+        hps.hp_soc_kwh += hp_soc_change 
+        
         grid.net.load.loc[grid.hp_index] = hps
 
-        #print(' ')
-        print('Durchlauf')
-        print(t)
-        print(residual_load_per_hh)
-        print(hps.hp_soc_kwh.values)
-
-        HP_P_control.pcontrol(self)
-
-        return hps.p_mw.values
-        #return hp_load_new.values
+        return grid.net.load.loc[grid.hp_index]
