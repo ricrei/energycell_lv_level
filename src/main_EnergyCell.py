@@ -53,7 +53,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope_winter
+time_scope = time_scope_autumn
 ###########################################
 
 #######################
@@ -72,7 +72,7 @@ time_scope = time_scope_winter
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [6, 2, 1]
+scenario = [6, 1, 1]
 #######################
 
 ###########################
@@ -102,13 +102,13 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 9
+net_number = 8
 ######################
 
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 0
+run_simulation = 1
 #######################
 
 #############################
@@ -136,7 +136,7 @@ if run_simulation == 0:
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
@@ -162,9 +162,9 @@ if run_simulation == 0:
 elif run_simulation == 1:
 
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn]:
+  for time_scope_i in [time_scope_autumn]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,1,1], [6,2,1]]:
+      for scenario_i in [[6,1,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1

@@ -115,8 +115,6 @@ class EnergyCell():
 
         self.print_object_parameter()
 
-        self.run_time('end', 'init ec')
-
         if self.scenario[0] == 5:
           use_data_of_scenario = [4, 0, 0]
           self.output_data_handler_worst_case = OutputDataHandler()
@@ -138,6 +136,8 @@ class EnergyCell():
 
         # Save net to pickle
         #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
+
+        self.run_time('end', 'init ec')
 
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'

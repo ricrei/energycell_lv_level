@@ -167,7 +167,7 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
   curtailed_power_2 = eva2['curtailed_power']
   curtailed = [curtailed_power_1, curtailed_power_2]
 
-  fig, ax = plt.subplots(1, 2, figsize=(10,5), sharey=True,  gridspec_kw={'wspace': .05})
+  fig, ax = plt.subplots(1, 2, figsize=(8,4), sharey=True,  gridspec_kw={'wspace': .05})
   for i in [0,1]:
     storage_sum = storage[i].sum(axis=1)
     storage_charge = storage[i].copy()
@@ -196,14 +196,16 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
     ax[i].plot(storage[i].index, storage_charge    , lw=.6)
     ax[i].plot(storage[i].index, -storage_discharge, lw=.6)
 
-    power[i] = shorted_data(power[i], 'H')
-    storage_sum = shorted_data(storage_sum, 'H')
+    power[i] = shorted_data(power[i], '5T')
+    storage_sum = shorted_data(storage_sum, '5T')
 
     ax[i].plot(power[i].index, -(power[i].pv-power[i].hp-power[i].load-power[i].ev+storage_sum), color='black', lw=1)
     
-    ax[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
-    ax[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
-    ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-1.100, .850))
+    #ax[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
+    #ax[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
+    ax[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-1.250, 1.000))
     patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
          mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
@@ -212,14 +214,16 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
          mpatches.Patch(color=c[4], alpha=0.7, label='Speicher'),
          mpatches.Patch(color=c[7], alpha=0.2, label='Abregelung')
                  ]
-    ax[0].legend(handles=patch_list)
+    ax[0].legend(handles=patch_list, loc='lower left', shadow=True, prop={'size': 7.5})
 
-  ax[0].set_ylabel('Power in MW')
-  ax[0].set_xlabel('Without BSS')
-  ax[1].set_xlabel('With BSS')
+  ax[0].set_ylabel('Leistung in MW')
+  ax[0].set_xlabel('Uhrzeit')
+  ax[1].set_xlabel('Uhrzeit')
+  ax[0].set_title('Ohne Batteriespeicher')
+  ax[1].set_title('Mit Batteriespeicher')
 
-  time_min_1 = pd.to_datetime('2017-01-06 00:00:00+01:00', utc=True)
-  time_max_1 = pd.to_datetime('2017-01-07 00:00:00+01:00', utc=True)
+  time_min_1 = pd.to_datetime('2017-01-06 00:00:00+00:00', utc=True)
+  time_max_1 = pd.to_datetime('2017-01-06 23:59:00+00:00', utc=True)
 
   ax[0].set_xlim(time_min_1, time_max_1)
   ax[1].set_xlim(time_min_1, time_max_1)
@@ -560,46 +564,54 @@ def plot_heatmap_grid_issus_with_bss_curtailed(eva, net_name, n, save_fig_dir=No
 
 def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
- # print(eva) #Tabea
-  #minutes_per_week = 7*24*60
+  #print(eva) #Tabea
+  minutes_per_week = 7*24*60
 
-  #pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  #load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
   
-  pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
-  load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  #pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  #load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
 
   # Curtailed pv power
-  #curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  #curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
-  curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  #curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  #curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
 
-  #curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0) 
-  #curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
-  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0) 
+  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
+  #curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  #curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
 
   for index in eva:
-    #if eva[index]['scenario'] in [401,601,611,621]:
-    if eva[index]['scenario'] in [401,601,611,621,631,641]: #Tabea
+    if eva[index]['scenario'] in [401,601,611,621]:
+    #if eva[index]['scenario'] in [401,601,611,621,631,641]: #Tabea
       curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
       curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_load.sum()
       pv_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum()
       load_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()
       if eva[index]['time_scope_name'] == 'summer':
         curtailed_power_summer[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
-        print('summer')
+        #print('summer')
       elif eva[index]['time_scope_name'] == 'winter':
         curtailed_power_winter[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
-        print('winter')
+        #print('winter')
 
   curtailed_power_pv_per_cent = curtailed_power_pv/(pv_power+curtailed_power_pv)*100
   curtailed_power_load_per_cent = curtailed_power_load/(load_power+curtailed_power_load)*100
+  curtailed_power_load_per_cent_reduced = curtailed_power_load_per_cent
+  for index in curtailed_power_load_per_cent.index:
+    #print(curtailed_power_load_per_cent[index])
+    if curtailed_power_load_per_cent.loc[index].sum() == 0:
+      curtailed_power_load_per_cent_reduced = curtailed_power_load_per_cent_reduced.drop(index)
 
   #x_ticklabels = ['401', '601', '611', '621']
-  x_ticklabels = ['401', '601', '611', '621', '631', '641'] #Tabea
-  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
+  x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ']
+  #x_ticklabels = ['401', '601', '611', '621', '631', '641'] #Tabea
+  #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
+  y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
+  y_ticklabels_reduced = ['Grid  \nRural 2', 'Grid  \nRural 3']
 
   vmax_summer = curtailed_power_summer.max().max()/1000
   vmax_winter = curtailed_power_winter.max().max()/1000
@@ -639,12 +651,13 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00a_heatmap_curtailed_power_winter.png', bbox_inches='tight')
 
-  plt.figure()
-  ax = sns.heatmap(curtailed_power_pv_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
+  plt.figure(figsize=(5.5,4))
+  ax = sns.heatmap(curtailed_power_pv_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
+  ax.set(xlabel='Szenario', ylabel='Netz')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Curtailed pv energy in %')
+  #ax.set_title('Curtailed pv energy in %')
+  ax.set_title('Abgeregelte PV Energie in %')
   #ax.set_title('Voltage Violation in Minutes per Week and Bus')
 
   if save_fig_dir is not None:
@@ -653,18 +666,31 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
 
   #"YlOrBr"
 
-  plt.figure()
-  ax = sns.heatmap(curtailed_power_load_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
+  plt.figure(figsize=(5.5,4))
+  ax = sns.heatmap(curtailed_power_load_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
+  ax.set(xlabel='Szenario', ylabel='Netz')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Curtailed load energy in %')
+  #ax.set_title('Curtailed load energy in %')
+  ax.set_title('Abgeregelte Last in %')
   #ax.set_title('Line Overloading in Minutes per Week and Line')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent.png', bbox_inches='tight')
      #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
+  '''
+  plt.figure()
+  ax = sns.heatmap(curtailed_power_load_per_cent_reduced, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
+  ax.set(xlabel='Scenario', ylabel='Grid')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels_reduced)
+  ax.set_title('Curtailed load energy in %')
+  #ax.set_title('Line Overloading in Minutes per Week and Line')
 
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_reduced.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
+  '''
   plt.figure()
   ax = sns.heatmap(curtailed_power_pv/1000, vmax = vmax_pv_load, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set(xlabel='Scenario', ylabel='Grid')
@@ -825,13 +851,15 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
 
 def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, save_fig_dir=None):
   power_summer = eva_summer['power']
-  power_summer = power_summer.load+power_summer.hp+power_summer.ev-power_summer.pv
+  storage_power_summer = eva_summer['storage_power']
+  power_summer = power_summer.load+power_summer.hp+power_summer.ev-power_summer.pv+storage_power_summer.sum(axis=1)
   v_summer = eva_summer['v']
   ll_summer = eva_summer['ll']
   tl_summer = eva_summer['tl']
 
   power_winter = eva_winter['power']
-  power_winter = power_winter.load+power_winter.hp+power_winter.ev-power_winter.pv
+  storage_power_winter = eva_winter['storage_power']
+  power_winter = power_winter.load+power_winter.hp+power_winter.ev-power_winter.pv+storage_power_winter.sum(axis=1)
   v_winter = eva_winter['v']
   ll_winter = eva_winter['ll']
   tl_winter = eva_winter['tl']
@@ -840,6 +868,8 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, sav
     t_freq_new = '10T'
   else:
     t_freq_new = '30T'
+
+  t_freq_new = '5T'
 
   power_summer = shorted_data(power_summer, t_freq_new)
   v_summer = shorted_data(v_summer, t_freq_new)
@@ -869,7 +899,7 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, sav
   tl_max = [tl_summer.T.max().T, tl_winter.T.max().T]
   power = [power_summer, power_winter]
 
-  fig, ax = plt.subplots(3, 2, figsize=(10,5), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05})
+  fig, ax = plt.subplots(3, 2, figsize=(8,4), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05})
   ax1 = ax[1] # Voltage
   ax2 = ax[2] # Line and Trafo
   ax3 = ax[0] # Residualload
@@ -885,47 +915,59 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, sav
     #ax1[i].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right")
     #ax2[i].legend(handles=[l4, l3, l_limit2], labels=['Line Overload', 'Trafo Overload', 'Overload Limit'] ,loc="upper right")
     #ax3[i].legend(handles=[l5], labels=['Residualload'] ,loc="lower right")
-    ax1[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
-    ax1[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
-    ax2[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
-    ax2[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
-    ax3[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
-    ax3[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
+    #ax1[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
+    #ax1[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
+    #ax2[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
+    #ax2[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
+    #ax3[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
+    #ax3[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
+    ax1[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax1[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax2[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax2[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax3[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax3[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
     if detailed == None:
       ax1[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(.85, 1.15))
-      ax2[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(0, 7.0))
-      ax3[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-2.2, 1))
+      ax2[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(0, 1.1))
+      ax3[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-.3, .3))
 
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right", shadow=True)
       ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right", shadow=True)
       ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True)
 
     else:
-      time_min_winter = pd.to_datetime('2017-01-05 00:00:00+01:00', utc=True)
-      time_max_winter = pd.to_datetime('2017-01-07 00:00:00+01:00', utc=True)
+      time_min_winter = pd.to_datetime('2017-01-06 00:00:00+00:00', utc=True)
+      time_max_winter = pd.to_datetime('2017-01-06 23:59:00+00:00', utc=True)
 
-      time_min_summer = pd.to_datetime('2017-05-27 00:00:00+01:00', utc=True)
-      time_max_summer = pd.to_datetime('2017-05-29 00:00:00+01:00', utc=True)
+      time_min_summer = pd.to_datetime('2017-01-06 00:00:00+00:00', utc=True)
+      time_max_summer = pd.to_datetime('2017-01-06 23:59:00+00:00', utc=True)
 
       time_min = [time_min_summer, time_min_winter]
       time_max = [time_max_summer, time_max_winter]
 
-      ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15))
-      ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(0, 7.0))
-      ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-2.2, 1))
+      ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15)) # voltage band
+      ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(0, 1.1))    # line and trafo loading
+      ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-.5, .5))   # Res_load
 
-      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper left", shadow=True)
-      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper left", shadow=True)
-      ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower left", shadow=True)
+      #ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower left", shadow=True)
+      #ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="lower left", shadow=True)
+      #ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower left", shadow=True)
+
+      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower left", shadow=True, prop={'size': 7.5})
+      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower left", shadow=True, prop={'size': 7.5})
+      ax3[1].legend(handles=[l5], labels=['Residuallast'] ,loc="lower left", shadow=True, prop={'size': 7.5})
+
 
       if save_fig_dir is not None:
         save_fig_dir = save_fig_dir[:-4]+'_detailed'+save_fig_dir[-4:]
 
-  ax2[0].set_xlabel('Summer')
-  ax2[1].set_xlabel('Winter')
-  ax1[0].set_ylabel('Voltage\nin p.u.')
-  ax2[0].set_ylabel('Line and Trafo\nLoading in p.u.')
-  ax3[0].set_ylabel('Power\nin MW')
+  ax2[0].set_xlabel('Uhrzeit')
+  ax2[1].set_xlabel('Uhrzeit')
+  ax1[0].set_ylabel('Spannung\nin p.u.')
+  ax2[0].set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.')
+  ax3[0].set_ylabel('Leistung\nin MW')
 
   '''
   ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right", shadow=True)
@@ -1076,9 +1118,8 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
   df_summer = df[df['time_scope'] == 'summer']
   df_winter = df[df['time_scope'] == 'winter']
   
-  print(df_summer) #Tabea
-  df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', \
-                                          sep=',', index = False)
+  #print(df_summer) #Tabea
+  #df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', sep=',', index = False)
 
   df_summer = df_summer.set_index('gridID')
   df_winter = df_winter.set_index('gridID')
@@ -1136,7 +1177,7 @@ def state_of_charge(eva, net_name, n, save_fig_dir=None):
    if eva[index]['scenario'] in [401,601,611,621,631,641]:
     df_soc_curtailed[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['soc_bss']#/n
     #df_soc[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['soc_bss']/n
-    print(df_soc_curtailed)
+    #print(df_soc_curtailed)
    '''
    for scenario_x in scenario:
     #soc = self.storage_soc
