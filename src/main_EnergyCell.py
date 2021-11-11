@@ -12,7 +12,7 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00', 
                'end_time'   : '2017-01-07 00:00:00+02:00',
-               't_freq'     : '1T' 
+               't_freq'     : '30T' 
              } 
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -69,10 +69,12 @@ time_scope = time_scope
 ## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
 ## 3: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS at LV-Busbar
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
+## 5: HP evu-lock (EnWG $14a), EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
+## 6: HP residual-load-driven, EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [6, 2, 1]
+scenario = [6, 5, 1]
 #######################
 
 ###########################
@@ -102,13 +104,13 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 9
+net_number = 8
 ######################
 
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 1
+run_simulation = 0
 #######################
 
 #############################
@@ -136,7 +138,7 @@ if run_simulation == 0:
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()

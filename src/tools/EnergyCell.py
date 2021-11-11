@@ -48,7 +48,8 @@ class EnergyCell():
 
         self.net_name = net_name
 
-        if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2, 3, 4])) or ((scenario[0] in [1, 2, 3, 4, 5, 6]) and (scenario[1] == 0)):
+        if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2, 3, 4])) or \
+          ((scenario[0] in [1, 2, 3, 4, 5, 6]) and (scenario[1] in [0, 5, 6])): ###Paul
           self.scenario = scenario
         else:
           raise ValueError('Scenario number and controll mode do not match: ' + str(scenario))
@@ -76,7 +77,7 @@ class EnergyCell():
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
-        if (self.scenario[1] in [0, 1, 2]):
+        if (self.scenario[1] in [0, 1, 2, 5, 6]): ###Paul
           self.grid = self.bss_creator.create_bss_at_each_bus(self.grid)
         elif (self.scenario[0] in [6, 8]) and (self.scenario[1] in [3]):
           self.grid = self.bss_creator.create_bss_at_lvbb(self.grid)
@@ -94,8 +95,17 @@ class EnergyCell():
           self.ev_controller = EVcontroller(grid=self.grid, control='direct')
           self.hp_controller = HPcontroller(grid=self.grid, control='direct')
           self.bss_controller = BSScontroller(grid=self.grid, control='direct')
-        elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2, 3, 4]):
-          mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
+        elif (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [5]): ###Paul
+          self.ev_controller = EVcontroller(grid=self.grid, control='direct')
+          self.hp_controller = HPcontroller(grid=self.grid, control='evu_lock')
+          self.bss_controller = BSScontroller(grid=self.grid, control='direct')
+        elif (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [6]): ###Paul
+          self.ev_controller = EVcontroller(grid=self.grid, control='direct')
+          self.hp_controller = HPcontroller(grid=self.grid, control='residual_load_driven')
+          self.bss_controller = BSScontroller(grid=self.grid, control='direct') 
+        elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2, 3, 4]): ###Paul
+          mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping',\
+                  'grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'evu_lock', 'residual_load_driven']
           self.ev_controller = EVcontroller(grid=self.grid, control=mode[scenario[1]])
           self.hp_controller = HPcontroller(grid=self.grid, control=mode[scenario[1]])
           self.bss_controller = BSScontroller(grid=self.grid, control=mode[scenario[1]])
