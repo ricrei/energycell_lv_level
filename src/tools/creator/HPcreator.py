@@ -28,10 +28,10 @@ class HPcreator:
           raise ValueError('No valid grid.category defined. Not able to choose HP type.')
 
       #create columns for HPs grid.net.load
-      grid.net.load['hp_el_capacity_kwh'] = 10
-      grid.net.load['hp_soc_kwh'] = 0.005
+      grid.net.load['hp_el_capacity_mwh'] = 0.01
+      grid.net.load['hp_soc_mwh'] = 0.005
       grid.net.load['hp_self_dis_per_day'] = 0.1
-      grid.net.load['hp_max_p_kw'] = 10
+      grid.net.load['hp_max_p_w'] = 0.01
       grid.net.load['hp_cop'] = 4
 
       # create hp-loads at each bus

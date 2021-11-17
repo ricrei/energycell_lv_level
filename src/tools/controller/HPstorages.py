@@ -23,10 +23,10 @@ class HPstorages():
             'max_flow': 0.0
             })
 
-        self.hp_stor_para = {'hp_el_capacity_kwh': 20.0,
+        self.hp_stor_para = {'hp_el_capacity_mwh': 0.01,
                              'hp_start_soc': 0.5,
                              'hp_self_dis_per_day': 0.1,
-                             'hp_max_p_kw': 10,
+                             'hp_max_p_kw': 0.01,
                              'hp_cop': 4}
 
 
@@ -39,15 +39,15 @@ class HPstorages():
         '''
         #print("Create HP-Storage")
 
-        grid.net.load.loc[grid.hp_index, 'hp_el_capacity_kwh'] = \
-            self.hp_stor_para['hp_el_capacity_kwh'] * 0.001
-        grid.net.load.loc[grid.hp_index, 'hp_soc_kwh'] = \
-            grid.net.load.loc[grid.hp_index, 'hp_el_capacity_kwh'] \
+        grid.net.load.loc[grid.hp_index, 'hp_el_capacity_mwh'] = \
+            self.hp_stor_para['hp_el_capacity_mwh']
+        grid.net.load.loc[grid.hp_index, 'hp_soc_mwh'] = \
+            grid.net.load.loc[grid.hp_index, 'hp_el_capacity_mwh'] \
                 * self.hp_stor_para['hp_start_soc']
         grid.net.load.loc[grid.hp_index, 'hp_self_dis_per_day'] = \
             self.hp_stor_para['hp_self_dis_per_day']
         grid.net.load.loc[grid.hp_index, 'hp_max_p_kw'] = \
-            self.hp_stor_para['hp_max_p_kw'] * 0.001
+            self.hp_stor_para['hp_max_p_kw']
         grid.net.load.loc[grid.hp_index, 'hp_cop'] = \
             self.hp_stor_para['hp_cop']
 

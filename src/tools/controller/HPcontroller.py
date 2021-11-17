@@ -16,8 +16,8 @@ class HPcontroller:
       else:
         raise ValueError('The entered HP control is not a valid option.')
 
-      print(self.set_hp)
-      print(self.control)
+      #print(self.set_hp)
+      #print(self.control)
       
       if self.set_hp == True:
         if self.control == 'direct':
@@ -149,31 +149,25 @@ class HP_P_control_grid_fid(HP_P_control):
       HP_P_control.pcontrol(self)
       return d.values
 
-
-
-
+### based EnWG $14a EVU-Lock  ###
 class HP_P_control_evu_lock(HP_P_control):
-
+  
     def __init__(self, grid):
         super().__init__(grid)
         self.HP_storages = HPstorages()
         self.HP_storages.create_hp_storages(grid)
 
     def pcontrol(self, grid, d, t):
-        
-        ### Power an energy is measured in MW or MWh
+
+        ### Power and energy is measured in MW or MWh
         
         #residual_load positiv -> demand from grid
         #residual_load negativ -> feed into grid
         resi_load = grid.get_residualload_p_per_household() #array of float
+        #assign > hp_soc_change < per run with 0
         hp_soc_change = -resi_load * (self.intervall_in_seconds / 3600) * 0
-        #hp_soc_change = 0
         hps = grid.net.load.loc[grid.hp_index]
         hp_el_demand = d.copy().values * (self.intervall_in_seconds / 3600)
-        
-        time1 = t.time()
-        hp_load_old = d.copy()
-        hp_load_new = d.copy()
         evu_lock_active = False
         
         morningstart = dt.datetime(1970, 1, 1, 10, 45, 00)
@@ -186,8 +180,9 @@ class HP_P_control_evu_lock(HP_P_control):
             evu_lock_active = True
         if((t.time() > eveningstart.time()) & (t.time() < eveningstop.time())) :
             evu_lock_active = True
-
-        comfort_soc = hps.hp_el_capacity_kwh * 0.7
+        
+        #set comfort_level to 
+        comfort_soc = hps.hp_el_capacity_mwh * 0.7
         
         #when evu_lock active no demand from grid
         #feed_out from storage
@@ -195,23 +190,27 @@ class HP_P_control_evu_lock(HP_P_control):
             #discharge storage based on demand
             hp_soc_change = -hp_el_demand
             
-            hp_soc_change[hps.hp_soc_kwh + hp_soc_change < 0] =\
-              -hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change < 0]
+            #hp_el_demand[hps.hp_soc_mwh + hp_soc_change < 0] = hp_el_demand * 0
+            
+            hp_soc_change[hps.hp_soc_mwh + hp_soc_change < 0] =\
+              -hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change < 0]
+            
+            
 
         #feed_in to storage until comfort_level
-        #feed_in maximum 1kW
+        #feed_in maximum 0.5kW
         if(evu_lock_active == False) :
-            #
-            hp_soc_change[hps.hp_soc_kwh < comfort_soc] = 0.0005 * (self.intervall_in_seconds / 3600)
+            #set power to refill the storage
+            hp_soc_change[hps.hp_soc_mwh < comfort_soc] = 0.0005 * (self.intervall_in_seconds / 3600)
             #limit soc -> fill untill comfort_level
-            hp_soc_change[hps.hp_soc_kwh + hp_soc_change > comfort_soc] = \
-              comfort_soc[hps.hp_soc_kwh + hp_soc_change > comfort_soc] - \
-              hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change > comfort_soc]
+            hp_soc_change[hps.hp_soc_mwh + hp_soc_change > comfort_soc] = \
+              comfort_soc[hps.hp_soc_mwh + hp_soc_change > comfort_soc] - \
+              hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change > comfort_soc]
 
         ### set power of hp additional the charge of storage
         hps.p_mw = (hp_el_demand + hp_soc_change) / (self.intervall_in_seconds / 3600)
         ### set soc of storage
-        hps.hp_soc_kwh += hp_soc_change 
+        hps.hp_soc_mwh += hp_soc_change
         
         grid.net.load.loc[grid.hp_index] = hps
 
@@ -219,6 +218,7 @@ class HP_P_control_evu_lock(HP_P_control):
 
         return grid.net.load.loc[grid.hp_index]
 
+### state of the art residual_load driven hp and storage ###
 class HP_P_control_resi_load_driven(HP_P_control):
 
     def __init__(self, grid):
@@ -228,36 +228,36 @@ class HP_P_control_resi_load_driven(HP_P_control):
 
     def pcontrol(self, grid, d, t):
 
-        ### Power an energy is measured in MW or MWh
-        
+        ### Power and energy is measured in MW or MWh
+
         #residual_load positiv -> demand from grid
         #residual_load negativ -> feed into grid
         resi_load = grid.get_residualload_p_per_household() #array of float
         hp_soc_change = -resi_load * (self.intervall_in_seconds / 3600)
         hps = grid.net.load.loc[grid.hp_index]
         hp_el_demand = d.copy().values * (self.intervall_in_seconds / 3600)
-  
+
         ### calculate amount of possible energy charge
         hp_soc_change[hp_soc_change > 0] = hp_soc_change[hp_soc_change > 0] - hp_el_demand[hp_soc_change > 0]
         ### calculate amount of possible energy discharge
         hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
-        
+
         ### storage full
         #limit increase hp_soc untill [hp_soc + soc_change > hp_capacity]
-        hp_soc_change[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh] = \
-            hps.hp_el_capacity_kwh[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh] - \
-              hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change > hps.hp_el_capacity_kwh]
-  
+        hp_soc_change[hps.hp_soc_mwh + hp_soc_change > hps.hp_el_capacity_mwh] = \
+            hps.hp_el_capacity_mwh[hps.hp_soc_mwh + hp_soc_change > hps.hp_el_capacity_mwh] - \
+              hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change > hps.hp_el_capacity_mwh]
+
         ### storage emtpy
         #decrease hp_soc untill [hp_soc + soc_change < 0]
-        hp_soc_change[hps.hp_soc_kwh + hp_soc_change < 0] =\
-            -hps.hp_soc_kwh[hps.hp_soc_kwh + hp_soc_change < 0]
-  
+        hp_soc_change[hps.hp_soc_mwh + hp_soc_change < 0] =\
+            -hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change < 0]
+
         ### set power of hp additional the charge of storage
         hps.p_mw = (hp_el_demand + hp_soc_change) / (self.intervall_in_seconds / 3600)
         ### set soc of storage
-        hps.hp_soc_kwh += hp_soc_change 
-        
+        hps.hp_soc_mwh += hp_soc_change 
+
         grid.net.load.loc[grid.hp_index] = hps
 
         return grid.net.load.loc[grid.hp_index]

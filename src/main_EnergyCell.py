@@ -13,7 +13,7 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 time_scope = { 'start_time' : '2017-01-05 00:00:00+02:00', 
                'end_time'   : '2017-01-07 00:00:00+02:00',
                't_freq'     : '15T' 
-             } 
+             }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2018-01-01 00:00:00+01:00',

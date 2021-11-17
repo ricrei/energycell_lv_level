@@ -82,7 +82,7 @@ class OutputDataHandler():
                                            grid.net.res_line.pl_mw.sum()]
         self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
         self.curtailed_power.loc[t] = [grid.curtailed_pv_power, grid.curtailed_load_power]
-        self.hp_soc.loc[t] = grid.net.load.hp_soc_kwh.loc[grid.hp_index]
+        self.hp_soc.loc[t] = grid.net.load.hp_soc_mwh.loc[grid.hp_index]
         
   def write_dataframe_to_csv(self, mode, header, grid):
         self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',
