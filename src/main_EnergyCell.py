@@ -10,8 +10,8 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-04 00:00:00+02:00', 
-               'end_time'   : '2017-01-11 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00', 
+               'end_time'   : '2017-01-08 00:00:00+02:00',
                't_freq'     : '1H' 
              } 
 
@@ -71,8 +71,8 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [5, 0, 0]
-scenario = [6, 2, 1]
+#scenario = [5, 0, 0]
+scenario = [6, 0, 1]
 #######################
 
 ###########################
@@ -102,7 +102,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 8
+net_number = 11
 ######################
 
 #######################
@@ -164,7 +164,7 @@ elif run_simulation == 1:
   i = 1
   for time_scope_i in [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,3,0]]:
+      for scenario_i in [[6,1,0],[6,1,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -186,7 +186,7 @@ elif run_simulation == 1:
 
 
 elif run_simulation == 11:
-  scenarios = [630
+  scenarios = [400,401
   #100,
   #200,
   #300,
@@ -200,7 +200,7 @@ elif run_simulation == 11:
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = net_name,
                                  scenarios = scenarios,
-                                 time_scopes = [time_scope_winter_with_extra_time, time_scope_summer_with_extra_time])
+                                 time_scopes = [time_scope_winter, time_scope_summer])
 
   print('Done')
 ###############################
