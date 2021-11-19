@@ -12,7 +12,7 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00',
                'end_time'   : '2017-01-07 00:00:00+02:00',
-               't_freq'     : '1T'
+               't_freq'     : '1H',
              }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -53,7 +53,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope_autumn
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -72,7 +72,7 @@ time_scope = time_scope_autumn
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 scenario = [5, 0, 0]
-scenario = [6, 1, 1]
+scenario = [4, 0, 1]
 #######################
 
 ###########################
@@ -108,7 +108,7 @@ net_number = 8
 #######################
 # 0: single simulation
 # 1: all scenarios and grids
-run_simulation = 1
+run_simulation = 0
 #######################
 
 #############################
@@ -123,7 +123,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -131,16 +131,16 @@ if run_simulation == 0:
   e.eva.calculate_relevant_outputdata()
   e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=True)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  e.eva.plot_grid_issus_over_time()
+  #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
-  e.eva.plot_soc()
+  #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')#2017-01-06 12:00:00+02:00
@@ -191,14 +191,14 @@ elif run_simulation == 11:
   #200,
   #300,
   #400,
-  401,
+  #401,
   #500,
   #600,
-  601,
+  #601,
   #610,
   611,
   #620,
-  621,# 630, 631, 640, 641,
+  #621,# 630, 631, 640, 641,
   #710, 711, 720, 721,
   #810, 811, 820, 821#, 830, 831, 840, 841,
   ]

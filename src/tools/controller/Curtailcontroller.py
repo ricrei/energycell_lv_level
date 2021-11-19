@@ -20,12 +20,40 @@ class Curtailcontroller:
     return grid
 
 
+class CurtailmentCommunityStorage:
+  def __init__(self):
+    pass
+
+  def get_residualload_p_per_household(self, grid):
+    p_res = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
+            grid.net.load.loc[grid.hp_index, 'p_mw'].values + \
+            grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
+            grid.net.sgen['p_mw'].values
+    return p_res
+
+
+class CurtailmentHomeStorage:
+  def __init__(self):
+    pass
+
+  def get_residualload_p_per_household(self, grid):
+    p_res = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
+            grid.net.load.loc[grid.hp_index, 'p_mw'].values + \
+            grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
+            grid.net.sgen['p_mw'].values + \
+            grid.net.storage['p_mw'].values
+    return p_res
+
 class Curtailment:
 
   def __init__(self, grid):
     self.trafo_power = grid.net.trafo.sn_mva.sum()
     self.sf_pv =  1#.95 # safty factor
     self.sf_load = 1#.95 # safty factor
+    if grid.scenario[1] in [3, 4]:
+      self.Curtailment_regarding_Storage = CurtailmentCommunityStorage()
+    else:
+      self.Curtailment_regarding_Storage = CurtailmentHomeStorage()
 
   def curtail(self,grid):
 
@@ -34,7 +62,7 @@ class Curtailment:
 
     # Calculate curtail_factor_trafo
     res_s, res_p = grid.get_residualload_s_sum()
-    res_p_HH = grid.get_residualload_p_per_household()
+    res_p_HH = self.Curtailment_regarding_Storage.get_residualload_p_per_household(grid)
     curtail_factor_trafo = 1
     if (-res_s > self.trafo_power*self.sf_pv):
       #print('Trafo PV')
@@ -85,7 +113,7 @@ class Curtailment:
 
     # Trafo overloading
     res_s, res_p = grid.get_residualload_s_sum()
-    res_p_HH = grid.get_residualload_p_per_household()
+    res_p_HH = self.Curtailment_regarding_Storage.get_residualload_p_per_household(grid)
     if (-res_s > self.trafo_power*self.sf_pv):
       #print('Trafo PV')
       total_pv_power = (grid.net.sgen.p_mw[res_p_HH < 0].sum()**2 + grid.net.sgen.q_mvar[res_p_HH < 0].sum()**2)**.5

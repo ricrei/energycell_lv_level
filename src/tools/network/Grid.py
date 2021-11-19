@@ -24,6 +24,13 @@ class Grid:
 
     self.time_scope = time_scope
     self.scenario = scenario
+    '''
+    if self.scenario[1] in [3, 4]:
+      self.is_community_storage = True
+    else:
+      self.is_community_storage = False
+    '''
+    self.is_community_storage = True if self.scenario[1] in [3, 4] else False
     self.net_name = net_name
     self.create_net()
     pp.runpp(self.net, algorithm='nr')  # Has to be executed to get initial net.res_bus for Q(U)-control
@@ -191,43 +198,11 @@ class Grid:
 
   # only use with 'household-oriented feed-in damping'
   def get_residualload_p_per_household(self):
-    
-    #--------neu Tabea----------------
-    if len(self.net.storage) < len(self.net.load.loc[self.hp_index]): 
-        '''
-        p_bss_hh_mw = np.zeros(len(self.net.load.loc[self.hp_index]))
-        p_bss_sorted_mw = np.ones(len(self.net.storage))
-        test_storage = np.in1d(self.net.load.loc[self.hp_index].bus, self.net.storage.bus)
-        shared_buses = self.net.load.loc[self.hp_index].bus[test_storage]
-        shared_buses = shared_buses.reset_index()
-        
-        for index_bss in self.net.storage.index:
-            shared_bus = shared_buses.bus[index_bss]
-            p_shared_bus_mw = self.net.storage['p_mw'][self.net.storage.bus == shared_bus]
-            p_bss_sorted_mw[index_bss] = p_shared_bus_mw
-
-        p_bss_hh_mw[test_storage] = p_bss_sorted_mw
-        '''
-        p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \
-            self.net.load.loc[self.hp_index, 'p_mw'].values + \
-            self.net.load.loc[self.ev_index, 'p_mw'].values - \
-            self.net.sgen['p_mw'].values
-            
-    else:
-        p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \
-            self.net.load.loc[self.hp_index, 'p_mw'].values + \
-            self.net.load.loc[self.ev_index, 'p_mw'].values - \
-            self.net.sgen['p_mw'].values + \
-            self.net.storage['p_mw'].values
-         
-    #----------------------------------
-    '''
     p_res = self.net.load.loc[self.load_index, 'p_mw'].values + \
             self.net.load.loc[self.hp_index, 'p_mw'].values + \
             self.net.load.loc[self.ev_index, 'p_mw'].values - \
             self.net.sgen['p_mw'].values + \
             self.net.storage['p_mw'].values
-    '''
     return p_res
 
   # only use with 'household-oriented feed-in damping'

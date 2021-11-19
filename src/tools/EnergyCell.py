@@ -61,7 +61,7 @@ class EnergyCell():
           raise ValueError('time_scope is not properly defined. \
                             start_time, end_time and t_freq is needed.')
 
-        self.input_data_handler = InputDataHandler()
+        self.input_data_handler = InputDataHandler(self.time_scope)
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.grid = Grid(self.net_name, self.scenario, self.time_scope)
