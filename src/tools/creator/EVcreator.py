@@ -5,21 +5,21 @@ import tools.tools as tt
 
 class EVcreator:
 
-  def __init__(self):
+  def __init__(self, inputfolder):
+    self.inputfolder = inputfolder
     self.usable_c_bat = 100 # in %
     self.ev_start_soc = 100 # in %
-
 
   ###########################################
   ### Create Loads at each bus for all HP ###
   ###########################################
   def create_ev_load_at_each_bus(self, grid):
       if (grid.category == 'rural') or (grid.category == 'village'):
-        self.ev_data_file = 'input-files/14_ev_short_rural.pbz2'
+        self.ev_data_file = self.inputfolder + '14_ev_short_rural.pbz2'
       elif (grid.category == 'suburban'):
-        self.ev_data_file = 'input-files/14_ev_short_suburban.pbz2'
+        self.ev_data_file = self.inputfolder + '14_ev_short_suburban.pbz2'
       elif (grid.category == 'urban'):
-        self.ev_data_file = 'input-files/14_ev_short_urban.pbz2'
+        self.ev_data_file = self.inputfolder + '14_ev_short_urban.pbz2'
       else:
           raise ValueError('No valid grid.category defined. Not able to choose EV type.')
 

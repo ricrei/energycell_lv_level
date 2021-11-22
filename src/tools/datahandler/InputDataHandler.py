@@ -1,7 +1,5 @@
 import csv
 import pandas as pd
-import shutil
-import glob
 
 import tools.tools as tt
 
@@ -10,6 +8,7 @@ class InputDataHandler():
 
   def __init__(self, time_scope):
     self.folder = 'input-files/'
+    self.inputfolder = self.folder
     if 'name' in time_scope.keys():
       if time_scope['name'] in ['summer','winter','autumn']:
         self.season = time_scope['name']
@@ -66,14 +65,11 @@ class InputDataHandler():
 
         if self.season != None:
           if self.season == 'summer':
-            file_names = glob.glob(self.folder + '11_inputdata_summer/*')
+            self.inputfolder = self.folder + 'XX_inputdata_summer/'
           elif self.season == 'winter':
-            file_names = glob.glob(self.folder + '11_inputdata_winter/*')
+            self.inputfolder = self.folder + 'XX_inputdata_winter/'
           elif self.season == 'autumn':
-            file_names = glob.glob(self.folder + '11_inputdata_autumn/*')
-
-          for f in file_names:
-            shutil.copy(f, self.folder)
+            self.inputfolder = self.folder + 'XX_inputdata_autumn/'
 
         elif self.season == None:
         
@@ -107,7 +103,7 @@ class InputDataHandler():
 
   def create_empty_df(self, time_scope):
         # Define timeseries
-        self.time_series = tt.decompress_pickle(self.folder + '10_time_short.pbz2')
+        self.time_series = tt.decompress_pickle(self.inputfolder + '10_time_short.pbz2')
         self.time_series = pd.DataFrame(self.time_series)
         self.time_series.index = self.time_series['timestamp']
         # define dataframe for all data

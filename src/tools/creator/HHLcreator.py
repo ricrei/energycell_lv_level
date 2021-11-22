@@ -2,9 +2,10 @@ import tools.tools as tt
 
 class HHLcreator:
 
-  def __init__(self):
-        self.load_p_data_file = 'input-files/11_p0_short.pbz2'
-        self.load_q_data_file = 'input-files/11_q0_short.pbz2'
+  def __init__(self, inputfolder):
+        self.inputfolder = inputfolder
+        self.load_p_data_file = self.inputfolder + '11_p0_short.pbz2'
+        self.load_q_data_file = self.inputfolder + '11_q0_short.pbz2'
 
   ###########################################
   ### Create Loads at each bus for all HP ###
@@ -14,7 +15,6 @@ class HHLcreator:
       for index in grid.component_buses.index:
           grid.net.load.name.loc[index] = 'load_'+str(grid.net.load.loc[index, "bus"])
           grid.net.load.type.loc[index] = 'load_'+str(index%74)
-          #grid.net.load.type[index] = 'load_'+str(index%74)
 
       return grid
 
