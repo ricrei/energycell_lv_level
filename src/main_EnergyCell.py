@@ -12,7 +12,7 @@ import tools.evaluation.EvaluationAllCases as EvaAllCases
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00',
                'end_time'   : '2017-01-07 00:00:00+02:00',
-               't_freq'     : '1H',
+               't_freq'     : '30T',
              }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -102,7 +102,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 13
+net_number = 9
 ######################
 
 #######################
@@ -123,7 +123,7 @@ if run_simulation == 0:
                     time_scope = time_scope)
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -136,11 +136,11 @@ if run_simulation == 0:
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_bss_active_power()
-  e.eva.plot_soc()
+  #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')#2017-01-06 12:00:00+02:00
