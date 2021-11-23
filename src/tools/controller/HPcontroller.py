@@ -67,7 +67,9 @@ class HP_P_control_no_hp(HP_P_control):
 
   def pcontrol(self, grid, d, t):
       HP_P_control.pcontrol(self)
-      return d.values*0
+      hp = grid.net.load.loc[grid.hp_index]
+      hp.p_mw = 0
+      return hp
 
 ### direct ###
 class HP_P_control_direct(HP_P_control):
