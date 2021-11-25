@@ -9,6 +9,9 @@ import tools.EnergyCell as ec
 import tools.evaluation.EvaluationAllCases as EvaAllCases
 
 import multiprocessing as mp
+import concurrent.futures
+
+import time
 
 ##########################################
 ### Define timescope and timestepwidth ###
@@ -23,29 +26,16 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                   }
 
 # timescopes to examine
-time_scope_winter_with_extra_time = { 'start_time' : '2017-01-02 00:00:00+01:00',
+time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
-time_scope_summer_with_extra_time = { 'start_time' : '2017-05-24 00:00:00+02:00',
-                      'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : '1T', 
-                      'name'       : 'summer'
-                    }
-
-time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
-                      'end_time'   : '2017-01-11 00:00:00+01:00',
-                      't_freq'     : '1H', #1T
-                      'name'       : 'winter'
-                    }
-
-
 time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
                       'end_time'   : '2017-06-02 00:00:00+02:00',
-                      't_freq'     : '1H', #1T
+                      't_freq'     : '1T',
                       'name'       : 'summer'
                     }
 
@@ -159,28 +149,32 @@ if run_simulation == 0:
 #############################
 
 def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
+        print(' ')
         e = ec.EnergyCell(net_name = net_name[net_name_i],
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i)
-        e.run_pf_timeseries()
+        #e.run_pf_timeseries()
 
 
 if __name__ == '__main__':
+  start = time.perf_counter()
+
   pool = mp.Pool(6)
-  #time_scope_i = [time_scope_winter, time_scope_summer, time_scope_autumn]
-  #net_name_i = [7, 8, 9, 10, 11]
-  #scenario_i = [[6,0,1], [6,1,1], [6,2,1]]
+  time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn]
+  net_names = [7]
+  scenario = [[6,0,1]]
 
-  #for time_scope_i in [time_scope_winter, time_scope_summer]:
-  #  for net_name_i in [7, 8, 9, 10, 11]:
-  #    for scenario_i in [[6,0,1], [6,1,1], [6,2,1]]:
-  
+  #'''
+  with concurrent.futures.ProcessPoolExecutor() as executor:
+    results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenario]
+  #'''
+
   # apply oder map
-  results = [pool.apply(run_mp_on_ec, args=(time_scope_i, net_name_i, scenario_i, control_parameter)) for time_scope_i in [time_scope_winter, time_scope_summer] for net_name_i in [7, 8, 9, 10, 11] for scenario_i in [[6,0,1], [6,1,1], [6,2,1]]]
+  #results = [pool.apply(run_mp_on_ec, args=(time_scope_i, net_name_i, scenario_i, control_parameter)) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenario]
 
+  finish = time.perf_counter()
 
-
-
+  print(f'Finished in {round(finish-start, 2)} s')
 
 

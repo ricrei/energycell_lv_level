@@ -44,11 +44,12 @@ from tools.evaluation.EvaBSSsizing import EvaBSSsizing
 class EnergyCell():
 
     def __init__(self, net_name, scenario, control_parameter, time_scope):
+        print('START')
         self.run_time('start')
 
         self.net_name = net_name
 
-        if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2, 3, 4])) or \
+        if ((scenario[0] in [6, 7, 8]) and (scenario[1] in [1, 2, 3, 4, 5, 6])) or \
           ((scenario[0] in [1, 2, 3, 4, 5, 6]) and (scenario[1] in [0, 5, 6])): ###Paul
           self.scenario = scenario
         else:
@@ -62,15 +63,15 @@ class EnergyCell():
           raise ValueError('time_scope is not properly defined. \
                             start_time, end_time and t_freq is needed.')
 
-        self.input_data_handler = InputDataHandler()
+        self.input_data_handler = InputDataHandler(self.time_scope)
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.grid = Grid(self.net_name, self.scenario, self.time_scope)
 
-        self.hhl_creator = HHLcreator()
-        self.pv_creator = PVcreator()
-        self.hp_creator = HPcreator()
-        self.ev_creator = EVcreator()
+        self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
+        self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
+        self.hp_creator = HPcreator(self.input_data_handler.inputfolder)
+        self.ev_creator = EVcreator(self.input_data_handler.inputfolder)
         self.bss_creator = BSScreator(self.net_name, self.grid)#net_name
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
@@ -92,23 +93,17 @@ class EnergyCell():
 
         self.pv_controller = PVcontroller(grid=self.grid, control=control_parameter['PV_mod'], cos_phi=control_parameter['PV_cos_phi'])
         if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [0]):
-          self.ev_controller = EVcontroller(grid=self.grid, control='direct')
+          self.ev_controller = EVcontroller(grid=self.grid, control='direct', inputfolder=self.input_data_handler.inputfolder)
           self.hp_controller = HPcontroller(grid=self.grid, control='direct')
           self.bss_controller = BSScontroller(grid=self.grid, control='direct')
-        elif (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [5]): ###Paul
-          self.ev_controller = EVcontroller(grid=self.grid, control='direct')
-          self.hp_controller = HPcontroller(grid=self.grid, control='evu_lock')
-          self.bss_controller = BSScontroller(grid=self.grid, control='direct')
-        elif (self.scenario[0] in [1, 2, 3, 4, 5, 6]) and (self.scenario[1] in [6]): ###Paul
-          self.ev_controller = EVcontroller(grid=self.grid, control='direct')
-          self.hp_controller = HPcontroller(grid=self.grid, control='residual_load_driven')
-          self.bss_controller = BSScontroller(grid=self.grid, control='direct') 
-        elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2, 3, 4]): ###Paul
+        elif (self.scenario[0] in [6, 7, 8]) and (self.scenario[1] in [1, 2, 3, 4, 5, 6]): ###Paul
+          mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping',\
+                  'grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping','grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
+          self.ev_controller = EVcontroller(grid=self.grid, control=mode[scenario[1]], inputfolder=self.input_data_handler.inputfolder)
+          self.bss_controller = BSScontroller(grid=self.grid, control=mode[scenario[1]])
           mode = [0, 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping',\
                   'grid-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'evu_lock', 'residual_load_driven']
-          self.ev_controller = EVcontroller(grid=self.grid, control=mode[scenario[1]])
           self.hp_controller = HPcontroller(grid=self.grid, control=mode[scenario[1]])
-          self.bss_controller = BSScontroller(grid=self.grid, control=mode[scenario[1]])
         else:
           raise ValueError('Scenario number and controll mode do not match: ' + str(scenario))
 
@@ -124,8 +119,6 @@ class EnergyCell():
         self.energy_manager = EnergyManagement(self.scenario)
 
         self.print_object_parameter()
-
-        self.run_time('end', 'init ec')
 
         if self.scenario[0] == 5:
           use_data_of_scenario = [4, 0, 0]
@@ -148,6 +141,9 @@ class EnergyCell():
 
         # Save net to pickle
         #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
+
+        self.run_time('end', 'init ec')
+        print('END')
 
     def __repr__(self):
       return f'EnergyCell(net_name={self.net_name}, scenario={self.scenario}, time_scope={self.time_scope}'

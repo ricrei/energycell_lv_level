@@ -6,7 +6,10 @@ import tools.tools as tt
 
 class PVcreator:
 
-  def __init__(self):
+  def __init__(self, inputfolder):
+    self.inputfolder = inputfolder
+    self.pv_data_file = self.inputfolder + '12_pv_short.pbz2'
+
     # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
     # rate: frequency of occurrence of pv-orientation
     self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
@@ -14,8 +17,6 @@ class PVcreator:
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10}
     #TODO: power urban has to be verified
-    self.pv_data_file = 'input-files/12_pv_short.pbz2'
-
 
   ############################################################
   ### Create sGen and Loads at each bus for all PV, HP, EV ###

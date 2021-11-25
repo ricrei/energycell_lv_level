@@ -5,7 +5,8 @@ import tools.tools as tt
 
 class EVcontroller:
 
-  def __init__(self, grid, control='direct'):
+  def __init__(self, grid, control='direct', inputfolder=None):
+      self.inputfolder = inputfolder
       ### define ev parameter ###
       self.ev_parameter = {'charging_power' : .011,     # in MW
                            'charging_efficiency' : .9,  # 0-1
@@ -23,16 +24,16 @@ class EVcontroller:
 
       ### load input data ###
       if (grid.category == 'rural') or (grid.category == 'village'):
-        self.ev_data_file_charging_demand = 'input-files/14_ev_short_rural_charging_demand.pbz2'
-        self.ev_data_file_parking_time    = 'input-files/14_ev_short_rural_parking_time.pbz2'
+        self.ev_data_file_charging_demand = self.inputfolder + '14_ev_short_rural_charging_demand.pbz2'
+        self.ev_data_file_parking_time    = self.inputfolder + '14_ev_short_rural_parking_time.pbz2'
       elif (grid.category == 'suburban'):
-        self.ev_data_file_charging_demand = 'input-files/14_ev_short_suburban_charging_demand.pbz2'
-        self.ev_data_file_parking_time    = 'input-files/14_ev_short_suburban_parking_time.pbz2'
+        self.ev_data_file_charging_demand = self.inputfolder + '14_ev_short_suburban_charging_demand.pbz2'
+        self.ev_data_file_parking_time    = self.inputfolder + '14_ev_short_suburban_parking_time.pbz2'
       elif (grid.category == 'urban'):
-        self.ev_data_file_charging_demand = 'input-files/14_ev_short_urban_charging_demand.pbz2'
-        self.ev_data_file_parking_time    = 'input-files/14_ev_short_urban_parking_time.pbz2'
+        self.ev_data_file_charging_demand = self.inputfolder + '14_ev_short_urban_charging_demand.pbz2'
+        self.ev_data_file_parking_time    = self.inputfolder + '14_ev_short_urban_parking_time.pbz2'
       else:
-          raise ValueError('No valid grid.category defined. Not able to choose EV type.')
+        raise ValueError('No valid grid.category defined. Not able to choose EV type.')
 
       self.ev_charging_demand = tt.decompress_pickle(self.ev_data_file_charging_demand)
       self.ev_parking_time = tt.decompress_pickle(self.ev_data_file_parking_time)
