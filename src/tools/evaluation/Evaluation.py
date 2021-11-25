@@ -1538,7 +1538,7 @@ def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
 
     integrated_power_pv_percent = 100 - curtailed_power_pv_per_cent
     covered_power_load_percent = 100 - curtailed_power_load_per_cent
-    print(integrated_power_pv_percent)
+    #print(integrated_power_pv_percent)
     # -----------------
 
     df_self_sufficiency = pd.DataFrame(index=[net_name[7:12]], columns=[
@@ -1553,24 +1553,86 @@ def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
                                                             ['net_name']] += eva[index]['SelfSufficiancy']/n
             df_pv_consumption[eva[index]['scenario']].loc[eva[index]
                                                           ['net_name']] += eva[index]['PVConsumption']/n
-                  
-          
+    print('self sufficiency:') 
+    print(df_self_sufficiency)    
+
+    for index in df_self_sufficiency.index:
+        title = str(index)
+
+        self_sufficiency = df_self_sufficiency.loc[index]
+        pv_consumption = df_pv_consumption.loc[index]
+        pv_integration = integrated_power_pv_percent.loc[index]
+        load_coverage = covered_power_load_percent.loc[index]
+        print('self suff:')
+        print(self_sufficiency)
+        
+        categories = ['self sufficiency', 'PV consumption',
+                      'PV integration', 'Load coverage', 'self sufficiency']
+        scenario_name = ['401', '601', '611', '621', '631', '641']
+        net_name = ['Rural 1', 'Rural 2', 'Rural 3', 'Semiurban 4', 'Semiurban 5']
+        #for x in len(net_name):
+            
+        #print('parameters')
+        #print(self_sufficiency[401])
+        
+        #net_color = [Dark2[0],Set2[0],Pastel2[0],Set1[1],Pastel1[1]]
+        fig = go.Figure()
+        i = 0
+        for scenario in [401, 601, 611, 621, 631, 641]:
+            parameters_scenario = [self_sufficiency[scenario], pv_consumption[scenario],
+                              pv_integration[scenario], load_coverage[scenario], self_sufficiency[scenario]]
+            print('parameters')
+            print(parameters_scenario)
+            
+        
+            fig.add_trace(go.Scatterpolar(
+                r=parameters_scenario,
+                # connectgaps=True,
+                theta=categories,
+                #mode = 'lines',
+                #opacity=0.4,
+                #lineclose = True,
+                #fill='toself',  # 'tonext',
+                name=scenario,#scenario_name[scenario],
+                #line_color = net_color[i]
+                #line(opacity = 0.8)
+                # opacity=1
+                #textfont=dict(size=18)
+            ))
+
+            # fig.add_trace(go.Scatterpolar.line(opacity = 1)
+
+            #print(parameters_scenario)
+        
+        fig.update_layout(
+                polar=dict(
+                    angularaxis=dict(
+                        rotation=45),
+                    radialaxis=dict(
+                        visible=True,
+                        range=[30, 100]
+                    )),
+                showlegend=True,
+                title = title,#'Titel',
+                font=dict(size=22)
+                #font={'size':18}
+                #uniformtext=dict(minsize=30)
+                #uniformtext_minsize=15
+                )
+
+        fig.write_html('first_figure_'+ title +'.html', auto_open=True)
+        
     for scenario in [401, 601, 611, 621, 631, 641]:
         title = str(scenario)
-        print(3)
+
         self_sufficiency = df_self_sufficiency[scenario]
         pv_consumption = df_pv_consumption[scenario]
         pv_integration = integrated_power_pv_percent[scenario]
         load_coverage = covered_power_load_percent[scenario]
-        #self_sufficiency = df_self_sufficiency[eva[index]['scenario']]
-        #print(df_self_sufficiency)
-        #print('self sufficiency:')
-        #print(self_sufficiency)
-        '''
-        pv_consumption = df_pv_consumption[eva[index]['scenario']]
-        pv_integration = integrated_power_pv_percent[eva[index]['scenario']]
-        load_coverage = covered_power_load_percent[eva[index]['scenario']]
-        '''
+
+        #print(self_sufficiency.index)
+        #for x in self_sufficiency.index:
+         #   print(x)
         
         categories = ['self sufficiency', 'PV consumption',
                       'PV integration', 'Load coverage', 'self sufficiency']
@@ -1581,6 +1643,8 @@ def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
         for i in range(len(self_sufficiency)):
             parameters_net = [self_sufficiency[i], pv_consumption[i],
                               pv_integration[i], load_coverage[i], self_sufficiency[i]]
+
+            
 
             fig.add_trace(go.Scatterpolar(
                 r=parameters_net,
@@ -1594,19 +1658,27 @@ def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
                 #line_color = net_color[i]
                 #line(opacity = 0.8)
                 # opacity=1
+                #textfont=dict(size=18)
             ))
 
             # fig.add_trace(go.Scatterpolar.line(opacity = 1)
 
-            print(parameters_net)
+           # print(parameters_net)
         
         fig.update_layout(
                 polar=dict(
+                    angularaxis=dict(
+                        rotation=45),
                     radialaxis=dict(
                         visible=True,
                         range=[0, 100]
                     )),
-                showlegend=True
+                showlegend=True,
+                title = 'Titel',
+                font=dict(size=22)
+                #font={'size':18}
+                #uniformtext=dict(minsize=30)
+                #uniformtext_minsize=15
                 )
 
         fig.write_html('first_figure_'+ title +'.html', auto_open=True)
