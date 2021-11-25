@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fr October 22 11:08:14 2021
+Created on Fr November 25 11:08:14 2021
 
 @authors: ricardo, tabea, paul
 """
@@ -15,17 +15,6 @@ import time
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00', 
-               'end_time'   : '2017-01-07 00:00:00+02:00',
-               't_freq'     : '1H' 
-             } 
-
-time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
-                    'end_time'   : '2018-01-01 00:00:00+01:00',
-                    't_freq'     : '1H'
-                  }
-
-# timescopes to examine
 time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
                       'end_time'   : '2017-01-11 00:00:00+01:00',
                       't_freq'     : '1T',
@@ -63,8 +52,6 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
-scenario = [5, 0, 0]
-scenario = [6, 2, 1]
 #######################
 
 ###########################
@@ -93,60 +80,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_suburb_5", #11
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
-# define net number
-net_number = 9
 ######################
-
-#######################
-# 0: single simulation
-# 1: all scenarios and grids
-run_simulation = 1
-#######################
-
-#############################
-### Run Single Simulation ###
-if run_simulation == 0:
-
-  # Initialize EnergyCell
-  
-  e = ec.EnergyCell(net_name = net_name[net_number],
-                    scenario = scenario,
-                    control_parameter = control_parameter,
-                    time_scope = time_scope)
-  
-  # Run powerflow
-  e.run_pf_timeseries()
-
-  # Initialize Evaluation
-  e.initiate_evaluation()
-
-  e.eva.calculate_relevant_outputdata()
-  e.eva.calculate_net_problems()
-
-  e.eva.plot_residualload(add_curtail=True, add_losses=True)
-  #e.eva.plot_ev_soc()
-  #e.eva.plot_generation_consumption_as_heat_map()
-  #e.eva.plot_colorbar_seaborn()
-  #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
-  #e.eva.plot_pv_active_power()
-  #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_bss_active_power()
-  #e.eva.plot_soc()
-  #e.eva.plot_bss_e_mwh()
-  #e.eva.plot_bss_p_mw()
-  #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')#2017-01-06 12:00:00+02:00
-  #e.eva.plot_grid_2() # Baustelle
-
-  # Initialize BSS Sizing
-  #e.initiate_BSS_sizing()
-  #e.bss_sizing.calculate_storage_sizing()
-  #e.bss_sizing.bss_sizing_trafo()
-  #e.bss_sizing.bss_sizing_line()
-  #e.bss_sizing.bss_sizing_voltage()
-  #e.bss_sizing.bss_sizing_pv()
-  #e.bss_sizing.bss_sizing_fft()
-#############################
 
 def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
         print(' ')
@@ -165,13 +99,8 @@ if __name__ == '__main__':
   net_names = [7]
   scenario = [[6,0,1]]
 
-  #'''
   with concurrent.futures.ProcessPoolExecutor() as executor:
     results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenario]
-  #'''
-
-  # apply oder map
-  #results = [pool.apply(run_mp_on_ec, args=(time_scope_i, net_name_i, scenario_i, control_parameter)) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenario]
 
   finish = time.perf_counter()
 

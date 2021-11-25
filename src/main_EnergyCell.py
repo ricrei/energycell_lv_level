@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fr October 22 11:08:14 2021
+Created on Th November 25 11:08:14 2021
 
 @authors: ricardo, tabea, paul
 """
@@ -73,6 +73,15 @@ time_scope = time_scope
 ## 6: HP residual-load-driven, EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
 # Third digit:
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
+scenario = [
+  4, # scenario number, 1-8
+  1, # PV, 0-2
+  0, # BSS, 0-4
+  3, # HP, 0-5
+  2, # EV, 0-3
+  1, # Curtailment, 0/1
+  0  # Grid reinforcement, 0/1
+]
 scenario = [5, 0, 0]
 scenario = [8, 6, 1]
 #######################
@@ -167,7 +176,7 @@ elif run_simulation == 1:
   i = 1
   for time_scope_i in [time_scope_autumn]:
     for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[6,1,1]]:
+      for scenario_i in [[4,0,1], [6,1,1]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
