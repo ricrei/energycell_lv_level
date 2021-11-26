@@ -4,25 +4,21 @@ import pandas as pd
 class PVcontroller:
 
   def __init__(self, grid, control, cos_phi):
-      self.set_pv = (grid.scenario[0] in [3, 4, 5, 6, 7, 8])
-
-      if (control=='qu' or control=='cos_phi'):
-        self.control = control
-        self.pv_para = {'cos_phi' : cos_phi,
-                        'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
-      else:
-        raise ValueError('The entered pv control is not a valid option.')
+      self.control = control
+      self.pv_para = {'cos_phi' : cos_phi,
+                      'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
       self.pv_para['tan_phi'] = np.tan(np.arccos(self.pv_para['cos_phi']))
 
-      if self.set_pv == True:
+      if (self.control != None):
         self.P_controller = PV_P_controlFEEDINALL(self.pv_para)
+        if self.control == 'qu':
+          self.Q_controller = PV_Q_controlQU(grid, self.pv_para)
+        elif self.control == 'cos_phi':
+          self.Q_controller = PV_Q_controlCOSPHI(self.pv_para)
       else:
         self.P_controller = PV_P_control_no_pv(self.pv_para)
+        self.Q_controller = PV_Q_control(self.pv_para)
 
-      if self.control == 'qu':
-        self.Q_controller = PV_Q_controlQU(grid, self.pv_para)
-      elif self.control == 'cos_phi':
-        self.Q_controller = PV_Q_controlCOSPHI(self.pv_para)
 
 
   def get_reactive_power(self, grid):
@@ -61,9 +57,9 @@ class PV_Q_control:
   def __init__(self, pv_para):
       self.pv_para = pv_para
 
-  def qcontrol(self):
-      pass
-
+  def qcontrol(self, grid):
+      grid.net.sgen["q_mvar"] = 0
+      return grid.net.sgen["q_mvar"]
 
 class PV_Q_controlCOSPHI(PV_Q_control):
 

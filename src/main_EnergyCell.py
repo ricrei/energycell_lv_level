@@ -8,6 +8,12 @@ Created on Th November 25 11:08:14 2021
 import tools.EnergyCell as ec
 import tools.evaluation.EvaluationAllCases as EvaAllCases
 
+import sys
+import time
+
+import multiprocessing as mp
+import concurrent.futures
+
 ##########################################
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00',
@@ -58,32 +64,35 @@ time_scope = time_scope
 
 #######################
 ### Define scenario ###
-# First digit:
+# First number:
 ## 1: conventional, 2: full-electrified
 ## 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
-## 5: grid extention, 6: battery storage systems
-## 7: smart consumers, 8: battery storage systems and smart consumers
-# Second digit:
-## 0: HP,EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
-## 1: Household-oriented feed-in damping (only in scenario[0] 6, 7, 8)
-## 2: Grid-oriented feed-in damping (only in scenario[0] 6, 7, 8)
-## 3: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS at LV-Busbar
-## 4: Grid-oriented feed-in damping (only in scenario[0] 6, 8), Community BSS in feeder
-## 5: HP evu-lock (EnWG $14a), EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
-## 6: HP residual-load-driven, EV greedy mode, BSS simple mode (only in scenario[0] 1-6)
-# Third digit:
+## 6: battery storage systems, 7: smart consumers, 8: battery storage systems and smart consumers
+# Second number: PV
+## 0: no PV, 1: Q(U), 2: fix cos(phi)
+# Third number: BSS
+## 0: no BSS, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
+## 4: Grid-oriented feed-in damping Community BSS at LV-Busbar,
+## 5: Grid-oriented feed-in damping Community BSS in feeder
+# Fourth number: HP
+## 0: no HP, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
+## 4: evu-lock (EnWG §14a),
+## 5: residual-load-driven
+# Fifth number: EV
+## 0: no EV, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
+# Sixth number: Curtailment
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
+# Seventh number: Grid Reinforcement
+## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
   4, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-4
-  3, # HP, 0-5
-  2, # EV, 0-3
-  1, # Curtailment, 0/1
+  0, # BSS, 0-5
+  1, # HP, 0-5
+  1, # EV, 0-3
+  0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
-scenario = [5, 0, 0]
-scenario = [8, 6, 1]
 #######################
 
 ###########################
@@ -91,7 +100,6 @@ scenario = [8, 6, 1]
 # PV_mod: qu, cos_phi
 # PV_cos_phi: 0.9 - 1
 control_parameter = {
-  'PV_mod' : 'qu',
   'PV_cos_phi' : .9}
 
 ############################
@@ -116,15 +124,9 @@ net_name = ["kerber_rural_1", #0
 net_number = 9
 ######################
 
-#######################
-# 0: single simulation
-# 1: all scenarios and grids
-run_simulation = 0
-#######################
-
 #############################
 ### Run Single Simulation ###
-if run_simulation == 0:
+def run_single_simulation():
 
   # Initialize EnergyCell
 
@@ -171,12 +173,12 @@ if run_simulation == 0:
 
 ###############################
 ### Run Multiple Simulation ###
-elif run_simulation == 1:
-
+def run_multiple_simulations():
+  start = time.perf_counter()
   i = 1
-  for time_scope_i in [time_scope_autumn]:
-    for net_name_i in [7, 8, 9, 10, 11]:
-      for scenario_i in [[4,0,1], [6,1,1]]:
+  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn]:
+    for net_name_i in [7]:
+      for scenario_i in [[6,1,1,1,1,1,0]]:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
@@ -184,20 +186,47 @@ elif run_simulation == 1:
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i)
-        e.run_pf_timeseries()
+        #e.run_pf_timeseries()
         #------------
         #e.initiate_evaluation()
         #e.eva.calculate_relevant_outputdata()
-        #e.eva.calculate_net_problems() #
-        #e.eva.plot_soc()
-        #e.eva.plot_bss_e_mwh()
-        #e.eva.plot_bss_p_mw()
-        #e.eva.plot_residualload()
-        #e.eva.plot_residualload(add_curtail=True, add_losses=True)#
+        #e.eva.calculate_net_problems()
         #-------------
 
+  finish = time.perf_counter()
 
-elif run_simulation == 11:
+  print(f'Finished in {round(finish-start, 2)} s')
+###############################
+
+#######################################################
+### Run Multiple Simulation in multiprocessing mode ###
+def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
+        e = ec.EnergyCell(net_name = net_name[net_name_i],
+                          scenario = scenario_i,
+                          control_parameter = control_parameter,
+                          time_scope = time_scope_i)
+        #e.run_pf_timeseries()
+def run_multiple_simulations_multiprocessing():
+    start = time.perf_counter()
+
+    pool = mp.Pool(6)
+    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn]
+    net_names = [7]
+    scenario = [[6,1,1,1,1,1,0]]
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+      results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenario]
+
+    finish = time.perf_counter()
+
+    print(f'Finished in {round(finish-start, 2)} s')
+
+#######################################################
+
+
+####################################
+### Run Conversion csv -> pickle ###
+def run_output_data_conversion():
   scenarios = [
   #100,
   #200,
@@ -221,5 +250,13 @@ elif run_simulation == 11:
                                  time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn])
 
   print('Done')
-###############################
+####################################
+
+
+#######################
+run_single_simulation()
+#run_multiple_simulations()
+#run_multiple_simulations_multiprocessing()
+#run_output_data_conversion()
+#######################
 

@@ -88,7 +88,7 @@ class GridReinforce:
     }
 
   def load_scenario_output_data(self):
-    # check if scenario 4 exists and load data
+    # check if scenario exists and load data
     if self.output_dir_worst_case:
        try:
          self.v_pu = tt.read_data(self.output_dir_worst_case + 'res_bus_vm_pu.csv')
@@ -100,9 +100,9 @@ class GridReinforce:
          self.pv_q = tt.read_data(self.output_dir_worst_case+'pv_reactive_power_MW.csv')
          self.v_pu_ext_grid = tt.read_data(self.output_dir_worst_case+'v_pu_ext_grid.csv')
        except:
-         raise KeyError('Run first Scenario 4')         
+         raise KeyError('Run first Scenario '+str(self.grid.scenario))         
     else:
-       raise KeyError('Run first Scenario 4')
+       raise KeyError('Run first Scenario '+str(self.grid.scenario))
 
   def fill_grid_with_power_values(self, timestep):
     self.grid.net.sgen['p_mw'] = self.pv_p.loc[timestep].values
@@ -119,7 +119,7 @@ class GridReinforce:
     print(' ')
     print(tt.text1('Transfromer reinforcement: ')+ str(self.trafo_overloading_time))
     print('Maximum trafo loading within the grid: ' + str(self.trafo_overloading) + ' %')
-    if (self.trafo_overloading > 100).any() or self.use_data_of_scenario[0] == 5:
+    if (self.trafo_overloading > 100).any():# or self.use_data_of_scenario[0] == 5:
       print(tt.textred('Transformer reinforcement needed.'))
       print('Original transformer:')
       self.print_trafo_loading()
@@ -200,7 +200,7 @@ class GridReinforce:
     print(tt.text1('Line reinforcement: '))
     self.print_loading_voltage()
 
-    if (self.line_overloading > 100) or (self.overvoltage > 1.1) or (self.undervoltage < .9) or self.use_data_of_scenario[0] == 5:
+    if (self.line_overloading > 100) or (self.overvoltage > 1.1) or (self.undervoltage < .9):# or self.use_data_of_scenario[0] == 5:
       self.install_line_by_gridtype()
     else:
       print(tt.textgreen('No line reinforcement needed.'))

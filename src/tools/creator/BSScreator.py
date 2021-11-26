@@ -6,9 +6,9 @@ from tools.controller.BSScontroller import BSScontroller
 
 class BSScreator:
 
-  def __init__(self, net_name, grid): #net_name
+  def __init__(self, grid):
         self.bss_para = {}
-        self.net_name = net_name
+        self.net_name = grid.net_name
         self.efficiency_AC2Bat = 0.952 # für jetzt
         self.efficiency_Bat2AC = 0.949 # für jetzt
         self.efficiency_storage = 0.915
@@ -17,7 +17,20 @@ class BSScreator:
         self.soc_percent = 50
         self.sizing_factor = 0.6
         #self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
-        #self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3) 
+        #self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3)
+
+  #########################################
+  ### Mastermethod: choose bss position ###
+  #########################################
+  def create_bss(self, grid, bss_control):
+        if bss_control in [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH']:
+          grid = self.create_bss_at_each_bus(grid)
+        elif bss_control == 'grid-oriented_feed-in_damping_LVbus':
+          grid = self.create_bss_at_lvbb(grid)
+        elif bss_control == 'grid-oriented_feed-in_damping_feeder':
+          grid = self.create_bss_at_selected_buses(grid)
+
+        return grid
 
   ###########################################
   ### Create Loads at each bus for all HP ### # anpassen

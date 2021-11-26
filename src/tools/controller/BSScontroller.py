@@ -7,9 +7,7 @@ import pytz
 
 class BSScontroller:
 
-  def __init__(self, grid, control):
-      self.set_bss = (grid.scenario[0] in [6, 8])
-      
+  def __init__(self, grid, control):      
       #Choice of temporal parameters and reserved soc for linear charge:
       self.timedelta_charging_delay = 0.125#2 #[h] Sommer 12 %
       self.timedelta_charging_delay_winter = 0.125#1 #[h] Versuch: %
@@ -22,6 +20,9 @@ class BSScontroller:
       self.efficiency_charge = grid.net.storage.efficiency_AC2Bat * grid.net.storage.efficiency_storage**0.5
       self.efficiency_discharge = grid.net.storage.efficiency_Bat2AC * grid.net.storage.efficiency_storage**0.5
 
+      self.control = control
+
+      '''
       if (control=='direct'):
         self.control = control
       elif (control=='feed_in_damping'):
@@ -32,8 +33,9 @@ class BSScontroller:
         self.control = control
       else:
         raise ValueError('The entered BSS control is not a valid option.')
+      '''
 
-      if self.set_bss == True:
+      if (self.control != None):
         if self.control == 'direct': 
           self.P_controller = BSS_control_direct(grid, \
                                                  self.intervall_in_seconds, \
@@ -55,7 +57,9 @@ class BSScontroller:
                                                  self.efficiency_discharge, \
                                                  self.soc_reserve_percent)
               
-        elif self.control == 'grid-oriented_feed-in_damping':
+        elif (self.control == 'grid-oriented_feed-in_damping_HH') or \
+             (self.control == 'grid-oriented_feed-in_damping_LVbus') or \
+             (self.control == 'grid-oriented_feed-in_damping_feeder'):
           self.P_controller = BSS_P_control_grid_fid(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \

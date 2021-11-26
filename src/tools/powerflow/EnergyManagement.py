@@ -12,12 +12,12 @@ class EnergyManagement:
 
   def __init__(self, scenario):
     self.scenario = scenario
-    if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) & (self.scenario[1] in [0]):
-      self.energy_manager = EnergyManagementAdvanced()
-    elif (self.scenario[0] in [6, 7, 8]) & (self.scenario[1] in [1, 2, 3, 4, 5, 6]):
-      self.energy_manager = EnergyManagementAdvanced()
-    else:
-      raise ValueError('No appropriate scenario to choose EnergyManagement.')
+    #if (self.scenario[0] in [1, 2, 3, 4, 5, 6]) & (self.scenario[1] in [0]):
+    #  self.energy_manager = EnergyManagementAdvanced()
+    #elif (self.scenario[0] in [6, 7, 8]) & (self.scenario[1] in [1, 2, 3, 4, 5, 6]):
+    self.energy_manager = EnergyManagementAdvanced()
+    #else:
+    #  raise ValueError('No appropriate scenario to choose EnergyManagement.')
 
   def control_components(self,
                          input_dict,

@@ -24,13 +24,8 @@ class Grid:
 
     self.time_scope = time_scope
     self.scenario = scenario
-    '''
-    if self.scenario[1] in [3, 4]:
-      self.is_community_storage = True
-    else:
-      self.is_community_storage = False
-    '''
-    self.is_community_storage = True if self.scenario[1] in [3, 4] else False
+
+    self.is_community_storage = True if self.scenario[2] in [3, 4] else False
     self.net_name = net_name
     self.create_net()
     pp.runpp(self.net, algorithm='nr')  # Has to be executed to get initial net.res_bus for Q(U)-control

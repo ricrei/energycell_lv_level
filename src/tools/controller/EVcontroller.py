@@ -7,20 +7,12 @@ class EVcontroller:
 
   def __init__(self, grid, control='direct', inputfolder=None):
       self.inputfolder = inputfolder
+      self.control = control
       ### define ev parameter ###
       self.ev_parameter = {'charging_power' : .011,     # in MW
                            'charging_efficiency' : .9,  # 0-1
                            'direct_charge_limit' : 80,  # in %
                            'linear_charge_limit' : 90}  # in %
-
-      ### set control strategy ###
-      self.set_ev = (grid.scenario[0] in [2, 4, 5, 6, 7, 8])
-      if (control=='direct' or control=='household-oriented_feed-in_damping' or control=='grid-oriented_feed-in_damping'):
-        self.control = control
-        if grid.scenario[0]==6:
-            self.control = 'direct'
-      else:
-        raise ValueError('The entered EV control is not a valid option.')
 
       ### load input data ###
       if (grid.category == 'rural') or (grid.category == 'village'):
@@ -39,7 +31,7 @@ class EVcontroller:
       self.ev_parking_time = tt.decompress_pickle(self.ev_data_file_parking_time)
 
       ### initilize controller ###
-      if self.set_ev == True:
+      if (self.control != None):
         if self.control == 'direct':
           self.P_controller = EV_P_control_direct(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
         elif self.control == 'household-oriented_feed-in_damping':

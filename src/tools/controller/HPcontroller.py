@@ -6,20 +6,11 @@ from tools.controller.HPstorages import HPstorages
 class HPcontroller:
 
   def __init__(self, grid, control):
-      self.set_hp = (grid.scenario[0] in [2, 4, 5, 6, 7, 8])
-      if (control=='direct' or control=='household-oriented_feed-in_damping' or \
-          control=='grid-oriented_feed-in_damping' or 'evu_lock' or \
-            'residual_load_driven'):
-        self.control = control
-        self.cos_phi = .95
-        self.tan_phi = np.tan(np.arccos(self.cos_phi))
-      else:
-        raise ValueError('The entered HP control is not a valid option.')
-
-      #print(self.set_hp)
-      #print(self.control)
+      self.control = control
+      self.cos_phi = .95
+      self.tan_phi = np.tan(np.arccos(self.cos_phi))
       
-      if self.set_hp == True:
+      if (self.control != None):
         if self.control == 'direct':
           self.P_controller = HP_P_control_direct(grid)
         elif self.control == 'household-oriented_feed-in_damping':
@@ -119,13 +110,8 @@ class HP_P_control_direct(HP_P_control):
       
       hp_el_demand = d.copy().values * (self.intervall_in_seconds / 3600)
       hps.p_mw = hp_el_demand / (self.intervall_in_seconds / 3600)
-      
-      grid.net.load.loc[grid.hp_index] = hps
-      
-      
-      HP_P_control.pcontrol(self)
-      
-      return grid.net.load.loc[grid.hp_index]
+  
+      return hps
 
 ### household-oriented_feed-in_damping ###
 class HP_P_control_hh_fid(HP_P_control):
