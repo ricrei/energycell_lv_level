@@ -8,7 +8,6 @@ Created on Fr November 26 11:08:14 2021
 import tools.EnergyCell as ec
 import tools.evaluation.EvaluationAllCases as EvaAllCases
 
-import sys
 import time
 
 import multiprocessing as mp
@@ -16,14 +15,14 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00',
-               'end_time'   : '2017-01-07 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-06-07 00:00:00+02:00',
+               'end_time'   : '2017-06-09 00:00:00+02:00',
                't_freq'     : '30T',
              }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2018-01-01 00:00:00+01:00',
-                    't_freq'     : '1H'
+                    't_freq'     : '10T'
                   }
 
 # timescopes to examine
@@ -205,7 +204,8 @@ def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i)
-        #e.run_pf_timeseries()
+        e.run_pf_timeseries()
+
 def run_multiple_simulations_multiprocessing():
     start = time.perf_counter()
 

@@ -98,7 +98,7 @@ class PVcreator:
         pv_power_installed = self.pv_para['power_'+str(category)]
         for i in range(0,len(self.pv_para['orientation'])):
               # calculate installed power per household and normalize timeseries to MW
-              pv_dc_power = pv[str(self.pv_para['orientation'][i])]*pv_power_installed*self.pv_para['installed_power_scaling'][i]/1000
+              pv_dc_power = pv[self.pv_para['orientation'][i]]*pv_power_installed*self.pv_para['installed_power_scaling'][i]/1000
               # calculate active and reactive power of pv-system
               df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power
         return df

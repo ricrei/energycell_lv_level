@@ -64,6 +64,7 @@ class InputDataHandler():
       if self.dates != dates_old:
 
         if self.season != None:
+          print('WARNING !!! DEPRICATED PV-DATA !!!')
           if self.season == 'summer':
             self.inputfolder = self.folder + 'XX_inputdata_summer/'
           elif self.season == 'winter':
