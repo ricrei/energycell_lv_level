@@ -20,7 +20,7 @@ class Curtailcontroller:
     return grid
 
 
-class CurtailmentCommunityStorage:
+class CurtailmentCommunityStorage_at_LVbusbar:
   def __init__(self):
     pass
 
@@ -30,6 +30,25 @@ class CurtailmentCommunityStorage:
             grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
             grid.net.sgen['p_mw'].values
     return p_res
+
+  def curtail_storage_power(self, grid, curtail_factor_line):
+    grid.net.storage.p_mw = grid.net.storage.p_mw*curtail_factor_line
+    grid.net.storage.q_mvar = grid.net.storage.q_mvar*curtail_factor_line
+    return grid
+
+class CurtailmentCommunityStorage_in_feeder:
+  def __init__(self):
+    pass
+
+  def get_residualload_p_per_household(self, grid):
+    p_res = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
+            grid.net.load.loc[grid.hp_index, 'p_mw'].values + \
+            grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
+            grid.net.sgen['p_mw'].values
+    return p_res
+
+  def curtail_storage_power(self, grid, curtail_factor_line):
+    return grid
 
 
 class CurtailmentHomeStorage:
@@ -44,14 +63,19 @@ class CurtailmentHomeStorage:
             grid.net.storage['p_mw'].values
     return p_res
 
+  def curtail_storage_power(self, grid, curtail_factor_line):
+    return grid
+
 class Curtailment:
 
   def __init__(self, grid):
     self.trafo_power = grid.net.trafo.sn_mva.sum()
     self.sf_pv =  1#.95 # safty factor
     self.sf_load = 1#.95 # safty factor
-    if grid.scenario[1] in [3, 4]:
-      self.Curtailment_regarding_Storage = CurtailmentCommunityStorage()
+    if grid.scenario[2] in [4]:
+      self.Curtailment_regarding_Storage = CurtailmentCommunityStorage_at_LVbusbar()
+    elif grid.scenario[2] in [5]:
+      self.Curtailment_regarding_Storage = CurtailmentCommunityStorage_in_feeder()
     else:
       self.Curtailment_regarding_Storage = CurtailmentHomeStorage()
 
@@ -105,6 +129,7 @@ class Curtailment:
            grid.curtailed_pv_power += float(grid.net.sgen.p_mw[sgen_index].sum()*(1-curtail_factor_line))
            grid.net.sgen.p_mw[sgen_index] = grid.net.sgen.p_mw[sgen_index]*curtail_factor_line
            grid.net.sgen.q_mvar[sgen_index] = grid.net.sgen.q_mvar[sgen_index]*curtail_factor_line
+           grid = self.Curtailment_regarding_Storage.curtail_storage_power(grid, curtail_factor_line)
           else:
            #print('Line Load')
            grid.curtailed_load_power += float(grid.net.load.p_mw[load_index].sum()*(1-curtail_factor_line))
