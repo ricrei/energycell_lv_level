@@ -15,8 +15,8 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-22 00:00:00+02:00',
-               'end_time'   : '2017-01-23 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-01-22 05:00:00+02:00',
+               'end_time'   : '2017-01-22 15:00:00+02:00',
                't_freq'     : '10T',
              }
 
@@ -86,7 +86,7 @@ time_scope = time_scope
 scenario = [
   6, # scenario number, 1-8
   1, # PV, 0-2
-  5, # BSS, 0-5
+  4, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
   1, # Curtailment, 0/1
@@ -153,7 +153,7 @@ def run_single_simulation():
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_hp_soc()
   #e.eva.plot_bss_active_power()
-  #e.eva.plot_soc()
+  e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-05-26 12:00:00+02:00')#2017-01-06 12:00:00+02:00
