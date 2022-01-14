@@ -50,7 +50,8 @@ class BSScreator:
       grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
       grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC
       grid.net.storage['efficiency_storage'] = self.efficiency_storage
-      grid.net.storage['e_mwh'] =  0 
+      self.e_mwh_start = self.soc_percent/100 * grid.net.storage.max_e_mwh 
+      grid.net.storage['e_mwh'] =  self.e_mwh_start
       grid.net.storage['max_e_mwh_brutto'] = grid.net.storage.max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100)
 
       return grid
@@ -76,7 +77,8 @@ class BSScreator:
       grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
       grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC
       grid.net.storage['efficiency_storage'] = self.efficiency_storage
-      grid.net.storage['e_mwh'] =  0 ###
+      self.e_mwh_start = self.soc_percent/100 * grid.net.storage.max_e_mwh 
+      grid.net.storage['e_mwh'] =  self.e_mwh_start ###
       grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) # anpassen
       return grid
 
@@ -119,7 +121,8 @@ class BSScreator:
       grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
       grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC
       grid.net.storage['efficiency_storage'] = self.efficiency_storage
-      grid.net.storage['e_mwh'] =  0 ###
+      self.e_mwh_start = self.soc_percent/100 * grid.net.storage.max_e_mwh 
+      grid.net.storage['e_mwh'] =  self.e_mwh_start ###
       grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) 
       return grid
 

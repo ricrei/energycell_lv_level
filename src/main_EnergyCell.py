@@ -15,9 +15,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-22 05:00:00+02:00',
-               'end_time'   : '2017-01-22 15:00:00+02:00',
-               't_freq'     : '10T',
+time_scope = { 'start_time' : '2017-01-21 05:00:00+02:00',
+               'end_time'   : '2017-01-24 15:00:00+02:00',
+               't_freq'     : '30T',
              }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',

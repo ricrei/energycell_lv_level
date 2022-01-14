@@ -32,9 +32,11 @@ class CurtailmentCommunityStorage_at_LVbusbar:
     return p_res
 
   def curtail_storage_power(self, grid, curtail_factor_line):
+    #print(grid.net.storage.e_mwh)
     grid.net.storage.e_mwh -= grid.net.storage.p_mw*(1-curtail_factor_line)*grid.time_scope['intervall_in_seconds']/3600
     grid.net.storage.p_mw = grid.net.storage.p_mw*curtail_factor_line
     grid.net.storage.q_mvar = grid.net.storage.q_mvar*curtail_factor_line
+    #print(grid.net.storage.e_mwh)
     return grid
 
 class CurtailmentCommunityStorage_in_feeder:
