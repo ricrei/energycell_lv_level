@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+import sys
 
 class Curtailcontroller:
 
@@ -31,12 +32,24 @@ class CurtailmentCommunityStorage_at_LVbusbar:
             grid.net.sgen['p_mw'].values
     return p_res
 
-  def curtail_storage_power(self, grid, curtail_factor_line):
-    #print(grid.net.storage.e_mwh)
-    grid.net.storage.e_mwh -= grid.net.storage.p_mw*(1-curtail_factor_line)*grid.time_scope['intervall_in_seconds']/3600
-    grid.net.storage.p_mw = grid.net.storage.p_mw*curtail_factor_line
-    grid.net.storage.q_mvar = grid.net.storage.q_mvar*curtail_factor_line
-    #print(grid.net.storage.e_mwh)
+  def curtail_storage_power(self, grid, delta_pv_power):
+    #sys.exit(0)
+    #print(grid.net.storage.soc_percent)
+    if grid.net.storage.p_mw[0] > delta_pv_power:
+      if grid.net.storage.soc_percent[0] < 100:
+        grid.net.storage.e_mwh -= delta_pv_power*grid.time_scope['intervall_in_seconds']/3600
+        grid.net.storage.soc_percent = (grid.net.storage.e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
+      grid.net.storage.p_mw -= delta_pv_power
+    else:
+      if grid.net.storage.soc_percent[0] < 100:
+        grid.net.storage.e_mwh -= grid.net.storage.p_mw*grid.time_scope['intervall_in_seconds']/3600
+        grid.net.storage.soc_percent = (grid.net.storage.e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
+      grid.net.storage.p_mw = 0
+    if grid.net.storage.e_mwh[0] < 0:
+      grid.net.storage.e_mwh = 0
+      grid.net.storage.soc_percent = (grid.net.storage.e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
+    #print(grid.net.storage.soc_percent)
+    
     return grid
 
 class CurtailmentCommunityStorage_in_feeder:
@@ -50,7 +63,7 @@ class CurtailmentCommunityStorage_in_feeder:
             grid.net.sgen['p_mw'].values
     return p_res
 
-  def curtail_storage_power(self, grid, curtail_factor_line):
+  def curtail_storage_power(self, grid, delta_pv_power):
     return grid
 
 
@@ -66,7 +79,7 @@ class CurtailmentHomeStorage:
             grid.net.storage['p_mw'].values
     return p_res
 
-  def curtail_storage_power(self, grid, curtail_factor_line):
+  def curtail_storage_power(self, grid, delta_pv_power):
     return grid
 
 class Curtailment:
@@ -112,6 +125,9 @@ class Curtailment:
        q_res_feeder = grid.net.load.q_mvar.loc[load_index].sum() - grid.net.sgen.q_mvar.loc[sgen_index].sum() + grid.net.storage.q_mvar.loc[storage_index].sum()
        s_res_feeder = (p_res_feeder**2 + q_res_feeder**2)**.5
 
+       delta_pv_power = 0
+       i_line = 0
+
        bus1 = grid.monitored_lines.to_bus[grid.monitored_lines.feeder == i].values
        bus2 = grid.monitored_lines.from_bus[grid.monitored_lines.feeder == i].values
 
@@ -128,29 +144,34 @@ class Curtailment:
          curtail_factor_line = grid.monitored_lines.max_i_ka[grid.monitored_lines.feeder == i].values/i_line
          if curtail_factor_line < curtail_factor_trafo:
           if p_res_feeder <= 0:
-           #print('Line PV')
-           grid.curtailed_pv_power += float(grid.net.sgen.p_mw[sgen_index].sum()*(1-curtail_factor_line))
-           grid.net.sgen.p_mw[sgen_index] = grid.net.sgen.p_mw[sgen_index]*curtail_factor_line
-           grid.net.sgen.q_mvar[sgen_index] = grid.net.sgen.q_mvar[sgen_index]*curtail_factor_line
-           grid = self.Curtailment_regarding_Storage.curtail_storage_power(grid, curtail_factor_line)
+           print('Line PV')
+           delta_pv_power = float(grid.net.sgen.p_mw[sgen_index].sum())
+           grid.net.sgen.p_mw[sgen_index] = grid.net.sgen.p_mw[sgen_index]*curtail_factor_line     #+ grid.net.load.p_mw.loc[load_index].sum()*(1-curtail_factor_line)/len(sgen_index)
+           grid.net.sgen.q_mvar[sgen_index] = grid.net.sgen.q_mvar[sgen_index]*curtail_factor_line #+ grid.net.load.q_mvar.loc[load_index].sum()*(1-curtail_factor_line)/len(sgen_index)
+           delta_pv_power -= float(grid.net.sgen.p_mw[sgen_index].sum())
+           grid.curtailed_pv_power += delta_pv_power
+           grid = self.Curtailment_regarding_Storage.curtail_storage_power(grid, delta_pv_power)
           else:
            #print('Line Load')
            grid.curtailed_load_power += float(grid.net.load.p_mw[load_index].sum()*(1-curtail_factor_line))
            grid.net.load.p_mw[load_index] = grid.net.load.p_mw[load_index]*curtail_factor_line
            grid.net.load.q_mvar[load_index] = grid.net.load.q_mvar[load_index]*curtail_factor_line
-
+    
     # Trafo overloading
     res_s, res_p = grid.get_residualload_s_sum()
     res_p_HH = self.Curtailment_regarding_Storage.get_residualload_p_per_household(grid)
     if (-res_s > self.trafo_power*self.sf_pv):
-      #print('Trafo PV')
+      print('Trafo PV')
       total_pv_power = (grid.net.sgen.p_mw[res_p_HH < 0].sum()**2 + grid.net.sgen.q_mvar[res_p_HH < 0].sum()**2)**.5
       total_pv_power_mw = grid.net.sgen.p_mw.sum()
       curtail_power = -res_s - self.trafo_power*self.sf_pv
       curtail_factor_trafo = (1 - curtail_power/total_pv_power)
 
+      #delta_pv_power = grid.net.sgen.p_mw[res_p_HH < 0].sum()
       grid.net.sgen.p_mw[res_p_HH < 0] = grid.net.sgen.p_mw[res_p_HH < 0] * curtail_factor_trafo
       grid.net.sgen.q_mvar[res_p_HH < 0] = grid.net.sgen.q_mvar[res_p_HH < 0] * curtail_factor_trafo
+      #delta_pv_power -= grid.net.sgen.p_mw[res_p_HH < 0].sum()
+      #grid = self.Curtailment_regarding_Storage.curtail_storage_power(grid, delta_pv_power)
 
       grid.curtailed_pv_power += total_pv_power_mw - grid.net.sgen.p_mw.sum()
     else:
@@ -169,7 +190,7 @@ class Curtailment:
       grid.curtailed_load_power += total_load_power_mw - grid.net.load.p_mw.sum()
     else:
       grid.curtailed_load_power += 0
-
+    
     return grid
 
 class NO_Curtailment:

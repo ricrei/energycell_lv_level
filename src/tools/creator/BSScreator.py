@@ -66,7 +66,7 @@ class BSScreator:
       pp.create_storage(grid.net, 4 , p_mw=0,\
                             max_e_mwh=max_e_mwh, soc_percent=0 ,name='bss_'+str(4), type='bss')
       '''
-      pp.create_storage(grid.net, grid.net.trafo.lv_bus.sum(), \
+      pp.create_storage(grid.net, grid.net.trafo.lv_bus[0], \
                         p_mw = 0, \
                         max_e_mwh = max_e_mwh, \
                         soc_percent = self.soc_percent , \

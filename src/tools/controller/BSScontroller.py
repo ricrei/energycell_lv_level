@@ -162,6 +162,54 @@ class BSS_control:
       grid.net.storage.e_mwh = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh]
 
       return grid
+
+  def calculate_stored_energy(self, grid, p_mw_bss):
+      """
+      Calculation of the energy content of the BSS:
+      For the discharging power the efficiency of the BSS and the inverter are
+      considered. In order to meet the power demand more energy is taken from 
+      the storage than used.
+      Parameters
+      ----------
+      grid : TYPE
+          network
+      p_mw_bss : numpy.ndarray
+          power change at bus due to BSS [MW]
+      Returns
+      -------
+      e_mwh : pandas.Series
+          energy content of the BSS [MWh]
+      """
+      e_mwh = grid.net.storage.e_mwh #self.e_mwh_start # [MWh] 
+      p_mw_dch = np.copy(p_mw_bss)
+      p_neg = np.less(p_mw_dch,np.zeros(self.bss_num))
+      case_p_pos = np.greater(p_mw_dch,np.zeros(self.bss_num))
+      p_mw_dch[p_neg] = p_mw_dch[p_neg] \
+                          / self.efficiency_discharge[p_neg]
+      p_mw_dch[case_p_pos] = p_mw_dch[case_p_pos] * self.efficiency_charge[case_p_pos]
+    
+      #self.e_mwh_start = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh] nicht intervall in seconds?
+      e_mwh = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh]
+
+      return e_mwh
+
+  def calculate_soc(self, grid, e_mwh):
+      """    
+      Calculation of the state of charge (SOC)
+      
+      Parameters
+      ----------
+      grid : TYPE
+          network
+      Returns
+      -------
+      soc : pandas.Series
+          state of charge [%]
+      """
+      soc = (e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
+
+      return soc
+
   
   def residual_load_per_bus(self, grid): # muss vielleicht für cbss bleiben
       residual_load_per_bus = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
@@ -172,8 +220,7 @@ class BSS_control:
   
   def direct_charge(self, grid, p_mw_bss): 
 
-      get_soc=self.state_of_charge(grid)
-      self.soc_new = get_soc
+      get_soc = grid.net.storage.soc_percent #self.state_of_charge(grid)
       get_e_mwh = grid.net.storage.e_mwh #self.e_mwh_start
       
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
@@ -270,8 +317,7 @@ class BSS_control:
 
       return p_mw_bss
 
- 
-  
+### no BSS ###
 class BSS_control_no_bss(BSS_control):
   def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent):
       super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
@@ -301,8 +347,7 @@ class BSS_control_direct(BSS_control): #simple
       p_mw_bss = -residual_load_per_bus      
      
       # Current parameters of BSS:  
-      get_soc=self.state_of_charge(grid) # state of charge [%]    
-      self.soc_new = get_soc # soc to dataframe ?  
+      get_soc = bss.soc_percent #self.state_of_charge(grid) # state of charge [%]
       get_e_mwh = bss.e_mwh #self.e_mwh_start # energy content [MWh]
       
       # Write parameters of bss into dataframe:
@@ -317,11 +362,13 @@ class BSS_control_direct(BSS_control): #simple
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
 
       # Write parameters of bss into dataframe:
+      bss.e_mwh = self.calculate_stored_energy(grid, p_mw)
+      bss.soc_percent = self.calculate_soc(grid, bss.e_mwh)
       bss.p_mw = p_mw_bss
       grid.net.storage = bss
       
       # New energy content of BSS:
-      grid = self.stored_energy(grid, p_mw_bss)
+      #grid = self.stored_energy(grid, p_mw_bss)
       
       return grid.net.storage
 
@@ -341,8 +388,7 @@ class BSS_P_control_hh_fid(BSS_control):
       p_mw_bss = - self.residual_load_per_bus(grid) 
       
       # Current parameters of BSS:
-      get_soc=self.state_of_charge(grid)
-      self.soc_new = get_soc
+      get_soc = bss.soc_percent #self.state_of_charge(grid)
       get_e_mwh = bss.e_mwh #self.e_mwh_start  
       
       # Write parameters of bss into dataframe:
@@ -362,11 +408,13 @@ class BSS_P_control_hh_fid(BSS_control):
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
       
       # Write parameters of bss into dataframe:
+      bss.e_mwh = self.calculate_stored_energy(grid, p_mw_bss)
+      bss.soc_percent = self.calculate_soc(grid, bss.e_mwh)
       bss.p_mw = p_mw_bss
       grid.net.storage = bss
       
       # calculate new energy content:
-      grid = self.stored_energy(grid, p_mw_bss) 
+      #grid = self.stored_energy(grid, p_mw_bss) 
       
       return grid.net.storage
 
@@ -384,14 +432,10 @@ class BSS_P_control_grid_fid(BSS_control):
       s_res, p_res = grid.get_residualload_s_sum()
       p_mw_bss_total = - p_res
         
-     # Current parameters of BSS:             
-      get_soc=self.state_of_charge(grid)
+      # Current parameters of BSS:             
+      get_soc = bss.soc_percent #self.state_of_charge(grid)
       get_e_mwh = bss.e_mwh #self.e_mwh_start    
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh
-      
-      # Write parameters of bss into dataframe:
-      bss.e_mwh = get_e_mwh
-      bss.soc_percent = get_soc
       
       # Distribution of residual load over storages: 
       if free_capacity.sum() <= 0:
@@ -415,7 +459,7 @@ class BSS_P_control_grid_fid(BSS_control):
           p_mw_bss = (p_mw_bss_total * distribution_factor_dch) #* np.ones(bss_num)
        
       #DIRECT CHARGING:
-      p_mw_bss = self.direct_charge(grid, p_mw_bss)     
+      p_mw_bss = self.direct_charge(grid, p_mw_bss)
       
       #LINEAR CHARGING AND DISCHARGING:
       p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.timedelta_early_discharge, self.soc_reserve_percent)
@@ -425,11 +469,13 @@ class BSS_P_control_grid_fid(BSS_control):
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
       
       # Write parameters of bss into dataframe: (Das sind die Parameter am Anfang des aktuellen Zeitstempels --> nicht in fid überschreiben)
+      bss.e_mwh = self.calculate_stored_energy(grid, p_mw_bss)
+      bss.soc_percent = self.calculate_soc(grid, bss.e_mwh)
       bss.p_mw = p_mw_bss
       grid.net.storage = bss
       
       # calculate new energy content:
-      grid = self.stored_energy(grid, p_mw_bss)    
+      #grid = self.stored_energy(grid, p_mw_bss)    
 
       return grid.net.storage  
    
@@ -442,7 +488,7 @@ class BSS_P_control_grid_fid(BSS_control):
       # Current parameters of BSS:
       get_e_mwh = bss.e_mwh #self.e_mwh_start
       get_e_mwh[get_e_mwh <0] =0 ###? nochmal überlegen und vielleicht mit Ricardo besprechen
-      get_soc = self.state_of_charge(grid)
+      get_soc = bss.soc_percent #self.state_of_charge(grid)
    
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh 
 
@@ -527,13 +573,15 @@ class BSS_P_control_grid_fid(BSS_control):
   
       # calculate new energy content:
       p_mw_stored = p_mw_bss - bss.p_mw # - p_mw_bss_copy statt - bss.p_mw
-      grid_helper = self.stored_energy(grid, p_mw_stored) 
-      get_e_mwh = grid_helper.net.storage.e_mwh
+      #grid_helper = self.stored_energy(grid, p_mw_stored) 
+      #get_e_mwh = grid_helper.net.storage.e_mwh
 
       # Write parameters of bss into dataframe:
+      bss.e_mwh = self.calculate_stored_energy(grid, p_mw_stored)
+      bss.soc_percent = self.calculate_soc(grid, bss.e_mwh)
       bss.p_mw = p_mw_bss   # darf hier erst nach get_e_mwh stehen!
       grid.net.storage = bss
-      grid.net.storage.e_mwh = get_e_mwh
+      #grid.net.storage.e_mwh = get_e_mwh
 
       return grid.net.storage
 
