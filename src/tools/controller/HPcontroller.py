@@ -118,12 +118,89 @@ class HP_P_control_hh_fid(HP_P_control):
 
   def __init__(self, grid):
       #TODO
-      print('Warning: HP household-oriented_feed-in_damping control is not implemented')
+      print('Warning: HP household-oriented_feed-in_damping control is not well implemented')
       super().__init__(grid)
+      self.HP_storages = HPstorages()
+      self.HP_storages.create_hp_storages(grid)
+
 
   def pcontrol(self, grid, d, t):
-      HP_P_control.pcontrol(self)
-      return d.values
+
+      #residual_load positiv -> demand from grid
+      #residual_load negativ -> feed into grid
+      resi_load = grid.get_residualload_p_per_household() #array of float
+      hp_soc_change = -resi_load * (self.intervall_in_seconds / 3600)
+      hps = grid.net.load.loc[grid.hp_index]
+      hp_el_demand = d.copy().values * (self.intervall_in_seconds / 3600)
+
+      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t)
+      sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + dt.timedelta(days = 1))
+
+      print()
+      print('######################')
+      print(t)
+      print(sunrise)
+      print(sunset)
+      print(timedelta_day_s/3600)
+      print(timedelta_sunrise_sunset_s/3600)
+
+      time = t.tz_localize(None)
+
+      #set residual_load_driven (direct) start_condition
+      ### calculate amount of possible energy charge (positiv hp_soc_change)
+      #hp_soc_change[hp_soc_change > 0] = hp_soc_change[hp_soc_change > 0] - hp_el_demand[hp_soc_change > 0]
+      ### calculate amount of possible energy discharge (negativ hp_soc_change)
+      #hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
+
+      #time of production
+      if (time > sunrise and time < sunset):
+
+        #calculate default linear charge
+        p_mw_lin_ch = (hps.hp_el_capacity_mwh - hps.hp_soc_mwh) / (timedelta_day_s/3600)  # mwh/h -> _s/3600
+        print(p_mw_lin_ch.values)
+
+        #charge linear if possible
+        hp_soc_change[hp_soc_change > 0] = p_mw_lin_ch[hp_soc_change > 0] *  \
+          (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        #discharge on demand
+        #hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
+        
+
+        print(hp_soc_change)
+
+      #time of no production
+      else:
+
+        timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+        p_mw_lin_dch = (hps.hp_soc_mwh) / (timedelta_nxt_sunrise_s/3600)  # mwh/h -> _s/3600
+        print(p_mw_lin_dch.values)
+
+        #set 
+        hp_soc_change[hp_soc_change <= 0] = -p_mw_lin_dch[hp_soc_change <= 0] * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        print(hp_soc_change)
+
+        #hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
+
+      ### storage full
+      #limit increase hp_soc untill [hp_soc + soc_change > hp_capacity]
+      hp_soc_change[hps.hp_soc_mwh + hp_soc_change > hps.hp_el_capacity_mwh] = \
+          hps.hp_el_capacity_mwh[hps.hp_soc_mwh + hp_soc_change > hps.hp_el_capacity_mwh] - \
+            hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change > hps.hp_el_capacity_mwh]
+
+      ### storage emtpy
+      #decrease hp_soc untill [hp_soc + soc_change < 0]
+      hp_soc_change[hps.hp_soc_mwh + hp_soc_change < 0] =\
+          -hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change < 0]
+
+      ### set power of hp additional the charge of storage
+      #hps.p_mw = (hp_el_demand + hp_soc_change) / (self.intervall_in_seconds / 3600)
+      hps.p_mw = (hp_el_demand + hp_soc_change) / (self.intervall_in_seconds / 3600)
+      ### set soc of storage
+      hps.hp_soc_mwh += hp_soc_change
+
+      grid.net.load.loc[grid.hp_index] = hps
+      #HP_P_control.pcontrol(self)
+      return grid.net.load.loc[grid.hp_index]
 
 ### grid-oriented_feed-in_damping ###
 class HP_P_control_grid_fid(HP_P_control):

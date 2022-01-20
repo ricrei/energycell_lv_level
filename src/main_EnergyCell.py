@@ -16,7 +16,7 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-01-05 00:00:00+02:00',
                'end_time'   : '2017-01-07 00:00:00+02:00',
                't_freq'     : '30T',
              }
@@ -85,11 +85,11 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
+  7, # scenario number, 1-8
   1, # PV, 0-2
   0, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
+  2, # HP, 0-5
+  0, # EV, 0-3
   0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -121,7 +121,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 9
+net_number = 13
 ######################
 
 #############################
@@ -152,7 +152,7 @@ def run_single_simulation():
   e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_hp_soc()
+  e.eva.plot_hp_soc()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()

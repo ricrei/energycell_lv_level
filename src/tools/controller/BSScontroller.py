@@ -226,7 +226,7 @@ class BSS_control:
       t_start_linear_charge_winter = sunrise + datetime.timedelta(hours = timedelta_charging_delay_winter_h)
       t_end_linear_charge_summer = sunset - datetime.timedelta(hours = timedelta_charging_delay_summer_h)
       t_end_linear_charge_winter = sunset - datetime.timedelta(hours = timedelta_charging_delay_winter_h)
-           
+
       t_start_linear_discharge = sunset - datetime.timedelta(hours = self.timedelta_early_discharge)
       timedelta_lin_ch_summer_s = abs((t_end_linear_charge_summer - time).total_seconds())
       timedelta_lin_ch_winter_s = abs((t_end_linear_charge_winter - time).total_seconds())
@@ -408,16 +408,16 @@ class BSS_P_control_grid_fid(BSS_control):
       get_e_mwh[get_e_mwh<0]= 0
       distribution_factor_dch = get_e_mwh / get_e_mwh.sum()
       distribution_factor_dch = distribution_factor_dch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0 
-          
+
       if p_mw_bss_total >= 0: 
           p_mw_bss = (p_mw_bss_total * distribution_factor_ch) 
-      
+
       elif p_mw_bss_total < 0:
           p_mw_bss = (p_mw_bss_total * distribution_factor_dch) #* np.ones(bss_num)
-       
+
       #DIRECT CHARGING:
       p_mw_bss = self.direct_charge(grid, p_mw_bss)     
-      
+
       #LINEAR CHARGING AND DISCHARGING:
       p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.timedelta_early_discharge, self.soc_reserve_percent)
        
