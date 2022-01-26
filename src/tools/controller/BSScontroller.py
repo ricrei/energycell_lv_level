@@ -17,7 +17,7 @@ class BSScontroller:
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
       self.bss_num = len(grid.net.storage) #raus     
-      self.efficiency_charge = grid.net.storage.efficiency_AC2Bat * grid.net.storage.efficiency_storage**0.5
+      self.efficiency_charge = grid.net.storage.efficiency_AC2Bat * grid.net.storage.efficiency_storage**0.5 
       self.efficiency_discharge = grid.net.storage.efficiency_Bat2AC * grid.net.storage.efficiency_storage**0.5
 
       self.control = control
@@ -117,6 +117,7 @@ class BSS_control:
   def pcontrol_trafo_charge(self, grid, t):
       return grid.net.storage
   
+  '''
   def state_of_charge(self, grid): 
       """    
       Calculation of the state of charge (SOC)
@@ -132,7 +133,7 @@ class BSS_control:
       """
       soc = (grid.net.storage.e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
       return soc
- 
+
   def stored_energy(self, grid, p_mw_bss):
       """
       Calculation of the energy content of the BSS:
@@ -162,6 +163,7 @@ class BSS_control:
       grid.net.storage.e_mwh = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh]
 
       return grid
+  '''
 
   def calculate_stored_energy(self, grid, p_mw_bss):
       """
@@ -183,12 +185,10 @@ class BSS_control:
       e_mwh = grid.net.storage.e_mwh #self.e_mwh_start # [MWh] 
       p_mw_dch = np.copy(p_mw_bss)
       p_neg = np.less(p_mw_dch,np.zeros(self.bss_num))
-      case_p_pos = np.greater(p_mw_dch,np.zeros(self.bss_num))
-      p_mw_dch[p_neg] = p_mw_dch[p_neg] \
-                          / self.efficiency_discharge[p_neg]
-      p_mw_dch[case_p_pos] = p_mw_dch[case_p_pos] * self.efficiency_charge[case_p_pos]
-    
-      #self.e_mwh_start = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh] nicht intervall in seconds?
+      p_pos = np.greater(p_mw_dch,np.zeros(self.bss_num))
+      p_mw_dch[p_neg] = p_mw_dch[p_neg] / self.efficiency_discharge[p_neg]
+      p_mw_dch[p_pos] = p_mw_dch[p_pos] * self.efficiency_charge[p_pos]
+
       e_mwh = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh]
 
       return e_mwh
@@ -503,7 +503,7 @@ class BSS_P_control_grid_fid(BSS_control):
           else:
               p_trafo_max = 0  
   
-          p_total_bss = p_res - p_trafo_max  
+          p_total_bss = p_res - p_trafo_max
          
           # damping:
           if free_capacity.sum() == 0.0:

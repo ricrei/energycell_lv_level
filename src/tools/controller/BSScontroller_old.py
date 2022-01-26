@@ -133,7 +133,7 @@ class BSS_control:
           state of charge [%]
       """
       #self.e_mwh_start = grid.net.storage.e_mwh
-      print(self.e_mwh_start)
+      #print(self.e_mwh_start)
       soc = (self.e_mwh_start / grid.net.storage.max_e_mwh) * 100 # [%]
       return soc
  
