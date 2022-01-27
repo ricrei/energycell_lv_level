@@ -38,28 +38,24 @@ class CurtailmentCommunityStorage_at_LVbusbar:
    s_res, p_res = grid.get_residualload_s_sum()
 
    if grid.s_trafo_power < -s_res: # Fall Trafoüberlastung bei Solarüberschuss
-    # Speicherleistung wird zurückgesetzt und neu berechnet. 26.01.2022
-    #p_bss_down = grid.net.storage.p_mw
-    #grid.net.storage.p_mw = 0
-    #s_res, p_res = grid.get_residualload_s_sum()
-
-    q_res_to_the_power_of_2 = s_res**2 - p_res**2
-    if q_res_to_the_power_of_2 < grid.s_trafo_power**2: 
+     # Speicherleistung wird zurückgesetzt und neu berechnet. 26.01.2022
+     q_res_to_the_power_of_2 = s_res**2 - p_res**2
+     if q_res_to_the_power_of_2 < grid.s_trafo_power**2: 
        p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
-    else:
+     else:
        p_trafo_max = 0
-    grid.net.storage.p_mw = -(p_res + p_trafo_max)
-    p_bss_down -= grid.net.storage.p_mw
-    if grid.net.storage.soc_percent[0] < 100:
-      grid.net.storage.e_mwh -= p_bss_down*grid.time_scope['intervall_in_seconds']/3600
-      grid.net.storage.soc_percent = (grid.net.storage.e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
-    else:
-      grid.net.storage.p_mw = 0
-      grid.net.storage.e_mwh = grid.net.storage.max_e_mwh
-      grid.net.storage.soc_percent = 100
+     grid.net.storage.p_mw = -(p_res + p_trafo_max)
+     p_bss_down -= grid.net.storage.p_mw
+     if grid.net.storage.soc_percent[0] < 100:
+       grid.net.storage.e_mwh -= p_bss_down*grid.time_scope['intervall_in_seconds']/3600
+       grid.net.storage.soc_percent = (grid.net.storage.e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
+     else:
+       grid.net.storage.p_mw = 0
+       grid.net.storage.e_mwh = grid.net.storage.max_e_mwh
+       grid.net.storage.soc_percent = 100
 
    else:
-    grid.net.storage.p_mw = p_bss_down
+     grid.net.storage.p_mw = p_bss_down
 
    return grid
 
@@ -155,7 +151,7 @@ class Curtailment:
          curtail_factor_line = grid.monitored_lines.max_i_ka[grid.monitored_lines.feeder == i].values/i_line
          if curtail_factor_line < curtail_factor_trafo:
           if p_res_feeder <= 0:
-           print('Line PV')
+           #print('Line PV')
            delta_pv_power_active = float(grid.net.sgen.p_mw[sgen_index].sum())
            grid.net.sgen.p_mw[sgen_index] = grid.net.sgen.p_mw[sgen_index]*curtail_factor_line     + grid.net.load.p_mw.loc[load_index].sum()*(1-curtail_factor_line)/len(sgen_index)
            grid.net.sgen.q_mvar[sgen_index] = grid.net.sgen.q_mvar[sgen_index]*curtail_factor_line + grid.net.load.q_mvar.loc[load_index].sum()*(1-curtail_factor_line)/len(sgen_index)
@@ -172,7 +168,7 @@ class Curtailment:
     res_s, res_p = grid.get_residualload_s_sum()
     res_p_HH = self.Curtailment_regarding_Storage.get_residualload_p_per_household(grid)
     if (-res_s > self.trafo_power*self.sf_pv):
-      print('Trafo PV')
+      #print('Trafo PV')
       total_pv_power = (grid.net.sgen.p_mw[res_p_HH < 0].sum()**2 + grid.net.sgen.q_mvar[res_p_HH < 0].sum()**2)**.5
       total_pv_power_mw = grid.net.sgen.p_mw.sum()
       curtail_power = -res_s - self.trafo_power*self.sf_pv

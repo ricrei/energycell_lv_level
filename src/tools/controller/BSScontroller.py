@@ -116,54 +116,6 @@ class BSS_control:
 
   def pcontrol_trafo_charge(self, grid, t):
       return grid.net.storage
-  
-  '''
-  def state_of_charge(self, grid): 
-      """    
-      Calculation of the state of charge (SOC)
-      
-      Parameters
-      ----------
-      grid : TYPE
-          network
-      Returns
-      -------
-      soc : pandas.Series
-          state of charge [%]
-      """
-      soc = (grid.net.storage.e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
-      return soc
-
-  def stored_energy(self, grid, p_mw_bss):
-      """
-      Calculation of the energy content of the BSS:
-      For the discharging power the efficiency of the BSS and the inverter are
-      considered. In order to meet the power demand more energy is taken from 
-      the storage than used.
-      Parameters
-      ----------
-      grid : TYPE
-          network
-      p_mw_bss : numpy.ndarray
-          power change at bus due to BSS [MW]
-      Returns
-      -------
-      e_mwh : pandas.Series
-          energy content of the BSS [MWh]
-      """
-      e_mwh = grid.net.storage.e_mwh #self.e_mwh_start # [MWh] 
-      p_mw_dch = np.copy(p_mw_bss)
-      p_neg = np.less(p_mw_dch,np.zeros(self.bss_num))
-      case_p_pos = np.greater(p_mw_dch,np.zeros(self.bss_num))
-      p_mw_dch[p_neg] = p_mw_dch[p_neg] \
-                          / self.efficiency_discharge[p_neg]
-      p_mw_dch[case_p_pos] = p_mw_dch[case_p_pos] * self.efficiency_charge[case_p_pos]
-    
-      #self.e_mwh_start = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh] nicht intervall in seconds?
-      grid.net.storage.e_mwh = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh]
-
-      return grid
-  '''
 
   def calculate_stored_energy(self, grid, p_mw_bss):
       """
@@ -512,10 +464,6 @@ class BSS_P_control_grid_fid(BSS_control):
               damping_faktor = free_capacity / (free_capacity.sum())
               damping_faktor = damping_faktor.fillna(0)
               
-          ''' #alt:
-          damping_faktor = free_capacity / (free_capacity.sum())
-          damping_faktor = damping_faktor.fillna(0)
-          '''
           p_mw_damped = damping_faktor * p_total_bss
          
           needed_capacity = p_mw_damped * self.intervall / 3600 # oder needed_capacity = p_mw_damped + p_mw_bss / ... ? nein

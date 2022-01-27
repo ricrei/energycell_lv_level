@@ -15,8 +15,8 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-03-24 05:00:00+02:00',
-               'end_time'   : '2017-03-24 23:00:00+02:00',
+time_scope = { 'start_time' : '2017-03-11 05:00:00+02:00',
+               'end_time'   : '2017-03-11 23:00:00+02:00',
                't_freq'     : '5T',
              }
 
@@ -120,7 +120,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 11
+net_number = 8
 ######################
 
 #############################
