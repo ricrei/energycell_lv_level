@@ -92,29 +92,42 @@ evaluation.plot_heatmap_grid_issus_with_bss(eva, net_name, n, save_fig_dir=save_
 evaluation.plot_heatmap_grid_issus_with_bss_curtailed(eva, net_name, n, save_fig_dir=save_fig_dir)
 evaluation.plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=save_fig_dir)
 evaluation.plot_heatmap_self_sufficiency(eva, net_name, n, save_fig_dir=save_fig_dir)
+evaluation.plot_heatmap_self_sufficiency_curtailed(eva, net_name, n, save_fig_dir=save_fig_dir)
 
 ### Others ###
 #####evaluation.plot_grid_issus_over_time(eva, save_fig_dir=save_fig_dir)
 print('Create Other plots')
 
-evaluation.plot_residualload_subplot_overall_eva(eva['s400n8summer'], eva['s400n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8.png')
-evaluation.plot_residualload_subplot_overall_eva(eva['s401n8summer'], eva['s401n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8.png')
+#evaluation.plot_residualload_subplot_overall_eva(eva['s400n8summer'], eva['s400n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8.png')
+#evaluation.plot_residualload_subplot_overall_eva(eva['s401n8summer'], eva['s401n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8.png')
 
 #evaluation.plot_residualload_subplot_overall_eva(eva['s401n8winter'], eva['s621n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_n8_winter.png')
 
 #evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s400n8summer']['power'], eva['s400n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8_detailed.png')
-evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s401n8summer']['power'], eva['s401n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8_detailed.png')
-evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s601n8summer']['power'], eva['s601n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s61n8_detailed.png')
+#evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s401n8summer']['power'], eva['s401n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s41n8_detailed.png')
+#evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s601n8summer']['power'], eva['s601n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s61n8_detailed.png')
 
 
 #evaluation.plot_residualload_subplot_overall_eva(eva['s641n8summer'], eva['s641n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s641n8.png')
 '''
 #evaluation.plot_residualload_subplot_overall_eva(eva['s601n11summer'], eva['s601n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s601n11.png')
-evaluation.plot_residualload_subplot_overall_eva(eva['s600n7summer']['power'], eva['s600n7winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n7.svg')
-evaluation.plot_residualload_subplot_overall_eva(eva['s600n8summer']['power'], eva['s600n8winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n8.svg')
-evaluation.plot_residualload_subplot_overall_eva(eva['s600n9summer']['power'], eva['s600n9winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n9.svg')
-evaluation.plot_residualload_subplot_overall_eva(eva['s600n10summer']['power'], eva['s600n10winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n10.svg')
-evaluation.plot_residualload_subplot_overall_eva(eva['s600n11summer']['power'], eva['s600n11winter']['power'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s600n11.svg')
+evaluation.plot_residualload_subplot_overall_eva(eva['s601n8summer'], eva['s601n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s601n8.pdf')
+evaluation.plot_residualload_subplot_overall_eva(eva['s611n8summer'], eva['s611n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s611n8.pdf')
+evaluation.plot_residualload_subplot_overall_eva(eva['s621n8summer'], eva['s621n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s621n8.pdf')
+evaluation.plot_residualload_subplot_overall_eva(eva['s631n8summer'], eva['s631n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s631n8.pdf')
+evaluation.plot_residualload_subplot_overall_eva(eva['s641n8summer'], eva['s641n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s641n8.pdf')
+
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s401n7summer'], eva['s401n7winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s401n7.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s401n8summer'], eva['s401n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s401n8.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s401n9summer'], eva['s401n9winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s401n9.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s401n10summer'], eva['s401n10winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s401n10.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s401n11summer'], eva['s401n11winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s401n11.pdf')
+
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s400n7summer'], eva['s400n7winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s400n7.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s400n8summer'], eva['s400n8winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s400n8.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s400n9summer'], eva['s400n9winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s400n9.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s400n10summer'], eva['s400n10winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s400n10.pdf')
+evaluation.plot_residualload_subplot_overall_eva_no_bss(eva['s400n11summer'], eva['s400n11winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s400n11.pdf')
 '''
 '''
 evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s400n8winter']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
@@ -124,27 +137,61 @@ evaluation.plot_grid_issus_over_power(eva['s400n8winter'], save_fig_dir=save_fig
 evaluation.plot_grid_issus_over_power(eva['s400n8summer'], save_fig_dir=save_fig_dir + 'plot_grid_issus_over_power.png')
 '''
 
+#evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s601n8summer'], eva_winter=eva['s601n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s601n8_1T.pdf')
+#evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s611n8summer'], eva_winter=eva['s611n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s611n8_1T.pdf')
+#evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s621n8summer'], eva_winter=eva['s621n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s621n8_1T.pdf')
+#evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s631n8summer'], eva_winter=eva['s631n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s631n8_1T.pdf')
+#evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s641n8summer'], eva_winter=eva['s641n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s641n8_1T.pdf')
 '''
-evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s611n8summer'], eva_winter=eva['s611n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s611n8.png')
-evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s621n8summer'], eva_winter=eva['s621n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s621n8.png')
-evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s631n8summer'], eva_winter=eva['s631n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s631n8.png')
-evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s641n8summer'], eva_winter=eva['s641n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s641n8.png')
-No documentation 
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n7summer'], eva_winter=eva['s400n7winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n7_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n8summer'], eva_winter=eva['s400n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n8_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n9summer'], eva_winter=eva['s400n9winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n9_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n10summer'], eva_winter=eva['s400n10winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n10_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n11summer'], eva_winter=eva['s400n11winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n11_1T.pdf')
+
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n7summer'], eva_winter=eva['s401n7winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n7_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n8summer'], eva_winter=eva['s401n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n8_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n9summer'], eva_winter=eva['s401n9winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n9_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n10summer'], eva_winter=eva['s401n10winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n10_1T.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n11summer'], eva_winter=eva['s401n11winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n11_1T.pdf')
 '''
+#----------------------------------
+'''
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s601n8summer'], eva_winter=eva['s601n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s601n8.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s611n8summer'], eva_winter=eva['s611n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s611n8.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s621n8summer'], eva_winter=eva['s621n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s621n8.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s631n8summer'], eva_winter=eva['s631n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s631n8.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s641n8summer'], eva_winter=eva['s641n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s641n8.pdf')
+
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n7summer'], eva_winter=eva['s400n7winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n7.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n8summer'], eva_winter=eva['s400n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n8.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n9summer'], eva_winter=eva['s400n9winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n9.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n10summer'], eva_winter=eva['s400n10winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n10.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s400n11summer'], eva_winter=eva['s400n11winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s400n11.pdf')
+
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n7summer'], eva_winter=eva['s401n7winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n7.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n8summer'], eva_winter=eva['s401n8winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n8.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n9summer'], eva_winter=eva['s401n9winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n9.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n10summer'], eva_winter=eva['s401n10winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n10.pdf')
+evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s401n11summer'], eva_winter=eva['s401n11winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s401n11.pdf')
+'''
+#No documentation 
+
 #evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s601n11summer'], eva_winter=eva['s601n11winter'], save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s601n11.png')
 
 #evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s600n11summer'], eva_winter=eva['s600n11winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s600n11.png')
 #evaluation.plot_grid_issus_over_time_subplot(eva_summer=eva['s601n11summer'], eva_winter=eva['s601n11winter'], detailed=True, save_fig_dir=save_fig_dir+ 'plot_grid_issus_over_time_subplot_s601n11.png')
-
+'''
 evaluation.plot_curtailed_power(eva, scenario=401 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=601 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=611 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=621 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=631 , save_fig_dir=save_fig_dir)
 evaluation.plot_curtailed_power(eva, scenario=641 , save_fig_dir=save_fig_dir)
-
+'''
 #evaluation.state_of_charge(eva, net_name, n, save_fig_dir=save_fig_dir)
 
 '''
 evaluation.plot_hist_grid_issus_voltage(eva['s40n9summer'], eva['s40n9winter'], save_fig_dir+ 'hist_grid_issus_voltage.png')
 '''
+#evaluation.state_of_charge(eva['s631n8summer'], eva['s631n8winter'], save_fig_dir=save_fig_dir+'plot_soc_s631n8.pdf')

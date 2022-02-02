@@ -122,8 +122,10 @@ class EvaluationSingleCase():
     else:
       ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
 
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Power in kW')
+    #ax.set_xlabel('Time')
+    ax.set_xlabel('Zeit', fontsize = 'large')
+    #ax.set_ylabel('Power in kW')
+    ax.set_ylabel('Leistung [kW]', fontsize = 'large')
     '''
     patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
@@ -146,7 +148,7 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[0], alpha=0.2, label='Curtailed energy'),
          mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
                  ]
-      plt.legend(handles=patch_list)
+      #plt.legend(handles=patch_list)
 
     if not add_curtail and add_losses:
       patch_list = [
@@ -157,7 +159,7 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
          mpatches.Patch(color=c[8], alpha=0.7, label='Line and trafo losses')
                  ]
-      plt.legend(handles=patch_list)
+      #plt.legend(handles=patch_list)
 
     if add_curtail and not add_losses:
       patch_list = [
@@ -168,7 +170,7 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
          mpatches.Patch(color=c[0], alpha=0.2, label='Curtailed energy')
                  ]
-      plt.legend(handles=patch_list)
+      #plt.legend(handles=patch_list)
 
     if not add_curtail and not add_losses:
       patch_list = [
@@ -178,8 +180,8 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage')
                  ]
-      plt.legend(handles=patch_list)
-
+      #plt.legend(handles=patch_list)
+    
     plt.show()
 
   def plot_generation_consumption_as_heat_map(self):
@@ -378,8 +380,11 @@ class EvaluationSingleCase():
     soc = self.storage_soc
     fig, ax = plt.subplots()
     ax.plot(soc.index, soc)
-    ax.set_xlabel('Time')
-    ax.set_ylabel('State of charge in %')
+    ax.plot(soc.index, soc.mean(axis=1), color='black', linewidth = '2')
+    #ax.set_xlabel('Time', fontsize='large')
+    ax.set_xlabel('Zeit', fontsize='large')
+    #ax.set_ylabel('State of charge in %', fontsize='large')
+    ax.set_ylabel('SOC [%]', fontsize='large')
     #plt.legend(grid.component_buses.index)
     plt.show()
     
@@ -434,7 +439,7 @@ class EvaluationSingleCase():
 
 
   def plot_grid_2(self):
-    time_sample = pd.to_datetime('2017-05-26 14:00:00+02:00')
+    time_sample = pd.to_datetime('2017-01-05 12:00:00+01:00')#('2017-05-26 14:00:00+02:00')
     colors = sns.color_palette()
 
     def run_pp(timestep):
@@ -460,5 +465,5 @@ class EvaluationSingleCase():
     lc_over = ppplt.create_line_collection(net, lines=lines_over.index, color=colors[3], zorder=5)
 
 
-    ppplt.draw_collections([bc, lc, tc, bc_over, lc_over])
+    ppplt.draw_collections([bc, lc, tc])
     plt.show()

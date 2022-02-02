@@ -14,7 +14,7 @@ class BSScontroller:
       self.timedelta_charging_delay = 0.125#2 #[h] Sommer 12 %
       self.timedelta_charging_delay_winter = 0.125#1 #[h] Versuch: %
       self.timedelta_early_discharge = 0.25#2 #[-]
-      self.soc_reserve_percent = 0#20 #[%]
+      self.soc_reserve_percent = 20#20 #[%]
       
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
