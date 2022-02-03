@@ -11,14 +11,14 @@ class BSScontroller:
       self.set_bss = (grid.scenario[0] in [6, 8])
       
       #Choice of temporal parameters and reserved soc for linear charge:
-      self.timedelta_charging_delay = 0.125#2 #[h] Sommer 12 %
-      self.timedelta_charging_delay_winter = 0.125#1 #[h] Versuch: %
-      self.timedelta_early_discharge = 0.25#2 #[-]
-      self.soc_reserve_percent = 20#20 #[%]
+      self.timedelta_charging_delay = 0.125 #[-], summer 
+      self.timedelta_charging_delay_winter = 0.125 #[-], winter
+      self.timedelta_early_discharge = 0.25 #[-]
+      self.soc_reserve_percent = 20 #[%]
       
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
-      self.bss_num = len(grid.net.storage) #raus     
+      self.bss_num = len(grid.net.storage)     
       self.efficiency_charge = grid.net.storage.efficiency_AC2Bat * grid.net.storage.efficiency_storage**0.5
       self.efficiency_discharge = grid.net.storage.efficiency_Bat2AC * grid.net.storage.efficiency_storage**0.5
 
@@ -77,12 +77,9 @@ class BSScontroller:
   
   def get_active_power_linear_charge(self, grid, t):
       return self.P_controller.pcontrol_linear_charge(grid, t)
-  
-  def get_active_power_linear_charge_cbss(self, grid, t): # später raus
-      return self.P_controller.pcontrol_linear_charge_cbss(grid, t)
 
   def get_active_power_trafo_charge(self, grid, t):
-      return self.P_controller.pcontrol_trafo_charge(grid, t) #
+      return self.P_controller.pcontrol_trafo_charge(grid, t) 
   
   def get_e_mwh(self, grid):
       return self.P_controller.e_mwh_start
@@ -93,8 +90,8 @@ class BSScontroller:
 # Parent
 class BSS_control:
   def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
-      self.intervall = intervall_in_seconds#self.intervall_in_seconds #?????? neu 20.10
-      self.bss_num = len(grid.net.storage)# bss_num
+      self.intervall = intervall_in_seconds
+      self.bss_num = len(grid.net.storage)
       self.soc_start = grid.net.storage.soc_percent 
       self.e_mwh_start = self.soc_start/100 * grid.net.storage.max_e_mwh 
       self.soc_new = self.soc_start  
@@ -117,36 +114,37 @@ class BSS_control:
   
   def state_of_charge(self, grid): 
       """    
-      Calculation of the state of charge (SOC)
+      Calculate the state of charge (SOC).
       
       Parameters
       ----------
-      grid : TYPE
-          network
+      grid : class Grid
+          network.
       Returns
       -------
-      soc : pandas.Series
-          state of charge [%]
+      soc : Series
+          state of charge [%].
       """
       soc = (self.e_mwh_start / grid.net.storage.max_e_mwh) * 100 # [%]
       return soc
  
   def stored_energy(self, grid, p_mw_bss):
       """
-      Calculation of the energy content of the BSS:
+      Calculate of the energy content of the BSS.
+      
       For the discharging power the efficiency of the BSS and the inverter are
       considered. In order to meet the power demand more energy is taken from 
       the storage than used.
       Parameters
       ----------
-      grid : TYPE
-          network
+      grid : class Grid
+          Network.
       p_mw_bss : numpy.ndarray
-          power change at bus due to BSS [MW]
+          Power change at bus due to BSS [MW].
       Returns
       -------
-      e_mwh : pandas.Series
-          energy content of the BSS [MWh]
+      e_mwh : Series
+          Energy content of the BSS [MWh].
       """
       e_mwh = self.e_mwh_start # [MWh]
       p_mw_dch = np.copy(p_mw_bss)
@@ -156,11 +154,24 @@ class BSS_control:
                           / self.efficiency_discharge[p_neg]
       p_mw_dch[case_p_pos] = p_mw_dch[case_p_pos] * self.efficiency_charge[case_p_pos]
     
-      self.e_mwh_start = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh] nicht intervall in seconds?
+      self.e_mwh_start = e_mwh + (p_mw_dch * self.intervall / 3600) # [MWh] 
 
       return e_mwh
   
-  def residual_load_per_bus(self, grid): # muss vielleicht für cbss bleiben
+  def residual_load_per_bus(self, grid):
+      '''
+      Calculate residual load at each bus.
+
+      Parameters
+      ----------
+      grid : class Grid
+          Network.
+
+      Returns
+      -------
+      residual_load_per_bus : numpy.ndarray
+          Residual load at each bus [MW].
+      '''
       residual_load_per_bus = grid.net.load.loc[grid.load_index, 'p_mw'].values + \
                               grid.net.load.loc[grid.hp_index, 'p_mw'].values + \
                               grid.net.load.loc[grid.ev_index, 'p_mw'].values - \
@@ -168,7 +179,20 @@ class BSS_control:
       return residual_load_per_bus
   
   def direct_charge(self, grid, p_mw_bss): 
-
+      '''
+      Calculate the storage power using the direct charging strategy.
+      
+      Parameters
+      ----------
+      grid : class Grid
+          Network.
+      p_mw_bss : numpy.ndarray
+          Demanded power at bus to cover load or store excess solar power [MW].
+      Returns
+      -------
+      p_mw_bss : numpy.ndarray
+         Power change at bus due to BSS [MW].
+      '''
       get_soc=self.state_of_charge(grid)
       self.soc_new = get_soc
       get_e_mwh=self.e_mwh_start
@@ -196,7 +220,7 @@ class BSS_control:
                                      * self.efficiency_charge[solar_excess_1])                                   
       p_mw_bss[solar_excess_2] = 0 
       
-      # Excess in load: # später soc_min integrieren statt zeros ?
+      # Excess in load: 
       p_mw_bss[load_excess_1] = - get_e_mwh[load_excess_1] \
                                   * self.efficiency_discharge[load_excess_1]  \
                                   * 3600 \
@@ -206,8 +230,36 @@ class BSS_control:
       return p_mw_bss
  
   def linear_charge(self, grid, t, p_mw_bss, get_e_mwh, free_capacity, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, soc_reserve_percent):
-      
-      #soc_reserve_percent = 20
+      '''
+      Adjust the storage power according to the linear charging strategy.
+
+      Parameters
+      ----------
+      grid : class Grid
+          Network.
+      t : pandas._libs.tslibs.timestamps.Timestamp
+          Timestamp.
+      p_mw_bss : numpy.ndarray
+          Current storage power [MW].
+      get_e_mwh : Series
+          Stored energy (netto) [MWh].
+      free_capacity : TYPE
+          Difference between netto capacity of BSS and stored energy [MWh].
+      timedelta_charging_delay : float
+          Ratio of charging delay and daylight hours in summer [-].
+      timedelta_charging_delay_winter : float
+          Ratio of charging delay and daylight hours in winter [-].
+      timedelta_early_discharge : float
+          Ratio of duration between start time for discharge and sunset and 
+          daylight hours [-].
+      soc_reserve_percent : float
+          Percentage of netto storage capacity to be reserved until sunrise [%]
+
+      Returns
+      -------
+      p_mw_bss : numpy.ndarray
+          DESCRIPTION.
+      '''
       soc_reserve = soc_reserve_percent/100
       
       time = t.tz_localize(None)
@@ -229,10 +281,9 @@ class BSS_control:
       timedelta_lin_dch_day1_s = abs((sunrise_next - time).total_seconds())
       timedelta_lin_dch_day2_s = abs((sunrise - time).total_seconds())
       timedelta_lin_dch_winter_day_s = abs((t_start_linear_discharge - time).total_seconds())
-      #print('timedelta_lin_ch_winter: ' + str(timedelta_lin_ch_winter_s))
       
       # Winter - Temporal parameters and discharge:
-      if timedelta_sunrise_sunset_s < (12*3600):  #winter
+      if timedelta_sunrise_sunset_s < (12*3600):  
       
           #charge:
           if time >= t_start_linear_charge_winter and time <= t_end_linear_charge_winter: 
@@ -240,21 +291,21 @@ class BSS_control:
           else:
               p_mw_lin_ch = np.zeros(len(grid.net.storage))
           
-          #discharge
-          if (sunrise - time).total_seconds() > 0: # nach Mitternacht vor Tagesanbruch
+          #discharge:
+          if (sunrise - time).total_seconds() > 0: # after midnight, before sunrise
               timedelta_night_s = timedelta_lin_dch_day2_s
               if timedelta_night_s < self.intervall:  
                   timedelta_night_s = self.intervall  
-          else: #vor Mitternacht
+          else: #before midnight
               timedelta_night_s = timedelta_lin_dch_day1_s
                   
           p_mw_lin_dch = -((get_e_mwh - soc_reserve * grid.net.storage.max_e_mwh) * self.efficiency_discharge * 3600)/ timedelta_night_s
           case_lin_dch = (p_mw_lin_dch > p_mw_bss) & (p_mw_bss < 0) & (get_e_mwh >= soc_reserve * grid.net.storage.max_e_mwh)
-          case_lin_dch2 = (p_mw_bss < 0) & (get_e_mwh < soc_reserve * grid.net.storage.max_e_mwh)#<0 wichtig für Rechenfehler
+          case_lin_dch2 = (p_mw_bss < 0) & (get_e_mwh < soc_reserve * grid.net.storage.max_e_mwh)
           p_mw_bss[case_lin_dch] = p_mw_lin_dch[case_lin_dch]    
           p_mw_bss[case_lin_dch2] = 0
               
-      # Summer - Temoral parameters
+      # Summer - Temporal parameters
       else:
           if time >= t_start_linear_charge_summer and time <= t_end_linear_charge_summer: 
               p_mw_lin_ch = (free_capacity * 3600)/ (timedelta_lin_ch_summer_s * self.efficiency_charge)
@@ -262,7 +313,7 @@ class BSS_control:
               p_mw_lin_ch = np.zeros(len(grid.net.storage))
       
       # Linear charge in summer and winter:
-      case_lin_ch = (p_mw_lin_ch < p_mw_bss) #& (p_mw_bss > 0)# 
+      case_lin_ch = (p_mw_lin_ch < p_mw_bss) 
       p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch] 
 
       return p_mw_bss
@@ -280,17 +331,23 @@ class BSS_control_direct(BSS_control): #simple
       
   def pcontrol_direct_charge(self, grid, t): 
       '''
-      Calculation of the change of residual laod caused by the BSS at each bus
+      Calculate the change of residual laod caused by the BSS at each bus.
+      
+      The storage power is calculated according to the direct charging 
+      strategy. This method can be applied on HBSS.
+      
       Parameters
       ----------
-      grid : TYPE
-          network
+      grid : class Grid
+          Network.
+      t : pandas._libs.tslibs.timestamps.Timestamp
+          Timestamp.
+
       Returns
       -------
-      p_mw_bss : numpy.ndarray
-          power change at bus due to BSS [MW]
+      DataFrame
+          DataFrame with updated storage data.
       '''
-      
       bss = grid.net.storage
       
       # Residual load at each household and resulting charging/discharging power:
@@ -299,7 +356,7 @@ class BSS_control_direct(BSS_control): #simple
      
       # Current parameters of BSS:  
       get_soc=self.state_of_charge(grid) # state of charge [%]    
-      self.soc_new = get_soc # soc to dataframe ?  
+      self.soc_new = get_soc  
       get_e_mwh=self.e_mwh_start # energy content [MWh]
       
       # Write parameters of bss into dataframe:
@@ -323,16 +380,31 @@ class BSS_control_direct(BSS_control): #simple
       return grid.net.storage
 
 
-### FEED IN DAMPING ###
-
-### household-oriented_feed-in_damping ###
+### FEED IN DAMPING (household-oriented) ###
 class BSS_P_control_hh_fid(BSS_control):
 
   def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay,timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent):
       super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
 
   def pcontrol_linear_charge(self, grid, t):
+      '''
+      Calculate the change of residual laod caused by the BSS at each bus.
       
+      The storage power is calculated according to the linear charging 
+      strategy. This method can be applied on HBSS.
+
+      Parameters
+      ----------
+      grid : class Grid
+          Network.
+      t : pandas._libs.tslibs.timestamps.Timestamp
+          Timestamp.
+
+      Returns
+      -------
+      DataFrame
+          DataFrame with updated storage data.
+      '''    
       bss = grid.net.storage
       
       p_mw_bss = - self.residual_load_per_bus(grid) 
@@ -368,15 +440,31 @@ class BSS_P_control_hh_fid(BSS_control):
       return grid.net.storage
 
 
-### grid-oriented_feed-in_damping ###
+### FEED IN DAMPING (grid-oriented) ###
 class BSS_P_control_grid_fid(BSS_control):
   def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
       super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
       
-      #self.trafo_sn_mva = grid.net.trafo.sn_mva.sum() # oder grid.s_trafo_power ()ist das gleiche
-  
-  def pcontrol_linear_charge(self, grid, t): #pcontrol_linear_charge_cbss
-  
+  def pcontrol_linear_charge(self, grid, t): 
+      '''
+      Calculate the change of residual laod caused by the BSS at each bus 
+      connected to a BSS.
+      
+      The storage power is calculated according to the interconnected linear 
+      charging strategy. This method can be applied on HBSS and CBSS.
+
+      Parameters
+      ----------
+      grid : class Grid
+          Network.
+      t : pandas._libs.tslibs.timestamps.Timestamp
+          Timestamp.
+
+      Returns
+      -------
+      DataFrame
+          DataFrame with updated storage data.
+      '''
       bss = grid.net.storage
       s_res, p_res = grid.get_residualload_s_sum()
       p_mw_bss_total = - p_res
@@ -396,20 +484,16 @@ class BSS_P_control_grid_fid(BSS_control):
       else:
           distribution_factor_ch = free_capacity/free_capacity.sum()
           distribution_factor_ch = distribution_factor_ch.fillna(0)
-      '''
-      distribution_factor_ch = free_capacity / free_capacity.sum()
-      distribution_factor_ch = distribution_factor_ch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0   
-      '''
 
       get_e_mwh[get_e_mwh<0]= 0
       distribution_factor_dch = get_e_mwh / get_e_mwh.sum()
-      distribution_factor_dch = distribution_factor_dch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0 
+      distribution_factor_dch = distribution_factor_dch.fillna(0) 
           
       if p_mw_bss_total >= 0: 
           p_mw_bss = (p_mw_bss_total * distribution_factor_ch) 
       
       elif p_mw_bss_total < 0:
-          p_mw_bss = (p_mw_bss_total * distribution_factor_dch) #* np.ones(bss_num)
+          p_mw_bss = (p_mw_bss_total * distribution_factor_dch) 
        
       #DIRECT CHARGING:
       p_mw_bss = self.direct_charge(grid, p_mw_bss)     
@@ -421,7 +505,7 @@ class BSS_P_control_grid_fid(BSS_control):
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
       
-      # Write parameters of bss into dataframe: (Das sind die Parameter am Anfang des aktuellen Zeitstempels --> nicht in fid überschreiben)
+      # Write parameters of bss into dataframe:
       bss.p_mw = p_mw_bss
       grid.net.storage = bss
       
@@ -429,15 +513,34 @@ class BSS_P_control_grid_fid(BSS_control):
       get_e_mwh = self.stored_energy(grid, p_mw_bss)    
       return grid.net.storage  
    
-  def pcontrol_trafo_charge(self, grid, t): #pcontrol(self, grid, t): #t
-  
+  def pcontrol_trafo_charge(self, grid, t):
+      '''
+      Calculate the change of residual laod caused by the BSS at each bus 
+      connected to a BSS.
+      
+      The storage power is calculated according to the interconnected feed-in 
+      damping depending on the trafo load. This method can be applied on HBSS 
+      and CBSS.
+
+      Parameters
+      ----------
+      grid : class Grid
+          Network.
+      t : pandas._libs.tslibs.timestamps.Timestamp
+          Timestamp.
+
+      Returns
+      -------
+      DataFrame
+          DataFrame with updated storage data.
+      ''' 
       bss = grid.net.storage
 
       p_mw_bss = bss.p_mw
      
       # Current parameters of BSS:
       get_e_mwh = self.e_mwh_start
-      get_e_mwh[get_e_mwh <0] =0 ###? nochmal überlegen und vielleicht mit Ricardo besprechen
+      get_e_mwh[get_e_mwh <0] = 0 
       get_soc = self.state_of_charge(grid)
    
       free_capacity = grid.net.storage.max_e_mwh - get_e_mwh 
@@ -446,7 +549,7 @@ class BSS_P_control_grid_fid(BSS_control):
       s_res, p_res = grid.get_residualload_s_sum() 
       p_res = -p_res 
 
-      if grid.s_trafo_power < -s_res: # Fall Trafoüberlastung bei Solarüberschuss
+      if grid.s_trafo_power < -s_res: # trafo overloading, solar excess
           q_res_to_the_power_of_2 = s_res**2 - p_res**2
           if q_res_to_the_power_of_2 < grid.s_trafo_power**2: 
               p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
@@ -462,13 +565,9 @@ class BSS_P_control_grid_fid(BSS_control):
               damping_faktor = free_capacity / (free_capacity.sum())
               damping_faktor = damping_faktor.fillna(0)
               
-          ''' #alt:
-          damping_faktor = free_capacity / (free_capacity.sum())
-          damping_faktor = damping_faktor.fillna(0)
-          '''
           p_mw_damped = damping_faktor * p_total_bss
          
-          needed_capacity = p_mw_damped * self.intervall / 3600 # oder needed_capacity = p_mw_damped + p_mw_bss / ... ? nein
+          needed_capacity = p_mw_damped * self.intervall / 3600 
           
           solar_excess_fid_1 = (get_soc < 100) & \
                                (needed_capacity * self.efficiency_charge <= free_capacity)
@@ -480,7 +579,7 @@ class BSS_P_control_grid_fid(BSS_control):
                                          / (self.intervall * self.efficiency_charge[solar_excess_fid_2])
           p_mw_damped[solar_test] = 0
 
-      elif grid.s_trafo_power < s_res: # Fall Trafoüberlastung bei Netzbezug
+      elif grid.s_trafo_power < s_res: # trafo overloading, grid supply
           
           # Calculate Trafo Overload:
           q_res_to_the_power_of_2 = s_res**2 - p_res**2
@@ -494,10 +593,10 @@ class BSS_P_control_grid_fid(BSS_control):
           # load damping:
           get_e_mwh[get_e_mwh <0] = 0
           damping_factor = get_e_mwh / get_e_mwh.sum()
-          damping_factor = damping_factor.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0 
+          damping_factor = damping_factor.fillna(0) 
 
           p_mw_damped = damping_factor * p_total_bss       
-          needed_capacity = - p_mw_damped * self.intervall / 3600 # oder needed_capacity = p_mw_damped + p_mw_bss / ... ? nein
+          needed_capacity = - p_mw_damped * self.intervall / 3600 
             
           load_excess_fid_2 = (get_soc > 0) & \
                                (get_e_mwh < needed_capacity / self.efficiency_discharge)
@@ -516,10 +615,6 @@ class BSS_P_control_grid_fid(BSS_control):
       # Limitation by maximum power:     
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
-      
-      # Write parameters of bss into dataframe:
-      # e_mwh und soc werden nur zu Angang eines Zeitspempels an df übergeben (hier bereits in lin getan)
-      # eine weitere Übergabe würdie Daten verfälschen
   
       # calculate new energy content:
       p_mw_stored = p_mw_bss - bss.p_mw # - p_mw_bss_copy statt - bss.p_mw

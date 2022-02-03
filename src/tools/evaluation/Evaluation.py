@@ -6,8 +6,8 @@ import numpy as np
 import pandapower.plotting.plotly as ppply
 import seaborn as sns
 from datetime import datetime, timedelta
-import plotly.graph_objects as go  # neu Tabea
-import plotly.express as px  # neu Tabea
+import plotly.graph_objects as go  
+import plotly.express as px  
 
 
 # Handle date time conversions between pandas and matplotlib
@@ -236,7 +236,7 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
         #ax[i].set_xticklabels(
             #['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7']) 
         ax[i].set_xticklabels(
-            ['  Tag 1', '  Tag 2', '  Tag 3', '  Tag 4', '  Tag 5', '  Tag 6', '  Tag 7']) #fontsize Tabea
+            ['  Tag 1', '  Tag 2', '  Tag 3', '  Tag 4', '  Tag 5', '  Tag 6', '  Tag 7']) 
         #ax[i].set_fontsize(16) ###
         #ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-1.100, .850))
         ax[i].set(xlim=(power[i].index[0], power[i].index[-1]),
@@ -256,9 +256,9 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
     #ax[0].set_ylabel('Power in MW') 
     #ax[0].set_xlabel('Summer') 
     #ax[1].set_xlabel('Winter') 
-    ax[0].set_ylabel('Leistung [MW]', fontsize='large') #fontsize Tabea
-    ax[0].set_xlabel('Sommer', fontsize='large') #fontsize Tabea
-    ax[1].set_xlabel('Winter', fontsize='large') #fontsize Tabea
+    ax[0].set_ylabel('Leistung [MW]', fontsize='large') 
+    ax[0].set_xlabel('Sommer', fontsize='large') 
+    ax[1].set_xlabel('Winter', fontsize='large') 
 
     '''
   ax[0].set_xlabel('Without BSS')
@@ -354,7 +354,7 @@ def plot_residualload_subplot_overall_eva_no_bss(eva1, eva2, save_fig_dir=None):
         #ax[i].set_xticklabels(
             #['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7']) 
         ax[i].set_xticklabels(
-            ['  Tag 1', '  Tag 2', '  Tag 3', '  Tag 4', '  Tag 5', '  Tag 6', '  Tag 7']) #fontsize Tabea
+            ['  Tag 1', '  Tag 2', '  Tag 3', '  Tag 4', '  Tag 5', '  Tag 6', '  Tag 7']) 
         #ax[i].set_fontsize(16) ###
         #ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-1.100, .850))
         ax[i].set(xlim=(power[i].index[0], power[i].index[-1]),
@@ -374,9 +374,9 @@ def plot_residualload_subplot_overall_eva_no_bss(eva1, eva2, save_fig_dir=None):
     #ax[0].set_ylabel('Power in MW') 
     #ax[0].set_xlabel('Summer') 
     #ax[1].set_xlabel('Winter') 
-    ax[0].set_ylabel('Leistung [MW]', fontsize='large') #fontsize Tabea
-    ax[0].set_xlabel('Sommer', fontsize='large') #fontsize Tabea
-    ax[1].set_xlabel('Winter', fontsize='large') #fontsize Tabea
+    ax[0].set_ylabel('Leistung [MW]', fontsize='large') 
+    ax[0].set_xlabel('Sommer', fontsize='large') 
+    ax[1].set_xlabel('Winter', fontsize='large') 
 
     '''
     ax[0].set_xlabel('Without BSS')
@@ -503,7 +503,7 @@ def plot_residualload_subplot_overall_eva_timeslot(power_summer, power_winter, s
 
     #fig, ax = plt.subplots(1, 2, figsize=(10,5), sharey=True,  gridspec_kw={'wspace': .05})
     fig, ax = plt.subplots(1, 2, figsize=(
-        15, 5), sharey=True,  gridspec_kw={'wspace': .05})  # Tabea
+        15, 5), sharey=True,  gridspec_kw={'wspace': .05})  
     for i in [0, 1]:
         ax[i].fill_between(power[i].index, 0, power[i].pv, alpha=0.7)
         ax[i].plot(power[i].index, power[i].pv, lw=.6)
@@ -922,35 +922,35 @@ def plot_heatmap_grid_issus_with_bss_curtailed(eva, net_name, n, save_fig_dir=No
 
 def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
     print('Create Heatmap plots curtailed power')
-   # print(eva) #Tabea
+   # print(eva) 
     #minutes_per_week = 7*24*60
 
     #pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
     #load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
 
     pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[
-                            401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                            401, 601, 611, 621, 631, 641]).fillna(0)  
     load_power = pd.DataFrame(index=[net_name[7:12]], columns=[
-                              401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                              401, 601, 611, 621, 631, 641]).fillna(0)  
 
     # Curtailed pv power
     #curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
     #curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
     curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                          401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                          401, 601, 611, 621, 631, 641]).fillna(0)  
     curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                          401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                          401, 601, 611, 621, 631, 641]).fillna(0)  
 
     #curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
     #curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
     curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                      401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                      401, 601, 611, 621, 631, 641]).fillna(0)  
     curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                        401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                        401, 601, 611, 621, 631, 641]).fillna(0)  
 
     for index in eva:
         # if eva[index]['scenario'] in [401,601,611,621]:
-        if eva[index]['scenario'] in [401, 601, 611, 621, 631, 641]:  # Tabea
+        if eva[index]['scenario'] in [401, 601, 611, 621, 631, 641]:  
             curtailed_power_pv[eva[index]['scenario']].loc[eva[index]
                                                            ['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
             curtailed_power_load[eva[index]['scenario']].loc[eva[index]
@@ -974,7 +974,7 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
         (load_power+curtailed_power_load)*100
 
     #x_ticklabels = ['401', '601', '611', '621']
-    x_ticklabels = ['401', '601', '611', '621', '631', '641']  # Tabea
+    x_ticklabels = ['401', '601', '611', '621', '631', '641']  
     y_ticklabels = ['Rural 1', 'Rural 2',
                     'Rural 3', 'Semi- \nurban 1', 'Semi- \nurban 2']
     #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2',
@@ -1110,7 +1110,7 @@ def plot_heatmap_self_sufficiency_curtailed(eva, net_name, n, save_fig_dir=None)
                                                           ['net_name']] += eva[index]['PVConsumption']/n
             #v_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['v'].columns)/n
 
-    x_ticklabels = ['401', '601', '611', '621', '631', '641']  # Tabea
+    x_ticklabels = ['401', '601', '611', '621', '631', '641']  
     y_ticklabels = ['Rural 1', 'Rural 2',
                     'Rural 3', 'Semi- \nurban 1', 'Semi- \nurban 2']
     #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2',
@@ -1175,7 +1175,7 @@ def plot_heatmap_self_sufficiency(eva, net_name, n, save_fig_dir=None):
                                                           ['net_name']] += eva[index]['PVConsumption']/n
             #v_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['v'].columns)/n
 
-    x_ticklabels = ['400', '600', '610', '620', '630', '640']  # Tabea
+    x_ticklabels = ['400', '600', '610', '620', '630', '640']  
     y_ticklabels = ['Rural 1', 'Rural 2',
                     'Rural 3', 'Semi- \nurban 1', 'Semi- \nurban 2']
     #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2',
@@ -1366,7 +1366,7 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, sav
 
     #fig, ax = plt.subplots(3, 2, figsize=(10,5), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05})
     fig, ax = plt.subplots(3, 2, figsize=(
-        20, 5), sharey='row', sharex='col', gridspec_kw={'wspace': .05})  # Tabea
+        20, 5), sharey='row', sharex='col', gridspec_kw={'wspace': .05})  
     ax1 = ax[1]  # Voltage
     ax2 = ax[2]  # Line and Trafo
     ax3 = ax[0]  # Residualload
@@ -1413,11 +1413,11 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, sav
                           loc="lower right", shadow=True)
             '''
         else:
-            # time_min_winter = pd.to_datetime('2017-01-05 00:00:00+01:00', utc=True) #Tabea
-            # time_max_winter = pd.to_datetime('2017-01-07 00:00:00+01:00', utc=True) #Tabea
+            # time_min_winter = pd.to_datetime('2017-01-05 00:00:00+01:00', utc=True) 
+            # time_max_winter = pd.to_datetime('2017-01-07 00:00:00+01:00', utc=True) 
 
-            # time_min_summer = pd.to_datetime('2017-05-27 00:00:00+01:00', utc=True) #Tabea
-            # time_max_summer = pd.to_datetime('2017-05-29 00:00:00+01:00', utc=True) #Tabea
+            # time_min_summer = pd.to_datetime('2017-05-27 00:00:00+01:00', utc=True) 
+            # time_max_summer = pd.to_datetime('2017-05-29 00:00:00+01:00', utc=True) 
             '''
             time_min_winter = pd.to_datetime('2017-01-05 00:00:00+01:00', utc=True)
             time_max_winter = pd.to_datetime('2017-01-08 00:00:00+01:00', utc=True)
@@ -1426,17 +1426,17 @@ def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, sav
             time_max_summer = pd.to_datetime('2017-05-29 00:00:00+02:00', utc=True)
             '''
             time_min_winter = pd.to_datetime(
-                '2017-01-05 00:00:00+01:00', utc=True)  # Tabea
+                '2017-01-05 00:00:00+01:00', utc=True)  
             time_max_winter = pd.to_datetime(
-                '2017-01-08 00:00:00+01:00', utc=True)  # Tabea
+                '2017-01-08 00:00:00+01:00', utc=True) 
 
             time_min_summer = pd.to_datetime(
-                '2017-05-26 00:00:00+02:00', utc=True)  # Tabea
+                '2017-05-26 00:00:00+02:00', utc=True) 
             time_max_summer = pd.to_datetime(
-                '2017-05-29 00:00:00+02:00', utc=True)  # Tabea
+                '2017-05-29 00:00:00+02:00', utc=True)  
             
-            time_min = [time_min_summer, time_min_winter]  # Tabea
-            time_max = [time_max_summer, time_max_winter]  # Tabea
+            time_min = [time_min_summer, time_min_winter]  
+            time_max = [time_max_summer, time_max_winter]  
 
             #ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15))
             #ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(0, 7.0))
@@ -1549,7 +1549,7 @@ H is the hatch used for identification of the different dataframe"""
                       grid=False,
                       cmap='summer',
                       **kwargs)  # make bar plots
-        # table=True, # Tabea
+        # table=True, 
 
     h, l = axe.get_legend_handles_labels()  # get the handles we want to modify
     for i in range(0, n_df * n_col, n_col):  # len(h) = n_col * n_df
@@ -1584,7 +1584,7 @@ H is the hatch used for identification of the different dataframe"""
     # ['rural 1', 'rural 2', 'rural 3', 'suburban 1', 'suburban 2'])
     axe.set_xticklabels(df.index)
     axe.set_ylim([0, 120])
-    # axe.bar_label(dfall[0].columns, label_type = 'center') # Tabea
+    # axe.bar_label(dfall[0].columns, label_type = 'center') 
     return axe
 
 
@@ -1592,7 +1592,7 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
 
     #df = pd.DataFrame(columns=['gridID', 'time_scope', 'curtailed_power_pv', 'feed-in_power_pv', 'self-consumed_power_pv', 'curtailed_power_load', 'grid_obtained_power_load', 'self-consumed_power_load'], index=range(10))
     df = pd.DataFrame(columns=['gridID', 'time_scope', 'curtailed_power_pv', 'feed-in_power_pv', 'self-consumed_power_pv',
-                               'curtailed_power_load', 'grid_obtained_power_load', 'self-consumed_power_load', 'energy_load'], index=range(10))  # Tabea
+                               'curtailed_power_load', 'grid_obtained_power_load', 'self-consumed_power_load', 'energy_load'], index=range(10))  
 
     scale_factor_energy = 1/60  # kWmin -> kWh
 
@@ -1619,7 +1619,7 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
             df['curtailed_power_load'].iloc[i] = curtailed_power['curtail_load'] * \
                 scale_factor_energy
 
-            # -----------Tabea------------
+            # -----------------------
             df['energy_load'].iloc[i] = (eva[index]['power']['load'].sum()
                                          + eva[index]['power']['hp'].sum()
                                          + eva[index]['power']['ev'].sum()
@@ -1628,18 +1628,10 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
 
             i += 1
 
-            print(df['energy_load'])  # Tabea
+            print(df['energy_load'])  
 
     df_summer = df[df['time_scope'] == 'summer']
     df_winter = df[df['time_scope'] == 'winter']
-
-    print(df_summer)  # Tabea
-    df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/' + str(scenario)+'_df_summer.csv',
-                     sep=',', index=False)
-
-    print(df_winter)  # Tabea
-    df_winter.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/' + str(scenario)+'_df_winter.csv',
-                     sep=',', index=False)
 
     df_summer = df_summer.set_index('gridID')
     df_winter = df_winter.set_index('gridID')
@@ -1651,10 +1643,6 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
     df_winter_pv = df_winter
     df_summer_load = df_summer
     df_winter_load = df_winter
-
-    # print(df_summer) #Tabea
-    # df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', \
-    # sep=',', index = False)
 
     df_summer_pv = df_summer_pv.drop('curtailed_power_load', axis=1)
     df_summer_pv = df_summer_pv.drop('grid_obtained_power_load', axis=1)
@@ -1693,10 +1681,6 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
         plt.savefig(save_fig_dir+'curtailed_Load_power_' +
                     str(scenario)+'.png', bbox_inches='tight')
 
-    # ---------Tabea-----------
-    # print(df_winter_load['curtailed'])
-    # -------------------------
-
 def state_of_charge(eva_summer, eva_winter, save_fig_dir=None):
     soc_summer = eva_summer['soc_bss']
     soc_winter = eva_winter['soc_bss']
@@ -1715,7 +1699,7 @@ def state_of_charge(eva_summer, eva_winter, save_fig_dir=None):
         #ax[i].set_xticklabels(
             #['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7']) 
         ax[i].set_xticklabels(
-            ['  Tag 1', '  Tag 2', '  Tag 3', '  Tag 4', '  Tag 5', '  Tag 6', '  Tag 7']) #fontsize Tabea
+            ['  Tag 1', '  Tag 2', '  Tag 3', '  Tag 4', '  Tag 5', '  Tag 6', '  Tag 7']) 
         #ax[i].set_fontsize(16) ###
         #ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-1.100, .850))
         ax[i].set(xlim=(soc[i].index[0], soc[i].index[-1]),
@@ -1725,9 +1709,9 @@ def state_of_charge(eva_summer, eva_winter, save_fig_dir=None):
     #ax[0].set_ylabel('SOC in %') 
     #ax[0].set_xlabel('Summer') 
     #ax[1].set_xlabel('Winter') 
-    ax[0].set_ylabel('SOC [%]', fontsize='large') #fontsize Tabea
-    ax[0].set_xlabel('Sommer', fontsize='large') #fontsize Tabea
-    ax[1].set_xlabel('Winter', fontsize='large') #fontsize Tabea
+    ax[0].set_ylabel('SOC [%]', fontsize='large') 
+    ax[0].set_xlabel('Sommer', fontsize='large') 
+    ax[1].set_xlabel('Winter', fontsize='large') 
     
     time_min_winter = pd.to_datetime('2017-01-05 00:00:00+01:00', utc=True)
     time_max_winter = pd.to_datetime('2017-01-08 00:00:00+01:00', utc=True)
@@ -1764,64 +1748,28 @@ def state_of_charge(eva_summer, eva_winter, save_fig_dir=None):
     #-------------------------------------------
     '''
 
-    
-    
-def state_of_charge_alt(eva, net_name, n, save_fig_dir=None):
-    #df_soc_curtailed = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-    #df_soc = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-    df_soc_curtailed = pd.DataFrame(
-        index=[net_name[8]], columns=[641]).fillna(0)
-    #df_soc = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-
-    scenario = '641'  # [630,631]
-    winter_week_shortened = '2017-01-04_2017-01-11_1T'
-    summer_week_shortened = '2017-05-26_2017-06-02_1T'
-    data_soc = 'storage_state_of_charge_percent.csv'
-
-    for index in eva:
-        if eva[index]['scenario'] in [641]:
-            # if eva[index]['scenario'] in [401,601,611,621,631,641]:
-            file = '/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/output-files/shortened_data/' + \
-                scenario + '/' + 'simbench_rural_2' + '/' + winter_week_shortened + '/'
-            data = pd.read_csv(file + data_soc, sep=",", decimal=".", header=0)
-            df_soc_curtailed[eva[index]['scenario']
-                             ].loc[eva[index]['net_name']] += data[index]  # /n
-            # df_soc_curtailed[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['soc_bss']#/n
-            #df_soc[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['soc_bss']/n
-            print(df_soc_curtailed)
-        '''
-   for scenario_x in scenario:
-    #soc = self.storage_soc
-    fig, ax = plt.subplots()
-    ax.plot(soc.index, soc)
-    ax.set_xlabel('Time')
-    ax.set_ylabel('State of charge in %')
-    #plt.legend(grid.component_buses.index)
-    plt.show()
-   '''
 
 
 def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
 
     pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[
-                            401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                            401, 601, 611, 621, 631, 641]).fillna(0)  
     load_power = pd.DataFrame(index=[net_name[7:12]], columns=[
-                              401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                              401, 601, 611, 621, 631, 641]).fillna(0)  
 
     # Curtailed pv power
     curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                          401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                          401, 601, 611, 621, 631, 641]).fillna(0)  
     curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                          401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                          401, 601, 611, 621, 631, 641]).fillna(0)  
     curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                      401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                      401, 601, 611, 621, 631, 641]).fillna(0)  
     curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[
-                                        401, 601, 611, 621, 631, 641]).fillna(0)  # Tabea
+                                        401, 601, 611, 621, 631, 641]).fillna(0)  
 
     
     for index in eva:
-        if eva[index]['scenario'] in [401, 601, 611, 621, 631, 641]:  # Tabea
-            # if eva[index]['scenario'] in [scenario_num]: #Tabea
+        if eva[index]['scenario'] in [401, 601, 611, 621, 631, 641]:  
             curtailed_power_pv[eva[index]['scenario']].loc[eva[index]
                                                            ['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
             curtailed_power_load[eva[index]['scenario']].loc[eva[index]
@@ -1841,13 +1789,9 @@ def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
         (pv_power+curtailed_power_pv)*100
     curtailed_power_load_per_cent = curtailed_power_load / \
         (load_power+curtailed_power_load)*100
-    #print('curtailed pv:')
-    # print(curtailed_power_pv_per_cent)
 
     integrated_power_pv_percent = 100 - curtailed_power_pv_per_cent
     covered_power_load_percent = 100 - curtailed_power_load_per_cent
-    #print(integrated_power_pv_percent)
-    # -----------------
 
     df_self_sufficiency = pd.DataFrame(index=[net_name[7:12]], columns=[
                                        401, 601, 611, 621, 631, 641]).fillna(0)
@@ -1856,7 +1800,6 @@ def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
 
     for index in eva:
         if eva[index]['scenario'] in [401, 601, 611, 621, 631, 641]:
-            # if eva[index]['scenario'] in [scenario_num]:
             df_self_sufficiency[eva[index]['scenario']].loc[eva[index]
                                                             ['net_name']] += eva[index]['SelfSufficiancy']/n
             df_pv_consumption[eva[index]['scenario']].loc[eva[index]
@@ -2045,7 +1988,7 @@ def radar_chart_scenario_comparisson(eva, net_name, n, save_fig_dir=None):
 
         fig.write_html('first_figure.html', auto_open=True)
     '''
-    # x_ticklabels = ['401', '601', '611', '621', '631', '641'] #Tabea
+    # x_ticklabels = ['401', '601', '611', '621', '631', '641'] 
     #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
     '''
   categories = ['processing cost','mechanical properties','chemical stability',
