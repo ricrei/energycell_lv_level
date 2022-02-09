@@ -16,8 +16,8 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-05 00:00:00+02:00',
-               'end_time'   : '2017-01-07 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-03-05 00:00:00+02:00',
+               'end_time'   : '2017-03-07 00:00:00+02:00',
                't_freq'     : '30T',
              }
 
@@ -60,6 +60,7 @@ time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
                     }
 
 time_scope = time_scope
+#time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -90,7 +91,7 @@ scenario = [
   0, # BSS, 0-5
   2, # HP, 0-5
   0, # EV, 0-3
-  0, # Curtailment, 0/1
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -121,7 +122,7 @@ net_name = ["kerber_rural_1", #0
             "simbench_urban_6",  #12
             "test_net_one_load_branch"]  #13
 # define net number
-net_number = 13
+net_number = 7
 ######################
 
 #############################

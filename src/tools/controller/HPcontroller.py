@@ -138,53 +138,60 @@ class HP_P_control_hh_fid(HP_P_control):
       sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t)
       sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + dt.timedelta(days = 1))
 
-      print()
-      print('######### Input #########')
-      print(t, sunrise, sunset)
-      print('timedelta_day_s: ',timedelta_day_s/3600)
-      print('timedelta_sunrise_sunset_s: ',timedelta_sunrise_sunset_s/3600)
-      print('resi_load: ',resi_load)
-      print('hp_el_demand: ',hp_el_demand)
-      print('hp_soc_change_max: ',hp_soc_change_max)
+      #print()
+      #print('######### Input #########')
+      #print(t, sunrise, sunset)
+      #print('timedelta_day_s: ',timedelta_day_s/3600)
+      #print('timedelta_sunrise_sunset_s: ',timedelta_sunrise_sunset_s/3600)
+      #print('resi_load: ',resi_load)
+      #print('hp_el_demand: ',hp_el_demand)
+      #print('hp_soc_change_max: ',hp_soc_change_max)
+      #print('hp.hp_soc_mwh: ',hps.hp_soc_mwh)
 
       time = t.tz_localize(None)
 
-      ### calculate amount of possible energy charge (positiv hp_soc_change)
-      #hp_soc_change[hp_soc_change > 0] = hp_soc_change[hp_soc_change > 0] - hp_el_demand[hp_soc_change > 0]
-      ### calculate amount of possible energy discharge (negativ hp_soc_change)
-      #hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
-
-      #time of production
+      #### time of production
       if (time > sunrise and time < sunset):
 
         #calculate default linear charge
         p_mw_lin_ch = (hps.hp_el_capacity_mwh - hps.hp_soc_mwh) / (timedelta_day_s/3600)# mwh/h -> _s/3600
-        print('charge: p_mw_lin_ch', p_mw_lin_ch.values)
+        #print('charge: p_mw_lin_ch', p_mw_lin_ch.values)
 
-        #charge with fid
-        hp_soc_change[hp_soc_change_max > 0] = (p_mw_lin_ch[hp_soc_change_max > 0]) * (self.intervall_in_seconds / 3600)
+        #set charge with fid
+        hp_soc_change[resi_load < 0] = (p_mw_lin_ch[resi_load < 0]) * (self.intervall_in_seconds / 3600)
         #limit hp_soc_change by hp_soc_change_max
         hp_soc_change[hp_soc_change > hp_soc_change_max] = hp_soc_change_max[hp_soc_change > hp_soc_change_max] 
-        
+
         ### calculate amount of possible energy discharge
-        hp_soc_change[hp_soc_change_max <= 0] = -hp_el_demand[hp_soc_change_max <= 0]
+        hp_soc_change[resi_load >= 0] = -hp_el_demand[resi_load >= 0]
 
-        print('hp_soc_change',hp_soc_change)
+        #print('hp_soc_change',hp_soc_change)
 
-      #time of no production
+      #### time of no production
       else:
         
+        ### handle with new next sunrise pre / post midnight
+        # post midnight
+        if (sunrise - time).total_seconds() > 0:  
+          timedelta_nxt_sunrise_s = (sunrise - time).total_seconds()
+        # pre midnight
+        else:
+          timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+
+        #print('sunrise: ',sunrise)
+        #print('sunrise_nxt: ', sunrise_next)
+        #print('timedelta_nxt_sunrise_s: ', timedelta_nxt_sunrise_s)
+
         #calculate timedelta to next sunrise
-        timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+        #timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
         p_mw_lin_dch = (hps.hp_soc_mwh) / (timedelta_nxt_sunrise_s/3600)  # mwh/h -> _s/3600
-        print('discharge: p_mw_lin_dch', p_mw_lin_dch.values)
+        #print('discharge: p_mw_lin_dch', p_mw_lin_dch.values)
 
-        #set 
-        #hp_soc_change[hp_soc_change <= 0] = -p_mw_lin_dch[hp_soc_change <= 0] * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        #set discharge with fid
         hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
-        print('hp_soc_change', hp_soc_change.values)
-
-        #hp_soc_change[hp_soc_change <= 0] = -hp_el_demand[hp_soc_change <= 0]
+        #print('hp_soc_change', hp_soc_change.values)
+        #limit hp_soc_change to hp_el_demand -> no feed_in of hot water to grid..
+        hp_soc_change[hp_soc_change + hp_el_demand <= 0] = -hp_el_demand[hp_soc_change + hp_el_demand <= 0]
 
       ### storage full
       #limit increase hp_soc untill [hp_soc + soc_change > hp_capacity]
@@ -203,7 +210,7 @@ class HP_P_control_hh_fid(HP_P_control):
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
 
-      print('hps.p_mw: ',hps.p_mw.values)
+      #print('hps.p_mw: ',hps.p_mw.values)
 
       grid.net.load.loc[grid.hp_index] = hps
       #HP_P_control.pcontrol(self)
