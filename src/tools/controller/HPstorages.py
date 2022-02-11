@@ -23,7 +23,7 @@ class HPstorages():
             'max_flow': 0.0
             })
 
-        self.hp_stor_para = {'hp_el_capacity_mwh': 0.025,
+        self.hp_stor_para = {'hp_el_capacity_mwh': 0.015,
                              'hp_start_soc': 0.5,
                              'hp_self_dis_per_day': 0.1,
                              'hp_max_p_kw': 0.01,

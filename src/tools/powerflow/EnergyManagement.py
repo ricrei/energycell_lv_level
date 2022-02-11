@@ -155,19 +155,13 @@ class EnergyManagementAdvanced(EnergyManagementParent):
     grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
     grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
-    # HP temp
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t], t)
-    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
-
     # direct
-    #grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, t)
-    #grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power_direct_charge(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, input_dict['hp'].loc[t], t)
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
     grid.net.storage                 = bss_controller.get_active_power_direct_charge(grid, t)
 
     # linear
-    #grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_linear_charge(grid, t)
-    #grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_linear_charge(grid, input_dict['hp'].loc[t], t)
     grid.net.storage                 = bss_controller.get_active_power_linear_charge(grid, t)
 
     # pv excess
@@ -175,9 +169,11 @@ class EnergyManagementAdvanced(EnergyManagementParent):
 
     # trafo overload
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
-    #grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_trafo_charge(grid, t)
-    #grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_trafo_charge(grid, input_dict['hp'].loc[t], t)
     grid.net.storage                 = bss_controller.get_active_power_trafo_charge(grid, t)
+
+    #get final q_mvar of hp
+    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
