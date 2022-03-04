@@ -147,17 +147,17 @@ class EnergyCell():
               # calculate installed power per household and normalize timeseries to MW
               pv_dc_power = pv[str(self.pv_para['orientation'][i])]*pv_power_installed*self.pv_para['installed_power_scaling'][i]/1000
               # calculate active and reactive power of pv-system
-              self.df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power
-              self.df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -pv_dc_power*np.tan(np.arccos(cos_phi))
-
+              #self.df['pv_'+str(self.pv_para['orientation'][i])+'_p'] = pv_dc_power
+              #self.df['pv_'+str(self.pv_para['orientation'][i])+'_q'] = -pv_dc_power*np.tan(np.arccos(cos_phi))
+        '''
         ### load load profiles ###
         p0 = self.decompress_pickle(load_p_data_file)
         q0 = self.decompress_pickle(load_q_data_file)
-        for i in range(0,74):
-            self.df['load_'+str(i)+'_p'] = p0["p"+str(i)]/1000	# normalized to MW
-            self.df['load_'+str(i)+'_q'] = q0["q"+str(i)]/1000	# normalized to MW
-        for i in self.net.load.index[self.net.load.type == 'load']:
-            self.net.load.type[i] = 'load_'+str(i%74)
+        #for i in range(0,74):
+            #self.df['load_'+str(i)+'_p'] = p0["p"+str(i)]/1000	# normalized to MW
+            #self.df['load_'+str(i)+'_q'] = q0["q"+str(i)]/1000	# normalized to MW
+        #for i in self.net.load.index[self.net.load.type == 'load']:
+            #self.net.load.type[i] = 'load_'+str(i%74)
 
 
         ### load heatpump profile ###
@@ -173,8 +173,8 @@ class EnergyCell():
             ev = self.decompress_pickle(ev_data_file)
             for ev_type in self.ev_para['ev_types']:
               self.df[ev_type] = ev[ev_type]/1000 # normalized to MW
-
-        self.df['timestamp'] = time
+        '''
+        #self.df['timestamp'] = time
 
 
     ###################################
@@ -214,7 +214,7 @@ class EnergyCell():
 
         return a
 
-      time_series = self.df['timestamp']
+      #time_series = self.df['timestamp']
       timesteps = 50#len(time_series)
       rest_time = ''
       time_step_size = 1
@@ -260,18 +260,21 @@ class EnergyCell():
             # show bar of process in terminal
             prog.progress(i, timesteps, status=' %s s ' % rest_time)
 
-            t = time_series[i]
-            d = self.df.loc[t]
+            #t = time_series[i]
+            #d = self.df.loc[t]
 
             if (i >= timesteps/10) & (i <= timesteps*2/3):
               p = .02
             else:
-              p = 0.01
+              p = 0.02
 
             if (i < timesteps/20):
               p = 0
 
-            self.net.sgen.loc[pv_index, 'p_mw'] = d[index_helper_pv_p].values*0 + p
+            if (i > timesteps*2/3):
+              p = 0
+
+            self.net.sgen.loc[pv_index, 'p_mw'] = p
             if self.pv_para['q_u_cont'] == True:
               v_t_minus_5 = v_t_minus_4
               v_t_minus_4 = v_t_minus_3
@@ -286,7 +289,7 @@ class EnergyCell():
               p_sgen_t_minus_1 = self.net.sgen.loc[pv_index,'p_mw']
             else:
               self.net.sgen.loc[pv_index, 'q_mvar'] = d[index_helper_pv_q].values
-
+            '''
             self.net.load.loc[load_index, 'p_mw'] = d[index_helper_load_p].values*0
             self.net.load.loc[load_index, 'q_mvar'] = d[index_helper_load_q].values*0
 
@@ -294,22 +297,22 @@ class EnergyCell():
             self.net.load.loc[hp_index, 'q_mvar'] = d[index_helper_hp_q].values*0
 
             self.net.load.loc[ev_index, 'p_mw'] = d[index_helper_ev].values*0
-        
+            '''
             # run pandapower power flow
             pp.runpp(self.net, init='auto', init_vm_pu=v_t_minus_1, init_va_degree='results', max_iteration=30, tolerance_mva=1e-6)
 
             v_t_minus_1 = self.net.res_bus.vm_pu
 
             # write result into DataFrame
-            vm_pu.loc[t] = self.net.res_bus.vm_pu
-            li_lo.loc[t] = self.net.res_line.loading_percent
-            tr_lo.loc[t] = self.net.res_trafo.loading_percent
-            power.loc[t] = [self.net.load.p_mw[load_index].sum(),
+            vm_pu.loc[i] = self.net.res_bus.vm_pu
+            li_lo.loc[i] = self.net.res_line.loading_percent
+            tr_lo.loc[i] = self.net.res_trafo.loading_percent
+            power.loc[i] = [self.net.load.p_mw[load_index].sum(),
                             self.net.sgen.p_mw.sum(),
                             self.net.load.p_mw[hp_index].sum(),
                             self.net.load.p_mw[ev_index].sum()]
-            reactive_power.loc[t] = self.net.sgen['q_mvar']
-            active_power.loc[t] = self.net.sgen['p_mw']
+            reactive_power.loc[i] = self.net.sgen['q_mvar']
+            active_power.loc[i] = self.net.sgen['p_mw']
 
             end = time.time()
             rest_time = int(round((end - start)*(timesteps - i), 0))
@@ -325,7 +328,7 @@ class EnergyCell():
     ### Q(U) Control ###
     ####################
     def q_u_control(self, v_t_minus_1, v_t_minus_2, v_t_minus_3, v_t_minus_4, v_t_minus_5, p_sgen_t_minus_1, q_sgen_t_minus_1, q_sgen_t_minus_2, q_sgen_t_minus_3, q_sgen_t_minus_4, q_sgen_t_minus_5):
-      a = .3
+      a = .2
       q_sgen_t = q_sgen_t_minus_1#(q_sgen_t_minus_1 + q_sgen_t_minus_2 + q_sgen_t_minus_3 + q_sgen_t_minus_4 + q_sgen_t_minus_5)/5
       v_t = v_t_minus_1#(v_t_minus_1 + v_t_minus_2 + v_t_minus_3 + v_t_minus_4 + v_t_minus_5)/5
       v = v_t[self.net.sgen['bus']].values
