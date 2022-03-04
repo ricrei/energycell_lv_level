@@ -357,21 +357,44 @@ class EvaluationSingleCase():
     plt.show()
 
 
-  def plot_pv_reactive_power(self):
+  def plot_pv_reactive_power(self, grid):
     p = self.pv_p
     q = self.pv_q
     v = self.v
-    cos_phi = p/(p**2 + q**2)**(1/2)
+    cos_phi = (p/(p**2 + q**2)**(1/2)).fillna(1.)
+    columns = q.columns
+
+    v_new = pd.DataFrame(columns=q.columns)
+
+    for pv in grid.net.sgen.index:
+      v_new[str(pv)] = v[str(grid.net.sgen.bus.loc[pv])]
 
     fig, (ax1, ax2, ax3) = plt.subplots(3)
     fig.suptitle(' ')
-    ax1.plot(v)[0]
+    ax1.plot(v_new)[0]
     ax2.plot(q)[0]
     ax3.plot(cos_phi)[0]
     ax1.set_ylabel('Voltage in p.u.')
     ax2.set_ylabel('Reactive power in Mvar')
     ax3.set_ylabel('cos(phi)')
     ax3.set_xlabel('Time')
+    #plt.show()
+
+    bus = ['65', '13', '73', '90']
+
+    fig, ax = plt.subplots()
+
+    #for c in bus:    
+    for c in columns:
+      try:
+        ax.plot(v_new[c], q[c], '*')
+      except:
+        pass
+    
+    #ax.plot(v[bus], q[bus], '*-')
+    ax.set_ylabel('Reactive power in Mvar')
+    ax.set_xlabel('Voltage in p.u.')
+    ax.legend(bus)
     plt.show()
 
   def plot_soc(self):

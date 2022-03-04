@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 import datetime
 
+import sys
+
 import tools.tools as tt
 
 class Grid:
@@ -34,6 +36,7 @@ class Grid:
     self.curtailed_load_power = 0
 
     self.df_solar = tt.get_time_sun()
+    self.df_t_amb = tt.get_amb_temp()
 
   ######################
   ### create network ###
@@ -92,6 +95,9 @@ class Grid:
             self.rename_all_buses()
         elif self.net_name == "test_net_one_load_branch":
             self.net = self.create_test_net_one_load_branch()
+            self.category = 'rural'
+        elif self.net_name == "test_net_n_load_branch":
+            self.net = self.create_test_net_n_load_branch()
             self.category = 'rural'
         else:
             raise NameError('Hint: No Network found. Please check net_name')
@@ -293,3 +299,45 @@ class Grid:
     pp.create_load(net, b3, 0)
     pp.create_transformer(net, b1, b2, '0.25 MVA 10/0.4 kV', name='trafo')
     return net
+
+  def create_test_net_n_load_branch(self):
+    '''
+    Create a test grid with n household: ext_grid --- trafo --- line --- generation/consumption ... --- line --- generation/consumption
+    '''
+
+    n = 50 # Number of buses
+    net = pp.create_empty_network(name='n_load_branch')
+    b1 = pp.create_bus(net=net, vn_kv = 10, name='Bus T1', geodata=(1,n))
+    b2 = pp.create_bus(net=net, vn_kv =.4, name='Bus T2', geodata=(1,n-1))
+    pp.create_transformer(net, b1, b2, '0.25 MVA 10/0.4 kV', name='trafo')
+    pp.create_ext_grid(net, b1, name='ext_grid')
+    b_k = b2
+
+    for i in range(n):
+      b_i = pp.create_bus(net=net, vn_kv =.4, name='Bus '+str(i), geodata=(1,n-2-i))
+      pp.create_line(net, b_i, b_k, .015, 'NAYY 4x150 SE', name='line')
+      pp.create_load(net, b_i, 0)
+      b_k = b_i
+
+    #sys.exit(0)
+
+    return net
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

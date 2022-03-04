@@ -70,7 +70,7 @@ class CurtailmentCommunityStorage_in_feeder:
             grid.net.sgen['p_mw'].values
     return p_res
 
-  def curtail_storage_power(self, grid, delta_pv_power):
+  def curtail_storage_power(self, grid):
     return grid
 
 
@@ -86,7 +86,7 @@ class CurtailmentHomeStorage:
             grid.net.storage['p_mw'].values
     return p_res
 
-  def curtail_storage_power(self, grid, delta_pv_power):
+  def curtail_storage_power(self, grid):
     return grid
 
 class Curtailment:
@@ -178,7 +178,7 @@ class Curtailment:
       grid.net.sgen.p_mw[res_p_HH < 0] = grid.net.sgen.p_mw[res_p_HH < 0] * curtail_factor_trafo
       grid.net.sgen.q_mvar[res_p_HH < 0] = grid.net.sgen.q_mvar[res_p_HH < 0] * curtail_factor_trafo
       #delta_pv_power -= grid.net.sgen.p_mw[res_p_HH < 0].sum()
-      #grid = self.Curtailment_regarding_Storage.curtail_storage_power(grid, delta_pv_power)
+      #grid = self.Curtailment_regarding_Storage.curtail_storage_power(grid)
 
       grid.curtailed_pv_power += total_pv_power_mw - grid.net.sgen.p_mw.sum()
     else:

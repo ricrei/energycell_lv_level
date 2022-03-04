@@ -314,7 +314,7 @@ class BSS_control_direct(BSS_control): #simple
       p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
 
       # Write parameters of bss into dataframe:
-      bss.e_mwh = self.calculate_stored_energy(grid, p_mw)
+      bss.e_mwh = self.calculate_stored_energy(grid, p_mw_bss)
       bss.soc_percent = self.calculate_soc(grid, bss.e_mwh)
       bss.p_mw = p_mw_bss
       grid.net.storage = bss
