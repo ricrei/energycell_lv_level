@@ -22,43 +22,49 @@ time_scope = { 'start_time' : '2017-05-27 05:00:00+02:00',
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2018-01-01 00:00:00+01:00',
-                    't_freq'     : '10T'
+                    't_freq'     : '1D'
                   }
 
 # timescopes to examine
-time_scope_winter_with_extra_time = { 'start_time' : '2017-01-02 00:00:00+01:00',
-                      'end_time'   : '2017-01-11 00:00:00+01:00',
+time_scope_winter_with_extra_time = { 'start_time' : '2017-01-01 00:00:00+01:00',
+                      'end_time'   : '2017-01-10 00:00:00+01:00',
                       't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
-time_scope_summer_with_extra_time = { 'start_time' : '2017-05-24 00:00:00+02:00',
-                      'end_time'   : '2017-06-02 00:00:00+02:00',
+time_scope_summer_with_extra_time = { 'start_time' : '2017-05-27 00:00:00+02:00',
+                      'end_time'   : '2017-06-03 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'summer'
                     }
 
-time_scope_winter = { 'start_time' : '2017-01-04 00:00:00+01:00',
-                      'end_time'   : '2017-01-11 00:00:00+01:00',
+time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
+                      'end_time'   : '2017-01-10 00:00:00+01:00',
                       't_freq'     : '1T',
                       'name'       : 'winter'
                     }
 
 
-time_scope_summer = { 'start_time' : '2017-05-26 00:00:00+02:00',
-                      'end_time'   : '2017-06-02 00:00:00+02:00',
+time_scope_summer = { 'start_time' : '2017-05-27 00:00:00+02:00',
+                      'end_time'   : '2017-06-03 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'summer'
                     }
 
-time_scope_autumn = { 'start_time' : '2017-10-21 00:00:00+02:00',
-                      'end_time'   : '2017-10-28 00:00:00+02:00',
+time_scope_autumn = { 'start_time' : '2017-10-20 00:00:00+02:00',
+                      'end_time'   : '2017-10-27 00:00:00+02:00',
                       't_freq'     : '1T',
                       'name'       : 'autumn'
                     }
 
-time_scope = time_scope
+time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
+                      'end_time'   : '2017-03-12 00:00:00+01:00',
+                      't_freq'     : '1T',
+                      'name'       : 'spring'
+                    }
+
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -84,12 +90,12 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  6, # scenario number, 1-8
+  4, # scenario number, 1-8
   1, # PV, 0-2
-  1, # BSS, 0-5
+  0, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
-  1, # Curtailment, 0/1
+  0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -136,12 +142,12 @@ def run_single_simulation():
                     time_scope = time_scope)
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=False)
@@ -154,11 +160,14 @@ def run_single_simulation():
   #e.eva.plot_pv_reactive_power(e.grid)
   #e.eva.plot_hp_soc()
   #e.eva.plot_bss_active_power()
-  e.eva.plot_soc()
-  e.eva.plot_bss_e_mwh()
-  e.eva.plot_bss_p_mw()
+  #e.eva.plot_soc()
+  #e.eva.plot_bss_e_mwh()
+  #e.eva.plot_bss_p_mw()
   #e.eva.plot_grid(time_sample='2017-05-27 13:10:00+02:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
+
+  # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
+  #e.eva.calculate_resi_week()
 
   # Initialize BSS Sizing
   #e.initiate_BSS_sizing()
@@ -211,9 +220,9 @@ def run_multiple_simulations_multiprocessing():
     start = time.perf_counter()
 
     pool = mp.Pool(6)
-    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn]
-    net_names = [7]
-    scenario = [[6,1,1,1,1,1,0]]
+    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
+    net_names = [9]
+    scenario = [[4,1,0,1,1,0,0]]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
       results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenario]

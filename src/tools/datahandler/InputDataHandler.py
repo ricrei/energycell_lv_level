@@ -1,5 +1,6 @@
 import csv
 import pandas as pd
+import sys
 
 import tools.tools as tt
 
@@ -10,7 +11,7 @@ class InputDataHandler():
     self.folder = 'input-files/'
     self.inputfolder = self.folder
     if 'name' in time_scope.keys():
-      if time_scope['name'] in ['summer','winter','autumn']:
+      if time_scope['name'] in ['summer','winter','autumn','spring']:
         self.season = time_scope['name']
       else:
         self.season = None
@@ -62,16 +63,19 @@ class InputDataHandler():
       dates_old = dates_old.strip('\'')
 
       if self.dates != dates_old:
-
+        
         if self.season != None:
-          print('WARNING !!! DEPRICATED PV-DATA !!!')
           if self.season == 'summer':
             self.inputfolder = self.folder + 'XX_inputdata_summer/'
           elif self.season == 'winter':
             self.inputfolder = self.folder + 'XX_inputdata_winter/'
           elif self.season == 'autumn':
             self.inputfolder = self.folder + 'XX_inputdata_autumn/'
-
+          elif self.season == 'spring':
+            self.inputfolder = self.folder + 'XX_inputdata_spring/'
+          else:
+            raise ValueError('season in time_scope is invailed!') 
+        
         elif self.season == None:
         
           print('Adjust input datasets ...')
@@ -98,6 +102,8 @@ class InputDataHandler():
           f = open(self.folder + 'daterange.csv','w')
           f.write(self.dates)
           f.close()
+          #print('FINISH!')
+          #sys.exit(0)
 
   def get_time_df(self, df):
         return df.index

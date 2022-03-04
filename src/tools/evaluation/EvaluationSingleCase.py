@@ -296,6 +296,37 @@ class EvaluationSingleCase():
     print('Line overloading events : %s %%' % (ll/(n_lines*n_timesteps)*100).round(3))
     print('Trafo overloading events: %s %%' % (tl/(n_timesteps)*100).round(3))
 
+  ### calculate residualload to determine max, min and balanced residualload week ###
+  def calculate_resi_week(self):
+    '''
+    Only suited for 2017-01-01_2018-01-01_1D
+    '''
+    self.power['total_load'] = self.power.load + self.power.hp + self.power.ev
+    self.power['res_load'] = self.power.total_load - self.power.pv
+    self.power['sevenday'] = 0
+
+    j = 0
+    for i in self.power.index:
+     for k in range(7):
+      try:
+       self.power['sevenday'].iloc[j] += self.power.res_load.iloc[j+k]
+      except:
+       self.power['sevenday'].iloc[j] += self.power.res_load.iloc[k]
+     j += 1
+
+    #print(self.power['sevenday'].tail(90))
+    #print(self.power.iloc[270:320])
+
+    print(self.power.loc[(self.power['sevenday'] > -.05) & (self.power['sevenday'] < .05), 'sevenday'])
+    print(self.power['sevenday'].idxmax())
+    print(self.power['sevenday'].max())
+    print(self.power['sevenday'].idxmin())
+    print(self.power['sevenday'].min())
+
+    plt.figure()
+    plt.plot(self.power['sevenday'])
+    plt.show()
+
   ### plots ###
   def plot_grid_issus_over_time(self):
     v = self.v
