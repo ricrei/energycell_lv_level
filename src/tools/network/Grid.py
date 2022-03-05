@@ -34,6 +34,7 @@ class Grid:
     self.curtailed_load_power = 0
 
     self.df_solar = tt.get_time_sun()
+    self.df_t_amb = tt.get_amb_temp()
 
   ######################
   ### create network ###
