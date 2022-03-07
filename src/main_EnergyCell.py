@@ -17,7 +17,7 @@ import concurrent.futures
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-27 05:00:00+02:00',
                'end_time'   : '2017-05-27 23:00:00+02:00',
-               't_freq'     : '10T',
+               't_freq'     : '1H',
              }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -65,7 +65,6 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                     }
 
 time_scope = time_scope
-#time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -91,12 +90,12 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
+  6, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
+  1, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
-  0, # Curtailment, 0/1
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################

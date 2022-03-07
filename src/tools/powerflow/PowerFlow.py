@@ -47,7 +47,7 @@ class PowerFlow:
           for j in range(k):
 
               start = time.time()
-              #tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
+              tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
 
               t = self.time_series[i]
 
