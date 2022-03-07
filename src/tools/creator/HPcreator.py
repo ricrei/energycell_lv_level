@@ -11,6 +11,7 @@ class HPcreator:
         self.hp = tt.decompress_pickle(self.hp_data_file)
         self.hp_para = {}
         self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
+        #self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]
         self.hp_para['cos_phi'] = .95
         self.hp_para['tan_phi'] = np.tan(np.arccos(self.hp_para['cos_phi']))
         self.hp_para['hp_max_p_kw'] = 10

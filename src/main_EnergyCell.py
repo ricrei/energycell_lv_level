@@ -65,6 +65,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                     }
 
 time_scope = time_scope
+#time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -127,7 +128,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 9
+net_number = 8
 ######################
 
 #############################
