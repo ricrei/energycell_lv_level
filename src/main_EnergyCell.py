@@ -64,7 +64,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope_winter
+time_scope = time_scope_autumn
 ###########################################
 
 #######################
@@ -142,7 +142,7 @@ def run_single_simulation():
                     time_scope = time_scope)
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -150,7 +150,7 @@ def run_single_simulation():
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -167,7 +167,8 @@ def run_single_simulation():
   #e.eva.plot_grid_2() # Baustelle
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
-  #e.eva.calculate_resi_week()
+  e.eva.calculate_resi_week()
+  print(e.grid.net.sgen.index)
 
   # Initialize BSS Sizing
   #e.initiate_BSS_sizing()
