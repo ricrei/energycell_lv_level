@@ -74,8 +74,6 @@ class HP_P_control_no_hp(HP_P_control):
       hps = grid.net.load.loc[grid.hp_index]
       hps.p_mw = 0
       return hps
-      return grid.net.load.loc[grid.hp_index]   
-
 
 ### direct ###
 class HP_P_control_direct(HP_P_control):
@@ -168,7 +166,7 @@ class HP_P_control_hh_fid(HP_P_control):
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
 
-      #print('hps.p_mw: ',hps.p_mw.values)
+      #print('hps.p_mw: ',hps.p_mw.values.sum())
 
       return hps
 
@@ -282,6 +280,8 @@ class HP_P_control_grid_fid(HP_P_control):
       hps.p_mw = (hp_el_demand + hp_soc_change) / (self.intervall_in_seconds / 3600)
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
+
+      print('hps.p_mw: ',hps.p_mw.values.sum())
     
       return hps
 

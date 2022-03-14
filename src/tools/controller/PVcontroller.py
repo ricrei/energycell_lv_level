@@ -83,7 +83,6 @@ class PV_Q_controlQU(PV_Q_control):
       self.control_q_u_init(grid)
 
   def qcontrol(self, grid):
-      #PVQcontrol.qcontrol(self)
       grid = self.control_q_u(grid)
       return grid.net.sgen['q_mvar']
 
@@ -91,6 +90,9 @@ class PV_Q_controlQU(PV_Q_control):
       self.t_minus_x = pd.DataFrame()
       self.t_minus_x['v_t-1'] = grid.net.sgen['bus']*0 + 1.0
       self.calculate_past_time_steps(grid)
+      # Calculate Qmax and slope m of Q(U)
+      self.Qmax = grid.net.sgen.installed_power/1000*self.pv_para['tan_phi']
+      self.m = self.Qmax/(self.pv_para['U2'] - self.pv_para['U1'])
 
   def control_q_u(self, grid):
       a = .2
@@ -98,18 +100,18 @@ class PV_Q_controlQU(PV_Q_control):
       self.get_v_of_last_timestep(grid)
       v = (self.t_minus_x['v_t-1'])
       P = grid.net.sgen["p_mw"]
-      Q = P * self.pv_para['tan_phi']
-      m = Q/(self.pv_para['U2'] - self.pv_para['U1'])
+      Q_cosphi = P * self.pv_para['tan_phi']
 
-      grid.net.sgen.loc[v <= self.pv_para['U1'], 'q_mvar'] = Q
-      grid.net.sgen.loc[(v <= self.pv_para['U2']) & (v >= self.pv_para['U1']), 'q_mvar'] = -m*(v-self.pv_para['U2'])
+      grid.net.sgen.loc[v <= self.pv_para['U1'], 'q_mvar'] = self.Qmax
+      grid.net.sgen.loc[(v <= self.pv_para['U2']) & (v >= self.pv_para['U1']), 'q_mvar'] = -self.m*(v-self.pv_para['U2'])
       grid.net.sgen.loc[(v <= self.pv_para['U3']) & (v >= self.pv_para['U2']), 'q_mvar'] = 0
-      grid.net.sgen.loc[(v <= self.pv_para['U4']) & (v >= self.pv_para['U3']), 'q_mvar'] = -m*(v-self.pv_para['U3'])
-      grid.net.sgen.loc[v >= self.pv_para['U4'], 'q_mvar'] = -Q
+      grid.net.sgen.loc[(v <= self.pv_para['U4']) & (v >= self.pv_para['U3']), 'q_mvar'] = -self.m*(v-self.pv_para['U3'])
+      grid.net.sgen.loc[v >= self.pv_para['U4'], 'q_mvar'] = -self.Qmax
 
       grid.net.sgen['q_mvar'] = a*grid.net.sgen['q_mvar'] + (1-a)*q_sgen_t
-      grid.net.sgen.loc[grid.net.sgen['q_mvar'] < -Q, 'q_mvar'] = -Q
-      grid.net.sgen.loc[grid.net.sgen['q_mvar'] >  Q, 'q_mvar'] = Q
+
+      grid.net.sgen.loc[grid.net.sgen['q_mvar'] < -Q_cosphi, 'q_mvar'] = -Q_cosphi
+      grid.net.sgen.loc[grid.net.sgen['q_mvar'] >  Q_cosphi, 'q_mvar'] = Q_cosphi
 
       self.calculate_past_time_steps(grid)
 

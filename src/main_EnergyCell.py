@@ -92,10 +92,10 @@ time_scope = time_scope
 scenario = [
   6, # scenario number, 1-8
   1, # PV, 0-2
-  1, # BSS, 0-5
+  0, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
-  1, # Curtailment, 0/1
+  0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -127,7 +127,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 14
 ######################
 
 #############################
@@ -156,8 +156,8 @@ def run_single_simulation():
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
-  #e.eva.plot_pv_active_power()
-  #e.eva.plot_pv_reactive_power(e.grid)
+  e.eva.plot_pv_active_power()
+  e.eva.plot_pv_reactive_power(e.grid)
   #e.eva.plot_hp_soc()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()
