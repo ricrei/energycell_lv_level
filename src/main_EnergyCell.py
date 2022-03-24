@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mo March 07 11:08:14 2021
+Created on Mo March 07 11:08:14 2022
 
 @authors: ricardo, tabea, paul
 """
@@ -185,7 +185,7 @@ def run_single_simulation():
 def run_multiple_simulations():
   start = time.perf_counter()
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn]:
+  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
     for net_name_i in [7]:
       for scenario_i in [[6,1,1,1,1,1,0]]:
         print(' ')
@@ -222,7 +222,7 @@ def run_multiple_simulations_multiprocessing():
     pool = mp.Pool(6)
     time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
     net_names = [9]
-    scenario = [[4,1,0,1,1,0,0]]
+    scenario = [[4,1,0,1,1,1,0]]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
       results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenario]
@@ -238,26 +238,25 @@ def run_multiple_simulations_multiprocessing():
 ### Run Conversion csv -> pickle ###
 def run_output_data_conversion():
   scenarios = [
-  #100,
-  #200,
-  #300,
-  #400,
-  #401,
-  #500,
-  #600,
-  #601,
-  #610,
-  611,
-  #620,
-  #621,# 630, 631, 640, 641,
-  #710, 711, 720, 721,
-  #810, 811, 820, 821#, 830, 831, 840, 841,
-  ]
+        #[1,0,0,0,0,0,0],
+        #[2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
+        #[3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
+        #[4,1,0,1,1,0,0], [4,1,0,1,1,1,0],# [4,1,0,1,1,0,1],
+        #[6,1,1,1,1,0,0], [6,1,1,1,1,1,0],# [6,1,1,1,1,0,1],
+        #[6,1,2,1,1,0,0], [6,1,2,1,1,1,0],# [6,1,2,1,1,0,1],
+        #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0],# [6,1,3,1,1,0,1],
+        #[6,1,4,1,1,0,0], [6,1,4,1,1,1,0],# [6,1,4,1,1,0,1],
+        #[6,1,5,1,1,0,0], [6,1,5,1,1,1,0],# [6,1,5,1,1,0,1],
+        #[7,1,0,2,2,0,0], [7,1,0,2,2,1,0],# [7,1,0,2,2,0,1],
+        #[7,1,0,3,3,0,0],
+        [7,1,0,3,3,1,0],# [7,1,0,3,3,0,1],
+        [8,1,3,3,3,0,0], [8,1,3,3,3,1,0],# [8,1,3,3,3,0,1],
+                  ]
 
   evaluation_all = EvaAllCases.EvaluationAllCases(
-                                 net_names = net_name,
-                                 scenarios = scenarios,
-                                 time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn])
+                                 net_names = [7,8,9,10,11],
+                                 scenarios = scenarios,#[[4,1,0,1,1,1,0]],
+                                 time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
 
   print('Done')
 ####################################

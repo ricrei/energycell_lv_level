@@ -14,6 +14,22 @@ class EvaluationAllCases():
     output_df_dir = 'output-files/000_evaluation_dicts/'
     #output_df_dir = 'output-files/000_evaluation_dicts_shortened_data/' #Tabea
 
+    net_name = ["kerber_rural_1", #0
+                "kerber_rural_2", #1
+                "kerber_rural_3", #2
+                "kerber_rural_4",  #3
+                "kerber_village",  #4
+                "kerber_suburb_1", #5
+                "kerber_suburb_2",  #6
+                "simbench_rural_1", #7
+                "simbench_rural_2", #8
+                "simbench_rural_3", #9
+                "simbench_suburb_4", #10
+                "simbench_suburb_5", #11
+                "simbench_urban_6",  #12
+                "test_net_one_load_branch", #13
+                "test_net_n_load_branch"]  #14
+
     eva = {}
     df_eva_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
     df_helper_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
@@ -27,14 +43,14 @@ class EvaluationAllCases():
     print('Load Output Data')
     for scenario_i in scenarios:
       for time_scope_i in time_scopes:
-        for net_name_i in [7, 8, 9, 10, 11]:
-          output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_names[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
-          #output_dir = os.path.join("./", "output-files/shortened_data/"+str(scenario_i)+"/"+str(net_names[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/") #Tabea
+        for net_name_i in net_names:
+          scenario_i = self.convert_scenario(scenario_i)
+          output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_name[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
           index = 's' + str(scenario_i) + 'n' + str(net_name_i) + str(time_scope_i['name'])
           print('create: ' + str(index))
           eva[index] = {}
           eva[index]['scenario'] = scenario_i
-          eva[index]['net_name'] = net_names[net_name_i]
+          eva[index]['net_name'] = net_name[net_name_i]
           eva[index]['net_name_i'] = net_name_i
           eva[index]['time_scope_name'] = time_scope_i['name']
           eva[index]['power'] = self.read_data(output_dir+'power_total_MW.csv')
@@ -47,50 +63,16 @@ class EvaluationAllCases():
           eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
           eva[index]['curtailed_power'] = self.read_data(output_dir+'curtailed_power_MW.csv')
           eva[index]['storage_power'] = self.read_data(output_dir+'storage_active_power_MW.csv')
-          #eva[index]['soc_bss'] = self.read_data(output_dir+'storage_state_of_charge_percent.csv') #Tabea
+          eva[index]['soc_bss'] = self.read_data(output_dir+'storage_state_of_charge_percent.csv')
 
           tt.compress_pickle(output_df_dir + str(index)+'.pbz2', eva[index])
-    '''      
-          v = self.read_data(output_dir+'res_bus_vm_pu.csv')
-          v = v.stack().reset_index()
-          df_helper_v['voltage'] = v[0]
-          df_helper_v['time'] = v['timestamp']
-          df_helper_v['busID'] = v['level_1']
-          df_helper_v['scenario'] = scenario_i
-          df_helper_v['gridID'] = net_name_i
-          df_helper_v['timescope'] = time_scope_i['name']
-          df_eva_v = pd.concat([df_eva_v,df_helper_v], axis=0)
-
-          l = self.read_data(output_dir+'res_line_load_percent.csv')
-          l = l.stack().reset_index()
-          df_helper_l['lineloading'] = l[0]
-          df_helper_l['time'] = l['timestamp']
-          df_helper_l['lineID'] = l['level_1']
-          df_helper_l['scenario'] = scenario_i
-          df_helper_l['gridID'] = net_name_i
-          df_helper_l['timescope'] = time_scope_i['name']
-          df_eva_l = pd.concat([df_eva_l,df_helper_l], axis=0)
-
-          t = self.read_data(output_dir+'res_trafo_load_percent.csv')
-          t = t.stack().reset_index()
-          df_helper_t['trafoloading'] = t[0]
-          df_helper_t['time'] = t['timestamp']
-          df_helper_t['trafoID'] = t['level_1']
-          df_helper_t['scenario'] = scenario_i
-          df_helper_t['gridID'] = net_name_i
-          df_helper_t['timescope'] = time_scope_i['name']
-          df_eva_t = pd.concat([df_eva_t,df_helper_t], axis=0)
-
-    df_eva_v.reset_index(drop=True, inplace=True)
-    df_eva_l.reset_index(drop=True, inplace=True)
-    df_eva_t.reset_index(drop=True, inplace=True)
-
-    #tt.compress_pickle(output_df_dir + 'evaluation_df_v.pbz2', df_eva_v)
-    #tt.compress_pickle(output_df_dir + 'evaluation_df_l.pbz2', df_eva_l)
-    #tt.compress_pickle(output_df_dir + 'evaluation_df_t.pbz2', df_eva_t)
-    '''
 
   ### Helper Methods ###
+  def convert_scenario(self, scenario_i):
+    scenario = ''
+    for i in scenario_i:
+      scenario += str(i)
+    return scenario
 
   def read_data(self, filename):
     data = pd.read_csv(filename, delimiter = ',', low_memory=False)#, engine='python')

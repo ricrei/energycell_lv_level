@@ -7,11 +7,9 @@ import pandapower.plotting.plotly as ppply
 import seaborn as sns
 from datetime import datetime, timedelta
 
-
 # Handle date time conversions between pandas and matplotlib
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
-
 
 SMALL_SIZE = 8
 MEDIUM_SIZE = 10
@@ -27,7 +25,7 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
 ### Helper Methods ###
-
+'''
 def read_data(filename):
     data = pd.read_csv(filename, delimiter = ',', low_memory=False)#, engine='python')
     #data = data.drop(['Unnamed: 0'], axis=1)
@@ -43,7 +41,7 @@ def read_data(filename):
     data.index = data.index.tz_localize(None)
 
     return data
-
+'''
 def shorted_data(data, t_freq):
     data_shorted = data.resample(t_freq).mean()
     data_shorted = data_shorted.round(4)
@@ -52,6 +50,7 @@ def shorted_data(data, t_freq):
     return data_shorted
 
 ### Calculate Output Data ###
+'''
 def calculate_relevant_outputdata_overall_eva(power):
 
   sum_pv = power.pv.sum()
@@ -114,7 +113,7 @@ def calculate_net_problems_overall_eva(v, ll, tl):
 
 def calculate_max_trafo_load():
   pass
-
+'''
 
 ### Output plots ###
 def plot_generation_consumption_as_heat_map_overall_eva(power, save_fig_dir=None):
@@ -232,7 +231,10 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
      plt.savefig(save_fig_dir, bbox_inches='tight')
 
 
-def plot_residualload_subplot_overall_eva_timeslot(power_summer, power_winter, save_fig_dir=None):
+def plot_residualload_subplot_overall_eva_timeslot(eva1, eva2, save_fig_dir=None):
+
+  power_summer = eva1['power']
+  power_winter = eva2['power']
 
   power_summer = -power_summer*1
   power_winter = -power_winter*1
@@ -352,20 +354,20 @@ def plot_barplots_overall_eva(eva, n, save_fig_dir=None):
      plt.savefig(save_fig_dir + 'bar_issus.png', bbox_inches='tight')
 
 
-def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
-  print('Create Heatmap plots grid issus')
+def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=None):
+  #print('Create Heatmap plots grid issus')
 
   minutes_per_week = 7*24*60
 
-  df_v_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
-  df_l_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
-  df_t_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
-  v_events = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
-  l_events = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
-  t_events = pd.DataFrame(index=[net_name[7:12]], columns=[100,200,300,400]).fillna(0)
+  df_v_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  df_l_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  df_t_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  v_events = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  l_events = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  t_events = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
 
   for index in eva:
-   if eva[index]['scenario'] in [100,200,300,400]:
+   if eva[index]['scenario'] in columns_scenarios:
     df_v_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += (eva[index]['v_under'] + eva[index]['v_over'])/n
     df_l_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['ll_over']/n
     df_t_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['tl_over']/n
@@ -373,7 +375,7 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
     l_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['ll'].columns)/n
     t_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['tl'].columns)/n
 
-  x_ticklabels = ['Conv', 'EV+HP', 'PV', 'PV+EV+HP']
+  #x_ticklabels = ['Conv', 'EV+HP', 'PV', 'PV+EV+HP']
   y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
 
   vmax_v = (df_v_heatmap/v_events/minutes_per_week*100).max().max()
@@ -421,172 +423,22 @@ def plot_heatmap_grid_issus(eva, net_name, n, save_fig_dir=None):
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_trafoloading.png', bbox_inches='tight')
 
-def plot_heatmap_grid_issus_with_bss(eva, net_name, n, save_fig_dir=None):
-  print('Create Heatmap plots grid issus')
-
-  minutes_per_week = 7*24*60
-
-  df_v_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-  df_l_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-  df_t_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-  v_events = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-  l_events = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-  t_events = pd.DataFrame(index=[net_name[7:12]], columns=[400,600,610,620,630,640]).fillna(0)
-
-  for index in eva:
-   if eva[index]['scenario'] in [400,600,610,620,630,640]:
-    df_v_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += (eva[index]['v_under'] + eva[index]['v_over'])/n
-    df_l_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['ll_over']/n
-    df_t_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['tl_over']/n
-    v_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['v'].columns)/n
-    l_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['ll'].columns)/n
-    t_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['tl'].columns)/n
-
-  x_ticklabels = ['400', '600', '610', '620', '630', '640'] 
-  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
-  
-  vmax_v = (df_v_heatmap/v_events/minutes_per_week*100).max().max()
-  vmax_l = (df_l_heatmap/l_events/minutes_per_week*100).max().max()
-  vmax_t = (df_t_heatmap/t_events/minutes_per_week*100).max().max()
-  vmax = max([vmax_v, vmax_l, vmax_t])
-  #if vmax_v < vmax_l:
-  #  vmax = vmax_l
-  #else:
-  #  vmax = vmax_v
-  vmin = 0
-  
-  plt.figure()
-  ax = sns.heatmap(df_v_heatmap/v_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
-  #ax.set(xlabel='Grid', ylabel='Scenario')
-  ax.set_xticklabels(x_ticklabels)
-  ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Voltage Violation in %')
-  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
-
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_voltage_bss.png', bbox_inches='tight')
-
-  #"YlOrBr"
-
-  plt.figure()
-  ax = sns.heatmap(df_l_heatmap/l_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
-  ax.set_xticklabels(x_ticklabels)
-  ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Line Overloading in %')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
-
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_lineloading_bss.png', bbox_inches='tight')
-
-  plt.figure()
-  ax = sns.heatmap(df_t_heatmap/t_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
-  ax.set_xticklabels(x_ticklabels)
-  ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Trafo Overloading in %')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
-
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_trafoloading_bss.png', bbox_inches='tight')
-     
-def plot_heatmap_grid_issus_with_bss_curtailed(eva, net_name, n, save_fig_dir=None):
-  print('Create Heatmap plots grid issus')
-
-  minutes_per_week = 7*24*60
-  
-  df_v_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-  df_l_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-  df_t_heatmap = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-  v_events = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-  l_events = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-  t_events = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-  
-  for index in eva:
-   if eva[index]['scenario'] in [401,601,611,621,631,641]:
-    df_v_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += (eva[index]['v_under'] + eva[index]['v_over'])/n
-    df_l_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['ll_over']/n
-    df_t_heatmap[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['tl_over']/n
-    v_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['v'].columns)/n
-    l_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['ll'].columns)/n
-    t_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['tl'].columns)/n
-
-  x_ticklabels = ['401', '601', '611', '621', '631', '641'] 
-  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
-  
-  vmax_v = (df_v_heatmap/v_events/minutes_per_week*100).max().max()
-  vmax_l = (df_l_heatmap/l_events/minutes_per_week*100).max().max()
-  vmax_t = (df_t_heatmap/t_events/minutes_per_week*100).max().max()
-  vmax = max([vmax_v, vmax_l, vmax_t])
-  #if vmax_v < vmax_l:
-  #  vmax = vmax_l
-  #else:
-  #  vmax = vmax_v
-  vmin = 0
-  
-  plt.figure()
-  ax = sns.heatmap(df_v_heatmap/v_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
-  #ax.set(xlabel='Grid', ylabel='Scenario')
-  ax.set_xticklabels(x_ticklabels)
-  ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Voltage Violation in %')
-  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
-
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_voltage_bss_curtailed.png', bbox_inches='tight')
-
-  #"YlOrBr"
-
-  plt.figure()
-  ax = sns.heatmap(df_l_heatmap/l_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
-  ax.set_xticklabels(x_ticklabels)
-  ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Line Overloading in %')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
-
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_lineloading_bss_curtailed.png', bbox_inches='tight')
-
-  plt.figure()
-  ax = sns.heatmap(df_t_heatmap/t_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
-  ax.set_xticklabels(x_ticklabels)
-  ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Trafo Overloading in %')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
-
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + 'heatmap_trafoloading_bss_curtailed.png', bbox_inches='tight')
-
-
-def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
+def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
-  #print(eva) #Tabea
   minutes_per_week = 7*24*60
 
-  pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  
-  #pv_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
-  #load_power = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  pv_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  load_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
 
   # Curtailed pv power
-  curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  #curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
-  #curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  curtailed_power_summer = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  curtailed_power_winter = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
 
-  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0) 
-  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621]).fillna(0)
-  #curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
-  #curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0) #Tabea
+  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0) 
+  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
 
   for index in eva:
-    if eva[index]['scenario'] in [401,601,611,621]:
-    #if eva[index]['scenario'] in [401,601,611,621,631,641]: #Tabea
+    if eva[index]['scenario'] in columns_scenarios:
       curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
       curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_load.sum()
       pv_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum()
@@ -606,9 +458,7 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
     if curtailed_power_load_per_cent.loc[index].sum() == 0:
       curtailed_power_load_per_cent_reduced = curtailed_power_load_per_cent_reduced.drop(index)
 
-  #x_ticklabels = ['401', '601', '611', '621']
   x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ']
-  #x_ticklabels = ['401', '601', '611', '621', '631', '641'] #Tabea
   #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
   y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
   y_ticklabels_reduced = ['Grid  \nRural 2', 'Grid  \nRural 3']
@@ -717,21 +567,21 @@ def plot_heatmap_curtailed_power(eva, net_name, n, save_fig_dir=None):
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load.png', bbox_inches='tight')
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
-def plot_heatmap_self_sufficiency(eva, net_name, n, save_fig_dir=None):
+def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
 
   #minutes_per_week = 7*24*60
 
-  df_self_sufficiency = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
-  df_pv_consumption = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)
+  df_self_sufficiency = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  df_pv_consumption = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
 
   for index in eva:
-   if eva[index]['scenario'] in [401,601,611,621,631,641]:
+   if eva[index]['scenario'] in columns_scenarios:
     df_self_sufficiency[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['SelfSufficiancy']/n
     df_pv_consumption[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['PVConsumption']/n
     #v_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['v'].columns)/n
 
-  x_ticklabels = ['401', '601', '611', '621', '631', '641'] #Tabea
+  #x_ticklabels = ['401', '601', '611', '621', '631', '641'] #Tabea
   y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
 
   #x_ticklabels = ['Conv', 'EV+HP', 'PV', 'PV+EV+HP']
@@ -849,20 +699,20 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight')
 
-def plot_grid_issus_over_time_subplot(eva_summer, eva_winter, detailed=None, save_fig_dir=None):
-  power_summer = eva_summer['power']
-  storage_power_summer = eva_summer['storage_power']
+def plot_grid_issus_over_time_subplot(eva1, eva2, detailed=None, save_fig_dir=None):
+  power_summer = eva1['power']
+  storage_power_summer = eva1['storage_power']
   power_summer = power_summer.load+power_summer.hp+power_summer.ev-power_summer.pv+storage_power_summer.sum(axis=1)
-  v_summer = eva_summer['v']
-  ll_summer = eva_summer['ll']
-  tl_summer = eva_summer['tl']
+  v_summer = eva1['v']
+  ll_summer = eva1['ll']
+  tl_summer = eva1['tl']
 
-  power_winter = eva_winter['power']
-  storage_power_winter = eva_winter['storage_power']
+  power_winter = eva2['power']
+  storage_power_winter = eva2['storage_power']
   power_winter = power_winter.load+power_winter.hp+power_winter.ev-power_winter.pv+storage_power_winter.sum(axis=1)
-  v_winter = eva_winter['v']
-  ll_winter = eva_winter['ll']
-  tl_winter = eva_winter['tl']
+  v_winter = eva2['v']
+  ll_winter = eva2['ll']
+  tl_winter = eva2['tl']
 
   if detailed!=None:
     t_freq_new = '10T'

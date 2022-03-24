@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jul 15 10:51:49 2020
+Created on Mo March 07 11:08:14 2022
 
 @author: ricardo
 """
@@ -14,9 +14,7 @@ import pvlib
 import datetime
 import numpy as np
 
-#temp
 import pandapower as pp
-#temp
 
 from tools.creator.HHLcreator import HHLcreator
 from tools.creator.PVcreator import PVcreator
@@ -91,7 +89,7 @@ class EnergyCell():
         self.pf = PowerFlow(self.output_dir)
         self.energy_manager = EnergyManagement(self.scenario)
 
-        self.grid_reinforcement(0)
+        self.grid_reinforcement(exit=0)
 
         self.output_data_handler.create_output_dataframes(self.grid)
 
@@ -127,7 +125,7 @@ class EnergyCell():
 
         self.load_timeseries()
 
-        #  run powerflow
+        # run powerflow
         self.pf.run_power_flow_through_timeseries(df=self.df,
                                                   grid=self.grid,
                                                   pv_controller=self.pv_controller,
