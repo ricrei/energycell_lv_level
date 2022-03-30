@@ -10,12 +10,12 @@ class HPcreator:
         self.hp_data_file = self.inputfolder + '13_hp_short.pbz2'
         self.hp = tt.decompress_pickle(self.hp_data_file)
         self.hp_para = {}
-        self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
-        #self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]
+        #self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
+        self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]
         self.hp_para['cos_phi'] = .95
         self.hp_para['tan_phi'] = np.tan(np.arccos(self.hp_para['cos_phi']))
         self.hp_para['hp_max_p_kw'] = 10
-        self.hp_para['hp_cop'] = 4
+        self.hp_para['hp_cop'] = 3
 
 
   ###########################################
@@ -30,7 +30,7 @@ class HPcreator:
           raise ValueError('No valid grid.category defined. Not able to choose HP type.')
 
       #create columns for HPs grid.net.load
-      grid.net.load['hp_el_capacity_mwh'] = 0.01
+      grid.net.load['hp_max_capacity_mwh'] = 0.045
       grid.net.load['hp_soc_mwh'] = 0.005
       grid.net.load['hp_self_dis_per_day'] = 0.1
       grid.net.load['hp_max_p_w'] = 0.01
