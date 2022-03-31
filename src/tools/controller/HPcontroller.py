@@ -43,7 +43,7 @@ class HPcontroller:
 class HP_P_control:
   def __init__(self, grid):
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
-      self.HP_storages = HPstorages()
+      self.HP_storages = HPstorages(grid)
       self.HP_storages.create_hp_storages(grid)
 
   def pcontrol(self):
@@ -97,15 +97,11 @@ class HP_P_control_direct(HP_P_control):
 
   def __init__(self, grid):
       super().__init__(grid)
-      self.HP_storages = HPstorages()
-      self.HP_storages.create_hp_storages(grid)
-    
+
   def pcontrol_direct_charge(self, grid, d, t):
-      hps = grid.net.load.loc[grid.hp_index]      
-      #get hps with current cop per hp
+      #get hps with current cop per hp      
       hps = self.get_cop(grid, d, t)
-      hp_el_demand = d.copy().values * (self.intervall_in_seconds / 3600) / hps.hp_cop
-      hps.p_mw = hp_el_demand / (self.intervall_in_seconds / 3600)
+      hps.p_mw = d.copy().values / hps.hp_cop
       return hps
   
 
@@ -116,7 +112,9 @@ class HP_P_control_hh_fid(HP_P_control):
       super().__init__(grid)
             
   def pcontrol_linear_charge(self, grid, d, t):
-
+      
+      #self.HP_storages.hp_stor_para['hp_loss_per_s']
+      
       #get thermal demand from timeseries
       hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600)
       #residual_load positiv -> demand from grid
@@ -125,6 +123,8 @@ class HP_P_control_hh_fid(HP_P_control):
       
       #get hps with current cop per hp due t_ambient
       hps = self.get_cop(grid, d, t)
+      #set loss in storage
+      hps = self.HP_storages.set_loss(hps)
       
       #set value for max-change and initiate hp_soc_change
       hp_soc_change_max = -resi_load * hps.hp_cop - hp_th_demand
@@ -170,7 +170,7 @@ class HP_P_control_hh_fid(HP_P_control):
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
 
       ### limit to maximum or minimum of capacity
-      self.HP_storages.set_limits(hps, hp_soc_change)
+      hps = self.HP_storages.set_limits(hps, hp_soc_change)
       
       #convert soc_change to additonal el_load
       th_soc_to_el_p = hp_soc_change / hps.hp_cop
@@ -187,12 +187,12 @@ class HP_P_control_grid_fid(HP_P_control):
 
   def __init__(self, grid):
       super().__init__(grid)
-      self.HP_storages = HPstorages()
-      self.HP_storages.create_hp_storages(grid)
       self.hps_capacity_backup_factor = 0.8
+      
 
   def pcontrol_trafo_charge(self, grid, d, t):
       
+      print(self.HP_storages.hp_stor_para[1])
       #get thermal demand from timeseries
       hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600)
       #residual_load positiv -> demand from grid
@@ -202,6 +202,8 @@ class HP_P_control_grid_fid(HP_P_control):
 
       #get hps with current cop per hp due t_ambient
       hps = self.get_cop(grid, d, t)
+      #set loss in storage
+      hps = self.HP_storages.set_loss(hps)
 
       #set value for max-change and initiate hp_soc_change
       hp_soc_change_max = -resi_load * hps.hp_cop - hp_th_demand
@@ -314,6 +316,9 @@ class HP_P_control_evu_lock(HP_P_control):
         
         #get hps with current cop per hp and calc th, el demand
         hps = self.get_cop(grid, d, t)
+        #set loss in storage
+        hps = self.HP_storages.set_loss(hps)
+        
         hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600) 
         hp_el_demand = hp_th_demand / hps.hp_cop
         
@@ -379,6 +384,9 @@ class HP_P_control_resi_load_driven(HP_P_control):
 
         #get hps with current cop per hp due t_ambient
         hps = self.get_cop(grid, d, t)
+        #set loss in storage
+        hps = self.HP_storages.set_loss(hps)
+        
         # get thermal demand from timeseries normalized to 1h
         hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600) 
 
