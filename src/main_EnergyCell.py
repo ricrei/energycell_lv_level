@@ -95,11 +95,11 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  6, # scenario number, 1-8
+  7, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
-  2, # HP, 0-5
-  1, # EV, 0-3
+  3, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]

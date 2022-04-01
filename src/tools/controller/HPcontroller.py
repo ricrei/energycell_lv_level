@@ -294,8 +294,6 @@ class HP_P_control_grid_fid(HP_P_control):
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
 
-      print('hps.p_mw: ',hps.p_mw.values.sum())
-    
       return hps
 
 ### based EnWG $14a EVU-Lock  ###
