@@ -489,9 +489,9 @@ class EvaluationSingleCase():
 
     fig, ax = plt.subplots()
     for i in self.grid.hp_index:
-      ax.plot(self.load_p[str(i)]*1000)
+      ax.plot(self.load_p[str(i)])
     ax.set_xlabel('Time')
-    ax.set_ylabel('Power in kW')
+    ax.set_ylabel('hp_el_demand in MW')
     #plt.legend(grid.component_buses.index)
     #plt.show()
 
@@ -499,7 +499,7 @@ class EvaluationSingleCase():
     fig, ax = plt.subplots()
     ax.plot(self.hp_demand_th)
     ax.set_xlabel('Time')
-    ax.set_ylabel('demand_th in MW')
+    ax.set_ylabel('hp_th_demand in MW')
     plt.show()
 
   def plot_grid(self, time_sample=None):
