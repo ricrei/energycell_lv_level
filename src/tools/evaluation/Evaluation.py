@@ -423,7 +423,7 @@ def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, s
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_trafoloading.png', bbox_inches='tight')
 
-def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=None):
+def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
   minutes_per_week = 7*24*60
 
@@ -458,7 +458,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
     if curtailed_power_load_per_cent.loc[index].sum() == 0:
       curtailed_power_load_per_cent_reduced = curtailed_power_load_per_cent_reduced.drop(index)
 
-  x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ']
+  #x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ']
   #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
   y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
   y_ticklabels_reduced = ['Grid  \nRural 2', 'Grid  \nRural 3']

@@ -52,21 +52,23 @@ net_name = ["kerber_rural_1", #0
 save_fig_dir = 'img/'
 
 output_df_dir = 'output-files/000_evaluation_dicts/'
-#output_df_dir = 'output-files/000_evaluation_dicts_shortened_data/' #Tabea
 
-load_scenarios = ['6111110']#, '6121110', '6131110', '6141110']
-load_grid = 'n9'
+def load_scenario_data(scenarios, grids=['n7','n8','n9','n10','n11'], seasons=['spring','summer','autumn','winter']):
+  print('Load eva dicts ...')
+  files = os.listdir(output_df_dir)
 
-print('Load eva dicts ...')
-files = os.listdir(output_df_dir)
+  eva = {}
+  for index in files:
+    if index[1:8] in scenarios:
+      for n in grids:
+        if n in index:
+          for s in seasons:
+            if s in index:
+              print('Load: '+str(index))
+              name = index[0:-5]
+              eva[str(name)] = tt.decompress_pickle(output_df_dir + index)
 
-eva = {}
-for index in files:
-  if index[1:8] in load_scenarios:
-   if load_grid in index:
-    print('Load: '+str(index))
-    name = index[0:-5]
-    eva[str(name)] = tt.decompress_pickle(output_df_dir + index)
+  return eva
 
 n = 4    # Number of timescopes
 m = 4*4  # Number of timescopes * Number of scenarios
@@ -109,16 +111,19 @@ evaluation.plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabel
 '''
 # --- Curtailment: PV-Power and Load --- #
 '''
-columns_scenarios = ['6111110', '6121110', '6131110', '6141110']
-x_ticklabels      = columns_scenarios#['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ']
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=save_fig_dir)
+scenarios = ['6111110', '6121110', '6131110', '6141110', '8133310']
+eva = load_scenario_data(scenarios)
+
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['6111110', '6121110', '6131110', '6141110'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ'], save_fig_dir=save_fig_dir+'0')
+
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['6111110', '6121110', '6131110', '6141110', '8133310'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ', 'new'], save_fig_dir=save_fig_dir+'1')
 '''
 
 # --- Self-Sufficiancy and PV Consumption --- #
 '''
-columns_scenarios = ['6111110', '6121110', '6131110', '6141110']
-x_ticklabels      = columns_scenarios#['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ']
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=save_fig_dir)
+scenarios = ['6111110', '6121110', '6131110', '6141110']
+eva = load_scenario_data(scenarios)
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['6111110', '6121110', '6131110', '6141110'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ'], n, save_fig_dir=save_fig_dir)
 '''
 
 ################################
