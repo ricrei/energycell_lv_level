@@ -425,6 +425,16 @@ class EvaluationSingleCase():
     #plt.legend(grid.component_buses.index)
     plt.show()
     
+  def plot_hp_active_power(self):
+
+    fig, ax = plt.subplots()
+    for i in self.grid.hp_index:
+      ax.plot(self.load_p[str(i)]*1000)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Power in kW')
+    #plt.legend(grid.component_buses.index)
+    plt.show()
+
   def plot_grid(self, time_sample=None):
     if time_sample==None:
       raise ValueError('plot_grid failed. Please define time_sample.')

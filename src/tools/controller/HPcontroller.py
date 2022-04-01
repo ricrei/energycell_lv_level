@@ -187,12 +187,11 @@ class HP_P_control_grid_fid(HP_P_control):
 
   def __init__(self, grid):
       super().__init__(grid)
-      self.hps_capacity_backup_factor = 0.8
+      self.hps_capacity_backup_factor = 1.0
       
 
   def pcontrol_trafo_charge(self, grid, d, t):
       
-      print(self.HP_storages.hp_stor_para[1])
       #get thermal demand from timeseries
       hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600)
       #residual_load positiv -> demand from grid

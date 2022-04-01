@@ -24,7 +24,7 @@ class HPstorages():
             })
 
         self.hp_stor_para = {'hp_max_capacity_mwh': 0.045,
-                             'hp_start_soc': 0.5,
+                             'hp_start_soc': 0.0,
                              'hp_loss_per_s': 0.04 / 86400,   #4% per day / 86400s
                              'hp_max_p_kw': 0.01,
                              'hp_cop': np.nan,
