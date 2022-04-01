@@ -102,6 +102,6 @@ class PowerFlow:
         input_dict['load_q'] = df[grid.label_load_q]
         input_dict['pv'] = df[grid.label_pv_p]
         input_dict['hp'] = df[grid.label_hp_p]
-        input_dict['ev'] = df[grid.label_ev]
+        #input_dict['ev'] = df[grid.label_ev]
         input_dict['timestamp'] = df['timestamp']
         return input_dict

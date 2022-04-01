@@ -156,8 +156,8 @@ class EnergyManagementAdvanced(EnergyManagementParent):
     grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
     # direct
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, input_dict['hp'].loc[t], t)
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, input_dict['hp'].loc[t], t)
     grid.net.storage                 = bss_controller.get_active_power_direct_charge(grid, t)
 
     # linear

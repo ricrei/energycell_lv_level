@@ -46,6 +46,7 @@ class EvaluationSingleCase():
     self.storage_e_mwh = self.read_data(self.output_dir+'storage_energy_content_MWh.csv')
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
     self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
+    self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -465,20 +466,33 @@ class EvaluationSingleCase():
     ax.plot(bss_p.index, bss_p)
     ax.set_xlabel('Time')
     ax.set_ylabel('Power in MW')
-    #plt.legend(grid.component_buses.index)
     plt.show()
     
   def plot_hp_soc(self):
-    #busses_num = len(grid.component_buses.index)
-    #array_bus = np.arange(busses_num)
     soc = self.hp_soc
     fig, ax = plt.subplots()
     ax.plot(soc.index, soc)
     ax.set_xlabel('Time')
     ax.set_ylabel('State of charge MW')
-    #plt.legend(grid.component_buses.index)
-    plt.show()
+    #plt.show()
     
+  def plot_hp_active_power(self):
+
+    fig, ax = plt.subplots()
+    for i in self.grid.hp_index:
+      ax.plot(self.load_p[str(i)]*1000)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Power in kW')
+    #plt.legend(grid.component_buses.index)
+    #plt.show()
+
+  def plot_hp_demand_th(self):
+    fig, ax = plt.subplots()
+    ax.plot(self.hp_demand_th)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('demand_th in MW')
+    plt.show()
+
   def plot_grid(self, time_sample=None):
     if time_sample==None:
       raise ValueError('plot_grid failed. Please define time_sample.')

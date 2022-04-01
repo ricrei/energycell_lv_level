@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mo March 07 11:08:14 2022
+Created on Fr April 01 11:08:14 2022
 
 @authors: ricardo, tabea, paul
 """
@@ -15,14 +15,19 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-27 05:00:00+02:00',
-               'end_time'   : '2017-05-27 23:00:00+02:00',
-               't_freq'     : '1H',
+time_scope = { 'start_time' : '2017-01-04 00:00:00+02:00',
+               'end_time'   : '2017-01-05 00:00:00+02:00',
+               't_freq'     : '10T',
              }
-
-time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
-                    'end_time'   : '2018-01-01 00:00:00+01:00',
-                    't_freq'     : '1D'
+'''
+time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
+               'end_time'   : '2017-05-26 00:00:00+02:00',
+               't_freq'     : '10T',
+             }
+'''
+time_scope_year = { 'start_time' : '2017-04-01 00:00:00+01:00',
+                    'end_time'   : '2018-08-01 00:00:00+01:00',
+                    't_freq'     : '1H'
                   }
 
 # timescopes to examine
@@ -93,9 +98,9 @@ scenario = [
   6, # scenario number, 1-8
   1, # PV, 0-2
   0, # BSS, 0-5
-  1, # HP, 0-5
+  2, # HP, 0-5
   1, # EV, 0-3
-  0, # Curtailment, 0/1
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -156,9 +161,11 @@ def run_single_simulation():
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
-  e.eva.plot_pv_active_power()
-  e.eva.plot_pv_reactive_power(e.grid)
-  #e.eva.plot_hp_soc()
+  #e.eva.plot_pv_active_power()
+  #e.eva.plot_pv_reactive_power()
+  e.eva.plot_hp_soc()
+  e.eva.plot_hp_active_power()
+  e.eva.plot_hp_demand_th()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()

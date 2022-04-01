@@ -12,7 +12,7 @@ import numpy as np
 class HPstorages():
     """ HP-Storage creates and controls HP-Storage. """
 
-    def __init__(self):
+    def __init__(self, grid):
         #print("Init HP-Storage")
         self.hp_storages = pd.DataFrame({
             'name': [],
@@ -23,11 +23,16 @@ class HPstorages():
             'max_flow': 0.0
             })
 
-        self.hp_stor_para = {'hp_el_capacity_mwh': 0.015,
-                             'hp_start_soc': 0.5,
-                             'hp_self_dis_per_day': 0.1,
+        self.hp_stor_para = {'hp_max_capacity_mwh': 0.045,
+                             'hp_start_soc': 0.0,
+                             'hp_loss_per_s': 0.04 / 86400,   #4% per day / 86400s
                              'hp_max_p_kw': 0.01,
-                             'hp_cop': 4}
+                             'hp_cop': np.nan,
+                             'upper_backup_factor': 0.8,
+                             'lower_backup_factor': 0.2}
+        
+        self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
+
 
 
 
@@ -39,15 +44,19 @@ class HPstorages():
         '''
         #print("Create HP-Storage")
 
-        grid.net.load.loc[grid.hp_index, 'hp_el_capacity_mwh'] = \
-            self.hp_stor_para['hp_el_capacity_mwh']
+        grid.net.load.loc[grid.hp_index, 'hp_max_capacity_mwh'] = \
+            self.hp_stor_para['hp_max_capacity_mwh']
+        
         grid.net.load.loc[grid.hp_index, 'hp_soc_mwh'] = \
-            grid.net.load.loc[grid.hp_index, 'hp_el_capacity_mwh'] \
+            grid.net.load.loc[grid.hp_index, 'hp_max_capacity_mwh'] \
                 * self.hp_stor_para['hp_start_soc']
-        grid.net.load.loc[grid.hp_index, 'hp_self_dis_per_day'] = \
-            self.hp_stor_para['hp_self_dis_per_day']
+        
+        grid.net.load.loc[grid.hp_index, 'hp_loss_per_s'] = \
+            self.hp_stor_para['hp_loss_per_s']
+        
         grid.net.load.loc[grid.hp_index, 'hp_max_p_kw'] = \
             self.hp_stor_para['hp_max_p_kw']
+        
         grid.net.load.loc[grid.hp_index, 'hp_cop'] = \
             self.hp_stor_para['hp_cop']
 
@@ -55,17 +64,47 @@ class HPstorages():
 
         return 0
 
-    def get_level(self, grid, index):
-        '''hp_start_soc
-        Returns level of storages by index
+    def set_limits(self, hps, hp_soc_change):
+        '''
+        sets max and minimum level of storages
         -------
-        Input grid
-        index to identify storages
+        Input hps - dataframe
         '''
         
-        return grid.net.load.hp_soc_kwh[index]
-        #return self.hp_storages.level[index]
+        ### storage full
+        #limit increase hp_soc untill [hp_soc + soc_change > hp_max_capacity]
+        hp_soc_change[hps.hp_soc_mwh + hp_soc_change > hps.hp_max_capacity_mwh] = \
+            hps.hp_max_capacity_mwh[hps.hp_soc_mwh + hp_soc_change > hps.hp_max_capacity_mwh] - \
+              hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change > hps.hp_max_capacity_mwh]
+
+        ### storage emtpy
+        #decrease hp_soc untill [hp_soc + soc_change < 0]
+        hp_soc_change[hps.hp_soc_mwh + hp_soc_change < 0] =\
+            -hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change < 0]
         
+        return hps
+        
+    def set_loss(self, hps):
+        '''
+        sets max and minimum level of storages
+        -------
+        Input hps - dataframe
+        '''
+
+        #calc loss in per due intervall in sec and loss in percent per s
+        loss_per_intervall_in_per = self.intervall_in_seconds * self.hp_stor_para['hp_loss_per_s']
+        #calc loss in mwh due hp_soc
+        loss_in_mwh = hps.hp_soc_mwh * loss_per_intervall_in_per
+        #decrease level
+        hps.hp_soc_mwh -= loss_in_mwh
+        
+        #print('inter_in_s   ', self.intervall_in_seconds)
+        #print('hp_loss__s   ', self.hp_stor_para['hp_loss_per_s'])
+        #print('inter_in_s   ', loss_per_intervall_in_per)
+        #print('loss         ', loss_in_mwh)
+        #print('hpsoc   ', hps.hp_soc_mwh)
+        
+        return hps
 
     def get_capacity(self, grid, index):
         '''
@@ -77,43 +116,4 @@ class HPstorages():
         
         return grid.net.load.hp_el_capacity_kwh[index]
         #return self.hp_storages.capacity[index]
-
-    def greater(self, para1, para2):
-        '''
-        Returns series of compared entries
-        -------
-        Input para1
-        Input para2
-        '''
-        greater = np.less(self.hp_storages.get(para1), 
-                          self.hp_storages.get(para2))
-        return greater        
-
-
-    def feed_in(self, grid, indexer, energy):
-        '''
-        Returns new_level as a result of feed_in
-        -------
-        input: bus_id to identify storage, amount of energy in kWh per timestep
-        '''
-        
-        self.hp_storages.level[indexer] = self.hp_storages.level[indexer] + energy * 1000
-        
-        grid.net.load.loc[grid.hp_index].hp_soc_kwh[indexer] = \
-            grid.net.load.loc[grid.hp_index].hp_soc_kwh[indexer] + energy * 1000
-        
-        return 0
-
-    def feed_out(self, grid, indexer, energy):
-        '''
-        Returns new_level as a result of feed_out
-        -------
-        input: bus_id to identify storage, amount of energy in kWh per timestep
-        '''
-        
-        self.hp_storages.level[indexer] = self.hp_storages.level[indexer] - energy * 1000
-        grid.net.load.loc[grid.hp_index].hp_soc_kwh[indexer] = \
-            grid.net.load.loc[grid.hp_index].hp_soc_kwh[indexer] + energy * 1000
-
-        return 0
     
