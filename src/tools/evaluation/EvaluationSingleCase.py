@@ -47,6 +47,7 @@ class EvaluationSingleCase():
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
     self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
     self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
+    self.hp_cop = self.read_data(self.output_dir+'hp_cop.csv')
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -473,7 +474,15 @@ class EvaluationSingleCase():
     fig, ax = plt.subplots()
     ax.plot(soc.index, soc)
     ax.set_xlabel('Time')
-    ax.set_ylabel('State of charge MW')
+    ax.set_ylabel('State of charge MWh')
+    #plt.show()
+
+  def plot_hp_cop(self):
+    cop = self.hp_cop
+    fig, ax = plt.subplots()
+    ax.plot(cop.index, cop)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('coefficent of performance - COP')
     #plt.show()
     
   def plot_hp_active_power(self):

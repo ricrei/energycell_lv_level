@@ -42,6 +42,7 @@ class OutputDataHandler():
         self.curtailed_power = pd.DataFrame(columns=['curtail_pv', 'curtail_load'])
         self.hp_soc = pd.DataFrame(columns=grid.hp_index)
         self.hp_demand_th = pd.DataFrame(columns=grid.hp_index)
+        self.hp_cop = pd.DataFrame(columns=grid.hp_index)
         self.vm_pu.index.name = 'timestamp'
         self.li_lo.index.name = 'timestamp'
         self.tr_lo.index.name = 'timestamp'
@@ -61,6 +62,7 @@ class OutputDataHandler():
         self.curtailed_power.index.name  = 'timestamp'
         self.hp_soc.index.name  = 'timestamp'
         self.hp_demand_th.index.name = 'timestamp'
+        self.hp_cop.index.name = 'timestamp'
         
   def write_output_into_dataframe(self, grid, t):
         self.vm_pu.loc[t] = grid.net.res_bus.vm_pu
@@ -86,6 +88,8 @@ class OutputDataHandler():
         self.curtailed_power.loc[t] = [grid.curtailed_pv_power, grid.curtailed_load_power]
         self.hp_soc.loc[t] = grid.net.load.hp_soc_mwh.loc[grid.hp_index]
         self.hp_demand_th.loc[t] = grid.net.load.hp_demand_th.loc[grid.hp_index]
+        self.hp_cop.loc[t] = grid.net.load.hp_cop.loc[grid.hp_index]
+
         
   def write_dataframe_to_csv(self, mode, header, grid):
         self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',
@@ -125,6 +129,8 @@ class OutputDataHandler():
         self.hp_soc.round(6).to_csv(self.output_dir + 'hp_soc.csv',
                                                mode=mode, header=header, index = True)
         self.hp_demand_th.round(6).to_csv(self.output_dir + 'hp_demand_th.csv',
+                                               mode=mode, header=header, index = True)
+        self.hp_cop.round(6).to_csv(self.output_dir + 'hp_cop.csv',
                                                mode=mode, header=header, index = True)
 
         self.create_output_dataframes(grid)
