@@ -50,6 +50,7 @@ class HP_P_control:
       pass
     
   def pcontrol_direct_charge(self, grid, d, t):
+      grid.net.load['hp_demand_th'].loc[grid.hp_index] = d.values
       return grid.net.load.loc[grid.hp_index] 
 
   def pcontrol_linear_charge(self, grid, d, t):
@@ -99,6 +100,7 @@ class HP_P_control_direct(HP_P_control):
       super().__init__(grid)
 
   def pcontrol_direct_charge(self, grid, d, t):
+      super().pcontrol_direct_charge(grid, d, t)
       #get hps with current cop per hp      
       hps = self.get_cop(grid, d, t)
       hps.p_mw = d.copy().values / hps.hp_cop
@@ -302,7 +304,7 @@ class HP_P_control_evu_lock(HP_P_control):
         super().__init__(grid)
 
     def pcontrol_direct_charge(self, grid, d, t):
-
+        super().pcontrol_direct_charge(grid, d, t)
         ### Power and energy is measured in MW or MWh
         
         #residual_load positiv -> demand from grid
@@ -373,7 +375,7 @@ class HP_P_control_resi_load_driven(HP_P_control):
         super().__init__(grid)
 
     def pcontrol_direct_charge(self, grid, d, t):
-        
+        super().pcontrol_direct_charge(grid, d, t)
         ### Power and energy is measured in MW or MWh
         #residual_load positiv -> demand from grid
         #residual_load negativ -> feed into grid

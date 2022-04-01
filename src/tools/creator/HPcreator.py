@@ -29,19 +29,20 @@ class HPcreator:
       else:
           raise ValueError('No valid grid.category defined. Not able to choose HP type.')
 
-      #create columns for HPs grid.net.load
-      grid.net.load['hp_max_capacity_mwh'] = 0.045
-      grid.net.load['hp_soc_mwh'] = 0.005
-      grid.net.load['hp_self_dis_per_day'] = 0.1
-      grid.net.load['hp_max_p_w'] = 0.01
-      grid.net.load['hp_cop'] = 4
-
       # create hp-loads at each bus
       for index in grid.component_buses.index:
           # calculate distribution of heatpump types and building types within the grid
           pp.create_load(grid.net, grid.net.load.loc[index, "bus"], 0.0, \
                          name='hp_'+str(grid.net.load.loc[index, "bus"]), \
                              type='hp_'+self.hp_para['hp_types'][index%len(self.hp_para['hp_types'])])
+
+      #create columns for HPs grid.net.load
+      grid.net.load['hp_max_capacity_mwh'] = 0.045
+      grid.net.load['hp_soc_mwh'] = 0.005
+      grid.net.load['hp_self_dis_per_day'] = 0.1
+      #grid.net.load['hp_max_p_w'] = 0.01
+      grid.net.load['hp_cop'] = 4
+      grid.net.load['hp_demand_th'] = np.nan
 
       return grid
 
