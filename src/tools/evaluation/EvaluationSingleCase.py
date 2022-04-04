@@ -47,6 +47,9 @@ class EvaluationSingleCase():
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
     self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
     self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
+    self.hp_hp_th = self.read_data(self.output_dir+'hp_hp_th.csv')
+    self.hp_tes_th = self.read_data(self.output_dir+'hp_tes_th.csv')
+    self.hp_tes_losses_th = self.read_data(self.output_dir+'hp_tes_losses_th.csv')
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -486,11 +489,25 @@ class EvaluationSingleCase():
     #plt.legend(grid.component_buses.index)
     #plt.show()
 
-  def plot_hp_demand_th(self):
+  def plot_hp_eva_th(self):
+    bus = '100'
+    hp_tes_gen = self.hp_tes_th*0
+    hp_tes_con = self.hp_tes_th*0
+    hp_tes_gen[self.hp_tes_th < 0] = self.hp_tes_th[self.hp_tes_th < 0] 
+    hp_tes_con[self.hp_tes_th > 0] = self.hp_tes_th[self.hp_tes_th > 0]
+    result = self.hp_hp_th - self.hp_demand_th - self.hp_tes_th - self.hp_tes_losses_th
     fig, ax = plt.subplots()
-    ax.plot(self.hp_demand_th)
+    ax.plot(result)
+    plt.show()
+
+    fig, ax = plt.subplots()
+    ax.plot(self.hp_demand_th[bus])
+    ax.plot(self.hp_hp_th[bus])
+    ax.plot(self.hp_tes_th[bus])
+    ax.plot(self.hp_tes_losses_th[bus])
     ax.set_xlabel('Time')
-    ax.set_ylabel('demand_th in MW')
+    ax.set_ylabel('Thermal Power in MW')
+    plt.legend(['Demand', 'HP', 'TES', 'TES losses'])
     plt.show()
 
   def plot_grid(self, time_sample=None):

@@ -42,7 +42,7 @@ from tools.evaluation.EvaBSSsizing import EvaBSSsizing
 
 class EnergyCell():
 
-    def __init__(self, net_name, scenario, control_parameter, time_scope):
+    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False):
         self.run_time('start')
 
         self.controls = self.scenario_interpreter(scenario)
@@ -80,7 +80,7 @@ class EnergyCell():
 
         self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = self.controls['curtailment'])
 
-        self.output_data_handler = OutputDataHandler()
+        self.output_data_handler = OutputDataHandler(save_full_data)
         self.output_dir = self.output_data_handler.create_output_dir(
                                          self.net_name,
                                          self.scenario,
@@ -145,7 +145,7 @@ class EnergyCell():
         if self.scenario[6] == 1:
           use_data_of_scenario = np.copy(np.array(self.scenario))
           use_data_of_scenario[6] = 0
-          self.output_data_handler_worst_case = OutputDataHandler()
+          self.output_data_handler_worst_case = OutputDataHandler(save_full_data = False)
           self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(
                                          self.net_name,
                                          use_data_of_scenario,

@@ -99,28 +99,6 @@ class EvaluationAllCases():
 
   ### Calculate Output Data ###
   def calculate_relevant_outputdata(self, power, losses, trafo_p):
-    '''
-    sum_pv = power.pv.sum()
-    sum_hp = power.hp.sum()
-    sum_ev = power.ev.sum()
-    sum_load = power.load.sum()
-    sum_total_load = sum_hp + sum_load + sum_ev
-
-    Res = power.pv - power.hp - power.ev - power.load
-    Res_pos = Res[Res > 0]
-    Res_neg = Res[Res < 0]
-
-    SelfSufficiancy = (sum_total_load + Res_neg.sum())*100/sum_total_load
-    if sum_pv != 0:
-      PVConsumption = (sum_pv - Res_pos.sum())*100/sum_pv
-    else:
-      PVConsumption = 0
-    '''
-
-    #power = self.shorted_data(power, '1H')
-    #losses = self.shorted_data(losses, '1H')
-    #trafo_p = self.shorted_data(trafo_p, '1H')
-
     losses = losses.sum().sum()
     sum_pv = power.pv.sum()
     sum_hp = power.hp.sum()
@@ -153,29 +131,17 @@ class EvaluationAllCases():
     v_over = v[v>v_limit_over].fillna(0)
     v_over[v_over > 0] = 1 
     sum_v_over = v_over[v_over.columns].sum(axis=1).sum()
-    #print('Anzahl der Überspannungsereignisse im gesamten Netz: %s' % sum_v_over.sum())
-    #sum_v_over[sum_v_over > 0] = 1
-    #print('Minuten in denen es zu einer Überspannung kam: %s' % sum_v_over.sum())
 
     v_under = v[v<v_limit_under].fillna(0)
     v_under[v_under > 0] = 1 
     sum_v_under = v_under[v_under.columns].sum(axis=1).sum()
-    #print('Anzahl der Unterspannungsereignisse im gesamten Netz: %s' % sum_v_under.sum())
-    #sum_v_under[sum_v_under > 0] = 1
-    #print('Minuten in denen es zu einer Unterspannung kam: %s' % sum_v_under.sum())
 
     ll = ll[ll>100].fillna(0)
     ll[ll > 0] = 1 
     sum_ll = ll[ll.columns].sum(axis=1).sum()
-    #print('Anzahl der Leitungsüberlastungen im gesamten Netz: %s' % ll.sum())
-    #ll[ll > 0] = 1
-    #print('Minuten in denen es zu einer Leitungsüberlastung kam: %s' % ll.sum())
 
     tl = tl[tl>100].fillna(0)
     tl[tl > 0] = 1 
     sum_tl = tl[tl.columns].sum(axis=1).sum()
-    #print('Anzahl der Trafoüberlastungen im gesamten Netz: %s' % tl.sum())
-    #tl[tl > 0] = 1
-    #print('Minuten in denen es zu einer Trafoüberlastung kam: %s' % tl.sum())
 
     return sum_v_under, sum_v_over, v_events, sum_ll, ll_events, sum_tl, tl_events

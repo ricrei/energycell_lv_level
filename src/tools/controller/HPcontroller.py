@@ -80,6 +80,11 @@ class HP_P_control:
       ### Werte in den df d für hp_th_demand und cop
       return hps
 
+  def write_th_data_to_df(self, hps, hp_soc_change):
+      hps['hp_hp_th'] = hps.p_mw * hps.hp_cop
+      hps['hp_tes_th'] = hp_soc_change / (self.intervall_in_seconds / 3600)
+      return hps
+
 ### no HP ###
 class HP_P_control_no_hp(HP_P_control):
 
@@ -90,6 +95,8 @@ class HP_P_control_no_hp(HP_P_control):
       HP_P_control.pcontrol(self)
       hps = grid.net.load.loc[grid.hp_index]
       hps.p_mw = 0
+      # write thermal output/input power of HP and TES to hps
+      hps = self.write_th_data_to_df(hps, hp_soc_change=0)
       return hps
 
 ### direct ###
@@ -103,6 +110,8 @@ class HP_P_control_direct(HP_P_control):
       #get hps with current cop per hp      
       hps = self.get_cop(grid, d, t)
       hps.p_mw = d.copy().values / hps.hp_cop
+      # write thermal output/input power of HP and TES to hps
+      hps = self.write_th_data_to_df(hps, hp_soc_change=0)
       return hps
   
 
@@ -180,6 +189,8 @@ class HP_P_control_hh_fid(HP_P_control):
       hps.p_mw = (hp_el_demand + th_soc_to_el_p) / (self.intervall_in_seconds / 3600)
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
+      # write thermal output/input power of HP and TES to hps
+      hps = self.write_th_data_to_df(hps, hp_soc_change)
 
       return hps
 
@@ -293,6 +304,8 @@ class HP_P_control_grid_fid(HP_P_control):
       hps.p_mw = (hp_el_demand + th_soc_to_el_p) / (self.intervall_in_seconds / 3600)
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
+      # write thermal output/input power of HP and TES to hps
+      hps = self.write_th_data_to_df(hps, hp_soc_change)
 
       return hps
 
@@ -360,12 +373,13 @@ class HP_P_control_evu_lock(HP_P_control):
         hps.p_mw = (hp_el_demand + additional_el_demand) / (self.intervall_in_seconds / 3600)
         ### set soc of storage
         hps.hp_soc_mwh += hp_soc_change
+        # write thermal output/input power of HP and TES to hps
+        hps = self.write_th_data_to_df(hps, hp_soc_change)
         
-        grid.net.load.loc[grid.hp_index] = hps
-
+        #grid.net.load.loc[grid.hp_index] = hps
         #HP_P_control.pcontrol(self)
-
-        return grid.net.load.loc[grid.hp_index]
+        #return grid.net.load.loc[grid.hp_index]
+        return hps
 
 ### state of the art residual_load driven hp and storage ###
 class HP_P_control_resi_load_driven(HP_P_control):
@@ -407,5 +421,7 @@ class HP_P_control_resi_load_driven(HP_P_control):
         hps.p_mw = (hp_el_demand + th_soc_to_el_p) / (self.intervall_in_seconds / 3600)
         ### set soc of storage
         hps.hp_soc_mwh += hp_soc_change
+        # write thermal output/input power of HP and TES to hps
+        hps = self.write_th_data_to_df(hps, hp_soc_change)
 
         return hps

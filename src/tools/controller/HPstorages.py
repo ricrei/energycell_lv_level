@@ -97,6 +97,7 @@ class HPstorages():
         loss_in_mwh = hps.hp_soc_mwh * loss_per_intervall_in_per
         #decrease level
         hps.hp_soc_mwh -= loss_in_mwh
+        hps.hp_tes_losses_th = loss_in_mwh
         
         #print('inter_in_s   ', self.intervall_in_seconds)
         #print('hp_loss__s   ', self.hp_stor_para['hp_loss_per_s'])

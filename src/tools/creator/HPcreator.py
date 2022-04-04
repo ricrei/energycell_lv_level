@@ -43,6 +43,9 @@ class HPcreator:
       #grid.net.load['hp_max_p_w'] = 0.01
       grid.net.load['hp_cop'] = 4
       grid.net.load['hp_demand_th'] = np.nan
+      grid.net.load['hp_hp_th'] = np.nan
+      grid.net.load['hp_tes_th'] = np.nan
+      grid.net.load['hp_tes_losses_th'] = np.nan
 
       return grid
 
