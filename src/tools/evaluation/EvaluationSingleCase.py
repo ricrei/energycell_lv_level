@@ -490,14 +490,16 @@ class EvaluationSingleCase():
     #plt.show()
 
   def plot_hp_eva_th(self):
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    c = prop_cycle.by_key()['color']
+
     bus = '100'
-    hp_tes_gen = self.hp_tes_th*0
-    hp_tes_con = self.hp_tes_th*0
-    hp_tes_gen[self.hp_tes_th < 0] = self.hp_tes_th[self.hp_tes_th < 0] 
-    hp_tes_con[self.hp_tes_th > 0] = self.hp_tes_th[self.hp_tes_th > 0]
     result = self.hp_hp_th - self.hp_demand_th - self.hp_tes_th - self.hp_tes_losses_th
+    
     fig, ax = plt.subplots()
     ax.plot(result)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Thermal Power Deviation in MW\n(should be near zero)')
     plt.show()
 
     fig, ax = plt.subplots()
@@ -508,6 +510,37 @@ class EvaluationSingleCase():
     ax.set_xlabel('Time')
     ax.set_ylabel('Thermal Power in MW')
     plt.legend(['Demand', 'HP', 'TES', 'TES losses'])
+    plt.show()
+    
+
+    hp_tes_gen = self.hp_tes_th*0
+    hp_tes_con = self.hp_tes_th*0
+    hp_tes_gen[self.hp_tes_th < 0] = self.hp_tes_th[self.hp_tes_th < 0] 
+    hp_tes_con[self.hp_tes_th > 0] = self.hp_tes_th[self.hp_tes_th > 0]
+    hp_tes_gen = hp_tes_gen.sum(axis=1)
+    hp_tes_con = hp_tes_con.sum(axis=1)
+    hp_hp_th = self.hp_hp_th.sum(axis=1)
+    hp_tes_losses_th = self.hp_tes_losses_th.sum(axis=1)
+    hp_demand_th = self.hp_demand_th.sum(axis=1)
+
+    fig, ax = plt.subplots()
+    # Consumption
+    ax.fill_between(hp_demand_th.index, 0                      , hp_demand_th                            , alpha=0.7, color=c[0])
+    ax.fill_between(hp_demand_th.index, hp_demand_th           , hp_demand_th+hp_tes_con                 , alpha=0.7, color=c[1])
+    ax.fill_between(hp_demand_th.index, hp_demand_th+hp_tes_con, hp_demand_th+hp_tes_con+hp_tes_losses_th, alpha=0.7, color=c[2])
+    # Production
+    ax.fill_between(hp_demand_th.index, 0                      , -hp_hp_th                               , alpha=0.7, color=c[3])
+    ax.fill_between(hp_demand_th.index, -hp_hp_th              , -hp_hp_th+hp_tes_gen                    , alpha=0.7, color=c[1])
+    #ax.plot(self.pv_p.sum(axis=1))
+    patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Demand'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='TES'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='TES losses'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='HP')
+                 ]
+    plt.legend(handles=patch_list)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Thermal Power in MW')
     plt.show()
 
   def plot_grid(self, time_sample=None):

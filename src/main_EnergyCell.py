@@ -16,8 +16,8 @@ import concurrent.futures
 ##########################################
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-01-04 00:00:00+02:00',
-               'end_time'   : '2017-01-05 00:00:00+02:00',
-               't_freq'     : '10T',
+               'end_time'   : '2017-01-15 00:00:00+02:00',
+               't_freq'     : '30T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -148,7 +148,7 @@ def run_single_simulation():
                     save_full_data = True)
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
