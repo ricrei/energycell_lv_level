@@ -44,7 +44,8 @@ class EvaluationSingleCase():
     self.bss_p = self.read_data(self.output_dir+'storage_active_power_MW.csv') ###
     self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
     self.storage_e_mwh = self.read_data(self.output_dir+'storage_energy_content_MWh.csv')
-    self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
+    self.curtailed_power_pv = self.read_data(self.output_dir+'curtailed_power_pv_MW.csv')
+    self.curtailed_power_load = self.read_data(self.output_dir+'curtailed_power_load_MW.csv')
     self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
     self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
     self.hp_hp_th = self.read_data(self.output_dir+'hp_hp_th.csv')
@@ -72,7 +73,11 @@ class EvaluationSingleCase():
     c = prop_cycle.by_key()['color']
 
     power = self.power*1000
-    curtailed = self.curtailed_power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
     losses = self.losses_p.sum(axis=1)*1000
 
     '''
@@ -213,7 +218,11 @@ class EvaluationSingleCase():
     power = self.power
     losses = self.losses_p
     trafo_p = self.trafo_p
-    curtail_p = self.curtailed_power
+    curtail_pv = self.curtailed_power_pv.sum(axis=1)
+    curtail_load = self.curtailed_power_load.sum(axis=1)
+    curtail_p = pd.DataFrame()
+    curtail_p['curtail_pv'] = curtail_pv
+    curtail_p['curtail_load'] = curtail_load
 
     if self.time_scope['t_freq'] != '1D':
       power = self.shorted_data(power, '1H')
@@ -593,3 +602,44 @@ class EvaluationSingleCase():
 
     ppplt.draw_collections([bc, lc, tc, bc_over, lc_over])
     plt.show()
+
+
+  def energyflow(self):
+    pass
+
+    '''
+    load_index = [str(i) for i in self.grid.load_index]
+    hp_index = [str(i) for i in self.grid.hp_index]
+    ev_index = [str(i) for i in self.grid.ev_index]
+
+    # HP-load per HH
+    hp_load = self.load_p[hp_index]
+    hp_load.columns = load_index
+    # EV-load per HH
+    ev_load = self.load_p[ev_index]
+    ev_load.columns = load_index
+    # HH-load per HH
+    hh_load = self.load_p[load_index]
+    # PV per HH
+    pv = self.pv_p
+
+    # residual load per HH
+    dE_HH = hh_load + hp_load + ev_load - pv
+    print(dE_HH)
+
+    fig, ax = plt.subplots()
+    ax.plot(dE_HH)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('dP of each HH in MW')
+    plt.show()
+    '''
+
+
+
+
+
+
+
+
+
+

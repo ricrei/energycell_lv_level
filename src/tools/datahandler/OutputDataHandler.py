@@ -39,8 +39,10 @@ class OutputDataHandler():
         self.trafo_active_power.index.name = 'timestamp'
         self.losses_active_power = pd.DataFrame(columns=['trafo','lines'])
         self.losses_active_power.index.name = 'timestamp'
-        self.curtailed_power = pd.DataFrame(columns=['curtail_pv', 'curtail_load'])
-        self.curtailed_power.index.name  = 'timestamp'
+        self.curtailed_power_pv = pd.DataFrame(columns=grid.net.sgen.index)
+        self.curtailed_power_pv.index.name  = 'timestamp'
+        self.curtailed_power_load = pd.DataFrame(columns=grid.net.load.index)
+        self.curtailed_power_load.index.name  = 'timestamp'
         if self.save_full_data == True:
           self.pv_active_power = pd.DataFrame(columns=grid.net.sgen.index)
           self.pv_active_power.index.name = 'timestamp'
@@ -83,7 +85,8 @@ class OutputDataHandler():
         self.storage_state_of_charge.loc[t] = grid.net.storage['soc_percent']
         self.trafo_active_power.loc[t] = grid.net.res_trafo.p_hv_mw
         self.losses_active_power.loc[t] = [grid.net.res_trafo.pl_mw.sum(),grid.net.res_line.pl_mw.sum()]
-        self.curtailed_power.loc[t] = [grid.curtailed_pv_power, grid.curtailed_load_power]
+        self.curtailed_power_pv.loc[t] = grid.curtailed_pv_power_df
+        self.curtailed_power_load.loc[t] = grid.curtailed_load_power_df
         if self.save_full_data == True:
           self.pv_active_power.loc[t]   = grid.net.sgen['p_mw']
           self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
@@ -116,7 +119,9 @@ class OutputDataHandler():
                                                   mode=mode, header=header, index = True)
         self.losses_active_power.round(6).to_csv(self.output_dir + 'losses_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
-        self.curtailed_power.round(6).to_csv(self.output_dir + 'curtailed_power_MW.csv',
+        self.curtailed_power_pv.round(6).to_csv(self.output_dir + 'curtailed_power_pv_MW.csv',
+                                                  mode=mode, header=header, index = True)
+        self.curtailed_power_load.round(6).to_csv(self.output_dir + 'curtailed_power_load_MW.csv',
                                                   mode=mode, header=header, index = True)
         if self.save_full_data == True:
           self.pv_active_power.round(6).to_csv(self.output_dir + 'pv_active_power_MW.csv',
