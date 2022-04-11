@@ -905,18 +905,20 @@ H is the hatch used for identification of the different dataframe"""
                       grid=False,
                       cmap='summer',
                       **kwargs)  # make bar plots
-                        #table=True, # Tabea
     
     h,l = axe.get_legend_handles_labels() # get the handles we want to modify
     for i in range(0, n_df * n_col, n_col): # len(h) = n_col * n_df
         for j, pa in enumerate(h[i:i+n_col]):
             for rect in pa.patches: # for each index
-                rect.set_x(rect.get_x() + 1 / float(n_df + 1) * i / float(n_col))
-                rect.set_hatch(H* int(3*i / n_col))#(H * int(2*i / n_col)) #edited part     
+                if n_df == 4:
+                  rect.set_x(rect.get_x() + 1 / float(n_df + 1) * i / float(n_col) - .5 / float(n_df + 1))
+                else:
+                  rect.set_x(rect.get_x() + 1 / float(n_df + 1) * i / float(n_col))
+                rect.set_hatch(H* int(2*i / n_col))    
                 rect.set_width(1 / float(n_df + 1))
                 rect.set_alpha(.9)
                 rect.set_aa(True)
-
+                #axe.set_xticks([0, 1, 2, 3, 4])
                 axe.set_xticks((np.arange(0, 2 * n_ind, 2) + .5 / float(n_df + 1)) / 2.)
     axe.set_xticklabels(df.index, rotation = 0)
     axe.set_title(title)
@@ -929,7 +931,7 @@ H is the hatch used for identification of the different dataframe"""
     if labels1 is not None:
         l1 = axe.legend(h[:n_col], labels1, loc=[.01, .82])#(h[:n_col], l[:n_col], loc=[1.01, 0.5])
     if labels2 is not None:
-        l2 = plt.legend(n, labels2, loc=[.01, .7]) 
+        l2 = plt.legend(n, labels2, loc=[.01, .8-n_df/20]) 
     axe.add_artist(l1)
     axe.set_xlabel('Grid')
     axe.set_ylabel('Energy in MWh')
@@ -939,9 +941,9 @@ H is the hatch used for identification of the different dataframe"""
     return axe
 
 
-def plot_curtailed_power(eva, scenario, save_fig_dir=None):
+def plot_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
 
-  df = pd.DataFrame(columns=['gridID', 'time_scope', 'curtailed_power_pv', 'feed-in_power_pv', 'self-consumed_power_pv', 'curtailed_power_load', 'grid_obtained_power_load', 'self-consumed_power_load'], index=range(10))
+  df = pd.DataFrame(columns=['gridID', 'time_scope', 'curtailed_power_pv', 'feed-in_power_pv', 'self-consumed_power_pv', 'curtailed_power_load', 'grid_obtained_power_load', 'self-consumed_power_load'], index=range(5*len(seasons)))
   
   scale_factor_energy = 1/60 # kWmin -> kWh
 
@@ -965,26 +967,32 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
       df['curtailed_power_load'].iloc[i] = curtailed_power['curtail_load']*scale_factor_energy  
       i += 1
       
+  print(df)
   df_summer = df[df['time_scope'] == 'summer']
   df_winter = df[df['time_scope'] == 'winter']
-  
-  #print(df_summer) #Tabea
-  #df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', sep=',', index = False)
+  df_spring = df[df['time_scope'] == 'spring']
+  df_autumn = df[df['time_scope'] == 'autumn']
 
   df_summer = df_summer.set_index('gridID')
   df_winter = df_winter.set_index('gridID')
+  df_spring = df_spring.set_index('gridID')
+  df_autumn = df_autumn.set_index('gridID')
+
 
   df_summer = df_summer.drop('time_scope', axis=1)
   df_winter = df_winter.drop('time_scope', axis=1)
+  df_spring = df_spring.drop('time_scope', axis=1)
+  df_autumn = df_autumn.drop('time_scope', axis=1)
 
   df_summer_pv = df_summer
   df_winter_pv = df_winter
   df_summer_load = df_summer
   df_winter_load = df_winter
-  
-  #print(df_summer) #Tabea
-  #df_summer.to_csv('/home/local/RL-INSTITUT/tabea.katerbau/Dokumente/Repositories/energycell_lv_level/src/img/df_data/'+ str(scenario)+'_df_summer.csv', \
-                                          #sep=',', index = False)
+  df_spring_pv = df_spring
+  df_autumn_pv = df_autumn
+  df_spring_load = df_spring
+  df_autumn_load = df_autumn
+
 
   df_summer_pv = df_summer_pv.drop('curtailed_power_load', axis=1)
   df_summer_pv = df_summer_pv.drop('grid_obtained_power_load', axis=1)
@@ -994,6 +1002,14 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
   df_winter_pv = df_winter_pv.drop('grid_obtained_power_load', axis=1)
   df_winter_pv = df_winter_pv.drop('self-consumed_power_load', axis=1)
 
+  df_spring_pv = df_spring_pv.drop('curtailed_power_load', axis=1)
+  df_spring_pv = df_spring_pv.drop('grid_obtained_power_load', axis=1)
+  df_spring_pv = df_spring_pv.drop('self-consumed_power_load', axis=1)
+
+  df_autumn_pv = df_autumn_pv.drop('curtailed_power_load', axis=1)
+  df_autumn_pv = df_autumn_pv.drop('grid_obtained_power_load', axis=1)
+  df_autumn_pv = df_autumn_pv.drop('self-consumed_power_load', axis=1)
+
   df_summer_load = df_summer_load.drop('curtailed_power_pv', axis=1)
   df_summer_load = df_summer_load.drop('feed-in_power_pv', axis=1)
   df_summer_load = df_summer_load.drop('self-consumed_power_pv', axis=1)
@@ -1002,10 +1018,22 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
   df_winter_load = df_winter_load.drop('feed-in_power_pv', axis=1)
   df_winter_load = df_winter_load.drop('self-consumed_power_pv', axis=1)
 
+  df_spring_load = df_spring_load.drop('curtailed_power_pv', axis=1)
+  df_spring_load = df_spring_load.drop('feed-in_power_pv', axis=1)
+  df_spring_load = df_spring_load.drop('self-consumed_power_pv', axis=1)
+
+  df_autumn_load = df_autumn_load.drop('curtailed_power_pv', axis=1)
+  df_autumn_load = df_autumn_load.drop('feed-in_power_pv', axis=1)
+  df_autumn_load = df_autumn_load.drop('self-consumed_power_pv', axis=1)
+
   df_summer_pv = df_summer_pv.sort_index()
   df_winter_pv = df_winter_pv.sort_index()
   df_summer_load = df_summer_load.sort_index()
   df_winter_load = df_winter_load.sort_index()
+  df_spring_pv = df_spring_pv.sort_index()
+  df_autumn_pv = df_autumn_pv.sort_index()
+  df_spring_load = df_spring_load.sort_index()
+  df_autumn_load = df_autumn_load.sort_index()
   
   plot_clustered_stacked([df_winter_pv, df_summer_pv], ['curtailed','feed-in','self-consumed'], ['winter', 'summer'], title=' ')
 
@@ -1018,6 +1046,21 @@ def plot_curtailed_power(eva, scenario, save_fig_dir=None):
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir+'curtailed_Load_power_'+str(scenario)+'.png', bbox_inches='tight')
+
+  plot_clustered_stacked([ df_spring_pv, df_summer_pv, df_autumn_pv, df_winter_pv], ['curtailed','feed-in','self-consumed'], ['spring', 'summer', 'autumn', 'winter'], title=' ')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir+'curtailed_PV_power_allseasons'+str(scenario)+'.png', bbox_inches='tight')
+
+  plot_clustered_stacked([ df_spring_load, df_summer_load, df_autumn_load, df_winter_load], ['curtailed','grid-obtained','self-consumed'], ['spring', 'summer', 'autumn', 'winter'], title=' ')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir+'curtailed_Load_power_allseasons'+str(scenario)+'.png', bbox_inches='tight')
+
+
+
+
+
 
 def state_of_charge(eva, net_name, n, save_fig_dir=None):
   df_soc_curtailed = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)

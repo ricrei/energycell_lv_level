@@ -26,9 +26,9 @@ time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
                't_freq'     : '10T',
              }
 
-time_scope_year = { 'start_time' : '2017-04-01 00:00:00+01:00',
-                    'end_time'   : '2018-08-01 00:00:00+01:00',
-                    't_freq'     : '1H'
+time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
+                    'end_time'   : '2018-01-01 00:00:00+01:00',
+                    't_freq'     : '1D'
                   }
 
 # timescopes to examine
@@ -70,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope
+time_scope = time_scope_year
 ###########################################
 
 #######################
@@ -100,7 +100,7 @@ scenario = [
   1, # PV, 0-2
   0, # BSS, 0-5
   1, # HP, 0-5
-  1, # EV, 0-3
+  0, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -133,7 +133,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 10
+net_number = 13
 ######################
 
 #############################
@@ -149,7 +149,7 @@ def run_single_simulation():
                     save_full_data = True)
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -157,7 +157,7 @@ def run_single_simulation():
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -175,7 +175,7 @@ def run_single_simulation():
   #e.eva.plot_grid(time_sample='2017-05-27 13:10:00+02:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
-  e.eva.energyflow()
+  #e.eva.energyflow()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
   #e.eva.calculate_resi_week()

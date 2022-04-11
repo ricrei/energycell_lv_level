@@ -81,17 +81,22 @@ m = 4*4  # Number of timescopes * Number of scenarios
 
 # --- Power --- #
 '''
+scenarios = ['6111110', '6121110', '6131110', '6141110']
+eva = load_scenario_data(scenarios, grids=['n9'], seasons=['summer','winter'])
 evaluation.plot_residualload_subplot_overall_eva(eva['s6111110n9winter'], eva['s6111110n9winter'], save_fig_dir=save_fig_dir+'n9_winter_plot_res_load_subplot_n9_winter.png')
 evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s6111110n9summer'], eva['s6111110n9winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8_detailed.png')
 '''
 
 # --- Components loading --- #
 '''
+scenarios = ['6111110', '6121110', '6131110', '6141110']
+eva = load_scenario_data(scenarios, grids=['n9'], seasons=['summer','winter'])
 evaluation.plot_grid_issus_over_time_subplot(eva1=eva['s6111110n9winter'], eva2=eva['s6111110n9winter'], detailed=True, save_fig_dir=save_fig_dir+ 'n9_winter_plot_grid_issus_over_time_subplot_n9_winter.png')
 evaluation.plot_grid_issus_over_time(eva['s6111110n9winter'], save_fig_dir=save_fig_dir+ 'n9_winter_plot_grid_issus_over_time_subplot_n9_winter_full.png')
 '''
 # --- SOCs --- #
 '''
+### To-Do: @Tabea: Wird das noch benötigt? Falls ja, anpassen. Falls nein, löschen auch in Evaluation.py
 evaluation.state_of_charge(eva, net_name, n, save_fig_dir=save_fig_dir)
 '''
 
@@ -100,22 +105,23 @@ evaluation.state_of_charge(eva, net_name, n, save_fig_dir=save_fig_dir)
 ##############################
 # --- Generation / consumption --- #
 '''
+scenarios = ['6111110']
+eva = load_scenario_data(scenarios, grids=['n9'], seasons=['summer','winter'])
 evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s6111110n9winter']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_winter.png')
 evaluation.plot_generation_consumption_as_heat_map_overall_eva(eva['s6111110n9summer']['power'], save_fig_dir=save_fig_dir+'gen_con_heatmap_summer.png')
 '''
 # --- Components loading: Trafo, Lines, Bus-Voltages --- #
 '''
-columns_scenarios = ['6111110', '6121110', '6131110', '6141110']
-x_ticklabels      = columns_scenarios#['Conv'   , 'EV+HP'  , 'PV'     , 'PV+EV+HP']
-evaluation.plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=save_fig_dir)
+scenarios = ['6111110', '6121110', '6131110', '6141110']
+x_ticklabels      = scenarios#['Conv'   , 'EV+HP'  , 'PV'     , 'PV+EV+HP']
+eva = load_scenario_data(scenarios)
+evaluation.plot_heatmap_grid_issus(eva, net_name, scenarios, x_ticklabels, n, save_fig_dir=save_fig_dir)
 '''
 # --- Curtailment: PV-Power and Load --- #
 '''
 scenarios = ['6111110', '6121110', '6131110', '6141110', '8133310']
 eva = load_scenario_data(scenarios)
-
 evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['6111110', '6121110', '6131110', '6141110'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ'], save_fig_dir=save_fig_dir+'0')
-
 evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['6111110', '6121110', '6131110', '6141110', '8133310'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ', 'new'], save_fig_dir=save_fig_dir+'1')
 '''
 
@@ -131,13 +137,18 @@ evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['6111
 ################################
 # --- PV Power (curtailed, feed-in, consumed) and Load (curtailed, grid obtained, direct consumed) --- #
 '''
-evaluation.plot_curtailed_power(eva, scenario='6111110', save_fig_dir=save_fig_dir)
+scenarios = ['6111110']
+seasons = ['spring','summer','autumn','winter']
+eva = load_scenario_data(scenarios, seasons=seasons)
+evaluation.plot_curtailed_power(eva, scenario='6111110', seasons = seasons, save_fig_dir=save_fig_dir)
 '''
 
 #################################
 ########## Other plots ##########
 #################################
 '''
+scenarios = ['6111110', '6121110', '6131110', '6141110']
+eva = load_scenario_data(scenarios)
 evaluation.plot_barplots_overall_eva(eva, m, save_fig_dir=save_fig_dir)
 evaluation.plot_hist_grid_issus_voltage(eva['s6111110n9summer'], eva['s6111110n9winter'], save_fig_dir+ 'hist_grid_issus_voltage.png')
 '''

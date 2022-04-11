@@ -224,7 +224,7 @@ class EvaluationSingleCase():
     curtail_p['curtail_pv'] = curtail_pv
     curtail_p['curtail_load'] = curtail_load
 
-    if self.time_scope['t_freq'] != '1D':
+    if self.time_scope['t_freq'] != None:#'1D':
       power = self.shorted_data(power, '1H')
       losses = self.shorted_data(losses, '1H')
       trafo_p = self.shorted_data(trafo_p, '1H')
