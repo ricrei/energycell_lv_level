@@ -7,7 +7,7 @@ class HPcontroller:
 
   def __init__(self, grid, control):
       self.control = control
-      self.cos_phi = .95
+      self.cos_phi = 1#.95
       self.tan_phi = np.tan(np.arccos(self.cos_phi))
       
       if (self.control != None):
@@ -46,6 +46,12 @@ class HP_P_control:
       self.HP_storages = HPstorages(grid)
       self.HP_storages.create_hp_storages(grid)
 
+      #set static sink-temprature und calc delta_T
+      self.t_sink = 45     ###buidling-side
+      self.t_ground_source = 8
+      self.delta_T_ground = self.t_sink - self.t_ground_source
+      self.COP_ground = 8.77 - 0.15 * self.delta_T_ground + 0.000734 * self.delta_T_ground**2
+
   def pcontrol(self):
       pass
     
@@ -66,16 +72,13 @@ class HP_P_control:
       hps = grid.net.load.loc[grid.hp_index]
       #set current ambient temprature locate by timestamp t
       t_source = grid.df_t_amb.loc[t].ta
-      #set static sink-temprature und calc delta_T
-      t_sink = 45     ###buidling-side
-      delta_T = t_sink - t_source
+
+      delta_T = self.t_sink - t_source
       #calc cop for air-sourced HPs
-      hps.hp_cop[hps.type.str.contains('Air')] = \
-        6.81 - 0.121 * delta_T + 0.00063 * delta_T**2
+      hps.hp_cop[hps.type.str.contains('Air')] = 6.81 - 0.121 * delta_T + 0.00063 * delta_T**2
       #calc cop for ground-sourced HPs
-      hps.hp_cop[hps.type.str.contains('Ground')] = \
-        8.77 - 0.15 * delta_T + 0.000734 * delta_T**2
-        
+      hps.hp_cop[hps.type.str.contains('Ground')] = self.COP_ground
+
       ### -> Optimierung bei Init ermittelte 
       ### Werte in den df d für hp_th_demand und cop
       return hps

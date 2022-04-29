@@ -23,13 +23,21 @@ class HPstorages():
             'max_flow': 0.0
             })
 
-        self.hp_stor_para = {'hp_max_capacity_mwh': 0.045,
-                             'hp_start_soc': 0.0,
+        self.hp_stor_para = {'hp_max_capacity_mwh': 0,
+                             'hp_TES_max_capacity_mwh': .0325,
+                             'hp_building_capacity_mwh': 0.,
+                             'hp_start_soc': 0.5, # %
                              'hp_loss_per_s': 0.04 / 86400,   #4% per day / 86400s
                              'hp_max_p_kw': 0.01,
                              'hp_cop': np.nan,
                              'upper_backup_factor': 0.8,
                              'lower_backup_factor': 0.2}
+
+        if 'name' in grid.time_scope.keys():
+         if grid.time_scope['name'] == 'winter':
+          self.hp_stor_para['hp_building_capacity_mwh'] = .014
+
+        self.hp_stor_para['hp_max_capacity_mwh'] = self.hp_stor_para['hp_building_capacity_mwh'] + self.hp_stor_para['hp_TES_max_capacity_mwh']
         
         self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
 

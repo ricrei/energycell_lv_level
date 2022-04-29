@@ -502,7 +502,7 @@ class EvaluationSingleCase():
     prop_cycle = plt.rcParams['axes.prop_cycle']
     c = prop_cycle.by_key()['color']
 
-    bus = '100'
+    bus = str(self.hp_demand_th.columns[1])
     result = self.hp_hp_th - self.hp_demand_th - self.hp_tes_th - self.hp_tes_losses_th
     
     fig, ax = plt.subplots()
