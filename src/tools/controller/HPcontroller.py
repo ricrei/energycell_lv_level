@@ -129,6 +129,8 @@ class HP_P_control_hh_fid(HP_P_control):
       
       #set value for max-change and initiate hp_soc_change
       hp_soc_change_max = -resi_load * hps.hp_cop - hp_th_demand
+      
+      #create hp_soc_change
       hp_soc_change = hp_soc_change_max * 0
 
       #get time information
@@ -141,14 +143,18 @@ class HP_P_control_hh_fid(HP_P_control):
 
         #calculate default linear charge
         p_mw_lin_ch = (hps.hp_max_capacity_mwh - hps.hp_soc_mwh) / (timedelta_day_s/3600) #mwh/h -> _s/3600
-
         #set charge with fid in case of feed_in
         hp_soc_change[resi_load < 0] = (p_mw_lin_ch[resi_load < 0]) * (self.intervall_in_seconds / 3600)
-        #limit hp_soc_change by hp_soc_change_max
-        hp_soc_change[hp_soc_change > hp_soc_change_max] = hp_soc_change_max[hp_soc_change > hp_soc_change_max]
-
+        #limit hp_soc_change by hp_soc_change_max_hp_load
+        hp_soc_change[hp_soc_change > hp_soc_change_max] = \
+          hp_soc_change_max[hp_soc_change > hp_soc_change_max]
+        #set limit by hp_max_p_kw
+        hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
+          self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
+        
         ### calculate amount of possible energy discharge
         hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
+        
 
       #### time of no production
       else:
@@ -250,6 +256,9 @@ class HP_P_control_grid_fid(HP_P_control):
           hp_soc_change[resi_load < 0] = (p_mw_lin_ch[resi_load < 0]) * (self.intervall_in_seconds / 3600)
           #limit hp_soc_change by hp_soc_change_max
           hp_soc_change[hp_soc_change > hp_soc_change_max] = hp_soc_change_max[hp_soc_change > hp_soc_change_max]
+          #set limit by hp_max_p_kw
+          hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
+            self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
 
         else:
           # distribute power equal to every HP
@@ -258,6 +267,9 @@ class HP_P_control_grid_fid(HP_P_control):
           hp_soc_change = p_mw_trafo_ch * (self.intervall_in_seconds / 3600)
           #limit hp_soc_change by hp_soc_change_max
           hp_soc_change[hp_soc_change > hp_soc_change_max] = hp_soc_change_max[hp_soc_change > hp_soc_change_max]
+          #set limit hp_soc_change by hp_max_p_kw
+          hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
+            self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
 
         ### calculate amount of possible energy discharge
         hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
@@ -395,10 +407,21 @@ class HP_P_control_resi_load_driven(HP_P_control):
 
         ### calculate amount of possible energy charge
         hp_soc_change[hp_soc_change > 0] = hp_soc_change[hp_soc_change > 0] - hp_th_demand[hp_soc_change > 0]
+        
+        ### limit to hp_max_p_kw in case of charge
+        hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
+          self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
+        
         ### calculate amount of possible energy discharge
         hp_soc_change[hp_soc_change <= 0] = -hp_th_demand[hp_soc_change <= 0]
         ### limit to maximum or minimum of capacity
         self.HP_storages.set_limits(hps, hp_soc_change)
+
+        ### limit load to hp_max_p_kw
+        #print('')
+        #print('hp_th_demand', hp_th_demand + hp_soc_change)
+        #hp_th_demand[hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = 0.007
+        #print('hp_th_demand', hp_th_demand + hp_soc_change > self.HP_storages.hp_stor_para['hp_max_p_kw'])
 
         #convert soc_change to additonal el_load
         th_soc_to_el_p = hp_soc_change / hps.hp_cop
