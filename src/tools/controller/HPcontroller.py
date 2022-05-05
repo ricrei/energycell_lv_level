@@ -138,6 +138,15 @@ class HP_P_control_hh_fid(HP_P_control):
       sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + dt.timedelta(days = 1))
       time = t.tz_localize(None)
 
+      ### calculate timedelta_nxt_sunrise_s
+      ### handle with new next sunrise pre / post midnight
+      # post midnight
+      if (sunrise - time).total_seconds() > 0:  
+        timedelta_nxt_sunrise_s = (sunrise - time).total_seconds()
+      # pre midnight
+      else:
+        timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+
       #### time of production
       if (time > sunrise and time < sunset):
 
@@ -145,35 +154,30 @@ class HP_P_control_hh_fid(HP_P_control):
         p_mw_lin_ch = (hps.hp_max_capacity_mwh - hps.hp_soc_mwh) / (timedelta_day_s/3600) #mwh/h -> _s/3600
         #set charge with fid in case of feed_in
         hp_soc_change[resi_load < 0] = (p_mw_lin_ch[resi_load < 0]) * (self.intervall_in_seconds / 3600)
-        #limit hp_soc_change by hp_soc_change_max_hp_load
+        #limit hp_soc_change by hp_soc_change_max due to resi_load
         hp_soc_change[hp_soc_change > hp_soc_change_max] = \
           hp_soc_change_max[hp_soc_change > hp_soc_change_max]
-        #set limit by hp_max_p_kw
+        #set limit to hp_soc_change due to hp_max_p_kw
         hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
           self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
         
         ### calculate amount of possible energy discharge
-        hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
+        #hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
+        p_mw_lin_dch = (hps.hp_soc_mwh) / (timedelta_nxt_sunrise_s/3600)  # mwh/h -> _s/3600
+        #set discharge with fid
+        hp_soc_change[resi_load >= 0] = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
+        hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
         
 
       #### time of no production
       else:
         
-        ### handle with new next sunrise pre / post midnight
-        # post midnight
-        if (sunrise - time).total_seconds() > 0:  
-          timedelta_nxt_sunrise_s = (sunrise - time).total_seconds()
-        # pre midnight
-        else:
-          timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
-
-        #calculate timedelta to next sunrise
-        #timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+        ### calculate amount of possible energy discharge
         p_mw_lin_dch = (hps.hp_soc_mwh) / (timedelta_nxt_sunrise_s/3600)  # mwh/h -> _s/3600
-
         #set discharge with fid
-        hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
-        #limit hp_soc_change to hp_el_demand -> no feed_in of hot water to grid..
+        hp_soc_change[resi_load >= 0] = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
 
       ### limit to maximum or minimum of capacity
@@ -220,6 +224,15 @@ class HP_P_control_grid_fid(HP_P_control):
       sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + dt.timedelta(days = 1))
       time = t.tz_localize(None)
 
+      ### calculate timedelta_nxt_sunrise_s
+      ### handle with new next sunrise pre / post midnight
+      # post midnight
+      if (sunrise - time).total_seconds() > 0:  
+        timedelta_nxt_sunrise_s = (sunrise - time).total_seconds()
+      # pre midnight
+      else:
+        timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+
       ### Ricky's Routine zur Signalisierung Trafoüberlastung
       s_res, p_res = grid.get_residualload_s_sum()
       p_res = -p_res
@@ -245,7 +258,7 @@ class HP_P_control_grid_fid(HP_P_control):
       #### time of production
       if (time > sunrise and time < sunset):
         
-        #calculate free capacitiy exclusive trafo_charge_backup_capacity
+        ### calculate free capacitiy exclusive trafo_charge_backup_capacity
         if grid.s_trafo_power > -s_res:
           #calculate default linear charge with backup factor due to trafo charge
           p_mw_lin_ch = ((hps.hp_max_capacity_mwh * self.hps_capacity_backup_factor) - hps.hp_soc_mwh) / (timedelta_day_s/3600)# mwh/h -> _s/3600
@@ -259,7 +272,8 @@ class HP_P_control_grid_fid(HP_P_control):
           #set limit by hp_max_p_kw
           hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
             self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
-
+        
+        ### case of trafo-overload
         else:
           # distribute power equal to every HP
           p_mw_trafo_ch = (hps.hp_soc_mwh * 0) + (p_total_hp / hps.shape[0]) * hps.hp_cop
@@ -272,26 +286,21 @@ class HP_P_control_grid_fid(HP_P_control):
             self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
 
         ### calculate amount of possible energy discharge
-        hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
+        #hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
+        p_mw_lin_dch = (hps.hp_soc_mwh) / (timedelta_nxt_sunrise_s/3600)  # mwh/h -> _s/3600
+        #set discharge with fid
+        hp_soc_change[resi_load >= 0] = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
+        hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
+        
 
       #### time of no production
       else:
-        
-        ### handle with new next sunrise pre / post midnight
-        # post midnight
-        if (sunrise - time).total_seconds() > 0:  
-          timedelta_nxt_sunrise_s = (sunrise - time).total_seconds()
-        # pre midnight
-        else:
-          timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
 
-        #calculate timedelta to next sunrise
-        #timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+        ### calculate amount of possible energy discharge
         p_mw_lin_dch = (hps.hp_soc_mwh) / (timedelta_nxt_sunrise_s/3600)  # mwh/h -> _s/3600
-        #print('discharge: p_mw_lin_dch', p_mw_lin_dch.values)
-
         #set discharge with fid
-        hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        hp_soc_change[resi_load >= 0] = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
         #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
 
