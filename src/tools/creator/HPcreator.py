@@ -12,7 +12,7 @@ class HPcreator:
         self.hp_para = {}
         #self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
         self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]
-        self.hp_para['hp_max_p_kw'] = 10
+        #self.hp_para['hp_max_p_kw'] = 10
         #self.hp_para['hp_cop'] = 3
         #self.hp_para['hp_max_capacity_mwh'] = 0.045
         #self.hp_para['hp_soc_mwh'] = 0.005	# start SOC
