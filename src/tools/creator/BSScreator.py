@@ -9,9 +9,9 @@ class BSScreator:
   def __init__(self, grid):
         self.bss_para = {}
         self.net_name = grid.net_name
-        self.efficiency_AC2Bat = 0.952 # für jetzt
-        self.efficiency_Bat2AC = 0.949 # für jetzt
-        self.efficiency_storage = 0.915
+        self.efficiency_AC2Bat = 0.953
+        self.efficiency_Bat2AC = 0.955
+        self.efficiency_storage = 0.959
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
         self.soc_percent = 50
