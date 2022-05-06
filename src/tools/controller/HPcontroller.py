@@ -158,8 +158,9 @@ class HP_P_control_hh_fid(HP_P_control):
         hp_soc_change[hp_soc_change > hp_soc_change_max] = \
           hp_soc_change_max[hp_soc_change > hp_soc_change_max]
         #set limit to hp_soc_change due to hp_max_p_kw
-        hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
-          self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
+        #hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
+        #self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
+
         
         ### calculate amount of possible energy discharge
         #hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
@@ -180,6 +181,9 @@ class HP_P_control_hh_fid(HP_P_control):
         #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
 
+      #set limit by hp_max_p_kw
+      self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
+      
       ### limit to maximum or minimum of capacity
       hps = self.HP_storages.set_limits(hps, hp_soc_change)
       
@@ -226,18 +230,20 @@ class HP_P_control_grid_fid(HP_P_control):
       else:
         timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
 
-      ### Ricky's Routine zur Signalisierung Trafoüberlastung
+      ### calculate 
       s_res, p_res = grid.get_residualload_s_sum()
       p_res = -p_res
       
-      ### if s_trafo less than feed_in from PV
+      ### case s_trafo less than feed_in from PV
       if grid.s_trafo_power < -s_res:
           # calculate q²
           q_res_to_the_power_of_2 = s_res**2 - p_res**2
-          # if q_trafo² less than s_trafo²
+          ### avoid negative p_trafo_max due to to much q_res
+          # case q_trafo² less than s_trafo² calculate p_trafo_max
           if q_res_to_the_power_of_2 < grid.s_trafo_power**2:
             # calculate p_trafo_max due to q_residual²
             p_trafo_max = (grid.s_trafo_power**2 - q_res_to_the_power_of_2)**(.5)
+          # case q_res > trafo_power -> no p_trafo_max
           else:
             # otherwise set p_trafo_max to zero
             p_trafo_max = 0
@@ -246,20 +252,10 @@ class HP_P_control_grid_fid(HP_P_control):
           p_trafo_max = p_res
       
       p_total_hp = p_res - p_trafo_max
-
+        
       #### time of production
       if (time > sunrise and time < sunset):
         
-        print('')
-        print('timestamp', t)
-        print('trafo_power > -s_res', grid.s_trafo_power > -s_res)
-        print('p_res', p_res)
-        print('p_trafo_max', p_trafo_max)
-        print('p_total_hp', p_total_hp)
-        #print('hp_available_capacity', hp_available_capacity)
-        #print('hp_distribution_factor', hp_distribution_factor)
-        print('')
-
         ### calculate free capacitiy exclusive trafo_charge_backup_capacity
         # case of non-trafo-overload
         if grid.s_trafo_power > -s_res:
@@ -299,11 +295,10 @@ class HP_P_control_grid_fid(HP_P_control):
         hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
         #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
-
+      
       #set limit by hp_max_p_kw
-      hp_soc_change[hp_soc_change + hp_th_demand > self.HP_storages.hp_stor_para['hp_max_p_kw']] = \
-        self.HP_storages.hp_stor_para['hp_max_p_kw'] - hp_th_demand
-
+      self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
+ 
       ### limit to maximum or minimum of capacity
       self.HP_storages.set_limits(hps, hp_soc_change)
       

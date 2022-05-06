@@ -64,6 +64,20 @@ class HPstorages():
 
         return 0
 
+    def set_hp_max_power(self, hps, hp_soc_change, hp_th_demand):
+        '''
+        sets maximum power of heat_pump
+        leads maximum chargable amount of energy
+        -------
+        Input hps - dataframe
+        '''
+        hp_soc_change[hp_soc_change + hp_th_demand \
+          > self.hp_stor_para['hp_max_p_kw'] * (self.intervall_in_seconds / 3600)] = \
+          self.hp_stor_para['hp_max_p_kw'] * (self.intervall_in_seconds / 3600) - hp_th_demand
+              
+   
+      
+
     def set_limits(self, hps, hp_soc_change):
         '''
         sets max and minimum level of storages
