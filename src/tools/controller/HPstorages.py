@@ -26,7 +26,7 @@ class HPstorages():
         self.hp_stor_para = {'hp_max_capacity_mwh': 0.045,
                              'hp_start_soc': 0.0,
                              'hp_loss_per_s': 0.04 / 86400,   #4% per day / 86400s
-                             'hp_max_p_kw': 0.01,
+                             'hp_max_p_kw': 0.007,
                              'hp_cop': np.nan,
                              'upper_backup_factor': 0.8,
                              'lower_backup_factor': 0.2}
@@ -74,7 +74,8 @@ class HPstorages():
         hp_soc_change[hp_soc_change + hp_th_demand \
           > self.hp_stor_para['hp_max_p_kw'] * (self.intervall_in_seconds / 3600)] = \
           self.hp_stor_para['hp_max_p_kw'] * (self.intervall_in_seconds / 3600) - hp_th_demand
-              
+        
+        return hp_soc_change
    
       
 
@@ -96,7 +97,7 @@ class HPstorages():
         hp_soc_change[hps.hp_soc_mwh + hp_soc_change < 0] =\
             -hps.hp_soc_mwh[hps.hp_soc_mwh + hp_soc_change < 0]
         
-        return hps
+        return hp_soc_change
         
     def set_loss(self, hps):
         '''

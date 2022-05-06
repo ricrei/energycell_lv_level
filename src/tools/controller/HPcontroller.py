@@ -182,10 +182,10 @@ class HP_P_control_hh_fid(HP_P_control):
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
 
       #set limit by hp_max_p_kw
-      self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
+      hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
       
       ### limit to maximum or minimum of capacity
-      hps = self.HP_storages.set_limits(hps, hp_soc_change)
+      hp_soc_change = self.HP_storages.set_limits(hps, hp_soc_change)
       
       #convert soc_change to additonal el_load
       th_soc_to_el_p = hp_soc_change / hps.hp_cop
@@ -297,10 +297,10 @@ class HP_P_control_grid_fid(HP_P_control):
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
       
       #set limit by hp_max_p_kw
-      self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
+      hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
  
       ### limit to maximum or minimum of capacity
-      self.HP_storages.set_limits(hps, hp_soc_change)
+      hp_soc_change = self.HP_storages.set_limits(hps, hp_soc_change)
       
       #convert soc_change to additonal el_load
       th_soc_to_el_p = hp_soc_change / hps.hp_cop
