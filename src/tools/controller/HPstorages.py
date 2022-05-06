@@ -26,9 +26,9 @@ class HPstorages():
         self.hp_stor_para = {'hp_max_capacity_mwh': 0.045,
                              'hp_start_soc': 0.0,
                              'hp_loss_per_s': 0.04 / 86400,   #4% per day / 86400s
-                             'hp_max_p_kw': 0.007,
+                             'hp_max_p_kw': 0.012,
                              'hp_cop': np.nan,
-                             'upper_backup_factor': 0.8,
+                             'upper_backup_factor': 1.0,
                              'lower_backup_factor': 0.2}
         
         self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']

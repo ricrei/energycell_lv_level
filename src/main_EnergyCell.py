@@ -99,7 +99,7 @@ scenario = [
   1, # PV, 0-2
   0, # BSS, 0-5
   3, # HP, 0-5
-  1, # EV, 0-3
+  0, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
