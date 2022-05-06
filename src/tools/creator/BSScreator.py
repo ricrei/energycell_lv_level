@@ -9,13 +9,13 @@ class BSScreator:
   def __init__(self, grid):
         self.bss_para = {}
         self.net_name = grid.net_name
-        self.efficiency_AC2Bat = 0.952 # für jetzt
-        self.efficiency_Bat2AC = 0.949 # für jetzt
-        self.efficiency_storage = 0.915
+        self.efficiency_AC2Bat = 0.953
+        self.efficiency_Bat2AC = 0.955
+        self.efficiency_storage = 0.959
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
         self.soc_percent = 50
-        self.sizing_factor = 0.6
+        self.sizing_factor = 1.#0.6
         #self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
         #self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3)
 

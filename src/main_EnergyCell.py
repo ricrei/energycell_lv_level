@@ -15,19 +15,20 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-04 00:00:00+02:00',
-               'end_time'   : '2017-01-08 00:00:00+02:00',
-               't_freq'     : '15T',
+'''
+time_scope = { 'start_time' : '2017-06-11 00:00:00+02:00',
+               'end_time'   : '2017-06-12 00:00:00+02:00',
+               't_freq'     : '10T'
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
-               'end_time'   : '2017-05-26 00:00:00+02:00',
-               't_freq'     : '10T',
+               'end_time'   : '2017-05-28 00:00:00+02:00',
+               't_freq'     : '30T'
              }
-'''
-time_scope_year = { 'start_time' : '2017-04-01 00:00:00+01:00',
-                    'end_time'   : '2018-08-01 00:00:00+01:00',
-                    't_freq'     : '1H'
+
+time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
+                    'end_time'   : '2018-01-01 00:00:00+01:00',
+                    't_freq'     : '1D'
                   }
 
 # timescopes to examine
@@ -97,9 +98,9 @@ time_scope = time_scope
 scenario = [
   7, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
-  5, # HP, 0-5
-  1, # EV, 0-3
+  5, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -132,7 +133,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 7
+net_number = 9
 ######################
 
 #############################
@@ -144,7 +145,8 @@ def run_single_simulation():
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
-                    time_scope = time_scope)
+                    time_scope = time_scope,
+                    save_full_data = True)
 
   # Run powerflow
   e.run_pf_timeseries()
@@ -163,16 +165,17 @@ def run_single_simulation():
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  e.eva.plot_hp_soc()
-  e.eva.plot_hp_cop()
-  e.eva.plot_hp_active_power()
-  e.eva.plot_hp_demand_th()
+  #e.eva.plot_hp_soc()
+  #e.eva.plot_hp_active_power()
+  #e.eva.plot_hp_eva_th()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
-  #e.eva.plot_grid(time_sample='2017-05-27 13:10:00+02:00')#2017-01-06 12:00:00+02:00
+  #e.eva.plot_grid(time_sample='2017-05-25 13:00:00+02:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
+
+  #e.eva.energyflow()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
   #e.eva.calculate_resi_week()

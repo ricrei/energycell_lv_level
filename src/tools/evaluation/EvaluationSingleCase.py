@@ -44,10 +44,13 @@ class EvaluationSingleCase():
     self.bss_p = self.read_data(self.output_dir+'storage_active_power_MW.csv') ###
     self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
     self.storage_e_mwh = self.read_data(self.output_dir+'storage_energy_content_MWh.csv')
-    self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
+    self.curtailed_power_pv = self.read_data(self.output_dir+'curtailed_power_pv_MW.csv')
+    self.curtailed_power_load = self.read_data(self.output_dir+'curtailed_power_load_MW.csv')
     self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
     self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
-    self.hp_cop = self.read_data(self.output_dir+'hp_cop.csv')
+    self.hp_hp_th = self.read_data(self.output_dir+'hp_hp_th.csv')
+    self.hp_tes_th = self.read_data(self.output_dir+'hp_tes_th.csv')
+    self.hp_tes_losses_th = self.read_data(self.output_dir+'hp_tes_losses_th.csv')
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -70,7 +73,11 @@ class EvaluationSingleCase():
     c = prop_cycle.by_key()['color']
 
     power = self.power*1000
-    curtailed = self.curtailed_power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
     losses = self.losses_p.sum(axis=1)*1000
 
     '''
@@ -211,9 +218,13 @@ class EvaluationSingleCase():
     power = self.power
     losses = self.losses_p
     trafo_p = self.trafo_p
-    curtail_p = self.curtailed_power
+    curtail_pv = self.curtailed_power_pv.sum(axis=1)
+    curtail_load = self.curtailed_power_load.sum(axis=1)
+    curtail_p = pd.DataFrame()
+    curtail_p['curtail_pv'] = curtail_pv
+    curtail_p['curtail_load'] = curtail_load
 
-    if self.time_scope['t_freq'] != '1D':
+    if self.time_scope['t_freq'] != None:#'1D':
       power = self.shorted_data(power, '1H')
       losses = self.shorted_data(losses, '1H')
       trafo_p = self.shorted_data(trafo_p, '1H')
@@ -495,11 +506,58 @@ class EvaluationSingleCase():
     #plt.legend(grid.component_buses.index)
     #plt.show()
 
-  def plot_hp_demand_th(self):
+  def plot_hp_eva_th(self):
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    c = prop_cycle.by_key()['color']
+
+    bus = str(self.hp_demand_th.columns[1])
+    result = self.hp_hp_th - self.hp_demand_th - self.hp_tes_th - self.hp_tes_losses_th
+    
     fig, ax = plt.subplots()
-    ax.plot(self.hp_demand_th)
+    ax.plot(result)
     ax.set_xlabel('Time')
-    ax.set_ylabel('hp_th_demand in MW')
+    ax.set_ylabel('Thermal Power Deviation in MW\n(should be near zero)')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    ax.plot(self.hp_demand_th[bus])
+    ax.plot(self.hp_hp_th[bus])
+    ax.plot(self.hp_tes_th[bus])
+    ax.plot(self.hp_tes_losses_th[bus])
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Thermal Power in MW')
+    plt.legend(['Demand', 'HP', 'TES', 'TES losses'])
+    plt.show()
+    
+
+    hp_tes_gen = self.hp_tes_th*0
+    hp_tes_con = self.hp_tes_th*0
+    hp_tes_gen[self.hp_tes_th < 0] = self.hp_tes_th[self.hp_tes_th < 0] 
+    hp_tes_con[self.hp_tes_th > 0] = self.hp_tes_th[self.hp_tes_th > 0]
+    hp_tes_gen = hp_tes_gen.sum(axis=1)
+    hp_tes_con = hp_tes_con.sum(axis=1)
+    hp_hp_th = self.hp_hp_th.sum(axis=1)
+    hp_tes_losses_th = self.hp_tes_losses_th.sum(axis=1)
+    hp_demand_th = self.hp_demand_th.sum(axis=1)
+
+    fig, ax = plt.subplots()
+    # Consumption
+    ax.fill_between(hp_demand_th.index, 0                      , hp_demand_th                            , alpha=0.7, color=c[0])
+    ax.fill_between(hp_demand_th.index, hp_demand_th           , hp_demand_th+hp_tes_con                 , alpha=0.7, color=c[1])
+    ax.fill_between(hp_demand_th.index, hp_demand_th+hp_tes_con, hp_demand_th+hp_tes_con+hp_tes_losses_th, alpha=0.7, color=c[2])
+    # Production
+    ax.fill_between(hp_demand_th.index, 0                      , -hp_hp_th                               , alpha=0.7, color=c[3])
+    ax.fill_between(hp_demand_th.index, -hp_hp_th              , -hp_hp_th+hp_tes_gen                    , alpha=0.7, color=c[1])
+    #ax.plot(self.pv_p.sum(axis=1))
+    patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Demand'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='TES'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='TES losses'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='HP')
+                 ]
+    plt.legend(handles=patch_list)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Thermal Power in MW')
     plt.show()
 
   def plot_grid(self, time_sample=None):
@@ -552,3 +610,44 @@ class EvaluationSingleCase():
 
     ppplt.draw_collections([bc, lc, tc, bc_over, lc_over])
     plt.show()
+
+
+  def energyflow(self):
+    pass
+
+    '''
+    load_index = [str(i) for i in self.grid.load_index]
+    hp_index = [str(i) for i in self.grid.hp_index]
+    ev_index = [str(i) for i in self.grid.ev_index]
+
+    # HP-load per HH
+    hp_load = self.load_p[hp_index]
+    hp_load.columns = load_index
+    # EV-load per HH
+    ev_load = self.load_p[ev_index]
+    ev_load.columns = load_index
+    # HH-load per HH
+    hh_load = self.load_p[load_index]
+    # PV per HH
+    pv = self.pv_p
+
+    # residual load per HH
+    dE_HH = hh_load + hp_load + ev_load - pv
+    print(dE_HH)
+
+    fig, ax = plt.subplots()
+    ax.plot(dE_HH)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('dP of each HH in MW')
+    plt.show()
+    '''
+
+
+
+
+
+
+
+
+
+
