@@ -56,7 +56,7 @@ class HP_P_control:
       pass
     
   def pcontrol_direct_charge(self, grid, d, t):
-      #grid.net.load['hp_demand_th'].loc[grid.hp_index] = d.values
+      grid.net.load['hp_demand_th'].loc[grid.hp_index] = d.values
       #get hps with current cop per hp      
       hps = self.get_cop(grid, d, t)
       hps.p_mw = d.copy().values / hps.hp_cop 
@@ -89,6 +89,11 @@ class HP_P_control:
   def write_th_data_to_df(self, hps, hp_soc_change):
       hps['hp_hp_th'] = hps.p_mw * hps.hp_cop
       hps['hp_tes_th'] = hp_soc_change / (self.intervall_in_seconds / 3600)
+      return hps
+
+  def write_th_data_to_df_trafo_charge(self, hps, hp_soc_change):
+      hps['hp_hp_th'] = hps.p_mw * hps.hp_cop
+      hps['hp_tes_th'] += hp_soc_change / (self.intervall_in_seconds / 3600)
       return hps
 
 ### no HP ###
@@ -197,7 +202,7 @@ class HP_P_control_hh_fid(HP_P_control):
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
 
       #set limit by hp_max_p_kw
-      hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
+      #hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
       
       ### limit to maximum or minimum of capacity
       hp_soc_change = self.HP_storages.set_limits(hps, hp_soc_change)
@@ -211,6 +216,13 @@ class HP_P_control_hh_fid(HP_P_control):
       hps.hp_soc_mwh += hp_soc_change
       # write thermal output/input power of HP and TES to hps
       hps = self.write_th_data_to_df(hps, hp_soc_change)
+
+      # check max power th hp
+      hp_hp_th_exceed = hps['hp_hp_th'].copy()
+      hps['hp_hp_th'][hps['hp_hp_th'] > self.HP_storages.hp_stor_para['hp_max_p_kw']] = self.HP_storages.hp_stor_para['hp_max_p_kw']
+      hps.p_mw = hps['hp_hp_th'] / hps.hp_cop
+      hps['hp_tes_th'] -= hp_hp_th_exceed - hps['hp_hp_th']
+      hps.hp_soc_mwh -= (hp_hp_th_exceed - hps['hp_hp_th'])*(self.intervall_in_seconds / 3600)
 
       return hps
 
@@ -226,7 +238,7 @@ class HP_P_control_grid_fid(HP_P_control):
       
       #get thermal demand from timeseries
       hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600)
-      hp_soc_change = hp_th_demand * 0
+      hp_soc_change = hp_th_demand.copy() * 0
 
       #get hps with current cop per hp due t_ambient
       hps = self.get_cop(grid, d, t)
@@ -310,11 +322,14 @@ class HP_P_control_grid_fid(HP_P_control):
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
 
+      # write thermal output/input power of HP and TES to hps
+      hps = self.write_th_data_to_df(hps, hp_soc_change)
+
       return hps
 
   def pcontrol_trafo_charge(self, grid, d, t):
       
-      #get thermal demand from timeseries
+#get thermal demand from timeseries
       hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600)
       hp_soc_change = hp_th_demand * 0
 
@@ -388,13 +403,14 @@ class HP_P_control_grid_fid(HP_P_control):
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
 
-      # write thermal output/input power of HP and TES to hps
-      #hps = self.write_th_data_to_df(hps, hp_soc_change)
-
-      ### TODO ### 
-      # check hps.p_mw prüfen ob größer als hp_max_p_kw
-      # statt set_hp_max_power muss hier abgefangen werden
-      # final muss hp_soc_change angepasst werden
+      hps = self.write_th_data_to_df_trafo_charge(hps, hp_soc_change)
+      
+      # check max power th hp
+      hp_hp_th_exceed = hps['hp_hp_th'].copy()
+      hps['hp_hp_th'][hps['hp_hp_th'] > self.HP_storages.hp_stor_para['hp_max_p_kw']] = self.HP_storages.hp_stor_para['hp_max_p_kw']
+      hps.p_mw = hps['hp_hp_th'] / hps.hp_cop
+      hps['hp_tes_th'] -= hp_hp_th_exceed - hps['hp_hp_th']
+      hps.hp_soc_mwh -= (hp_hp_th_exceed - hps['hp_hp_th'])*(self.intervall_in_seconds / 3600)
 
       return hps
 

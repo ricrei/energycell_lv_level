@@ -60,6 +60,8 @@ class OutputDataHandler():
           self.hp_demand_th.index.name = 'timestamp'
           self.hp_soc = pd.DataFrame(columns=grid.hp_index)
           self.hp_soc.index.name  = 'timestamp'
+          self.hp_cop = pd.DataFrame(columns=grid.hp_index)
+          self.hp_cop.index.name  = 'timestamp'
           self.hp_hp_th = pd.DataFrame(columns=grid.hp_index)
           self.hp_hp_th.index.name  = 'timestamp'
           self.hp_tes_th = pd.DataFrame(columns=grid.hp_index)
@@ -94,6 +96,7 @@ class OutputDataHandler():
           self.ev_soc.loc[t] = grid.net.load.ev_soc.loc[grid.ev_index]
           self.hp_demand_th.loc[t] = grid.net.load.hp_demand_th.loc[grid.hp_index]
           self.hp_soc.loc[t] = grid.net.load.hp_soc_mwh.loc[grid.hp_index]
+          self.hp_cop.loc[t] = grid.net.load.hp_cop.loc[grid.hp_index]
           self.hp_hp_th.loc[t] = grid.net.load.hp_hp_th.loc[grid.hp_index]
           self.hp_tes_th.loc[t] = grid.net.load.hp_tes_th.loc[grid.hp_index]
           self.hp_tes_losses_th.loc[t] = grid.net.load.hp_tes_losses_th.loc[grid.hp_index]
@@ -137,6 +140,8 @@ class OutputDataHandler():
           self.hp_demand_th.round(6).to_csv(self.output_dir + 'hp_demand_th.csv',
                                                mode=mode, header=header, index = True)
           self.hp_soc.round(6).to_csv(self.output_dir + 'hp_soc.csv',
+                                               mode=mode, header=header, index = True)
+          self.hp_cop.round(3).to_csv(self.output_dir + 'hp_cop.csv',
                                                mode=mode, header=header, index = True)
           self.hp_hp_th.round(6).to_csv(self.output_dir + 'hp_hp_th.csv',
                                                mode=mode, header=header, index = True)

@@ -197,4 +197,6 @@ class NO_Curtailment:
   def __init__(self):
     pass
   def curtail(self,grid):
+    grid.curtailed_pv_power_df = grid.net.sgen.p_mw*0 #new
+    grid.curtailed_load_power_df = grid.net.load.p_mw*0 #new
     return grid

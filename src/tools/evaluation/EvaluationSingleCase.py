@@ -504,7 +504,7 @@ class EvaluationSingleCase():
     ax.set_xlabel('Time')
     ax.set_ylabel('hp_el_demand in MW')
     #plt.legend(grid.component_buses.index)
-    #plt.show()
+    plt.show()
 
   def plot_hp_eva_th(self):
     prop_cycle = plt.rcParams['axes.prop_cycle']
@@ -517,7 +517,7 @@ class EvaluationSingleCase():
     ax.plot(result)
     ax.set_xlabel('Time')
     ax.set_ylabel('Thermal Power Deviation in MW\n(should be near zero)')
-    plt.show()
+    #plt.show()
 
     fig, ax = plt.subplots()
     ax.plot(self.hp_demand_th[bus])
@@ -527,12 +527,11 @@ class EvaluationSingleCase():
     ax.set_xlabel('Time')
     ax.set_ylabel('Thermal Power in MW')
     plt.legend(['Demand', 'HP', 'TES', 'TES losses'])
-    plt.show()
-    
+    #plt.show()
 
     hp_tes_gen = self.hp_tes_th*0
     hp_tes_con = self.hp_tes_th*0
-    hp_tes_gen[self.hp_tes_th < 0] = self.hp_tes_th[self.hp_tes_th < 0] 
+    hp_tes_gen[self.hp_tes_th < 0] = self.hp_tes_th[self.hp_tes_th < 0]
     hp_tes_con[self.hp_tes_th > 0] = self.hp_tes_th[self.hp_tes_th > 0]
     hp_tes_gen = hp_tes_gen.sum(axis=1)
     hp_tes_con = hp_tes_con.sum(axis=1)
