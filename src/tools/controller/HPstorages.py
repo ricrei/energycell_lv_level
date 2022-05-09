@@ -30,7 +30,7 @@ class HPstorages():
                              'hp_loss_per_s': 0.04 / 86400,   #4% per day / 86400s
                              'hp_max_p_kw': 0.007, # in MW
                              'hp_cop': np.nan,
-                             'upper_backup_factor': 0.8,
+                             'upper_backup_factor': 1.0,
                              'lower_backup_factor': 0.2}
 
         if 'name' in grid.time_scope.keys():

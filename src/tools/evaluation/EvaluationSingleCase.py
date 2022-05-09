@@ -48,6 +48,7 @@ class EvaluationSingleCase():
     self.curtailed_power_load = self.read_data(self.output_dir+'curtailed_power_load_MW.csv')
     self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
     self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
+    self.hp_cop = self.read_data(self.output_dir+'hp_cop.csv')
     self.hp_hp_th = self.read_data(self.output_dir+'hp_hp_th.csv')
     self.hp_tes_th = self.read_data(self.output_dir+'hp_tes_th.csv')
     self.hp_tes_losses_th = self.read_data(self.output_dir+'hp_tes_losses_th.csv')
@@ -497,7 +498,6 @@ class EvaluationSingleCase():
     #plt.show()
     
   def plot_hp_active_power(self):
-
     fig, ax = plt.subplots()
     for i in self.grid.hp_index:
       ax.plot(self.load_p[str(i)])
@@ -512,7 +512,7 @@ class EvaluationSingleCase():
 
     bus = str(self.hp_demand_th.columns[1])
     result = self.hp_hp_th - self.hp_demand_th - self.hp_tes_th - self.hp_tes_losses_th
-    
+
     fig, ax = plt.subplots()
     ax.plot(result)
     ax.set_xlabel('Time')

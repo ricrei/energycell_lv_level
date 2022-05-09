@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fr April 01 11:08:14 2022
+Created on Tue May 09 11:08:14 2022
 
 @authors: ricardo, tabea, paul
 """
@@ -99,7 +99,7 @@ scenario = [
   1, # PV, 0-2
   3, # BSS, 0-5
   3, # HP, 0-5
-  1, # EV, 0-3
+  0, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -153,8 +153,8 @@ def run_single_simulation():
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  #e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_net_problems()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
@@ -165,7 +165,9 @@ def run_single_simulation():
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_hp_soc()
+  #e.eva.plot_hp_cop()
   #e.eva.plot_hp_active_power()
+  #e.eva.plot_hp_demand_th()
   e.eva.plot_hp_eva_th()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()

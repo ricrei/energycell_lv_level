@@ -56,8 +56,11 @@ class HP_P_control:
       pass
     
   def pcontrol_direct_charge(self, grid, d, t):
-      grid.net.load['hp_demand_th'].loc[grid.hp_index] = d.values
-      return grid.net.load.loc[grid.hp_index] 
+      #grid.net.load['hp_demand_th'].loc[grid.hp_index] = d.values
+      #get hps with current cop per hp      
+      hps = self.get_cop(grid, d, t)
+      hps.p_mw = d.copy().values / hps.hp_cop 
+      return hps
 
   def pcontrol_linear_charge(self, grid, d, t):
       return grid.net.load.loc[grid.hp_index] 
@@ -216,8 +219,98 @@ class HP_P_control_grid_fid(HP_P_control):
 
   def __init__(self, grid):
       super().__init__(grid)
-      self.hps_capacity_backup_factor = 0.8
+      #self.hps_capacity_backup_factor = 0.8
       
+
+  def pcontrol_linear_charge(self, grid, d, t):
+      
+      #get thermal demand from timeseries
+      hp_th_demand = d.copy().values * (self.intervall_in_seconds / 3600)
+      hp_soc_change = hp_th_demand * 0
+
+      #get hps with current cop per hp due t_ambient
+      hps = self.get_cop(grid, d, t)
+      #set loss in storage
+      hps = self.HP_storages.set_loss(hps)
+
+      #get time information
+      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t)
+      sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + dt.timedelta(days = 1))
+      time = t.tz_localize(None)
+
+      ### calculate timedelta_nxt_sunrise_s
+      ### handle with new next sunrise pre / post midnight
+      # post midnight
+      if (sunrise - time).total_seconds() > 0:  
+        timedelta_nxt_sunrise_s = (sunrise - time).total_seconds()
+      # pre midnight
+      else:
+        timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
+
+      ### calculate 
+      s_res, p_res = grid.get_residualload_s_sum()
+      p_res = -p_res
+              
+      p_total_hp = p_res
+      
+      #### time of production
+      if (time > sunrise and time < sunset):
+        
+        if(p_res > 0):
+          ### calculate free capacitiy exclusive trafo_charge_backup_capacity
+          # calculate available capacity and set distribution_factor to distribute 
+          #hp_available_capacity = hps.hp_max_capacity_mwh * \
+          #  self.HP_storages.hp_stor_para['upper_backup_factor'] - hps.hp_soc_mwh
+          hp_available_capacity = hps.hp_max_capacity_mwh - hps.hp_soc_mwh
+  
+          #based on available capacity calc distribution_factor
+          hp_distribution_factor = hp_available_capacity.copy()
+          hp_distribution_factor[hp_distribution_factor > 0] = hp_available_capacity/hp_available_capacity.sum() # in %
+          # distribute power equal to every HP
+          p_mw_res_ch = p_total_hp * hp_distribution_factor * hps.hp_cop
+          # calc lin_charge values
+          p_mw_lin_ch = (hps.hp_max_capacity_mwh - hps.hp_soc_mwh) / (timedelta_day_s/3600) #mwh/h -> _s/3600
+          # compare p_mw_res_ch with p_mw_lin_ch -> use smaller values
+          p_mw_ch = p_mw_lin_ch.copy()
+          p_mw_ch[p_mw_lin_ch > p_mw_res_ch] = p_mw_res_ch[p_mw_lin_ch > p_mw_res_ch]
+          
+          #set hp_soc_change by p_mw_trafo_ch
+          hp_soc_change = p_mw_ch * (self.intervall_in_seconds / 3600)
+        
+        # in case of demand discharge from storage
+        else:
+        #if(p_res <= 0):
+          ### calculate amount of possible energy discharge
+          p_mw_lin_dch = hps.hp_soc_mwh / (timedelta_nxt_sunrise_s/3600)
+          #set discharge with fid  
+          hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+          #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
+          hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
+        
+
+      #### time of no production
+      else:
+        ### calculate amount of possible energy discharge
+        p_mw_lin_dch = hps.hp_soc_mwh / (timedelta_nxt_sunrise_s/3600)
+        #set discharge with fid  
+        hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
+        #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
+        hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
+      
+      #set limit by hp_max_p_kw
+      hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
+ 
+      ### limit to maximum or minimum of capacity
+      hp_soc_change = self.HP_storages.set_limits(hps, hp_soc_change)
+      
+      #convert soc_change to additonal el_load
+      th_soc_to_el_p = hp_soc_change / hps.hp_cop
+      ### set power of hp additional the charge of storage
+      hps.p_mw += th_soc_to_el_p / (self.intervall_in_seconds / 3600)
+      ### set soc of storage
+      hps.hp_soc_mwh += hp_soc_change
+
+      return hps
 
   def pcontrol_trafo_charge(self, grid, d, t):
       
@@ -262,24 +355,16 @@ class HP_P_control_grid_fid(HP_P_control):
             # otherwise set p_trafo_max to zero
             p_trafo_max = 0
       else:
-          # set p_trafo_max to p_residual
+          # if no trafo_overload p_trafoMax = p_res
           p_trafo_max = p_res
       
+      # in case of no_trafo_overload p_total_hp = "p_res - p_res"
+      # in case of trafo_overload p_total = "curtailed energy"
       p_total_hp = p_res - p_trafo_max
-        
-      #### time of production
-      if (time > sunrise and time < sunset):
-        
-        ### calculate free capacitiy exclusive trafo_charge_backup_capacity
-        # case of non-trafo-overload
-        if grid.s_trafo_power > -s_res:
-          # calculate available capacity and set distribution_factor to distribute 
-          hp_available_capacity = hps.hp_max_capacity_mwh * self.hps_capacity_backup_factor - hps.hp_soc_mwh
-          
-        # case of trafo-overload
-        else:
-          # calculate available capacity and set distribution_factor to distribiute 
-          hp_available_capacity = hps.hp_max_capacity_mwh - hps.hp_soc_mwh
+                
+      if(grid.s_trafo_power < -s_res):
+        # calculate available capacity and set distribution_factor to distribiute 
+        hp_available_capacity = hps.hp_max_capacity_mwh - hps.hp_soc_mwh
 
         #based on available capacity calc distribution_factor
         hp_distribution_factor = hp_available_capacity.copy()
@@ -288,43 +373,28 @@ class HP_P_control_grid_fid(HP_P_control):
         p_mw_trafo_ch = p_total_hp * hp_distribution_factor * hps.hp_cop
         #set hp_soc_change by p_mw_trafo_ch
         hp_soc_change = p_mw_trafo_ch * (self.intervall_in_seconds / 3600)
-        
-        ### calculate amount of possible energy discharge
-        #hp_soc_change[resi_load >= 0] = -hp_th_demand[resi_load >= 0]
-        
-        if(p_res <= 0):
-          ### calculate amount of possible energy discharge
-          p_mw_lin_dch = hps.hp_soc_mwh / (timedelta_nxt_sunrise_s/3600)
-          #set discharge with fid  
-          hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
-          #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
-          hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
-        
+                
+      if(grid.s_trafo_power < s_res):
+        ### tes emergency discharge
+        pass
 
-      #### time of no production
-      else:
-        ### calculate amount of possible energy discharge
-        p_mw_lin_dch = hps.hp_soc_mwh / (timedelta_nxt_sunrise_s/3600)
-        #set discharge with fid  
-        hp_soc_change = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
-        #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
-        hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
-      
-      #set limit by hp_max_p_kw
-      hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
- 
       ### limit to maximum or minimum of capacity
       hp_soc_change = self.HP_storages.set_limits(hps, hp_soc_change)
       
       #convert soc_change to additonal el_load
       th_soc_to_el_p = hp_soc_change / hps.hp_cop
-      hp_el_demand = hp_th_demand / hps.hp_cop 
       ### set power of hp additional the charge of storage
-      hps.p_mw = (hp_el_demand + th_soc_to_el_p) / (self.intervall_in_seconds / 3600)
+      hps.p_mw += th_soc_to_el_p / (self.intervall_in_seconds / 3600)
       ### set soc of storage
       hps.hp_soc_mwh += hp_soc_change
+
       # write thermal output/input power of HP and TES to hps
-      hps = self.write_th_data_to_df(hps, hp_soc_change)
+      #hps = self.write_th_data_to_df(hps, hp_soc_change)
+
+      ### TODO ### 
+      # check hps.p_mw prüfen ob größer als hp_max_p_kw
+      # statt set_hp_max_power muss hier abgefangen werden
+      # final muss hp_soc_change angepasst werden
 
       return hps
 
