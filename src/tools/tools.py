@@ -127,11 +127,54 @@ def progress(count, total, status=''):
 ####################################################
 ###                   load data                  ###
 ####################################################
-def get_time_sun():
-    file_sun_set_rise = 'input-files/16_t_sun_rise_set_transit.pbz2'
+def get_time_sun(time_scope):
+    folder = 'input-files/'
+
+    if 'name' in time_scope.keys():
+      if time_scope['name'] in ['summer','winter','autumn','spring']:
+        season = time_scope['name']
+      else:
+        season = None
+    else:
+      season = None
+
+    if season != None:
+      if season == 'summer':
+            folder = folder + 'XX_inputdata_summer/'
+      elif season == 'winter':
+            folder = folder + 'XX_inputdata_winter/'
+      elif season == 'autumn':
+            folder = folder + 'XX_inputdata_autumn/'
+      elif season == 'spring':
+            folder = folder + 'XX_inputdata_spring/'
+      else:
+            raise ValueError('season in time_scope is invailed!') 
+    file_sun_set_rise = folder + '16_t_sun_rise_set_transit.pbz2'
     return decompress_pickle(file_sun_set_rise)
 
-def get_amb_temp():
-    file_ambient_temp = 'input-files/15_temperature_ambient_short.pbz2'
+def get_amb_temp(time_scope):
+    folder = 'input-files/'
+
+    if 'name' in time_scope.keys():
+      if time_scope['name'] in ['summer','winter','autumn','spring']:
+        season = time_scope['name']
+      else:
+        season = None
+    else:
+      season = None
+
+    if season != None:
+      if season == 'summer':
+            folder = folder + 'XX_inputdata_summer/'
+      elif season == 'winter':
+            folder = folder + 'XX_inputdata_winter/'
+      elif season == 'autumn':
+            folder = folder + 'XX_inputdata_autumn/'
+      elif season == 'spring':
+            folder = folder + 'XX_inputdata_spring/'
+      else:
+            raise ValueError('season in time_scope is invailed!') 
+
+    file_ambient_temp = folder + '15_temperature_ambient_short.pbz2'
     return decompress_pickle(file_ambient_temp)
 

@@ -510,7 +510,7 @@ class EvaluationSingleCase():
     prop_cycle = plt.rcParams['axes.prop_cycle']
     c = prop_cycle.by_key()['color']
 
-    bus = str(self.hp_demand_th.columns[1])
+    bus = str(self.hp_demand_th.columns[2])
     result = self.hp_hp_th - self.hp_demand_th - self.hp_tes_th - self.hp_tes_losses_th
 
     fig, ax = plt.subplots()
@@ -521,7 +521,7 @@ class EvaluationSingleCase():
 
     fig, ax = plt.subplots()
     ax.plot(self.hp_demand_th[bus])
-    ax.plot(self.hp_hp_th[bus])
+    ax.plot(-self.hp_hp_th[bus])
     ax.plot(self.hp_tes_th[bus])
     ax.plot(self.hp_tes_losses_th[bus])
     ax.set_xlabel('Time')

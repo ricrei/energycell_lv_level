@@ -91,25 +91,6 @@ class EnergyManagementBasic(EnergyManagementParent):
     grid.net : pandapower network
     '''
 
-    grid = grid.reset_all_power_values()
-
-    grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
-    grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
-
-    grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
-    grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
-
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, t)
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_reactive_power_direct_charge(grid, t)
-
-    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
-
-    grid.net.storage = bss_controller.get_active_power_direct_charge(grid, t)
-
-    grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
-
-    grid = curtail_controller.curtail(grid)
-
     return grid.net
 
 ### EnergeManagement 6, 7, 8 ###
@@ -152,8 +133,8 @@ class EnergyManagementAdvanced(EnergyManagementParent):
     grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
 
     # HH-Load
-    grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values * 0
-    grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values * 0
+    grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
+    grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
     # direct
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
@@ -174,65 +155,6 @@ class EnergyManagementAdvanced(EnergyManagementParent):
 
     #get final q_mvar of hp
     #grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
-
-    grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
-
-    grid = curtail_controller.curtail(grid)
-
-    return grid.net
-
-
-class EnergyManagementTest(EnergyManagementParent):
-  def __init__(self):
-    pass
-
-  def control_components(self,
-                         input_dict,
-                         grid,
-                         pv_controller,
-                         hp_controller,
-                         ev_controller,
-                         bss_controller,
-                         curtail_controller,
-                         t):
-    '''
-    Set the sequence in which the components are loaded. This is done in a complex manner. PV, HP, EV and BSS act like its specified mode defined in their respective controller.
-    Only used in scenario 7 and 8.
-
-    Parameters
-    ----------
-    input_dict: TYPE dict
-    grid : TYPE network
-    pv_controller : TYPE pv_controller
-    hp_controller : TYPE hp_controller
-    ev_controller : TYPE ev_controller
-    bss_controller : TYPE bss_controller
-    curtail_controller : TYPE curtail_controller
-
-    Returns
-    -------
-    grid.net : pandapower network
-    '''
-    
-    grid = grid.reset_all_power_values()
-
-    grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
-    grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
-
-    grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
-    grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
-
-    #grid.net.load.loc[grid.hp_index, 'p_mw'] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t], t)
-    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power(grid, input_dict['hp'].loc[t], t)
-    grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
-
-    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
-    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_p_res_charge(grid, t)
-    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_trafo_charge(grid, t)
-
-    grid.net.storage = bss_controller.get_active_power_direct_charge(grid, t)
-    grid.net.storage = bss_controller.get_active_power_linear_charge(grid, t)
-    #grid.net.storage = bss_controller.get_active_power_trafo_charge(grid, t)
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
