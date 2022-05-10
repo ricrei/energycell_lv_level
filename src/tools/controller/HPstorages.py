@@ -37,8 +37,10 @@ class HPstorages():
          if grid.time_scope['name'] in ['winter', 'spring', 'autumn']:
           self.hp_stor_para['hp_building_capacity_mwh'] = .014
           self.hp_stor_para['lower_tes_reserve'] = .2 # in 0-1
+          self.hp_stor_para['hp_start_soc'] = .25
          elif grid.time_scope['name'] == 'summer':
           self.hp_stor_para['lower_tes_reserve'] = .8 # in 0-1
+          self.hp_stor_para['hp_start_soc'] = .75
 
 
         self.hp_stor_para['hp_max_capacity_mwh'] = self.hp_stor_para['hp_building_capacity_mwh'] + self.hp_stor_para['hp_TES_max_capacity_mwh']

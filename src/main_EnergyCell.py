@@ -15,8 +15,8 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-05 00:00:00+01:00',
-               'end_time'   : '2017-01-07 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-03-05 00:00:00+01:00',
+               'end_time'   : '2017-03-07 00:00:00+01:00',
                't_freq'     : '30T',
              }
 '''
@@ -95,11 +95,11 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  2, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
+  5, # BSS, 0-5
   3, # HP, 0-5
-  0, # EV, 0-3
+  3, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -156,18 +156,18 @@ def run_single_simulation():
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  e.eva.plot_hp_soc()
+  #e.eva.plot_hp_soc()
   #e.eva.plot_hp_cop()
   #e.eva.plot_hp_active_power()
-  e.eva.plot_hp_eva_th()
+  #e.eva.plot_hp_eva_th()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
@@ -193,24 +193,8 @@ def run_single_simulation():
 
 ###############################
 ### Run Multiple Simulation ###
-def run_multiple_simulations():
+def run_multiple_simulations(scenarios):
   start = time.perf_counter()
-  scenarios = [
-        #[1,0,0,0,0,0,0],
-        #[2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
-        [3,1,0,0,0,0,0],# [3,1,0,0,0,1,0],
-        #[4,1,0,1,1,0,0], [4,1,0,1,1,1,0], #[4,1,0,1,1,0,1],
-        #[6,1,1,1,1,0,0], [6,1,1,1,1,1,0], [6,1,1,1,1,0,1],
-        #[6,1,2,1,1,0,0], [6,1,2,1,1,1,0], [6,1,2,1,1,0,1],
-        #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0], [6,1,3,1,1,0,1],
-        #[6,1,4,1,1,0,0], [6,1,4,1,1,1,0], [6,1,4,1,1,0,1],
-        #[6,1,5,1,1,0,0], [6,1,5,1,1,1,0], [6,1,5,1,1,0,1],
-        #[7,1,0,2,2,0,0], [7,1,0,2,2,1,0], [7,1,0,2,2,0,1],
-        #[7,1,0,3,3,0,0],
-        #[7,1,0,3,3,1,0], [7,1,0,3,3,0,1],
-        #[8,1,3,3,3,0,0], [8,1,3,3,3,1,0], [8,1,3,3,3,0,1],
-                  ]
-
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
     for net_name_i in [7, 8, 9, 10, 11]:
@@ -243,27 +227,12 @@ def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
                           time_scope = time_scope_i)
         e.run_pf_timeseries()
 
-def run_multiple_simulations_multiprocessing():
+def run_multiple_simulations_multiprocessing(scenarios):
     start = time.perf_counter()
 
     pool = mp.Pool(6)
     time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
     net_names = [7, 8, 9, 10, 11]
-    scenarios = [
-        [1,0,0,0,0,0,0],
-        [2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
-        [3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
-        [4,1,0,1,1,0,0], [4,1,0,1,1,1,0], [4,1,0,1,1,0,1],
-        #[6,1,1,1,1,0,0], [6,1,1,1,1,1,0], [6,1,1,1,1,0,1],
-        #[6,1,2,1,1,0,0], [6,1,2,1,1,1,0], [6,1,2,1,1,0,1],
-        #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0], [6,1,3,1,1,0,1],
-        #[6,1,4,1,1,0,0], [6,1,4,1,1,1,0], [6,1,4,1,1,0,1],
-        #[6,1,5,1,1,0,0], [6,1,5,1,1,1,0], [6,1,5,1,1,0,1],
-        #[7,1,0,2,2,0,0], [7,1,0,2,2,1,0], [7,1,0,2,2,0,1],
-        #[7,1,0,3,3,0,0],
-        #[7,1,0,3,3,1,0], [7,1,0,3,3,0,1],
-        #[8,1,3,3,3,0,0], [8,1,3,3,3,1,0], [8,1,3,3,3,0,1],
-                  ]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
       results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenarios]
@@ -277,22 +246,7 @@ def run_multiple_simulations_multiprocessing():
 
 ####################################
 ### Run Conversion csv -> pickle ###
-def run_output_data_conversion():
-  scenarios = [
-        #[1,0,0,0,0,0,0],
-        #[2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
-        #[3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
-        #[4,1,0,1,1,0,0], [4,1,0,1,1,1,0],# [4,1,0,1,1,0,1],
-        #[6,1,1,1,1,0,0], [6,1,1,1,1,1,0],# [6,1,1,1,1,0,1],
-        #[6,1,2,1,1,0,0], [6,1,2,1,1,1,0],# [6,1,2,1,1,0,1],
-        #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0],# [6,1,3,1,1,0,1],
-        #[6,1,4,1,1,0,0], [6,1,4,1,1,1,0],# [6,1,4,1,1,0,1],
-        #[6,1,5,1,1,0,0], [6,1,5,1,1,1,0],# [6,1,5,1,1,0,1],
-        #[7,1,0,2,2,0,0], [7,1,0,2,2,1,0],# [7,1,0,2,2,0,1],
-        #[7,1,0,3,3,0,0],
-        [7,1,0,3,3,1,0],# [7,1,0,3,3,0,1],
-        [8,1,3,3,3,0,0], [8,1,3,3,3,1,0],# [8,1,3,3,3,0,1],
-                  ]
+def run_output_data_conversion(scenarios):
 
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = [7,8,9,10,11],
@@ -304,9 +258,25 @@ def run_output_data_conversion():
 
 
 #######################
+scenarios = [
+        #[1,0,0,0,0,0,0],
+        [2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
+        #[3,1,0,0,0,0,0],
+        [3,1,0,0,0,1,0],
+        [4,1,0,1,1,0,0], [4,1,0,1,1,1,0], #[4,1,0,1,1,0,1],
+        #[6,1,1,1,1,0,0], [6,1,1,1,1,1,0], #[6,1,1,1,1,0,1],
+        #[6,1,2,1,1,0,0], [6,1,2,1,1,1,0], #[6,1,2,1,1,0,1],
+        #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0], #[6,1,3,1,1,0,1],
+        #[6,1,4,1,1,0,0], [6,1,4,1,1,1,0], #[6,1,4,1,1,0,1],
+        #[6,1,5,1,1,0,0], [6,1,5,1,1,1,0], #[6,1,5,1,1,0,1],
+        #[7,1,0,2,2,0,0], [7,1,0,2,2,1,0], #[7,1,0,2,2,0,1],
+        #[7,1,0,3,3,0,0], [7,1,0,3,3,1,0], #[7,1,0,3,3,0,1],
+        #[8,1,3,3,3,0,0], [8,1,3,3,3,1,0], #[8,1,3,3,3,0,1],
+                      ]
+
 run_single_simulation()
-#run_multiple_simulations()
-#run_multiple_simulations_multiprocessing()
+#run_multiple_simulations(scenarios)
+#run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion()
 #######################
 
