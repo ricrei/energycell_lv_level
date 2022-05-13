@@ -52,6 +52,8 @@ class HP_P_control:
       self.delta_T_ground = self.t_sink - self.t_ground_source
       self.COP_ground = 8.77 - 0.15 * self.delta_T_ground + 0.000734 * self.delta_T_ground**2
 
+      self.timedelta_charging_delay = 0.125 # in % t_sunset - t
+
   def pcontrol(self):
       pass
     
@@ -168,7 +170,7 @@ class HP_P_control_hh_fid(HP_P_control):
       if (time > sunrise and time < sunset):
 
         #calculate default linear charge
-        p_mw_lin_ch = (hps.hp_max_capacity_mwh - hps.hp_soc_mwh) / (timedelta_day_s/3600) #mwh/h -> _s/3600
+        p_mw_lin_ch = (hps.hp_max_capacity_mwh - hps.hp_soc_mwh) / ((timedelta_day_s*(1-self.timedelta_charging_delay))/3600) #mwh/h -> _s/3600
         #set charge with fid in case of feed_in
         hp_soc_change[resi_load < 0] = (p_mw_lin_ch[resi_load < 0]) * (self.intervall_in_seconds / 3600)
         #limit hp_soc_change by hp_soc_change_max due to resi_load
@@ -197,9 +199,6 @@ class HP_P_control_hh_fid(HP_P_control):
         hp_soc_change[resi_load >= 0] = -p_mw_lin_dch * (self.intervall_in_seconds / 3600) #mwh -> mw * h
         #limit hp_soc_change to hp_th_demand -> no feed_in of hot water to grid..
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
-
-      #set limit by hp_max_p_kw
-      #hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
       
       ### limit to maximum or minimum of capacity
       hp_soc_change = self.HP_storages.set_limits(hps, hp_soc_change)
@@ -279,7 +278,7 @@ class HP_P_control_grid_fid(HP_P_control):
           # distribute power equal to every HP
           p_mw_res_ch = p_total_hp * hp_distribution_factor * hps.hp_cop
           # calc lin_charge values
-          p_mw_lin_ch = (hps.hp_max_capacity_mwh - hps.hp_soc_mwh) / (timedelta_day_s/3600) #mwh/h -> _s/3600
+          p_mw_lin_ch = (hps.hp_max_capacity_mwh - hps.hp_soc_mwh) / ((timedelta_day_s*(1-self.timedelta_charging_delay))/3600) #mwh/h -> _s/3600
           # compare p_mw_res_ch with p_mw_lin_ch -> use smaller values
           p_mw_ch = p_mw_lin_ch.copy()
           p_mw_ch[p_mw_lin_ch > p_mw_res_ch] = p_mw_res_ch[p_mw_lin_ch > p_mw_res_ch]
@@ -310,7 +309,7 @@ class HP_P_control_grid_fid(HP_P_control):
         hp_soc_change[hp_soc_change + hp_th_demand <= 0] = -hp_th_demand[hp_soc_change + hp_th_demand <= 0]
       '''
       #set limit by hp_max_p_kw
-      hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
+      #hp_soc_change = self.HP_storages.set_hp_max_power(hps, hp_soc_change, hp_th_demand)
  
       ### limit to maximum or minimum of capacity
       hp_soc_change = self.HP_storages.set_limits(hps, hp_soc_change)
@@ -337,7 +336,7 @@ class HP_P_control_grid_fid(HP_P_control):
       hps = self.get_cop(grid, d, t)
       #set loss in storage
       hps = self.HP_storages.set_loss(hps)
-
+      '''
       #get time information
       sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t)
       sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + dt.timedelta(days = 1))
@@ -351,7 +350,7 @@ class HP_P_control_grid_fid(HP_P_control):
       # pre midnight
       else:
         timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
-
+      '''
       ### calculate 
       s_res, p_res = grid.get_residualload_s_sum()
       p_res = -p_res

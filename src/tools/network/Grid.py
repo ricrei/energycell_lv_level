@@ -46,8 +46,7 @@ class Grid:
         Load predefined grid with pandapower or simbench. Grid contains not generation units or sector coupled consumers. 
 
         '''
-        #print('Create grid ...')
-        # create net: only load without pv
+        # create net: load  only, without pv
         if self.net_name == "kerber_rural_1":
             self.net = pn.create_kerber_landnetz_freileitung_1()
             self.category = 'rural'

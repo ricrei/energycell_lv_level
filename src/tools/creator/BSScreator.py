@@ -59,7 +59,6 @@ class BSScreator:
 
   def create_bss_at_lvbb(self, grid): 
       # create  community bss at low voltage busbar
-      
       max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) # [MWh] 
       max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) # [MW]
       '''
@@ -83,12 +82,11 @@ class BSScreator:
       return grid
 
   def create_bss_at_selected_buses(self, grid): 
-      # create community bss at one or more buses  
-      
+      # create community bss at one or more buses        
       if self.net_name == "simbench_rural_1":
-          selected_buses = [int(grid.net.trafo.lv_bus.sum())]
-          hh_per_line = [0] # per feeder?
-          print('No scenario for CBSS in power line implemented')# wird nicht ausgegeben
+          selected_buses = [4]#[int(grid.net.trafo.lv_bus.sum())] # The end of the longest feeder
+          hh_per_line = [4]
+          #print('No scenario for CBSS in power line implemented')# wird nicht ausgegeben
           #raise ValueError('No scenario for CBSS in power line implemented' )
       elif self.net_name == "simbench_rural_2":
           selected_buses = [9,19,46,75]
@@ -118,11 +116,11 @@ class BSScreator:
                             max_p_mw = max_p_mw)
           i = i+1
             
-      grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
+      grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat 
       grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC
       grid.net.storage['efficiency_storage'] = self.efficiency_storage
       self.e_mwh_start = self.soc_percent/100 * grid.net.storage.max_e_mwh 
-      grid.net.storage['e_mwh'] =  self.e_mwh_start ###
+      grid.net.storage['e_mwh'] =  self.e_mwh_start
       grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) 
       return grid
 

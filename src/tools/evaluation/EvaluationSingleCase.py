@@ -487,7 +487,7 @@ class EvaluationSingleCase():
     ax.plot(soc.index, soc)
     ax.set_xlabel('Time')
     ax.set_ylabel('State of charge MWh')
-    #plt.show()
+    plt.show()
 
   def plot_hp_cop(self):
     cop = self.hp_cop
@@ -495,7 +495,7 @@ class EvaluationSingleCase():
     ax.plot(cop.index, cop)
     ax.set_xlabel('Time')
     ax.set_ylabel('coefficent of performance - COP')
-    #plt.show()
+    plt.show()
     
   def plot_hp_active_power(self):
     fig, ax = plt.subplots()

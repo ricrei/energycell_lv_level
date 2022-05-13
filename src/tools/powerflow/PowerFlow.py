@@ -31,7 +31,8 @@ class PowerFlow:
                                         bss_controller,
                                         curtail_controller,
                                         energy_manager,
-                                        output_data_handler):
+                                        output_data_handler,
+                                        display):
 
       self.input_dict = self.create_input_dict(df, grid)
 
@@ -46,8 +47,7 @@ class PowerFlow:
       for k in self.time_step_array:
           for j in range(k):
 
-              start = time.time()
-              tt.progress(i, self.timesteps, status=' %s s ' % rest_time)
+              display.progress_start(i, self.timesteps)
 
               t = self.time_series[i]
 
@@ -73,14 +73,11 @@ class PowerFlow:
               # write result into DataFrame
               output_data_handler.write_output_into_dataframe(grid, t)
 
-              end = time.time()
-              rest_time = int(round((end - start)*(self.timesteps - i), 0))
               i += 1
           # write results dataframe into csv
           output_data_handler.write_dataframe_to_csv(mode='a', header=False, grid=grid)
 
-      tt.progress(1, 1, status=' Done ')
-      print('')
+      display.progress_finished()
 
       return grid
 

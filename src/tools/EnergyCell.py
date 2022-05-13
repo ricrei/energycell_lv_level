@@ -42,7 +42,7 @@ from tools.evaluation.EvaBSSsizing import EvaBSSsizing
 
 class EnergyCell():
 
-    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False):
+    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False):
         self.run_time('start')
 
         self.controls = self.scenario_interpreter(scenario)
@@ -96,7 +96,8 @@ class EnergyCell():
         # Save net to pickle
         #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
 
-        self.print_object_parameter()
+        self.display = tt.Progress(verbose)
+        self.print_object_parameter('Start: ')
 
         self.run_time('end', 'init ec')
 
@@ -122,7 +123,7 @@ class EnergyCell():
     def run_pf_timeseries(self):
 
         self.run_time('start')
-
+        
         self.load_timeseries()
 
         # run powerflow
@@ -134,8 +135,10 @@ class EnergyCell():
                                                   bss_controller=self.bss_controller,
                                                   curtail_controller=self.curtail_controller,
                                                   energy_manager=self.energy_manager,
-                                                  output_data_handler=self.output_data_handler)
-
+                                                  output_data_handler=self.output_data_handler,
+                                                  display=self.display)
+        
+        self.print_object_parameter('End  : ')
         self.run_time('end', 'run pf')
 
     ##################################
@@ -225,15 +228,14 @@ class EnergyCell():
           self.start = time.time()
         elif button == 'end':
           self.end = time.time()
-          print(tt.text1('Processing time ' + string + ': ') + '%s seconds' % (str(round(self.end - self.start, 1))))
+          self.display.display_time_info(self.end, self.start, string)
         else:
           print('Error: no start or end time defined. run_time()')
 
     ##############################################
     ### print object parameter in command line ###
     ##############################################
-    def print_object_parameter(self):
-        print(tt.text1('Grid: ') + str(self.grid.net_name) + ', ' + str(self.grid.category) + tt.text1('   Scenario: ') + str(self.scenario))
-        print(tt.text1('Daterange: ') + str(self.input_data_handler.dates))
+    def print_object_parameter(self, string):
+        self.display.display_info(self.grid.net_name, self.grid.category, self.scenario, self.input_data_handler.dates, string)
 
 

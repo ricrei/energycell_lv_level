@@ -231,7 +231,6 @@ class BSS_control:
       timedelta_lin_dch_day1_s = abs((sunrise_next - time).total_seconds())
       timedelta_lin_dch_day2_s = abs((sunrise - time).total_seconds())
       timedelta_lin_dch_winter_day_s = abs((t_start_linear_discharge - time).total_seconds())
-      #print('timedelta_lin_ch_winter: ' + str(timedelta_lin_ch_winter_s))
       
       # Winter - Temporal parameters and discharge:
       if timedelta_sunrise_sunset_s < (12*3600):  #winter
