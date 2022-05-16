@@ -81,10 +81,10 @@ m = 4*4  # Number of timescopes * Number of scenarios
 
 # --- Power --- #
 '''
-scenarios = ['6111110', '6121110', '6131110', '6141110']
-eva = load_scenario_data(scenarios, grids=['n9'], seasons=['summer','winter'])
-evaluation.plot_residualload_subplot_overall_eva(eva['s6111110n9winter'], eva['s6111110n9winter'], save_fig_dir=save_fig_dir+'n9_winter_plot_res_load_subplot_n9_winter.png')
-evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s6111110n9summer'], eva['s6111110n9winter'], save_fig_dir=save_fig_dir+'plot_res_load_subplot_s40n8_detailed.png')
+scenarios = ['6141110', '6151110']
+eva = load_scenario_data(scenarios, grids=['n8','n9'], seasons=['winter','spring'])
+evaluation.plot_residualload_subplot_overall_eva(eva['s6141110n8spring'], eva['s6141110n9spring'], save_fig_dir=save_fig_dir+'n9_spring_plot_res_load_subplot_n9_spring.png')
+#evaluation.plot_residualload_subplot_overall_eva_timeslot(eva['s6151110n8spring'], eva['s6151110n9spring'], save_fig_dir=save_fig_dir+'n9_spring_plot_res_load_subplot_n9_spring.png')
 '''
 
 # --- Components loading --- #
@@ -119,17 +119,28 @@ evaluation.plot_heatmap_grid_issus(eva, net_name, scenarios, x_ticklabels, n, sa
 '''
 # --- Curtailment: PV-Power and Load --- #
 '''
-scenarios = ['6111110', '6121110', '6131110', '6141110', '8133310']
+scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
 eva = load_scenario_data(scenarios)
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['6111110', '6121110', '6131110', '6141110'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ'], save_fig_dir=save_fig_dir+'0')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['6111110', '6121110', '6131110', '6141110', '8133310'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ', 'new'], save_fig_dir=save_fig_dir+'1')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], save_fig_dir=save_fig_dir+'0')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '6111110', '6121110', '6131110', '6141110', '6151110'], x_ticklabels = ['4', '5a', '5b', '5c HH', '5c CBSS-LV', '5c CBSS feeder'], save_fig_dir=save_fig_dir+'1')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5c HH', '6', '7'], save_fig_dir=save_fig_dir+'2')
+'''
+
+
+# --- Curtailment: PV-Power and Load --- #
+'''
+scenarios = ['8133310']
+eva = load_scenario_data(scenarios)
+evaluation.plot_heatmap_curtailed_power_per_season(eva, scenarios, net_name, save_fig_dir=None)
 '''
 
 # --- Self-Sufficiancy and PV Consumption --- #
 '''
-scenarios = ['6111110', '6121110', '6131110', '6141110']
+scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
 eva = load_scenario_data(scenarios)
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['6111110', '6121110', '6131110', '6141110'], x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ'], n, save_fig_dir=save_fig_dir)
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], n, save_fig_dir=save_fig_dir+'0')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6111110', '6121110', '6131110', '6141110', '6151110'], x_ticklabels = ['4', '5a', '5b', '5c HH', '5c CBSS-LV', '5c CBSS feeder']], n, save_fig_dir=save_fig_dir+'1')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5c HH', '6', '7'], n, save_fig_dir=save_fig_dir+'2')
 '''
 
 ################################

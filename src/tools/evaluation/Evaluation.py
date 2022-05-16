@@ -185,8 +185,8 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
     ax[i].fill_between(power[i].index, 0 , storage_charge     , alpha=0.7, color=c[4])
     ax[i].fill_between(power[i].index, 0 , -storage_discharge , alpha=0.7, color=c[4])
     # curtailed power
-    ax[i].fill_between(power[i].index, power[i].hp + power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].curtail_load, alpha=0.2, color=c[7])
-    ax[i].fill_between(power[i].index,                     -storage_discharge - power[i].pv,                       -storage_discharge - power[i].pv - curtailed[i].curtail_pv, alpha=0.2, color=c[7])
+    ax[i].fill_between(power[i].index, power[i].hp + power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load, alpha=0.2, color=c[7])
+    ax[i].fill_between(power[i].index,                     -storage_discharge - power[i].pv,                       -storage_discharge - power[i].pv - curtailed[i].pv, alpha=0.2, color=c[7])
 
     ax[i].plot(power[i].index, -storage_discharge-power[i].pv, lw=.6)
     ax[i].plot(power[i].index, storage_charge+power[i].ev, lw=.6)
@@ -220,13 +220,13 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
   ax[1].set_xlabel('Uhrzeit')
   ax[0].set_title('Ohne Batteriespeicher')
   ax[1].set_title('Mit Batteriespeicher')
-
-  time_min_1 = pd.to_datetime('2017-01-06 00:00:00+00:00', utc=True)
-  time_max_1 = pd.to_datetime('2017-01-06 23:59:00+00:00', utc=True)
+  
+  time_min_1 = pd.to_datetime('2017-03-05 00:00:00+00:00', utc=True)
+  time_max_1 = pd.to_datetime('2017-03-05 23:59:00+00:00', utc=True)
 
   ax[0].set_xlim(time_min_1, time_max_1)
   ax[1].set_xlim(time_min_1, time_max_1)
-
+  
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight')
 
@@ -423,9 +423,104 @@ def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, s
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_trafoloading.png', bbox_inches='tight')
 
+def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_dir=None):
+  print('Create Heatmap plots curtailed power')
+  #minutes_per_week = 7*24*60
+
+  seasons = ['spring', 'summer', 'autumn', 'winter']
+  x_ticklabels = seasons
+
+  pv_power = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
+  load_power = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
+
+  curtailed_power_pv = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0) 
+  curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
+
+  for index in eva:
+    if str(eva[index]['scenario']) in str(scenario):
+      curtailed_power_pv[eva[index]['time_scope_name']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].pv.sum()
+      curtailed_power_load[eva[index]['time_scope_name']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].load.sum()
+      pv_power[eva[index]['time_scope_name']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum()
+      load_power[eva[index]['time_scope_name']].loc[eva[index]['net_name']] += eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()
+
+  curtailed_power_pv_per_cent = curtailed_power_pv/(pv_power+curtailed_power_pv)*100
+  curtailed_power_load_per_cent = curtailed_power_load/(load_power+curtailed_power_load)*100
+  curtailed_power_load_per_cent_reduced = curtailed_power_load_per_cent
+
+  #x_ticklabels = ['ohne BSS', 'direkt', 'präventiv', 'präventiv\nund kurativ']
+  #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
+  y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
+
+  vmax_pv = curtailed_power_pv.max().max()/1000
+  vmax_load = curtailed_power_load.max().max()/1000
+  vmax_season = np.array([vmax_pv, vmax_load]).max()
+
+  vmax_pv_per_cent = curtailed_power_pv_per_cent.max().max()
+  vmax_load_per_cent = curtailed_power_load_per_cent.max().max()
+  vmax_pv_load_per_cent = np.array([vmax_pv_per_cent, vmax_load_per_cent]).max()
+
+  vmin = 0
+
+  plt.figure(figsize=(5.5,4))
+  ax = sns.heatmap(curtailed_power_pv_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
+  ax.set(xlabel='Szenario', ylabel='Netz')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  #ax.set_title('Curtailed pv energy in %')
+  ax.set_title('Abgeregelte PV Energie in %')
+  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_season.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
+  
+  #"YlOrBr"
+
+  plt.figure(figsize=(5.5,4))
+  ax = sns.heatmap(curtailed_power_load_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
+  ax.set(xlabel='Szenario', ylabel='Netz')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  #ax.set_title('Curtailed load energy in %')
+  ax.set_title('Abgeregelte Last in %')
+  #ax.set_title('Line Overloading in Minutes per Week and Line')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_season.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
+
+  plt.figure()
+  ax = sns.heatmap(curtailed_power_pv/1000, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
+  ax.set(xlabel='Scenario', ylabel='Grid')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  ax.set_title('Curtailed pv energy in MWh')
+  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
+  
+  #"YlOrBr"
+
+  plt.figure()
+  ax = sns.heatmap(curtailed_power_load/1000, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
+  ax.set(xlabel='Scenario', ylabel='Grid')
+  ax.set_xticklabels(x_ticklabels)
+  ax.set_yticklabels(y_ticklabels)
+  ax.set_title('Curtailed load energy in MWh')
+  #ax.set_title('Line Overloading in Minutes per Week and Line')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load.png', bbox_inches='tight')
+     #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
+
+  plt.show()
+
+
 def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
-  minutes_per_week = 7*24*60
+  #minutes_per_week = 7*24*60
 
   pv_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
   load_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
@@ -439,15 +534,15 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
 
   for index in eva:
     if eva[index]['scenario'] in columns_scenarios:
-      curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
-      curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_load.sum()
+      curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].pv.sum()
+      curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].load.sum()
       pv_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum()
       load_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()
       if eva[index]['time_scope_name'] == 'summer':
-        curtailed_power_summer[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
+        curtailed_power_summer[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].pv.sum()
         #print('summer')
       elif eva[index]['time_scope_name'] == 'winter':
-        curtailed_power_winter[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].curtail_pv.sum()
+        curtailed_power_winter[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].pv.sum()
         #print('winter')
 
   curtailed_power_pv_per_cent = curtailed_power_pv/(pv_power+curtailed_power_pv)*100
@@ -476,7 +571,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   vmax_pv_load_per_cent = np.array([vmax_pv_per_cent, vmax_load_per_cent]).max()
 
   vmin = 0
-  
+  '''
   plt.figure()
   ax = sns.heatmap(curtailed_power_summer/1000, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set(xlabel='Scenario', ylabel='Grid')
@@ -489,7 +584,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
      plt.savefig(save_fig_dir + '00a_heatmap_curtailed_power_summer.png', bbox_inches='tight')
 
   #"YlOrBr"
-
+  
   plt.figure()
   ax = sns.heatmap(curtailed_power_winter/1000, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set(xlabel='Scenario', ylabel='Grid')
@@ -500,7 +595,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00a_heatmap_curtailed_power_winter.png', bbox_inches='tight')
-
+  '''
   plt.figure(figsize=(5.5,4))
   ax = sns.heatmap(curtailed_power_pv_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
   ax.set(xlabel='Szenario', ylabel='Netz')
@@ -513,7 +608,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent.png', bbox_inches='tight')
      #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
-
+  
   #"YlOrBr"
 
   plt.figure(figsize=(5.5,4))
@@ -540,7 +635,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_reduced.png', bbox_inches='tight')
      #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
-  '''
+  
   plt.figure()
   ax = sns.heatmap(curtailed_power_pv/1000, vmax = vmax_pv_load, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set(xlabel='Scenario', ylabel='Grid')
@@ -552,7 +647,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv.png', bbox_inches='tight')
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
-
+  
   #"YlOrBr"
 
   plt.figure()
@@ -566,6 +661,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load.png', bbox_inches='tight')
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
+  '''
 
 def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels, n, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
@@ -955,7 +1051,7 @@ def plot_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
       curtailed_power = eva[index]['curtailed_power'].sum()
       df['feed-in_power_pv'].iloc[i] = eva[index]['power']['pv'].sum()*(100-eva[index]['PVConsumption'])/100*scale_factor_energy
       df['self-consumed_power_pv'].iloc[i] = eva[index]['power']['pv'].sum()*(eva[index]['PVConsumption'])/100*scale_factor_energy
-      df['curtailed_power_pv'].iloc[i] = curtailed_power['curtail_pv']*scale_factor_energy
+      df['curtailed_power_pv'].iloc[i] = curtailed_power['pv']*scale_factor_energy
       df['grid_obtained_power_load'].iloc[i] = (eva[index]['power']['load'].sum() 
                                               +eva[index]['power']['hp'].sum() 
                                               +eva[index]['power']['ev'].sum()
@@ -964,7 +1060,7 @@ def plot_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
                                               +eva[index]['power']['hp'].sum() 
                                               +eva[index]['power']['ev'].sum()
                                               )*(eva[index]['SelfSufficiancy'])/100*scale_factor_energy
-      df['curtailed_power_load'].iloc[i] = curtailed_power['curtail_load']*scale_factor_energy  
+      df['curtailed_power_load'].iloc[i] = curtailed_power['load']*scale_factor_energy  
       i += 1
       
   print(df)

@@ -8,7 +8,7 @@ class EVcreator:
   def __init__(self, inputfolder):
     self.inputfolder = inputfolder
     self.usable_c_bat = 100 # in %
-    self.ev_start_soc = 100 # in %
+    self.ev_start_soc = 80 # in %
 
   ###########################################
   ### Create Loads at each bus for all HP ###

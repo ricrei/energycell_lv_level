@@ -21,7 +21,7 @@ import tools.tools as tt
 
 class EvaluationSingleCase():
   
-  def __init__(self, grid, output_dir, net_name, scenario, time_scope): 
+  def __init__(self, grid, output_dir, net_name, scenario, time_scope, save_full_data): 
     self.grid = grid
     self.output_dir = output_dir
     self.net_name = net_name
@@ -32,26 +32,27 @@ class EvaluationSingleCase():
     self.ll = self.read_data(self.output_dir+'res_line_load_percent.csv')
     self.tl = self.read_data(self.output_dir+'res_trafo_load_percent.csv')
     self.power = self.read_data(self.output_dir+'power_total_MW.csv')
-    self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
-    self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
-    self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
-    self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
-    self.ev_soc = self.read_data(self.output_dir+'ev_soc.csv')
-    self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
-    self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
-    self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
-    self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
-    self.bss_p = self.read_data(self.output_dir+'storage_active_power_MW.csv') ###
-    self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
-    self.storage_e_mwh = self.read_data(self.output_dir+'storage_energy_content_MWh.csv')
     self.curtailed_power_pv = self.read_data(self.output_dir+'curtailed_power_pv_MW.csv')
     self.curtailed_power_load = self.read_data(self.output_dir+'curtailed_power_load_MW.csv')
-    self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
-    self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
-    self.hp_cop = self.read_data(self.output_dir+'hp_cop.csv')
-    self.hp_hp_th = self.read_data(self.output_dir+'hp_hp_th.csv')
-    self.hp_tes_th = self.read_data(self.output_dir+'hp_tes_th.csv')
-    self.hp_tes_losses_th = self.read_data(self.output_dir+'hp_tes_losses_th.csv')
+    self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
+    self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
+
+    if save_full_data == True:
+      self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
+      self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
+      self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
+      self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
+      self.ev_soc = self.read_data(self.output_dir+'ev_soc.csv')
+      self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
+      self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
+      self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
+      self.storage_e_mwh = self.read_data(self.output_dir+'storage_energy_content_MWh.csv')
+      self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
+      self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')
+      self.hp_cop = self.read_data(self.output_dir+'hp_cop.csv')
+      self.hp_hp_th = self.read_data(self.output_dir+'hp_hp_th.csv')
+      self.hp_tes_th = self.read_data(self.output_dir+'hp_tes_th.csv')
+      self.hp_tes_losses_th = self.read_data(self.output_dir+'hp_tes_losses_th.csv')
 
   ### Helper Methods ###
   def read_data(self, filename):
@@ -79,8 +80,10 @@ class EvaluationSingleCase():
     curtailed = pd.DataFrame()
     curtailed['curtail_pv'] = curtailed_pv
     curtailed['curtail_load'] = curtailed_load
+    #try:
     losses = self.losses_p.sum(axis=1)*1000
-
+    #except:
+    #  losses = curtailed['curtail_pv']*0
     '''
     storage = -self.storage_p.sum(axis=1)*1000
     storage_sum = storage.copy()
@@ -401,8 +404,16 @@ class EvaluationSingleCase():
     plt.grid(True)
     plt.show()
 
+  def plot_pv_reactive_power(self):
+    fig, ax = plt.subplots()
+    line = ax.plot(self.pv_q)
+    plt.xlabel('Time')
+    plt.ylabel('PV reactive power in MW')
+    plt.grid(True)
+    plt.show()
 
-  def plot_pv_reactive_power(self, grid):
+
+  def plot_pv_reactive_power2(self, grid):
     p = self.pv_p
     q = self.pv_q
     v = self.v
@@ -474,7 +485,7 @@ class EvaluationSingleCase():
     plt.show()
 
   def plot_bss_p_mw(self):
-    bss_p = self.bss_p
+    bss_p = self.storage_p
     fig, ax = plt.subplots()
     ax.plot(bss_p.index, bss_p)
     ax.set_xlabel('Time')
@@ -557,6 +568,19 @@ class EvaluationSingleCase():
     plt.legend(handles=patch_list)
     ax.set_xlabel('Time')
     ax.set_ylabel('Thermal Power in MW')
+    plt.show()
+
+  def plot_curtailed_power(self):
+    fig, ax = plt.subplots()
+    ax.plot(self.curtailed_power_load.sum(axis=1))
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Curtailed power load in MW')
+
+    fig, ax = plt.subplots()
+    ax.plot(self.curtailed_power_pv.sum(axis=1))
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Curtailed power pv in MW')
+
     plt.show()
 
   def plot_grid(self, time_sample=None):

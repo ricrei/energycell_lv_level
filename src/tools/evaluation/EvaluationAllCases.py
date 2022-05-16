@@ -30,7 +30,6 @@ class EvaluationAllCases():
                 "test_net_one_load_branch", #13
                 "test_net_n_load_branch"]  #14
 
-    eva = {}
     df_eva_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
     df_helper_v = pd.DataFrame(columns=['time', 'voltage', 'scenario', 'timescope', 'gridID', 'busID'])
 
@@ -48,6 +47,7 @@ class EvaluationAllCases():
           output_dir = os.path.join("./", "output-files/"+str(scenario_i)+"/"+str(net_name[net_name_i])+"/"+time_scope_i['start_time'][0:10]+"_"+time_scope_i['end_time'][0:10]+"_"+time_scope_i['t_freq']+"/")
           index = 's' + str(scenario_i) + 'n' + str(net_name_i) + str(time_scope_i['name'])
           print('create: ' + str(index))
+          eva = {}
           eva[index] = {}
           eva[index]['scenario'] = scenario_i
           eva[index]['net_name'] = net_name[net_name_i]
@@ -61,9 +61,7 @@ class EvaluationAllCases():
           losses = self.read_data(output_dir+'losses_active_power_MW.csv')
           eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= self.calculate_relevant_outputdata(eva[index]['power'], losses, trafo_p)
           eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
-          # TO-DO: method for curtailed power
-          eva[index]['curtailed_power_load'] = self.read_data(output_dir+'curtailed_power_load_MW.csv')
-          eva[index]['curtailed_power_pv'] = self.read_data(output_dir+'curtailed_power_pv_MW.csv')
+          eva[index]['curtailed_power'] = self.calculate_aggregated_curtailed_power(output_dir)
           eva[index]['storage_power'] = self.read_data(output_dir+'storage_active_power_MW.csv')
           eva[index]['soc_bss'] = self.read_data(output_dir+'storage_state_of_charge_percent.csv')
 
@@ -147,3 +145,11 @@ class EvaluationAllCases():
     sum_tl = tl[tl.columns].sum(axis=1).sum()
 
     return sum_v_under, sum_v_over, v_events, sum_ll, ll_events, sum_tl, tl_events
+
+  def calculate_aggregated_curtailed_power(self, output_dir):
+    curtailed_power_load = self.read_data(output_dir+'curtailed_power_load_MW.csv').sum(axis=1)
+    curtailed_power_pv = self.read_data(output_dir+'curtailed_power_pv_MW.csv').sum(axis=1)
+    df = pd.DataFrame()
+    df['load'] = curtailed_power_load
+    df['pv'] = curtailed_power_pv
+    return df

@@ -45,6 +45,8 @@ class EnergyCell():
     def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False):
         self.run_time('start')
 
+        self.save_full_data = save_full_data
+
         self.controls = self.scenario_interpreter(scenario)
         self.net_name = net_name
 
@@ -168,7 +170,7 @@ class EnergyCell():
     ### initiate evaluation object for a single case ###
     ####################################################
     def initiate_evaluation(self):
-        self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope)
+        self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope, self.save_full_data)
 
     ####################################################
     ### initiate evaluation object for a single case ###

@@ -18,7 +18,8 @@ class OutputDataHandler():
           except OSError:
             print("Error: Creation of output directory %s failed" % self.output_dir)
           else:
-            print("Create outout directory %s" % self.output_dir)
+            #print("Create outout directory %s" % self.output_dir)
+            pass
 
         return self.output_dir
 

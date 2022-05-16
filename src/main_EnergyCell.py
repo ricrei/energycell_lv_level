@@ -15,9 +15,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+01:00',
-               'end_time'   : '2017-01-07 00:00:00+01:00',
-               't_freq'     : '1H',
+time_scope = { 'start_time' : '2017-05-27 00:00:00+02:00',
+               'end_time'   : '2017-06-03 00:00:00+02:00',
+               't_freq'     : '1T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -95,11 +95,11 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  6, # scenario number, 1-8
+  7, # scenario number, 1-8
   1, # PV, 0-2
-  5, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
+  0, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -132,7 +132,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 7
+net_number = 11
 ######################
 
 #############################
@@ -152,12 +152,12 @@ def run_single_simulation():
   e.run_pf_timeseries()
 
   # Initialize Evaluation
-  #e.initiate_evaluation()
+  e.initiate_evaluation()
 
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -173,6 +173,7 @@ def run_single_simulation():
   #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
+  #e.eva.plot_curtailed_power()
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
@@ -236,7 +237,7 @@ def run_multiple_simulations_multiprocessing(scenarios):
     net_names = [7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
-      results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for time_scope_i in time_scope for net_name_i in net_names for scenario_i in scenarios]
+      results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for scenario_i in scenarios for time_scope_i in time_scope for net_name_i in net_names]
 
     finish = time.perf_counter()
 
@@ -260,13 +261,13 @@ def run_output_data_conversion(scenarios):
 
 #######################
 scenarios = [
-        #[1,0,0,0,0,0,0],
-        #[2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
-        #[3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
-        #[4,1,0,1,1,0,0], [4,1,0,1,1,1,0], #[4,1,0,1,1,0,1],
-        #[6,1,1,1,1,0,0], [6,1,1,1,1,1,0], #[6,1,1,1,1,0,1],
-        #[6,1,2,1,1,0,0], [6,1,2,1,1,1,0], #[6,1,2,1,1,0,1],
-        #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0], #[6,1,3,1,1,0,1],
+        [1,0,0,0,0,0,0],
+        [2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
+        [3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
+        [4,1,0,1,1,0,0], [4,1,0,1,1,1,0], #[4,1,0,1,1,0,1],
+        [6,1,1,1,1,0,0], [6,1,1,1,1,1,0], #[6,1,1,1,1,0,1],
+        [6,1,2,1,1,0,0], [6,1,2,1,1,1,0], #[6,1,2,1,1,0,1],
+        [6,1,3,1,1,0,0], [6,1,3,1,1,1,0], #[6,1,3,1,1,0,1],
         [6,1,4,1,1,0,0], [6,1,4,1,1,1,0], #[6,1,4,1,1,0,1],
         [6,1,5,1,1,0,0], [6,1,5,1,1,1,0], #[6,1,5,1,1,0,1],
         ##[7,1,0,2,2,0,0], [7,1,0,2,2,1,0], #[7,1,0,2,2,0,1],
@@ -274,9 +275,9 @@ scenarios = [
         [8,1,3,3,3,0,0], [8,1,3,3,3,1,0], #[8,1,3,3,3,0,1],
                       ]
 
-#run_single_simulation()
+run_single_simulation()
 #run_multiple_simulations(scenarios)
-run_multiple_simulations_multiprocessing(scenarios)
+#run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
 #######################
 
@@ -290,8 +291,5 @@ run_multiple_simulations_multiprocessing(scenarios)
 #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0],
 
 # next simulationsteps
-## komplett (mit neuen Parametern)
-#        [6,1,4,1,1,0,0], [6,1,4,1,1,1,0],
-#        [6,1,5,1,1,0,0], [6,1,5,1,1,1,0],
-#        [7,1,0,3,3,0,0], [7,1,0,3,3,1,0],
-#        [8,1,3,3,3,0,0], [8,1,3,3,3,1,0],
+# Grid: simbench_suburb_5, suburban   Scenario: [7, 1, 0, 3, 3, 1, 0] summer
+
