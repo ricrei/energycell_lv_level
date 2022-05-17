@@ -15,9 +15,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-27 00:00:00+02:00',
-               'end_time'   : '2017-06-03 00:00:00+02:00',
-               't_freq'     : '1T',
+time_scope = { 'start_time' : '2017-05-29 05:00:00+02:00',
+               'end_time'   : '2017-05-29 21:00:00+02:00',
+               't_freq'     : '15T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -31,6 +31,7 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                   }
 
 # timescopes to examine
+'''
 time_scope_winter_with_extra_time = { 'start_time' : '2017-01-01 00:00:00+01:00',
                       'end_time'   : '2017-01-10 00:00:00+01:00',
                       't_freq'     : '1T',
@@ -43,7 +44,7 @@ time_scope_summer_with_extra_time = { 'start_time' : '2017-05-27 00:00:00+02:00'
                       't_freq'     : '1T',
                       'name'       : 'summer'
                     }
-
+'''
 time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
                       'end_time'   : '2017-01-10 00:00:00+01:00',
                       't_freq'     : '1T',
@@ -69,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope
+time_scope = time_scope_summer
 ###########################################
 
 #######################
@@ -95,9 +96,9 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  7, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
+  3, # BSS, 0-5
   3, # HP, 0-5
   3, # EV, 0-3
   1, # Curtailment, 0/1
@@ -146,15 +147,15 @@ def run_single_simulation():
                     control_parameter = control_parameter,
                     time_scope = time_scope,
                     save_full_data = True, # default: False
-                    verbose = True)       # default: False
+                    verbose = True)        # default: False
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=False)
@@ -226,7 +227,8 @@ def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
         e = ec.EnergyCell(net_name = net_name[net_name_i],
                           scenario = scenario_i,
                           control_parameter = control_parameter,
-                          time_scope = time_scope_i)
+                          time_scope = time_scope_i,
+                          save_full_data = True)
         e.run_pf_timeseries()
 
 def run_multiple_simulations_multiprocessing(scenarios):
@@ -261,18 +263,20 @@ def run_output_data_conversion(scenarios):
 
 #######################
 scenarios = [
-        [1,0,0,0,0,0,0],
-        [2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
-        [3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
-        [4,1,0,1,1,0,0], [4,1,0,1,1,1,0], #[4,1,0,1,1,0,1],
-        [6,1,1,1,1,0,0], [6,1,1,1,1,1,0], #[6,1,1,1,1,0,1],
-        [6,1,2,1,1,0,0], [6,1,2,1,1,1,0], #[6,1,2,1,1,0,1],
-        [6,1,3,1,1,0,0], [6,1,3,1,1,1,0], #[6,1,3,1,1,0,1],
-        [6,1,4,1,1,0,0], [6,1,4,1,1,1,0], #[6,1,4,1,1,0,1],
-        [6,1,5,1,1,0,0], [6,1,5,1,1,1,0], #[6,1,5,1,1,0,1],
+        #[1,0,0,0,0,0,0],
+        #[2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
+        #[3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
+        #[4,1,0,1,1,0,0], [4,1,0,1,1,1,0], #[4,1,0,1,1,0,1],
+        #[6,1,1,1,1,0,0], [6,1,1,1,1,1,0], #[6,1,1,1,1,0,1],
+        #[6,1,2,1,1,0,0], [6,1,2,1,1,1,0], #[6,1,2,1,1,0,1],
+        #[6,1,3,1,1,0,0], [6,1,3,1,1,1,0], #[6,1,3,1,1,0,1],
+        #[6,1,4,1,1,0,0],
+        [6,1,4,1,1,1,0], #[6,1,4,1,1,0,1],
+        #[6,1,5,1,1,0,0], [6,1,5,1,1,1,0], #[6,1,5,1,1,0,1],
         ##[7,1,0,2,2,0,0], [7,1,0,2,2,1,0], #[7,1,0,2,2,0,1],
-        [7,1,0,3,3,0,0], [7,1,0,3,3,1,0], #[7,1,0,3,3,0,1],
-        [8,1,3,3,3,0,0], [8,1,3,3,3,1,0], #[8,1,3,3,3,0,1],
+        #[7,1,0,3,3,0,0],
+        #[7,1,0,3,3,1,0], #[7,1,0,3,3,0,1],
+        #[8,1,3,3,3,0,0], [8,1,3,3,3,1,0], #[8,1,3,3,3,0,1],
                       ]
 
 run_single_simulation()
@@ -282,14 +286,7 @@ run_single_simulation()
 #######################
 
 ### simulations done ###
-#[1,0,0,0,0,0,0],
-#[2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
-#[3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
-#[4,1,0,1,1,0,0], [4,1,0,1,1,1,0],
-#[6,1,1,1,1,0,0], [6,1,1,1,1,1,0],
-#[6,1,2,1,1,0,0], [6,1,2,1,1,1,0],
-#[6,1,3,1,1,0,0], [6,1,3,1,1,1,0],
 
 # next simulationsteps
-# Grid: simbench_suburb_5, suburban   Scenario: [7, 1, 0, 3, 3, 1, 0] summer
+
 

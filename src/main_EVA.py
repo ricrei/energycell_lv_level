@@ -23,11 +23,11 @@ import _pickle as cPickle
 ### RUN in development mode ###
 '''
 run script to load data
- python -i main_EVA.py
+  python -i main_EVA.py
 import importlib once
- import importlib
+  import importlib
 to excecute method run this command everytime
- importlib.reload(evaluation), evaluation.plot_curtailed_power(eva, save_fig_dir=save_fig_dir)
+  importlib.reload(evaluation), evaluation.plot_curtailed_power(eva, save_fig_dir=save_fig_dir)
 '''
 
 #############################
@@ -117,8 +117,8 @@ x_ticklabels      = scenarios#['Conv'   , 'EV+HP'  , 'PV'     , 'PV+EV+HP']
 eva = load_scenario_data(scenarios)
 evaluation.plot_heatmap_grid_issus(eva, net_name, scenarios, x_ticklabels, n, save_fig_dir=save_fig_dir)
 '''
-# --- Curtailment: PV-Power and Load --- #
-'''
+# --- Curtailment: PV-Power and Load (Scenario - Grid) --- #
+#'''
 scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
 eva = load_scenario_data(scenarios)
 evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], save_fig_dir=save_fig_dir+'0')
@@ -127,21 +127,21 @@ evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['410
 '''
 
 
-# --- Curtailment: PV-Power and Load --- #
+# --- Curtailment: PV-Power and Load (Season - Grid) --- #
 '''
-scenarios = ['8133310']
-eva = load_scenario_data(scenarios)
-evaluation.plot_heatmap_curtailed_power_per_season(eva, scenarios, net_name, save_fig_dir=None)
+#scenarios = ['8133310']
+#eva = load_scenario_data(scenarios)
+evaluation.plot_heatmap_curtailed_power_per_season(eva, scenarios, net_name, save_fig_dir=save_fig_dir)
 '''
 
 # --- Self-Sufficiancy and PV Consumption --- #
 '''
-scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
-eva = load_scenario_data(scenarios)
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], n, save_fig_dir=save_fig_dir+'0')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6111110', '6121110', '6131110', '6141110', '6151110'], x_ticklabels = ['4', '5a', '5b', '5c HH', '5c CBSS-LV', '5c CBSS feeder']], n, save_fig_dir=save_fig_dir+'1')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5c HH', '6', '7'], n, save_fig_dir=save_fig_dir+'2')
-'''
+#scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
+#eva = load_scenario_data(scenarios)
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], n=n, save_fig_dir=save_fig_dir+'0')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6111110', '6121110', '6131110', '6141110', '6151110'], x_ticklabels = ['4', '5a', '5b', '5c HH', '5c CBSS-LV', '5c CBSS feeder'], n=n, save_fig_dir=save_fig_dir+'1')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5c HH', '6', '7'], n=n, save_fig_dir=save_fig_dir+'2')
+#'''
 
 ################################
 ########## Bar charts ##########

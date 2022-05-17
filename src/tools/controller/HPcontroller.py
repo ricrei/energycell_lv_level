@@ -272,6 +272,7 @@ class HP_P_control_grid_fid(HP_P_control):
           #  self.HP_storages.hp_stor_para['upper_backup_factor'] - hps.hp_soc_mwh
           #hp_available_capacity = hps.hp_max_capacity_mwh - hps.hp_soc_mwh
           hp_available_capacity = self.upper_tes_reserve - hps.hp_soc_mwh
+          hp_available_capacity[hp_available_capacity < 0] = 0
           #based on available capacity calc distribution_factor
           hp_distribution_factor = hp_available_capacity.copy()
           hp_distribution_factor[hp_distribution_factor > 0] = hp_available_capacity/hp_available_capacity.sum() # in %

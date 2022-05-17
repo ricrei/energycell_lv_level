@@ -39,7 +39,7 @@ class HPstorages():
           self.hp_stor_para['lower_tes_reserve'] = .1 # in 0-1
           self.hp_stor_para['hp_start_soc'] = .25
          elif grid.time_scope['name'] == 'summer':
-          self.hp_stor_para['upper_tes_reserve'] = .9 # in 0-1
+          self.hp_stor_para['upper_tes_reserve'] = .5 # in 0-1
           self.hp_stor_para['hp_start_soc'] = .75
 
 

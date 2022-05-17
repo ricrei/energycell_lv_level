@@ -14,6 +14,10 @@ class EVcontroller:
                            'direct_charge_limit' : 80,  # in %
                            'linear_charge_limit' : 90}  # in %
 
+      if 'name' in grid.time_scope.keys():
+        if grid.time_scope['name'] == 'summer':
+          self.ev_parameter['linear_charge_limit'] = 80 # in %
+
       ### load input data ###
       if (grid.category == 'rural') or (grid.category == 'village'):
         self.ev_data_file_charging_demand = self.inputfolder + '14_ev_short_rural_charging_demand.pbz2'

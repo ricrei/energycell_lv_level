@@ -36,6 +36,8 @@ class EvaluationSingleCase():
     self.curtailed_power_load = self.read_data(self.output_dir+'curtailed_power_load_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
+    self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
+    self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
 
     if save_full_data == True:
       self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
@@ -44,8 +46,6 @@ class EvaluationSingleCase():
       self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
       self.ev_soc = self.read_data(self.output_dir+'ev_soc.csv')
       self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
-      self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
-      self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
       self.storage_e_mwh = self.read_data(self.output_dir+'storage_energy_content_MWh.csv')
       self.hp_soc = self.read_data(self.output_dir+'hp_soc.csv')
       self.hp_demand_th = self.read_data(self.output_dir+'hp_demand_th.csv')

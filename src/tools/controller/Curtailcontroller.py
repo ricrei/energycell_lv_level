@@ -33,7 +33,7 @@ class CurtailmentCommunityStorage_at_LVbusbar:
     return p_res
 
   def curtail_storage_power(self, grid):
-   p_bss_down = grid.net.storage.p_mw
+   p_bss_down = grid.net.storage.p_mw.copy()
    grid.net.storage.p_mw = 0
    s_res, p_res = grid.get_residualload_s_sum()
 
@@ -152,10 +152,10 @@ class Curtailment:
           if p_res_feeder <= 0:
            #print('Line PV')
            delta_pv_power_active_df = grid.net.sgen.p_mw[sgen_index].copy()
-           grid.net.sgen.p_mw[sgen_index] = grid.net.sgen.p_mw[sgen_index]*curtail_factor_line     + grid.net.load.p_mw.loc[load_index].sum()*(1-curtail_factor_line)/len(sgen_index)
-           grid.net.sgen.q_mvar[sgen_index] = grid.net.sgen.q_mvar[sgen_index]*curtail_factor_line + grid.net.load.q_mvar.loc[load_index].sum()*(1-curtail_factor_line)/len(sgen_index)
-           delta_pv_power_active_df -= grid.net.sgen.p_mw[sgen_index]
-           grid.curtailed_pv_power_df += delta_pv_power_active_df
+           grid.net.sgen.p_mw[sgen_index] = grid.net.sgen.p_mw[sgen_index].copy()*curtail_factor_line     + grid.net.load.p_mw.loc[load_index].copy().sum()*(1-curtail_factor_line)/len(sgen_index)
+           grid.net.sgen.q_mvar[sgen_index] = grid.net.sgen.q_mvar[sgen_index].copy()*curtail_factor_line + grid.net.load.q_mvar.loc[load_index].copy().sum()*(1-curtail_factor_line)/len(sgen_index)
+           delta_pv_power_active_df -= grid.net.sgen.p_mw[sgen_index].copy()
+           grid.curtailed_pv_power_df[sgen_index] += delta_pv_power_active_df
            grid = self.Curtailment_regarding_Storage.curtail_storage_power(grid)
           else:
            #print('Line Load')
@@ -176,8 +176,7 @@ class Curtailment:
 
       grid.net.sgen.p_mw[res_p_HH < 0] = grid.net.sgen.p_mw[res_p_HH < 0] * curtail_factor_trafo
       grid.net.sgen.q_mvar[res_p_HH < 0] = grid.net.sgen.q_mvar[res_p_HH < 0] * curtail_factor_trafo
-
-      grid.curtailed_pv_power_df += total_pv_power_mw_df - grid.net.sgen.p_mw
+      grid.curtailed_pv_power_df += total_pv_power_mw_df - grid.net.sgen.p_mw.copy()
 
     if (res_s > self.trafo_power*self.sf_load):
       #print('Trafo Load')
@@ -189,7 +188,7 @@ class Curtailment:
 
       grid.net.load.p_mw[res_p_HH > 0] = grid.net.load.p_mw[res_p_HH > 0] * curtail_factor_trafo
       grid.net.load.q_mvar[res_p_HH > 0] = grid.net.load.q_mvar[res_p_HH > 0] * curtail_factor_trafo
-      grid.curtailed_load_power_df += total_load_power_mw_df - grid.net.load.p_mw
+      grid.curtailed_load_power_df += total_load_power_mw_df - grid.net.load.p_mw.copy()
     
     return grid
 

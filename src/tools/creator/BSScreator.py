@@ -61,10 +61,7 @@ class BSScreator:
       # create  community bss at low voltage busbar
       max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) # [MWh] 
       max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) # [MW]
-      '''
-      pp.create_storage(grid.net, 4 , p_mw=0,\
-                            max_e_mwh=max_e_mwh, soc_percent=0 ,name='bss_'+str(4), type='bss')
-      '''
+
       pp.create_storage(grid.net, grid.net.trafo.lv_bus[0], \
                         p_mw = 0, \
                         max_e_mwh = max_e_mwh, \
