@@ -12,7 +12,11 @@ class BSScontroller:
       self.timedelta_charging_delay = 0.125#2 #[h] Sommer 12 %
       self.timedelta_charging_delay_winter = 0.125#1 #[h] Versuch: %
       self.timedelta_early_discharge = 0.25#2 #[-]
-      self.soc_reserve_percent = 20#20 #[%]
+      self.soc_reserve_percent = 0# in %
+
+      if 'name' in grid.time_scope.keys():
+        if grid.time_scope['name'] == 'winter':
+          self.soc_reserve_percent = 20 # in %
       
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)
@@ -21,19 +25,6 @@ class BSScontroller:
       self.efficiency_discharge = grid.net.storage.efficiency_Bat2AC * grid.net.storage.efficiency_storage**0.5
 
       self.control = control
-
-      '''
-      if (control=='direct'):
-        self.control = control
-      elif (control=='feed_in_damping'):
-        self.control = control
-      elif control == 'household-oriented_feed-in_damping':
-        self.control = control
-      elif control == 'grid-oriented_feed-in_damping':
-        self.control = control
-      else:
-        raise ValueError('The entered BSS control is not a valid option.')
-      '''
 
       if (self.control != None):
         if self.control == 'direct': 

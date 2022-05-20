@@ -336,26 +336,12 @@ class HP_P_control_grid_fid(HP_P_control):
       #get hps with current cop per hp due t_ambient
       hps = self.get_cop(grid, d, t)
       #set loss in storage
-      hps = self.HP_storages.set_loss(hps)
-      '''
-      #get time information
-      sunrise, sunset, timedelta_day_s, timedelta_sunrise_sunset_s = grid.get_timedelta(t)
-      sunrise_next, sunset_next, timedelta_day_next_s, timedelta_sunrise_sunset_next_s = grid.get_timedelta(t + dt.timedelta(days = 1))
-      time = t.tz_localize(None)
+      #hps = self.HP_storages.set_loss(hps)
 
-      ### calculate timedelta_nxt_sunrise_s
-      ### handle with new next sunrise pre / post midnight
-      # post midnight
-      if (sunrise - time).total_seconds() > 0:  
-        timedelta_nxt_sunrise_s = (sunrise - time).total_seconds()
-      # pre midnight
-      else:
-        timedelta_nxt_sunrise_s = (sunrise_next - time).total_seconds()
-      '''
       ### calculate 
       s_res, p_res = grid.get_residualload_s_sum()
       p_res = -p_res
-      
+
       ### case s_trafo less than feed_in from PV
       if grid.s_trafo_power < -s_res:
           # calculate q²
@@ -404,13 +390,11 @@ class HP_P_control_grid_fid(HP_P_control):
         hp_distribution_factor = hp_available_capacity.copy()
         hp_distribution_factor[hp_distribution_factor > 0] = hp_available_capacity/hp_available_capacity.sum() # in %
 
-
         # distribute power equal to every HP
         p_mw_tes_discharge = p_total_hp * hp_distribution_factor * hps.hp_cop
 
         # p_mw_tes_discharge could not be greater than demand_th (demand_th is represented by the former calculated hp_th power)
         p_mw_tes_discharge[p_mw_tes_discharge > hps['hp_hp_th']] = hps['hp_hp_th'][p_mw_tes_discharge > hps['hp_hp_th']]
-        #p_mw_tes_discharge[p_mw_tes_discharge > hps.p_mw * hps.hp_cop] = hps.p_mw[p_mw_tes_discharge > hps.p_mw * hps.hp_cop] * hps.hp_cop[p_mw_tes_discharge > hps.p_mw * hps.hp_cop]
 
         #set hp_soc_change by p_mw_trafo_ch
         hp_soc_change = p_mw_tes_discharge * (self.intervall_in_seconds / 3600)

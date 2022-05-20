@@ -943,7 +943,7 @@ def plot_hist_grid_issus_voltage(eva1, eva2, save_fig_dir=None):
 
 # together with plot_curtail_power()
 # together with plot_curtail_power()
-def plot_clustered_stacked(dfall, labels1=None, labels2=None, title=" ",  H=".", **kwargs):
+def plot_clustered_stacked(dfall, labels1=None, labels2=None, title=" ", ylabel= ' ', H=".", **kwargs):
     """Given a list of dataframes, with identical columns and index, create a clustered stacked bar plot. 
 labels is a list of the names of the dataframe, used for the legend
 title is a string for the title of the plot
@@ -994,15 +994,13 @@ H is the hatch used for identification of the different dataframe"""
         l2 = plt.legend(n, labels2, loc=[.01, .8-n_df/20]) 
     axe.add_artist(l1)
     axe.set_xlabel('Grid')
-    axe.set_ylabel('Energy in MWh')
+    axe.set_ylabel(ylabel)
     axe.set_xticklabels(df.index)#['rural 1', 'rural 2', 'rural 3', 'suburban 1', 'suburban 2'])
-    axe.set_ylim([0, 120])
+    axe.set_ylim([0, 100])
    # axe.bar_label(dfall[0].columns, label_type = 'center') # Tabea
     return axe
 
-
-def plot_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
-
+def calculate_power_df(eva, scenario, seasons):
   df = pd.DataFrame(columns=['gridID', 'time_scope', 'curtailed_power_pv', 'feed-in_power_pv', 'self-consumed_power_pv', 'curtailed_power_load', 'grid_obtained_power_load', 'self-consumed_power_load'], index=range(5*len(seasons)))
   
   scale_factor_energy = 1/60 # kWmin -> kWh
@@ -1027,7 +1025,6 @@ def plot_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
       df['curtailed_power_load'].iloc[i] = curtailed_power['load']*scale_factor_energy  
       i += 1
       
-  print(df)
   df_summer = df[df['time_scope'] == 'summer']
   df_winter = df[df['time_scope'] == 'winter']
   df_spring = df[df['time_scope'] == 'spring']
@@ -1094,33 +1091,87 @@ def plot_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
   df_autumn_pv = df_autumn_pv.sort_index()
   df_spring_load = df_spring_load.sort_index()
   df_autumn_load = df_autumn_load.sort_index()
+
+  return df_summer_pv, df_winter_pv, df_spring_pv, df_autumn_pv, df_summer_load, df_winter_load, df_spring_load, df_autumn_load
+
+
+def plot_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
+
+  df_summer_pv, df_winter_pv, df_spring_pv, df_autumn_pv, df_summer_load, df_winter_load, df_spring_load, df_autumn_load = calculate_power_df(eva, scenario, seasons)
   
-  plot_clustered_stacked([df_winter_pv, df_summer_pv], ['curtailed','feed-in','self-consumed'], ['winter', 'summer'], title=' ')
+  plot_clustered_stacked([df_winter_pv, df_summer_pv], ['curtailed','feed-in','self-consumed'], ['winter', 'summer'], title=' ', ylabel='Energy in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir+'curtailed_PV_power_'+str(scenario)+'.png', bbox_inches='tight')
   else:
      plt.show()
 
-  plot_clustered_stacked([df_winter_load, df_summer_load], ['curtailed','grid-obtained','self-consumed'], ['winter', 'summer'], title=' ')
+  plot_clustered_stacked([df_winter_load, df_summer_load], ['curtailed','grid-obtained','self-consumed'], ['winter', 'summer'], title=' ', ylabel='Energy in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir+'curtailed_Load_power_'+str(scenario)+'.png', bbox_inches='tight')
 
-  plot_clustered_stacked([ df_spring_pv, df_summer_pv, df_autumn_pv, df_winter_pv], ['curtailed','feed-in','self-consumed'], ['spring', 'summer', 'autumn', 'winter'], title=' ')
+  plot_clustered_stacked([ df_spring_pv, df_summer_pv, df_autumn_pv, df_winter_pv], ['curtailed','feed-in','self-consumed'], ['spring', 'summer', 'autumn', 'winter'], title=' ', ylabel='Energy in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir+'curtailed_PV_power_allseasons'+str(scenario)+'.png', bbox_inches='tight')
 
-  plot_clustered_stacked([ df_spring_load, df_summer_load, df_autumn_load, df_winter_load], ['curtailed','grid-obtained','self-consumed'], ['spring', 'summer', 'autumn', 'winter'], title=' ')
+  plot_clustered_stacked([ df_spring_load, df_summer_load, df_autumn_load, df_winter_load], ['curtailed','grid-obtained','self-consumed'], ['spring', 'summer', 'autumn', 'winter'], title=' ', ylabel='Energy in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir+'curtailed_Load_power_allseasons'+str(scenario)+'.png', bbox_inches='tight')
 
 
 
+def plot_bar_chart_percent(eva, scenarios, seasons, save_fig_dir=None):
 
+  d_pv = {}
+  d_load = {}
+  d_grid_pv = {}
+  d_grid_load = {}
 
+  for sc in scenarios:
+    df_summer_pv, df_winter_pv, df_spring_pv, df_autumn_pv, df_summer_load, df_winter_load, df_spring_load, df_autumn_load = calculate_power_df(eva, sc, seasons)
+    df_pv = df_summer_pv + df_winter_pv + df_spring_pv + df_autumn_pv
+    df_load = df_summer_load + df_winter_load + df_spring_load + df_autumn_load
+    for index in df_pv.index:
+      df_pv.loc[index] = df_pv.loc[index]/df_pv.loc[index].sum()*100
+      df_load.loc[index] = df_load.loc[index]/df_load.loc[index].sum()*100
+    d_pv[sc] = df_pv
+    d_load[sc] = df_load
+
+  for index in df_pv.index:
+    d_grid_pv[index] = pd.DataFrame(index=scenarios, columns = df_pv.columns).fillna(0)
+    d_grid_load[index] = pd.DataFrame(index=scenarios, columns = df_load.columns).fillna(0)
+
+  for sc in scenarios:
+    for grid in df_pv.index:
+      d_grid_pv[grid].loc[sc] = d_pv[sc].loc[grid]
+      d_grid_load[grid].loc[sc] = d_load[sc].loc[grid]
+
+  # x=grid, Bars=sceanrios
+  plot_clustered_stacked([d_pv[sc] for sc in d_pv.keys()], ['curtailed','feed-in','self-consumed'], [sc for sc in d_pv.keys()], title=' ', ylabel='in %')
+
+  if save_fig_dir is not None:
+      plt.savefig(save_fig_dir+'bar_chart_pv_power_'+str(1)+'.png', bbox_inches='tight')
+
+  # x=grid, Bars=sceanrios
+  plot_clustered_stacked([d_load[sc] for sc in d_load.keys()], ['curtailed','grid-obtained','self-consumed'], [sc for sc in d_load.keys()], title=' ', ylabel='in %')
+
+  if save_fig_dir is not None:
+      plt.savefig(save_fig_dir+'bar_chart_load_power_'+str(1)+'.png', bbox_inches='tight')
+
+  # x=sceanrios, Bars=grid
+  plot_clustered_stacked([d_grid_pv[sc] for sc in d_grid_pv.keys()], ['curtailed','feed-in','self-consumed'], [sc for sc in d_grid_pv.keys()], title=' ', ylabel='in %')
+
+  if save_fig_dir is not None:
+      plt.savefig(save_fig_dir+'bar_chart_pv_power_'+str(2)+'.png', bbox_inches='tight')
+
+  # x=sceanrios, Bars=grid
+  plot_clustered_stacked([d_grid_load[sc] for sc in d_grid_load.keys()], ['curtailed','grid-obtained','self-consumed'], [sc for sc in d_grid_load.keys()], title=' ', ylabel='in %')
+
+  if save_fig_dir is not None:
+      plt.savefig(save_fig_dir+'bar_chart_load_power_'+str(2)+'.png', bbox_inches='tight')
 
 def state_of_charge(eva, net_name, n, save_fig_dir=None):
   df_soc_curtailed = pd.DataFrame(index=[net_name[7:12]], columns=[401,601,611,621,631,641]).fillna(0)

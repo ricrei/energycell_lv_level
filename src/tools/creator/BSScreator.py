@@ -14,10 +14,18 @@ class BSScreator:
         self.efficiency_storage = 0.959
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
-        self.soc_percent = 0
-        self.sizing_factor = 1.#0.6
+        self.soc_percent =  50
+        self.sizing_factor = .75
+        self.sizing_factor_bss_to_pv = .75
         #self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
         #self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3)
+
+        if 'name' in grid.time_scope.keys():
+          if grid.time_scope['name'] == 'winter':
+            self.soc_reserve_percent = 20 # in %
+            self.soc_percent = 25         # in %
+          if grid.time_scope['name'] == 'summer':
+            self.soc_percent = 75         # in %
 
   #########################################
   ### Mastermethod: choose bss position ###
@@ -41,11 +49,11 @@ class BSScreator:
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
-                            max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3), \
+                            max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.sizing_factor_bss_to_pv, \
                             soc_percent = self.soc_percent , \
                             name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
                             type = 'bss', \
-                            max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3))
+                            max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv)
       
       grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
       grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC
@@ -59,8 +67,8 @@ class BSScreator:
 
   def create_bss_at_lvbb(self, grid): 
       # create  community bss at low voltage busbar
-      max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) # [MWh] 
-      max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) # [MW]
+      max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * self.sizing_factor_bss_to_pv# [MWh] 
+      max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv# [MW]
 
       pp.create_storage(grid.net, grid.net.trafo.lv_bus[0], \
                         p_mw = 0, \
@@ -100,9 +108,9 @@ class BSScreator:
       
       i = 0
       for x in selected_buses:
-          max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * hh_per_line[i]/sum(hh_per_line) # später noch
+          max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * hh_per_line[i]/sum(hh_per_line) * self.sizing_factor_bss_to_pv# später noch
           max_e_mwh = np.nan_to_num(max_e_mwh)
-          max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * hh_per_line[i]/sum(hh_per_line) # [MW] # später anpassen
+          max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * hh_per_line[i]/sum(hh_per_line) * self.sizing_factor_bss_to_pv# [MW] # später anpassen
           max_p_mw = np.nan_to_num(max_p_mw)
           pp.create_storage(grid.net, x, \
                             p_mw = 0,\

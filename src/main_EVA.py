@@ -118,7 +118,7 @@ eva = load_scenario_data(scenarios)
 evaluation.plot_heatmap_grid_issus(eva, net_name, scenarios, x_ticklabels, n, save_fig_dir=save_fig_dir)
 '''
 # --- Curtailment: PV-Power and Load (Scenario - Grid) --- #
-#'''
+'''
 scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
 eva = load_scenario_data(scenarios)
 evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], save_fig_dir=save_fig_dir+'0')
@@ -141,18 +141,25 @@ evaluation.plot_heatmap_curtailed_power_per_season(eva, scenarios, net_name, sav
 evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], n=n, save_fig_dir=save_fig_dir+'0')
 evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6111110', '6121110', '6131110', '6141110', '6151110'], x_ticklabels = ['4', '5a', '5b', '5c HH', '5c CBSS-LV', '5c CBSS feeder'], n=n, save_fig_dir=save_fig_dir+'1')
 evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5c HH', '6', '7'], n=n, save_fig_dir=save_fig_dir+'2')
-#'''
+'''
 
 ################################
 ########## Bar charts ##########
 ################################
 # --- PV Power (curtailed, feed-in, consumed) and Load (curtailed, grid obtained, direct consumed) --- #
 '''
-scenarios = ['6111110']
+scenario = '4101110'
+seasons = ['spring','summer','autumn','winter']
+eva = load_scenario_data(scenario, seasons=seasons)
+evaluation.plot_curtailed_power(eva, scenario=scenario, seasons = seasons, save_fig_dir=save_fig_dir)
+'''
+
+#'''
+scenarios = ['4101110', '6131110', '7103310', '8133310']
 seasons = ['spring','summer','autumn','winter']
 eva = load_scenario_data(scenarios, seasons=seasons)
-evaluation.plot_curtailed_power(eva, scenario='6111110', seasons = seasons, save_fig_dir=save_fig_dir)
-'''
+evaluation.plot_bar_chart_percent(eva, scenarios=scenarios, seasons = seasons, save_fig_dir=save_fig_dir)
+#'''
 
 #################################
 ########## Other plots ##########

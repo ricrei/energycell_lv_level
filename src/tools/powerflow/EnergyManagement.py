@@ -112,7 +112,7 @@ class EnergyManagementBasic(EnergyManagementParent):
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
-    grid = curtail_controller.curtail(grid)
+    grid = curtail_controller.curtail(grid, t)
 
     return grid.net
 
@@ -174,7 +174,7 @@ class EnergyManagementStorage(EnergyManagementParent):
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
-    grid = curtail_controller.curtail(grid)
+    grid = curtail_controller.curtail(grid, t)
 
     return grid.net
 
@@ -182,6 +182,7 @@ class EnergyManagementStorage(EnergyManagementParent):
 class EnergyManagementAdvanced(EnergyManagementParent):
   def __init__(self):
     super().__init__()
+    self.time = 0
 
   def control_components(self,
                          input_dict,
@@ -243,6 +244,6 @@ class EnergyManagementAdvanced(EnergyManagementParent):
 
     grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
-    grid = curtail_controller.curtail(grid)
+    grid = curtail_controller.curtail(grid, t)
 
     return grid.net

@@ -15,8 +15,8 @@ class Curtailcontroller:
     else:
       raise ValueError('Curtailment must be 1 or 0. Defined in scenario[1].')
 
-  def curtail(self, grid):
-    grid = self.curtailment.curtail(grid)
+  def curtail(self, grid, t):
+    grid = self.curtailment.curtail(grid, t)
 
     return grid
 
@@ -102,7 +102,7 @@ class Curtailment:
     else:
       self.Curtailment_regarding_Storage = CurtailmentHomeStorage()
 
-  def curtail(self,grid):
+  def curtail(self,grid, t):
     grid.curtailed_pv_power_df = grid.net.sgen.p_mw*0 #new
     grid.curtailed_load_power_df = grid.net.load.p_mw*0 #new
 
@@ -189,13 +189,15 @@ class Curtailment:
       grid.net.load.p_mw[res_p_HH > 0] = grid.net.load.p_mw[res_p_HH > 0] * curtail_factor_trafo
       grid.net.load.q_mvar[res_p_HH > 0] = grid.net.load.q_mvar[res_p_HH > 0] * curtail_factor_trafo
       grid.curtailed_load_power_df += total_load_power_mw_df - grid.net.load.p_mw.copy()
+      if total_load_power == 0.0:
+        print('Warning: total_load_power == ' + str(total_load_power) + ' in ' + str(grid.scenario) + ' and ' + str(grid.time_scope) + ' at ' + str(t))
     
     return grid
 
 class NO_Curtailment:
   def __init__(self):
     pass
-  def curtail(self,grid):
+  def curtail(self,grid, t):
     grid.curtailed_pv_power_df = grid.net.sgen.p_mw*0 #new
     grid.curtailed_load_power_df = grid.net.load.p_mw*0 #new
     return grid
