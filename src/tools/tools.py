@@ -197,7 +197,7 @@ class VerboseOFF():
     pass
 
   def display_info(self, net_name, category, scenario, dates, string):
-    print(text1(string) + str(net_name) + ', ' + str(scenario) + ', ' + str(dates))
+    print(text1(string) + str(scenario) + ', ' + str(dates) + ', ' + str(net_name))
 
   def display_time_info(self, end, start, string):
     pass

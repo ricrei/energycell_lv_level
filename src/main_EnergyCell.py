@@ -15,9 +15,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-07 05:00:00+01:00',
-               'end_time'   : '2017-01-07 22:00:00+01:00',
-               't_freq'     : '15T',
+time_scope = { 'start_time' : '2017-05-27 09:20:00+01:00',
+               'end_time'   : '2017-05-27 09:50:00+01:00',
+               't_freq'     : '1T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -70,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope_spring
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -96,11 +96,11 @@ time_scope = time_scope_spring
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  7, # scenario number, 1-8
-  1, # PV, 0-2
+  2, # scenario number, 1-8
+  0, # PV, 0-2
   0, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
+  1, # HP, 0-5
+  1, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -133,7 +133,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 9
 ######################
 
 #############################
@@ -146,7 +146,7 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = True, # default: False
+                    save_full_data = False, # default: False
                     verbose = True)        # default: False
 
   # Run powerflow
@@ -208,7 +208,9 @@ def run_multiple_simulations(scenarios):
         e = ec.EnergyCell(net_name = net_name[net_name_i],
                           scenario = scenario_i,
                           control_parameter = control_parameter,
-                          time_scope = time_scope_i)
+                          time_scope = time_scope_i,
+                          save_full_data = False, # default: False
+                          verbose = False)         # default: False)
         e.run_pf_timeseries()
         #------------
         #e.initiate_evaluation()
@@ -228,15 +230,18 @@ def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
-                          save_full_data = True)
+                          save_full_data = False)
         e.run_pf_timeseries()
 
 def run_multiple_simulations_multiprocessing(scenarios):
     start = time.perf_counter()
 
     pool = mp.Pool(6)
-    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
-    net_names = [7, 8, 9, 10, 11]
+    #time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
+    #net_names = [7, 8, 9, 10, 11]
+    time_scope = [time_scope_summer, time_scope_spring]
+    net_names = [8, 9, 10, 11]
+
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
       results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for scenario_i in scenarios for time_scope_i in time_scope for net_name_i in net_names]
@@ -265,25 +270,25 @@ def run_output_data_conversion(scenarios):
 scenarios = [
         #[1,0,0,0,0,0,0],
         #[2,0,0,1,1,0,0],
-        [2,0,0,1,1,1,0],
+        #[2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
-        [3,1,0,0,0,1,0],
+        #[3,1,0,0,0,1,0],
         #[4,1,0,1,1,0,0],
-        [4,1,0,1,1,1,0],
+        #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
         #[6,1,2,1,1,1,0],
         #[6,1,3,1,1,0,0],
-        [6,1,3,1,1,1,0],
+        #[6,1,3,1,1,1,0],
         #[6,1,4,1,1,0,0],
-        #[6,1,4,1,1,1,0],
+        [6,1,4,1,1,1,0],
         #[6,1,5,1,1,0,0],
         #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
-        [7,1,0,3,3,1,0],
+        #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        [8,1,3,3,3,1,0],
+        #[8,1,3,3,3,1,0],
                       ]
 
 run_single_simulation()
@@ -297,22 +302,15 @@ run_single_simulation()
         #[2,0,0,1,1,1,0],
         #[3,1,0,0,0,1,0],
         #[4,1,0,1,1,1,0],
+        #[6,1,1,1,1,1,0],
+        #[6,1,2,1,1,1,0],
         #[6,1,3,1,1,1,0],
+        #[6,1,4,1,1,1,0],
+        #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,1,0],
 
+
 # next simulationsteps
-        #[2,0,0,1,1,0,0],
-        #[3,1,0,0,0,0,0],
-        #[4,1,0,1,1,0,0],
-        #[6,1,1,1,1,0,0],
-        #[6,1,1,1,1,1,0],
-        #[6,1,2,1,1,0,0],
-        #[6,1,2,1,1,1,0],
-        #[6,1,3,1,1,0,0],
-        #[6,1,4,1,1,0,0],
-        #[6,1,4,1,1,1,0],
-        #[6,1,5,1,1,0,0],
-        #[6,1,5,1,1,1,0],
-        #[7,1,0,3,3,0,0],
-        #[8,1,3,3,3,0,0],
+
+

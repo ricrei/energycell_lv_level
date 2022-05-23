@@ -71,7 +71,7 @@ class CurtailmentCommunityStorage_in_feeder:
     return p_res
 
   def curtail_storage_power(self, grid):
-    return grid
+   return grid
 
 
 class CurtailmentHomeStorage:
@@ -103,6 +103,10 @@ class Curtailment:
       self.Curtailment_regarding_Storage = CurtailmentHomeStorage()
 
   def curtail(self,grid, t):
+
+    res_s, res_p = grid.get_residualload_s_sum()
+    #print(res_s)
+
     grid.curtailed_pv_power_df = grid.net.sgen.p_mw*0 #new
     grid.curtailed_load_power_df = grid.net.load.p_mw*0 #new
 
@@ -182,6 +186,7 @@ class Curtailment:
       #print('Trafo Load')
       res_p_HH = np.concatenate((res_p_HH, res_p_HH, res_p_HH))
       total_load_power = (grid.net.load.p_mw[res_p_HH > 0].sum()**2 + grid.net.load.q_mvar[res_p_HH > 0].sum()**2)**.5
+      #print(res_s)
       total_load_power_mw_df = grid.net.load.p_mw.copy()
       curtail_power = res_s - self.trafo_power*self.sf_load
       curtail_factor_trafo = (1 - curtail_power/total_load_power)
@@ -190,7 +195,7 @@ class Curtailment:
       grid.net.load.q_mvar[res_p_HH > 0] = grid.net.load.q_mvar[res_p_HH > 0] * curtail_factor_trafo
       grid.curtailed_load_power_df += total_load_power_mw_df - grid.net.load.p_mw.copy()
       if total_load_power == 0.0:
-        print('Warning: total_load_power == ' + str(total_load_power) + ' in ' + str(grid.scenario) + ' and ' + str(grid.time_scope) + ' at ' + str(t))
+        print('Warning: total_load_power == ' + str(total_load_power) + ' in ' + str(grid.scenario) + ' and ' + str(grid.time_scope) + ' at ' + str(t) + ' in ' + str(grid.net_name))
     
     return grid
 

@@ -524,6 +524,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
 def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
   #minutes_per_week = 7*24*60
+  minutes_per_hour = 60
 
   pv_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
   load_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
@@ -537,17 +538,17 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
 
   for index in eva:
     if eva[index]['scenario'] in columns_scenarios:
-      curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].pv.sum()
-      curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].load.sum()
-      pv_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum()
-      load_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()
+      curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].pv.sum() / minutes_per_hour
+      curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].load.sum() / minutes_per_hour
+      pv_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum() / minutes_per_hour
+      load_power[eva[index]['scenario']].loc[eva[index]['net_name']] += (eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()) / minutes_per_hour
 
   curtailed_power_pv_per_cent = curtailed_power_pv/(pv_power+curtailed_power_pv)*100
   curtailed_power_load_per_cent = curtailed_power_load/(load_power+curtailed_power_load)*100
 
   # round
-  curtailed_power_pv = (curtailed_power_pv/1000).round(3)
-  curtailed_power_load = (curtailed_power_load/1000).round(3)
+  curtailed_power_pv = (curtailed_power_pv).round(3)
+  curtailed_power_load = (curtailed_power_load).round(3)
   curtailed_power_pv_per_cent = curtailed_power_pv_per_cent.round(0)
   curtailed_power_load_per_cent = curtailed_power_load_per_cent.round(2)
 

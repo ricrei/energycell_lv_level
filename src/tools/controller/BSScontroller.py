@@ -422,7 +422,6 @@ class BSS_P_control_grid_fid(BSS_control):
       return grid.net.storage  
    
   def pcontrol_trafo_charge(self, grid, t): #pcontrol(self, grid, t): #t
-  
       bss = grid.net.storage
 
       p_mw_bss = bss.p_mw
@@ -448,7 +447,7 @@ class BSS_P_control_grid_fid(BSS_control):
           p_total_bss = p_res - p_trafo_max
          
           # damping:
-          if free_capacity.sum() == 0.0:
+          if free_capacity.sum() <= 0.0:
               damping_faktor = np.zeros(len(bss)) 
           else:
               damping_faktor = free_capacity / (free_capacity.sum())

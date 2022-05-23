@@ -191,7 +191,7 @@ class Grid:
     q_res = total_load_q - self.net.sgen.q_mvar.sum() + self.net.storage['q_mvar'].sum()
 
     s_res = (p_res**2 + q_res**2)**(.5)
-    if p_res < 0:
+    if p_res <= 0:
       s_res = -s_res
 
     return s_res, p_res
