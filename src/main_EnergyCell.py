@@ -15,9 +15,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-27 09:20:00+01:00',
-               'end_time'   : '2017-05-27 09:50:00+01:00',
-               't_freq'     : '1T',
+time_scope = { 'start_time' : '2017-01-06 00:00:00+01:00',
+               'end_time'   : '2017-01-07 00:00:00+01:00',
+               't_freq'     : '20T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -70,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope_winter
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -96,9 +96,9 @@ time_scope = time_scope_winter
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  2, # scenario number, 1-8
-  0, # PV, 0-2
-  0, # BSS, 0-5
+  6, # scenario number, 1-8
+  1, # PV, 0-2
+  3, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
   1, # Curtailment, 0/1
@@ -111,7 +111,38 @@ scenario = [
 # PV_mod: qu, cos_phi
 # PV_cos_phi: 0.9 - 1
 control_parameter = {
-  'PV_cos_phi' : .9}
+  'PV_cos_phi' : .9,
+  'BSS_efficiency_AC2Bat' : 0.953,
+  'BSS_efficiency_Bat2AC' : 0.955,
+  'BSS_efficiency_storage' : 0.959,
+  'BSS_start_soc_percent_winter' : 25,
+  'BSS_start_soc_percent_summer' : 75,
+  'BSS_start_soc_percent'        : 50,
+  'BSS_sizing_factor_power_to_capacity' : .75,
+  'BSS_sizing_factor_bss_to_pv' : .75,
+  'BSS_soc_reserve_percent_winter' : 20,
+  'EV_usable_c_bat' : 100,
+  'EV_start_soc' : 100,
+  'EV_charging_power' : .011,     # in MW
+  'EV_charging_efficiency' : .9,  # 0-1
+  'EV_direct_charge_limit' : 80,  # in %
+  'EV_linear_charge_limit' : 90,
+  'EV_linear_charge_limit_summer' : 80,
+  'HP_cos_phi' : 1,
+  'HP_t_sink' : 45,
+  'HP_t_ground_source' : 8,
+  'HP_TES_max_capacity_mwh' : .0325,
+  'HP_building_capacity_mwh' : .014,
+  'HP_TES_start_soc' : 0.5, # 0-1
+  'HP_TES_start_soc_winter' : 0.25, # 0-1
+  'HP_TES_start_soc_summer' : 0.75, # 0-1
+  'HP_TES_loss_per_s' : 0.04 / 86400,   #4% per day / 86400
+  'HP_max_p_kw': 0.012, # in MW
+  'HP_upper_TES_reserve': 1., # default = 1
+  'HP_lower_TES_reserve': 0, # default = 0
+  'HP_upper_TES_reserve_summer': .5, # default = 1
+  'HP_lower_TES_reserve_winter': .1, # default = 0
+}
 
 ############################
 
@@ -133,7 +164,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 9
+net_number = 8
 ######################
 
 #############################
@@ -150,7 +181,7 @@ def run_single_simulation():
                     verbose = True)        # default: False
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()

@@ -147,8 +147,15 @@ class EvaluationAllCases():
     return sum_v_under, sum_v_over, v_events, sum_ll, ll_events, sum_tl, tl_events
 
   def calculate_aggregated_curtailed_power(self, output_dir):
-    curtailed_power_load = self.read_data(output_dir+'curtailed_power_load_MW.csv').sum(axis=1)
-    curtailed_power_pv = self.read_data(output_dir+'curtailed_power_pv_MW.csv').sum(axis=1)
+    #curtailed_power_load = self.read_data(output_dir+'curtailed_power_load_MW.csv').sum(axis=1)
+    #curtailed_power_pv = self.read_data(output_dir+'curtailed_power_pv_MW.csv').sum(axis=1)
+    curtailed_power = self.read_data(output_dir+'curtailed_power_MW.csv')
+
+    curtailed_power_pv = pd.DataFrame(columns=self.curtailed_power.columns, index=self.curtailed_power.index).fillna(0)
+    curtailed_power_load = pd.DataFrame(columns=self.curtailed_power.columns, index=self.curtailed_power.index).fillna(0)
+    curtailed_power_pv[self.curtailed_power >= 0] = self.curtailed_power[self.curtailed_power >= 0].sum(axis=1)
+    curtailed_power_load[self.curtailed_power < 0] = -self.curtailed_power[self.curtailed_power < 0].sum(axis=1)
+
     df = pd.DataFrame()
     df['load'] = curtailed_power_load
     df['pv'] = curtailed_power_pv

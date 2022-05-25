@@ -5,18 +5,13 @@ import tools.tools as tt
 
 class HPcreator:
 
-  def __init__(self, inputfolder):
+  def __init__(self, inputfolder, control_parameter):
         self.inputfolder = inputfolder
         self.hp_data_file = self.inputfolder + '13_hp_short.pbz2'
         self.hp = tt.decompress_pickle(self.hp_data_file)
         self.hp_para = {}
         #self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
         self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]
-        #self.hp_para['hp_max_p_kw'] = 10
-        #self.hp_para['hp_cop'] = 3
-        #self.hp_para['hp_max_capacity_mwh'] = 0.045
-        #self.hp_para['hp_soc_mwh'] = 0.005	# start SOC
-        #self.hp_para['hp_self_dis_per_day'] = 0.1 # percent per day ???
 
   ###########################################
   ### Create Loads at each bus for all HP ###
@@ -37,10 +32,6 @@ class HPcreator:
                              type='hp_'+self.hp_para['hp_types'][index%len(self.hp_para['hp_types'])])
 
       #create columns for HPs grid.net.load
-      #grid.net.load['hp_max_capacity_mwh'] = self.hp_para['hp_max_capacity_mwh']
-      #grid.net.load['hp_soc_mwh'] = self.hp_para['hp_soc_mwh']
-      #grid.net.load['hp_self_dis_per_day'] = self.hp_para['hp_self_dis_per_day']
-      #grid.net.load['hp_max_p_w'] = 0.01
       grid.net.load['hp_cop'] = np.nan#4
       grid.net.load['hp_demand_th'] = np.nan
       grid.net.load['hp_hp_th'] = np.nan

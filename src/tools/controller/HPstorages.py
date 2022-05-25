@@ -12,7 +12,7 @@ import numpy as np
 class HPstorages():
     """ HP-Storage creates and controls HP-Storage. """
 
-    def __init__(self, grid):
+    def __init__(self, grid, control_parameter):
         #print("Init HP-Storage")
         self.hp_storages = pd.DataFrame({
             'name': [],
@@ -24,29 +24,30 @@ class HPstorages():
             })
 
         self.hp_stor_para = {'hp_max_capacity_mwh': 0,
-                             'hp_TES_max_capacity_mwh': .0325,
+                             'hp_TES_max_capacity_mwh': control_parameter['HP_TES_max_capacity_mwh'],#.0325,
                              'hp_building_capacity_mwh': 0.,
-                             'hp_start_soc': 0.5, # 0-1
-                             'hp_loss_per_s': 0.04 / 86400,   #4% per day / 86400s
-                             'hp_max_p_kw': 0.012, # in MW
+                             'hp_start_soc': control_parameter['HP_TES_start_soc'], #0.5, # 0-1
+                             'hp_loss_per_s': control_parameter['HP_TES_loss_per_s'], #0.04 / 86400,   #4% per day / 86400s
+                             'hp_max_p_kw': control_parameter['HP_max_p_kw'], #0.012, # in MW
                              'hp_cop': np.nan,
-                             'upper_tes_reserve': 1., # default = 1
-                             'lower_tes_reserve': 0} # default = 0
+                             'upper_tes_reserve': control_parameter['HP_upper_TES_reserve'], #1., # default = 1
+                             'lower_tes_reserve': control_parameter['HP_lower_TES_reserve']  #0 # default = 0
+                            }
 
         if 'name' in grid.time_scope.keys():
-         if grid.time_scope['name'] in ['winter', 'spring', 'autumn']:
-          self.hp_stor_para['hp_building_capacity_mwh'] = .014
-          self.hp_stor_para['lower_tes_reserve'] = .1 # in 0-1
-          self.hp_stor_para['hp_start_soc'] = .25
-         elif grid.time_scope['name'] == 'summer':
-          self.hp_stor_para['upper_tes_reserve'] = .5 # in 0-1
-          self.hp_stor_para['hp_start_soc'] = .75
+          if grid.time_scope['name'] in ['winter', 'spring', 'autumn']:
+            self.hp_stor_para['hp_building_capacity_mwh'] = control_parameter['HP_building_capacity_mwh']#.014
+            if grid.time_scope['name'] in ['winter']:
+              self.hp_stor_para['lower_tes_reserve'] = control_parameter['HP_lower_TES_reserve_winter'] #.1 # in 0-1
+              self.hp_stor_para['hp_start_soc'] = control_parameter['HP_TES_start_soc_winter']#.25
+          elif grid.time_scope['name'] == 'summer':
+            self.hp_stor_para['upper_tes_reserve'] = control_parameter['HP_upper_TES_reserve_summer'] #.5 # in 0-1
+            self.hp_stor_para['hp_start_soc'] = control_parameter['HP_TES_start_soc_summer']#.75
 
 
         self.hp_stor_para['hp_max_capacity_mwh'] = self.hp_stor_para['hp_building_capacity_mwh'] + self.hp_stor_para['hp_TES_max_capacity_mwh']
         
         self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
-
 
     def create_hp_storages(self, grid):
         '''

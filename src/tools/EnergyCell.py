@@ -49,6 +49,7 @@ class EnergyCell():
 
         self.controls = self.scenario_interpreter(scenario)
         self.net_name = net_name
+        self.control_parameter = control_parameter
 
         self.time_scope = time_scope
         self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
@@ -61,9 +62,9 @@ class EnergyCell():
 
         self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
         self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
-        self.hp_creator = HPcreator(self.input_data_handler.inputfolder)
-        self.ev_creator = EVcreator(self.input_data_handler.inputfolder)
-        self.bss_creator = BSScreator(self.grid)
+        self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter)
+        self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
+        self.bss_creator = BSScreator(self.grid, self.control_parameter)
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
@@ -75,14 +76,14 @@ class EnergyCell():
         self.grid.get_label_of_each_component()
         self.grid.get_load_sgen_index_per_feeder()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control=self.controls['pv'], cos_phi=control_parameter['PV_cos_phi'])
-        self.ev_controller = EVcontroller(grid=self.grid, control=self.controls['ev'], inputfolder=self.input_data_handler.inputfolder)
-        self.hp_controller = HPcontroller(grid=self.grid, control=self.controls['hp'])
-        self.bss_controller = BSScontroller(grid=self.grid, control=self.controls['bss'])
+        self.pv_controller = PVcontroller(grid=self.grid, control=self.controls['pv'], cos_phi=self.control_parameter['PV_cos_phi'])
+        self.ev_controller = EVcontroller(grid=self.grid, control=self.controls['ev'], inputfolder=self.input_data_handler.inputfolder, control_parameter=self.control_parameter)
+        self.hp_controller = HPcontroller(grid=self.grid, control=self.controls['hp'], control_parameter=self.control_parameter)
+        self.bss_controller = BSScontroller(grid=self.grid, control=self.controls['bss'], control_parameter=self.control_parameter)
 
         self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = self.controls['curtailment'])
 
-        self.output_data_handler = OutputDataHandler(save_full_data)
+        self.output_data_handler = OutputDataHandler(save_full_data, self.control_parameter)
         self.output_dir = self.output_data_handler.create_output_dir(
                                          self.net_name,
                                          self.scenario,

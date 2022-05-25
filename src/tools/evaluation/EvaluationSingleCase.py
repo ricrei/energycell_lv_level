@@ -32,17 +32,19 @@ class EvaluationSingleCase():
     self.ll = self.read_data(self.output_dir+'res_line_load_percent.csv')
     self.tl = self.read_data(self.output_dir+'res_trafo_load_percent.csv')
     self.power = self.read_data(self.output_dir+'power_total_MW.csv')
-    self.curtailed_power_pv = self.read_data(self.output_dir+'curtailed_power_pv_MW.csv')
-    self.curtailed_power_load = self.read_data(self.output_dir+'curtailed_power_load_MW.csv')
+    self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
+    self.curtailed_power_pv = pd.DataFrame(columns=self.curtailed_power.columns, index=self.curtailed_power.index).fillna(0)
+    self.curtailed_power_load = pd.DataFrame(columns=self.curtailed_power.columns, index=self.curtailed_power.index).fillna(0)
+    self.curtailed_power_pv[self.curtailed_power >= 0] = self.curtailed_power[self.curtailed_power >= 0]
+    self.curtailed_power_load[self.curtailed_power < 0] = -self.curtailed_power[self.curtailed_power < 0]
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
-
+    self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
+    self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
     if save_full_data == True:
-      self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
       self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
-      self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
       self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
       self.ev_soc = self.read_data(self.output_dir+'ev_soc.csv')
       self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
@@ -636,9 +638,9 @@ class EvaluationSingleCase():
 
 
   def energyflow(self):
-    pass
+    #pass
 
-    '''
+    #'''
     load_index = [str(i) for i in self.grid.load_index]
     hp_index = [str(i) for i in self.grid.hp_index]
     ev_index = [str(i) for i in self.grid.ev_index]
@@ -653,18 +655,117 @@ class EvaluationSingleCase():
     hh_load = self.load_p[load_index]
     # PV per HH
     pv = self.pv_p
+    bss = self.storage_p
+    bss_neg = pd.DataFrame(index=bss.index, columns=bss.columns).fillna(0)
+    bss_pos = pd.DataFrame(index=bss.index, columns=bss.columns).fillna(0)
+    bss_neg[bss < 0] = bss[bss < 0]
+    bss_pos[bss > 0] = bss[bss > 0]
+    losses = self.losses_p.sum(axis=1)
 
     # residual load per HH
-    dE_HH = hh_load + hp_load + ev_load - pv
-    print(dE_HH)
+    dE_HH = hh_load + hp_load + ev_load - pv + bss
+    dE_LV = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns)
+    for c in dE_LV.columns:
+      dE_LV[c] = dE_HH.sum(axis=1) + losses
 
+    # Sum of all PV excess
+    sum_PV_LV_excess = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns).fillna(0)
+    sum_Con_LV_lack = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns).fillna(0)
+    for c in dE_LV.columns:
+      sum_PV_LV_excess[c] = dE_HH[dE_HH < 0].sum(axis=1)
+      sum_Con_LV_lack[c] = dE_HH[dE_HH >= 0].sum(axis=1)
+
+    # create
+    Ec_MV = pd.DataFrame(index=pv.index, columns=pv.columns)#.fillna(0)
+    Ec_LV = pd.DataFrame(index=pv.index, columns=pv.columns)#.fillna(0)
+    Ec_self = pd.DataFrame(index=pv.index, columns=pv.columns)#.fillna(0)
+    Eg_LV = pd.DataFrame(index=pv.index, columns=pv.columns)#.fillna(0)
+    Eg_MV = pd.DataFrame(index=pv.index, columns=pv.columns)#.fillna(0)
+    Ecur_load = self.curtailed_power_load
+    Ecur_pv = self.curtailed_power_pv
+
+
+    # if PV gen greater than con -> calculate self consumption
+    Ec_self[dE_HH < 0] = hh_load[dE_HH < 0] + hp_load[dE_HH < 0] + ev_load[dE_HH < 0] + bss_pos[dE_HH < 0]
+    Ec_MV[dE_HH < 0] = 0
+    Ec_LV[dE_HH < 0] = 0
+    Eg_MV[(dE_HH < 0) & (dE_LV >= 0)] = 0
+    Eg_LV[(dE_HH < 0) & (dE_LV >= 0)] = dE_HH[(dE_HH < 0) & (dE_LV >= 0)]
+    Eg_MV[(dE_HH < 0) & (dE_LV < 0)] = dE_HH[(dE_HH < 0) & (dE_LV < 0)] / sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] * dE_LV[(dE_HH < 0) & (dE_LV < 0)]
+    Eg_LV[(dE_HH < 0) & (dE_LV < 0)] = dE_HH[(dE_HH < 0) & (dE_LV < 0)] / sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] * (sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] - dE_LV[(dE_HH < 0) & (dE_LV < 0)])
+
+    # if PV gen lower than con -> calculate self consumption
+    Ec_self[dE_HH >= 0] = - pv[dE_HH >= 0] + bss_neg[dE_HH >= 0]
+    Ec_MV[(dE_HH) >= 0 & (dE_LV >= 0)] = dE_HH[(dE_HH) >= 0 & (dE_LV >= 0)] / sum_Con_LV_lack[(dE_HH) >= 0 & (dE_LV >= 0)] * dE_LV[(dE_HH) >= 0 & (dE_LV >= 0)]
+    Ec_LV[(dE_HH) >= 0 & (dE_LV >= 0)] = dE_HH[(dE_HH) >= 0 & (dE_LV >= 0)] / sum_Con_LV_lack[(dE_HH) >= 0 & (dE_LV >= 0)] * (sum_Con_LV_lack[(dE_HH) >= 0 & (dE_LV >= 0)] - dE_LV[(dE_HH) >= 0 & (dE_LV >= 0)])
+    Ec_MV[(dE_HH >= 0) & (dE_LV < 0)] = 0
+    Ec_LV[(dE_HH >= 0) & (dE_LV < 0)] = dE_HH[(dE_HH >= 0) & (dE_LV < 0)]
+    Eg_MV[dE_HH >= 0] = 0
+    Eg_LV[dE_HH >= 0] = 0
+
+    # Bilanzcheck
+    #print((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (hh_load + hp_load + ev_load + bss_pos)))
+    #print((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (hh_load + hp_load + ev_load + bss_pos)))
+    #print((abs(Ec_self) + abs(Eg_MV) + abs(Eg_LV) - (pv - bss_neg)))
+
+    E = pd.DataFrame(index=Ec_self.columns)
+
+    E['Ec_self'] = abs(Ec_self).sum()
+    E['Ec_MV'] = Ec_MV.sum()
+    E['Ec_LV'] = Ec_LV.sum()
+    E['Eg_MV'] = abs(Eg_MV).sum()
+    E['Eg_LV'] = abs(Eg_LV).sum()
+    E['Ecur_pv'] = Ecur_pv.sum()
+    E['Ecur_load'] = Ecur_load.sum()
+    #'''
+    # Plot PV
+    E_barplot1 = E
+    E_barplot1['Eg_LV'] +=  E_barplot1['Ec_self']
+    E_barplot1['Eg_MV'] +=  E_barplot1['Eg_LV']
+    E_barplot1['Ecur_pv'] +=  E_barplot1['Eg_MV']
+    for i in E_barplot1.index: # plot in percent
+      E_barplot1.loc[i] = E_barplot1.loc[i] / E_barplot1['Ecur_pv'].loc[i] * 100
+    s4 = sns.barplot(x = E.index, y = 'Ecur_pv', data = E_barplot1, color = 'yellow')
+    s3 = sns.barplot(x = E.index, y = 'Eg_MV', data = E_barplot1, color = 'green')
+    s2 = sns.barplot(x = E.index, y = 'Eg_LV', data = E_barplot1, color = 'blue')
+    s1 = sns.barplot(x = E.index, y = 'Ec_self', data = E_barplot1, color = 'red')
+    Ecur_pv_bar = mpatches.Patch(color='yellow', label='curtailed')
+    Eg_MV_bar = mpatches.Patch(color='green', label='MV feed-in')
+    Eg_LV_bar = mpatches.Patch(color='blue', label='LV consumed')
+    Ec_self_bar = mpatches.Patch(color='red', label='self consumed')
+    plt.legend(handles=[Ecur_pv_bar, Eg_MV_bar, Eg_LV_bar, Ec_self_bar])
+    plt.show()
+
+    # Plot load
+    E_barplot2 = E
+    E_barplot2['Ec_LV'] +=  E_barplot2['Ec_self']
+    E_barplot2['Ec_MV'] +=  E_barplot2['Ec_LV']
+    E_barplot2['Ecur_load'] +=  E_barplot2['Ec_MV']
+    for i in E_barplot2.index: # plot in percent
+      E_barplot2.loc[i] = E_barplot2.loc[i] / E_barplot1['Ecur_load'].loc[i] * 100
+    s4 = sns.barplot(x = E.index, y = 'Ecur_load', data = E_barplot2, color = 'yellow')
+    s3 = sns.barplot(x = E.index, y = 'Ec_MV', data = E_barplot2, color = 'green')
+    s2 = sns.barplot(x = E.index, y = 'Ec_LV', data = E_barplot2, color = 'blue')
+    s1 = sns.barplot(x = E.index, y = 'Ec_self', data = E_barplot2, color = 'red')
+    Ecur_load_bar = mpatches.Patch(color='yellow', label='curtailed')
+    Ec_MV_bar = mpatches.Patch(color='green', label='MV grid obtained')
+    Ec_LV_bar = mpatches.Patch(color='blue', label='LV grid obtained')
+    Ec_self_bar = mpatches.Patch(color='red', label='self consumed')
+    plt.legend(handles=[Ecur_load_bar, Ec_MV_bar, Ec_LV_bar, Ec_self_bar])
+    plt.show()
+    #'''
+
+    # To-DO
+    ## flexibility power tracken und aus verbrauch rausrechnen
+
+    '''
     fig, ax = plt.subplots()
     ax.plot(dE_HH)
+    ax.plot(self.tl/100)
     ax.set_xlabel('Time')
     ax.set_ylabel('dP of each HH in MW')
     plt.show()
     '''
-
 
 
 

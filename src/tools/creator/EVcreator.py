@@ -5,10 +5,10 @@ import tools.tools as tt
 
 class EVcreator:
 
-  def __init__(self, inputfolder):
+  def __init__(self, inputfolder, control_parameter):
     self.inputfolder = inputfolder
-    self.usable_c_bat = 100 # in %
-    self.ev_start_soc = 100 # in %
+    self.usable_c_bat = control_parameter['EV_usable_c_bat']#100 # in %
+    self.ev_start_soc = control_parameter['EV_start_soc']#100 # in %
 
   ###########################################
   ### Create Loads at each bus for all HP ###

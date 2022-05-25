@@ -5,18 +5,18 @@ import tools.tools as tt
 
 class EVcontroller:
 
-  def __init__(self, grid, control='direct', inputfolder=None):
+  def __init__(self, grid, control='direct', inputfolder=None, control_parameter=None):
       self.inputfolder = inputfolder
       self.control = control
       ### define ev parameter ###
-      self.ev_parameter = {'charging_power' : .011,     # in MW
-                           'charging_efficiency' : .9,  # 0-1
-                           'direct_charge_limit' : 80,  # in %
-                           'linear_charge_limit' : 90}  # in %
+      self.ev_parameter = {'charging_power' : control_parameter['EV_charging_power'],     # in MW
+                           'charging_efficiency' : control_parameter['EV_charging_efficiency'],  # 0-1
+                           'direct_charge_limit' : control_parameter['EV_direct_charge_limit'],  # in %
+                           'linear_charge_limit' : control_parameter['EV_linear_charge_limit']}  # in %
 
       if 'name' in grid.time_scope.keys():
         if grid.time_scope['name'] == 'summer':
-          self.ev_parameter['linear_charge_limit'] = 80 # in %
+          self.ev_parameter['linear_charge_limit'] = control_parameter['EV_linear_charge_limit_summer'] # in %
 
       ### load input data ###
       if (grid.category == 'rural') or (grid.category == 'village'):

@@ -6,26 +6,29 @@ from tools.controller.BSScontroller import BSScontroller
 
 class BSScreator:
 
-  def __init__(self, grid):
+  def __init__(self, grid, control_parameter):
         self.bss_para = {}
         self.net_name = grid.net_name
-        self.efficiency_AC2Bat = 0.953
-        self.efficiency_Bat2AC = 0.955
-        self.efficiency_storage = 0.959
+        self.efficiency_AC2Bat = control_parameter['BSS_efficiency_AC2Bat']#0.953
+        self.efficiency_Bat2AC = control_parameter['BSS_efficiency_Bat2AC']#0.955
+        self.efficiency_storage = control_parameter['BSS_efficiency_storage']#0.959
         self.soc_max_brutto = 80
         self.soc_min_brutto = 20
-        self.soc_percent =  50
-        self.sizing_factor = .75
-        self.sizing_factor_bss_to_pv = .75
-        #self.i_max_a = 270 # wahl i_max entsprechend des gewählten netzes implementieren. Auch für Kerber?
-        #self.p_max_feeder_mw = self.i_max_a * grid.net.trafo.vn_lv_kv.loc[0] * 1.1 * 10**(-3)
+        self.soc_percent =  control_parameter['BSS_start_soc_percent']#50
+        self.soc_percent_winter =  control_parameter['BSS_start_soc_percent_winter']#25
+        self.soc_percent_summer =  control_parameter['BSS_start_soc_percent_summer']#75
+        self.sizing_factor = control_parameter['BSS_sizing_factor_power_to_capacity']#.75
+        self.sizing_factor_bss_to_pv = control_parameter['BSS_sizing_factor_bss_to_pv']#.75
 
         if 'name' in grid.time_scope.keys():
           if grid.time_scope['name'] == 'winter':
-            self.soc_reserve_percent = 20 # in %
-            self.soc_percent = 25         # in %
+            self.soc_percent = self.soc_percent_winter         # in %
           if grid.time_scope['name'] == 'summer':
-            self.soc_percent = 75         # in %
+            self.soc_percent = self.soc_percent_summer         # in %
+
+        # safe storage place in stored csv
+        if grid.scenario[0] in [1 ,2, 3, 4, 5, 7]:
+          self.soc_percent = np.nan
 
   #########################################
   ### Mastermethod: choose bss position ###

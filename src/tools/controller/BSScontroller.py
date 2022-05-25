@@ -7,7 +7,7 @@ import pytz
 
 class BSScontroller:
 
-  def __init__(self, grid, control):      
+  def __init__(self, grid, control, control_parameter):      
       #Choice of temporal parameters and reserved soc for linear charge:
       self.timedelta_charging_delay = 0.125#2 #[h] Sommer 12 %
       self.timedelta_charging_delay_winter = 0.125#1 #[h] Versuch: %
@@ -16,7 +16,7 @@ class BSScontroller:
 
       if 'name' in grid.time_scope.keys():
         if grid.time_scope['name'] == 'winter':
-          self.soc_reserve_percent = 20 # in %
+          self.soc_reserve_percent = control_parameter['BSS_soc_reserve_percent_winter'] # in %
       
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
       self.busses_num = len(grid.component_buses.index)

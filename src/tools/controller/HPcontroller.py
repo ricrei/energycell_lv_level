@@ -5,24 +5,24 @@ from tools.controller.HPstorages import HPstorages
 
 class HPcontroller:
 
-  def __init__(self, grid, control):
+  def __init__(self, grid, control, control_parameter):
       self.control = control
-      self.cos_phi = 1#.95
+      self.cos_phi = control_parameter['HP_cos_phi']#1#.95
       self.tan_phi = np.tan(np.arccos(self.cos_phi))
       
       if (self.control != None):
         if self.control == 'direct':
-          self.P_controller = HP_P_control_direct(grid)
+          self.P_controller = HP_P_control_direct(grid, control_parameter)
         elif self.control == 'household-oriented_feed-in_damping':
-          self.P_controller = HP_P_control_hh_fid(grid)
+          self.P_controller = HP_P_control_hh_fid(grid, control_parameter)
         elif self.control == 'grid-oriented_feed-in_damping':
-          self.P_controller = HP_P_control_grid_fid(grid)
+          self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
         elif self.control == 'evu_lock':
-          self.P_controller = HP_P_control_evu_lock(grid)
+          self.P_controller = HP_P_control_evu_lock(grid, control_parameter)
         elif self.control == 'residual_load_driven':
-          self.P_controller = HP_P_control_resi_load_driven(grid)
+          self.P_controller = HP_P_control_resi_load_driven(grid, control_parameter)
       else:
-        self.P_controller =  HP_P_control_no_hp(grid)
+        self.P_controller =  HP_P_control_no_hp(grid, control_parameter)
 
   def get_active_power(self, grid, d, t):
       return self.P_controller.pcontrol(grid, d, t)
@@ -41,14 +41,14 @@ class HPcontroller:
 
 ### Parent class HP_P-Controll ###
 class HP_P_control:
-  def __init__(self, grid):
+  def __init__(self, grid, control_parameter):
       self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
-      self.HP_storages = HPstorages(grid)
+      self.HP_storages = HPstorages(grid, control_parameter)
       self.HP_storages.create_hp_storages(grid)
 
       #set static sink-temprature und calc delta_T
-      self.t_sink = 45     ###buidling-side
-      self.t_ground_source = 8
+      self.t_sink = control_parameter['HP_t_sink']     ###buidling-side
+      self.t_ground_source = control_parameter['HP_t_ground_source']
       self.delta_T_ground = self.t_sink - self.t_ground_source
       self.COP_ground = 8.77 - 0.15 * self.delta_T_ground + 0.000734 * self.delta_T_ground**2
 
@@ -101,8 +101,8 @@ class HP_P_control:
 ### no HP ###
 class HP_P_control_no_hp(HP_P_control):
 
-  def __init__(self, grid):
-      super().__init__(grid)
+  def __init__(self, grid, control_parameter):
+      super().__init__(grid, control_parameter)
 
   def pcontrol_direct_charge(self, grid, d, t):
       HP_P_control.pcontrol(self)
@@ -115,8 +115,8 @@ class HP_P_control_no_hp(HP_P_control):
 ### direct ###
 class HP_P_control_direct(HP_P_control):
 
-  def __init__(self, grid):
-      super().__init__(grid)
+  def __init__(self, grid, control_parameter):
+      super().__init__(grid, control_parameter)
 
   def pcontrol_direct_charge(self, grid, d, t):
       super().pcontrol_direct_charge(grid, d, t)
@@ -131,8 +131,8 @@ class HP_P_control_direct(HP_P_control):
 ### household-oriented_feed-in_damping ###
 class HP_P_control_hh_fid(HP_P_control):
 
-  def __init__(self, grid):
-      super().__init__(grid)
+  def __init__(self, grid, control_parameter):
+      super().__init__(grid, control_parameter)
             
   def pcontrol_linear_charge(self, grid, d, t):      
       #get thermal demand from timeseries
@@ -225,8 +225,8 @@ class HP_P_control_hh_fid(HP_P_control):
 ### grid-oriented_feed-in_damping ###
 class HP_P_control_grid_fid(HP_P_control):
 
-  def __init__(self, grid):
-      super().__init__(grid)
+  def __init__(self, grid, control_parameter):
+      super().__init__(grid, control_parameter)
       self.lower_tes_reserve = self.HP_storages.hp_stor_para['lower_tes_reserve'] * grid.net.load.loc[grid.hp_index]['hp_max_capacity_mwh'] 
       self.upper_tes_reserve = self.HP_storages.hp_stor_para['upper_tes_reserve'] * grid.net.load.loc[grid.hp_index]['hp_max_capacity_mwh']
 
@@ -424,8 +424,8 @@ class HP_P_control_grid_fid(HP_P_control):
 ### based EnWG $14a EVU-Lock  ###
 class HP_P_control_evu_lock(HP_P_control):
   
-    def __init__(self, grid):
-        super().__init__(grid)
+    def __init__(self, grid, control_parameter):
+        super().__init__(grid, control_parameter)
 
     def pcontrol_direct_charge(self, grid, d, t):
         super().pcontrol_direct_charge(grid, d, t)
@@ -496,8 +496,8 @@ class HP_P_control_evu_lock(HP_P_control):
 ### state of the art residual_load driven hp and storage ###
 class HP_P_control_resi_load_driven(HP_P_control):
 
-    def __init__(self, grid):
-        super().__init__(grid)
+    def __init__(self, grid, control_parameter):
+        super().__init__(grid, control_parameter)
 
     def pcontrol_direct_charge(self, grid, d, t):
         super().pcontrol_direct_charge(grid, d, t)
