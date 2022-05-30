@@ -29,6 +29,7 @@ class EVcreator:
       grid.net.load['ev_c_bat'] = np.nan
       grid.net.load['ev_soc'] = np.nan
       grid.net.load['ev_parking'] = np.nan
+      grid.net.load['p_mw_flex'] = 0
 
       # create hp-loads at each bus 
       for index in grid.component_buses.index:

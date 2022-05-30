@@ -15,9 +15,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-06 00:00:00+01:00',
-               'end_time'   : '2017-01-07 00:00:00+01:00',
-               't_freq'     : '20T',
+time_scope = { 'start_time' : '2017-01-07 00:00:00+01:00',
+               'end_time'   : '2017-01-08 00:00:00+01:00',
+               't_freq'     : '30T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -70,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -96,11 +96,11 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  6, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
   3, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
+  3, # HP, 0-5
+  3, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -108,8 +108,6 @@ scenario = [
 
 ###########################
 ### Controller parameter ###
-# PV_mod: qu, cos_phi
-# PV_cos_phi: 0.9 - 1
 control_parameter = {
   'PV_cos_phi' : .9,
   'BSS_efficiency_AC2Bat' : 0.953,
@@ -133,17 +131,16 @@ control_parameter = {
   'HP_t_ground_source' : 8,
   'HP_TES_max_capacity_mwh' : .0325,
   'HP_building_capacity_mwh' : .014,
-  'HP_TES_start_soc' : 0.5, # 0-1
+  'HP_TES_start_soc' : .5, # 0-1
   'HP_TES_start_soc_winter' : 0.25, # 0-1
   'HP_TES_start_soc_summer' : 0.75, # 0-1
   'HP_TES_loss_per_s' : 0.04 / 86400,   #4% per day / 86400
   'HP_max_p_kw': 0.012, # in MW
   'HP_upper_TES_reserve': 1., # default = 1
-  'HP_lower_TES_reserve': 0, # default = 0
+  'HP_lower_TES_reserve': 0., # default = 0 
   'HP_upper_TES_reserve_summer': .5, # default = 1
   'HP_lower_TES_reserve_winter': .1, # default = 0
 }
-
 ############################
 
 ######################
@@ -164,7 +161,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 7
 ######################
 
 #############################
@@ -181,7 +178,7 @@ def run_single_simulation():
                     verbose = True)        # default: False
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -189,7 +186,7 @@ def run_single_simulation():
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -206,10 +203,11 @@ def run_single_simulation():
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_curtailed_power()
+  #e.eva.plot_flex_power()
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
-  #e.eva.energyflow()
+  e.eva.energyflow_on_HH_level()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
   #e.eva.calculate_resi_week()
@@ -268,11 +266,8 @@ def run_multiple_simulations_multiprocessing(scenarios):
     start = time.perf_counter()
 
     pool = mp.Pool(6)
-    #time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
-    #net_names = [7, 8, 9, 10, 11]
-    time_scope = [time_scope_summer, time_scope_spring]
-    net_names = [8, 9, 10, 11]
-
+    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
+    net_names = [7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
       results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for scenario_i in scenarios for time_scope_i in time_scope for net_name_i in net_names]
@@ -299,27 +294,27 @@ def run_output_data_conversion(scenarios):
 
 #######################
 scenarios = [
-        #[1,0,0,0,0,0,0],
+        [1,0,0,0,0,0,0],
         #[2,0,0,1,1,0,0],
-        #[2,0,0,1,1,1,0],
+        [2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
-        #[3,1,0,0,0,1,0],
+        [3,1,0,0,0,1,0],
         #[4,1,0,1,1,0,0],
-        #[4,1,0,1,1,1,0],
+        [4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
-        #[6,1,1,1,1,1,0],
+        [6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
-        #[6,1,2,1,1,1,0],
+        [6,1,2,1,1,1,0],
         #[6,1,3,1,1,0,0],
-        #[6,1,3,1,1,1,0],
+        [6,1,3,1,1,1,0],
         #[6,1,4,1,1,0,0],
         [6,1,4,1,1,1,0],
         #[6,1,5,1,1,0,0],
-        #[6,1,5,1,1,1,0],
+        [6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
-        #[7,1,0,3,3,1,0],
+        [7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        #[8,1,3,3,3,1,0],
+        [8,1,3,3,3,1,0],
                       ]
 
 run_single_simulation()

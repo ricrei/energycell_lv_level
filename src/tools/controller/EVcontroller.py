@@ -217,7 +217,7 @@ class EV_P_control_grid_fid(EV_P_control):
 
       grid.net.load.loc[grid.ev_index] = ev
 
-      self.check_soc_p_mw(grid)
+      #self.check_soc_p_mw(grid)
 
       return grid.net.load.loc[grid.ev_index]
 
@@ -237,6 +237,8 @@ class EV_P_control_grid_fid(EV_P_control):
       p_total_ev = p_res - p_trafo_max
 
       ev = grid.net.load.loc[grid.ev_index]
+
+      p_mw_ev_before = ev.p_mw.copy()
 
       # max. increase of soc
       soc_increase_ref = ((self.ev_parameter['charging_power'] - ev.p_mw) * self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) * 1000 / ev.ev_c_bat * 100 # 1000 -> (MW->kW), 100 -> in %
@@ -262,8 +264,10 @@ class EV_P_control_grid_fid(EV_P_control):
       ev.ev_soc += soc_increase
       ev.p_mw   += soc_increase * ev.ev_c_bat / (self.ev_parameter['charging_efficiency'] * self.intervall_in_seconds / 3600) / 1000 / 100 # 1000 -> (MW->kW), 100 -> in %
 
+      ev.p_mw_flex = ev.p_mw - p_mw_ev_before
+
       grid.net.load.loc[grid.ev_index] = ev
 
-      self.check_soc_p_mw(grid)
+      #self.check_soc_p_mw(grid)
 
       return grid.net.load.loc[grid.ev_index]

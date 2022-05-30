@@ -64,6 +64,7 @@ class BSScreator:
       self.e_mwh_start = self.soc_percent/100 * grid.net.storage.max_e_mwh 
       grid.net.storage['e_mwh'] =  self.e_mwh_start
       grid.net.storage['max_e_mwh_brutto'] = grid.net.storage.max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100)
+      grid.net.storage['p_mw_flex'] =  0
 
       return grid
       
@@ -87,6 +88,8 @@ class BSScreator:
       self.e_mwh_start = self.soc_percent/100 * grid.net.storage.max_e_mwh 
       grid.net.storage['e_mwh'] =  self.e_mwh_start ###
       grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) # anpassen
+      grid.net.storage['p_mw_flex'] =  0
+
       return grid
 
   def create_bss_at_selected_buses(self, grid): 
@@ -129,6 +132,8 @@ class BSScreator:
       grid.net.storage['efficiency_storage'] = self.efficiency_storage
       self.e_mwh_start = self.soc_percent/100 * grid.net.storage.max_e_mwh 
       grid.net.storage['e_mwh'] =  self.e_mwh_start
-      grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100) 
+      grid.net.storage['max_e_mwh_brutto'] = max_e_mwh / ((self.soc_max_brutto - self.soc_min_brutto)/100)
+      grid.net.storage['p_mw_flex'] =  0
+
       return grid
 

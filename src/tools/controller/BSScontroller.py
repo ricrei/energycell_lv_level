@@ -425,6 +425,7 @@ class BSS_P_control_grid_fid(BSS_control):
       bss = grid.net.storage
 
       p_mw_bss = bss.p_mw
+      p_mw_bss_before = p_mw_bss.copy()
      
       # Current parameters of BSS:
       get_e_mwh = bss.e_mwh #self.e_mwh_start
@@ -517,6 +518,7 @@ class BSS_P_control_grid_fid(BSS_control):
       bss.e_mwh = self.calculate_stored_energy(grid, p_mw_stored)
       bss.soc_percent = self.calculate_soc(grid, bss.e_mwh)
       bss.p_mw = p_mw_bss   # darf hier erst nach get_e_mwh stehen!
+      bss.p_mw_flex = p_mw_bss - p_mw_bss_before
       grid.net.storage = bss
       #grid.net.storage.e_mwh = get_e_mwh
 

@@ -61,6 +61,10 @@ class OutputDataHandler():
         self.pv_active_power.index.name = 'timestamp'
         self.load_active_power = pd.DataFrame(columns=grid.net.load.index)
         self.load_active_power.index.name = 'timestamp'
+        self.load_active_power_flex = pd.DataFrame(columns=grid.load_index)#grid.net.load.index)
+        self.load_active_power_flex.index.name = 'timestamp'
+        self.bss_active_power_flex = pd.DataFrame(columns=grid.net.storage.index)
+        self.bss_active_power_flex.index.name = 'timestamp'
         if self.save_full_data == True:
           self.pv_reactive_power = pd.DataFrame(columns=grid.net.sgen.index)
           self.pv_reactive_power.index.name  = 'timestamp'
@@ -102,9 +106,12 @@ class OutputDataHandler():
         self.curtailed_power.loc[t] = (grid.curtailed_pv_power_df - \
                                      (grid.curtailed_load_power_df[grid.load_index] + \
                                       grid.curtailed_load_power_df[grid.hp_index].set_axis(grid.load_index, axis='index', inplace=False) + \
-                                      grid.curtailed_load_power_df[grid.ev_index].set_axis(grid.load_index, axis='index', inplace=False))).replace(0.0, np.nan)
+                                      grid.curtailed_load_power_df[grid.ev_index].set_axis(grid.load_index, axis='index', inplace=False)))
         self.pv_active_power.loc[t]   = grid.net.sgen['p_mw']
         self.load_active_power.loc[t] = grid.net.load['p_mw']
+        self.load_active_power_flex.loc[t] = (grid.net.load.p_mw_flex[grid.hp_index].set_axis(grid.load_index, axis='index', inplace=False) + \
+                                             grid.net.load.p_mw_flex[grid.ev_index].set_axis(grid.load_index, axis='index', inplace=False))
+        self.bss_active_power_flex.loc[t] = grid.net.storage['p_mw_flex']
         if self.save_full_data == True:
           self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
           self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
@@ -136,11 +143,15 @@ class OutputDataHandler():
                                                   mode=mode, header=header, index = True)
         self.losses_active_power.round(6).to_csv(self.output_dir + 'losses_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
-        self.curtailed_power.round(6).to_csv(self.output_dir + 'curtailed_power_MW.csv',
+        self.curtailed_power.round(6).replace(0.0, np.nan).to_csv(self.output_dir + 'curtailed_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.pv_active_power.round(6).to_csv(self.output_dir + 'pv_active_power_MW.csv',
                                                   mode=mode, header=header, index = True)
         self.load_active_power.round(6).to_csv(self.output_dir + 'load_active_power_MW.csv',
+                                                  mode=mode, header=header, index = True)
+        self.load_active_power_flex.round(6).replace(0.0, np.nan).to_csv(self.output_dir + 'load_active_power_flex_MW.csv',
+                                                  mode=mode, header=header, index = True)
+        self.bss_active_power_flex.round(6).replace(0.0, np.nan).to_csv(self.output_dir + 'bss_active_power_flex_MW.csv',
                                                   mode=mode, header=header, index = True)
         if self.save_full_data == True:
           self.pv_reactive_power.round(6).to_csv(self.output_dir + 'pv_reactive_power_MW.csv',

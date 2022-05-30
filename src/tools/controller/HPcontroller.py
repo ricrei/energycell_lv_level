@@ -335,6 +335,10 @@ class HP_P_control_grid_fid(HP_P_control):
 
       #get hps with current cop per hp due t_ambient
       hps = self.get_cop(grid, d, t)
+
+      # used to calculate provided flex power
+      p_mw_hp_before = hps.p_mw.copy()
+
       #set loss in storage
       #hps = self.HP_storages.set_loss(hps)
 
@@ -373,7 +377,6 @@ class HP_P_control_grid_fid(HP_P_control):
       if(grid.s_trafo_power < -s_res):
         # calculate available capacity and set distribution_factor to distribiute 
         hp_available_capacity = hps.hp_max_capacity_mwh - hps.hp_soc_mwh
-
         #based on available capacity calc distribution_factor
         hp_distribution_factor = hp_available_capacity.copy()
         hp_distribution_factor[hp_distribution_factor > 0] = hp_available_capacity/hp_available_capacity.sum() # in %
@@ -418,6 +421,8 @@ class HP_P_control_grid_fid(HP_P_control):
       hps.p_mw = hps['hp_hp_th'] / hps.hp_cop
       hps['hp_tes_th'] -= hp_hp_th_exceed - hps['hp_hp_th']
       hps.hp_soc_mwh -= (hp_hp_th_exceed - hps['hp_hp_th'])*(self.intervall_in_seconds / 3600)
+
+      hps.p_mw_flex = hps.p_mw - p_mw_hp_before
 
       return hps
 
