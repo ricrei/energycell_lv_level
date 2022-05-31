@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 09 11:08:14 2022
+Created on Thu May 31 2022
 
 @authors: ricardo, tabea, paul
 """
@@ -70,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope_winter
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -178,7 +178,7 @@ def run_single_simulation():
                     verbose = True)        # default: False
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -207,7 +207,7 @@ def run_single_simulation():
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
-  e.eva.energyflow_on_HH_level()
+  #e.eva.energyflow_on_HH_level()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
   #e.eva.calculate_resi_week()
@@ -322,21 +322,3 @@ run_single_simulation()
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
 #######################
-
-### simulations done ###
-        #[1,0,0,0,0,0,0],
-        #[2,0,0,1,1,1,0],
-        #[3,1,0,0,0,1,0],
-        #[4,1,0,1,1,1,0],
-        #[6,1,1,1,1,1,0],
-        #[6,1,2,1,1,1,0],
-        #[6,1,3,1,1,1,0],
-        #[6,1,4,1,1,1,0],
-        #[6,1,5,1,1,1,0],
-        #[7,1,0,3,3,1,0],
-        #[8,1,3,3,3,1,0],
-
-
-# next simulationsteps
-
-

@@ -711,13 +711,12 @@ class EvaluationSingleCase():
     Ecur_pv = self.curtailed_power_pv
 
 
-    # if PV gen greater than con -> calculate self consumption
-
     ### Aufteilen in wieviel des Verbrauchs wird aus PV gedeckt und wieviel aus Speicher
     ### Aufteilen in wieviel der Erzegung geht in Last und wieviel in Speicher
     ### Anschließend Flexibilität aufteilen in, wieviel kommt aus dem Speicher und wieviel aus der Last
 
-    Ec_self[dE_HH < 0] = hh_load[dE_HH < 0] + hp_load[dE_HH < 0] + ev_load[dE_HH < 0] #+ bss_pos[dE_HH < 0]
+    # if PV gen greater than con -> calculate self consumption
+    Ec_self[dE_HH < 0] = hh_load[dE_HH < 0] + hp_load[dE_HH < 0] + ev_load[dE_HH < 0]
     Eg_self[dE_HH < 0] = hh_load[dE_HH < 0] + hp_load[dE_HH < 0] + ev_load[dE_HH < 0] + bss_pos[dE_HH < 0]
     Ec_MV[dE_HH < 0] = 0
     Ec_LV[dE_HH < 0] = 0
@@ -728,7 +727,7 @@ class EvaluationSingleCase():
 
     # if PV gen lower than con -> calculate self consumption
     Ec_self[dE_HH >= 0] = - pv[dE_HH >= 0] + bss_neg[dE_HH >= 0]
-    Eg_self[dE_HH >= 0] = - pv[dE_HH >= 0] #+ bss_neg[dE_HH >= 0]
+    Eg_self[dE_HH >= 0] = - pv[dE_HH >= 0]
     Ec_MV[(dE_HH >= 0) & (dE_LV >= 0)] = dE_HH[(dE_HH >= 0) & (dE_LV >= 0)] / sum_Con_LV_lack[(dE_HH >= 0) & (dE_LV >= 0)] * dE_LV[(dE_HH >= 0) & (dE_LV >= 0)]
     Ec_LV[(dE_HH >= 0) & (dE_LV >= 0)] = dE_HH[(dE_HH >= 0) & (dE_LV >= 0)] / sum_Con_LV_lack[(dE_HH >= 0) & (dE_LV >= 0)] * (sum_Con_LV_lack[(dE_HH >= 0) & (dE_LV >= 0)] - dE_LV[(dE_HH >= 0) & (dE_LV >= 0)])
     Ec_MV[(dE_HH >= 0) & (dE_LV < 0)] = 0
