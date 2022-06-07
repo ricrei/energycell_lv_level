@@ -127,7 +127,7 @@ class OutputDataHandler():
           self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
 
   def write_dataframe_to_csv(self, mode, header, grid):
-        self.vm_pu.round(2).to_csv(self.output_dir + 'res_bus_vm_pu.csv',
+        self.vm_pu.round(3).to_csv(self.output_dir + 'res_bus_vm_pu.csv',
                                    mode=mode, header=header, index = True)
         self.li_lo.round(1).to_csv(self.output_dir + 'res_line_load_percent.csv',
                                    mode=mode, header=header, index = True)

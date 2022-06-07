@@ -227,7 +227,7 @@ class BSS_control:
       if timedelta_sunrise_sunset_s < (12*3600):  #winter
       
           #charge:
-          if time >= t_start_linear_charge_winter and time <= t_end_linear_charge_winter: 
+          if (time >= t_start_linear_charge_winter) & (time <= t_end_linear_charge_winter): 
               p_mw_lin_ch = (free_capacity * 3600)/ (timedelta_lin_ch_winter_s * self.efficiency_charge) 
           else:
               p_mw_lin_ch = np.zeros(len(grid.net.storage))
@@ -248,13 +248,15 @@ class BSS_control:
               
       # Summer - Temoral parameters
       else:
-          if time >= t_start_linear_charge_summer and time <= t_end_linear_charge_summer: 
+          if (time >= t_start_linear_charge_summer) & (time <= t_end_linear_charge_summer): 
               p_mw_lin_ch = (free_capacity * 3600)/ (timedelta_lin_ch_summer_s * self.efficiency_charge)
           else:
               p_mw_lin_ch = np.zeros(len(grid.net.storage))
       
       # Linear charge in summer and winter:
-      case_lin_ch = (p_mw_lin_ch < p_mw_bss) #& (p_mw_bss > 0)# 
+      case_lin_ch = (p_mw_lin_ch < p_mw_bss) #& (p_mw_bss > 0)#
+      #print(str(case_lin_ch[7]) + ' '  + str(t))
+      #print(t_end_linear_charge_summer)
       p_mw_bss[case_lin_ch] = p_mw_lin_ch[case_lin_ch] 
 
       return p_mw_bss

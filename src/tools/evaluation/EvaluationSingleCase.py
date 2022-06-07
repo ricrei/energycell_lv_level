@@ -671,8 +671,8 @@ class EvaluationSingleCase():
     bss = self.storage_p
     bss_neg = pd.DataFrame(index=bss.index, columns=bss.columns).fillna(0)
     bss_pos = pd.DataFrame(index=bss.index, columns=bss.columns).fillna(0)
-    bss_neg[bss < 0] = bss[bss < 0]
-    bss_pos[bss > 0] = bss[bss > 0]
+    bss_neg[bss < 0] = bss[bss < 0] # discharging
+    bss_pos[bss > 0] = bss[bss > 0] # charging
     # total losses
     losses = self.losses_p.sum(axis=1)
 
@@ -684,10 +684,32 @@ class EvaluationSingleCase():
     # charging BSS, EV, TES (flex_pos) in times of trafo overload by pv power excess
     flex_pos = pd.DataFrame(index=self.bss_p_flex.index, columns=self.bss_p_flex.columns).fillna(0)
     flex_pos[self.bss_p_flex>0] = self.bss_p_flex[self.bss_p_flex>0] # flex durch last
-    flex_pos += -self.load_p_flex
+    #flex_pos += self.load_p_flex
+
+    flex_load_pos = pd.DataFrame(index=self.load_p_flex.index, columns=self.load_p_flex.columns).fillna(0)
+    flex_load_neg = pd.DataFrame(index=self.load_p_flex.index, columns=self.load_p_flex.columns).fillna(0)
+    # charging EV, TES (flex_load_pos) in times of trafo overload by pv power excess
+    flex_load_pos[self.load_p_flex>0] =  self.load_p_flex[self.load_p_flex>0]
+    # daming of HP (flex_load_neg) in times of trafo overload by consumers
+    flex_load_neg[self.load_p_flex<=0] =  self.load_p_flex[self.load_p_flex<=0] 
 
     # residual load per HH
     dE_HH = hh_load + hp_load + ev_load - pv + bss
+
+    ### temp test ###
+    '''
+    bss_neg_error = bss_neg[dE_HH < 0].sum().sum()
+    bss_neg[dE_HH < 0] = 0
+    bss_pos_error = bss_pos[dE_HH < 0].sum().sum()
+    bss_pos[dE_HH > 0] = 0
+    bss = bss_pos + bss_neg
+    dE_HH = hh_load + hp_load + ev_load - pv + bss
+
+    print((bss_pos.sum().sum() + bss_neg.sum().sum())/60)
+    #print(bss_neg_error/60)
+    #print(bss_pos_error/60)
+    '''
+
     # residual load whole grid
     dE_LV = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns)
     for c in dE_LV.columns:
@@ -710,24 +732,19 @@ class EvaluationSingleCase():
     Ecur_load = self.curtailed_power_load
     Ecur_pv = self.curtailed_power_pv
 
-
-    ### Aufteilen in wieviel des Verbrauchs wird aus PV gedeckt und wieviel aus Speicher
-    ### Aufteilen in wieviel der Erzegung geht in Last und wieviel in Speicher
-    ### Anschließend Flexibilität aufteilen in, wieviel kommt aus dem Speicher und wieviel aus der Last
-
-    # if PV gen greater than con -> calculate self consumption
+    # if PV+BSS gen greater than con -> calculate self consumption
     Ec_self[dE_HH < 0] = hh_load[dE_HH < 0] + hp_load[dE_HH < 0] + ev_load[dE_HH < 0]
-    Eg_self[dE_HH < 0] = hh_load[dE_HH < 0] + hp_load[dE_HH < 0] + ev_load[dE_HH < 0] + bss_pos[dE_HH < 0]
+    Eg_self[dE_HH < 0] = hh_load[dE_HH < 0] + hp_load[dE_HH < 0] + ev_load[dE_HH < 0]
     Ec_MV[dE_HH < 0] = 0
     Ec_LV[dE_HH < 0] = 0
     Eg_MV[(dE_HH < 0) & (dE_LV >= 0)] = 0
-    Eg_LV[(dE_HH < 0) & (dE_LV >= 0)] = dE_HH[(dE_HH < 0) & (dE_LV >= 0)]
-    Eg_MV[(dE_HH < 0) & (dE_LV < 0)] = dE_HH[(dE_HH < 0) & (dE_LV < 0)] / sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] * dE_LV[(dE_HH < 0) & (dE_LV < 0)]
-    Eg_LV[(dE_HH < 0) & (dE_LV < 0)] = dE_HH[(dE_HH < 0) & (dE_LV < 0)] / sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] * (sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] - dE_LV[(dE_HH < 0) & (dE_LV < 0)])
+    Eg_LV[(dE_HH < 0) & (dE_LV >= 0)] = -dE_HH[(dE_HH < 0) & (dE_LV >= 0)]
+    Eg_MV[(dE_HH < 0) & (dE_LV < 0)] = -dE_HH[(dE_HH < 0) & (dE_LV < 0)] / sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] * dE_LV[(dE_HH < 0) & (dE_LV < 0)]
+    Eg_LV[(dE_HH < 0) & (dE_LV < 0)] = -dE_HH[(dE_HH < 0) & (dE_LV < 0)] / sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] * (sum_PV_LV_excess[(dE_HH < 0) & (dE_LV < 0)] - dE_LV[(dE_HH < 0) & (dE_LV < 0)])
 
-    # if PV gen lower than con -> calculate self consumption
-    Ec_self[dE_HH >= 0] = - pv[dE_HH >= 0] + bss_neg[dE_HH >= 0]
-    Eg_self[dE_HH >= 0] = - pv[dE_HH >= 0]
+    # if PV+BSS gen lower than con -> calculate self consumption
+    Ec_self[dE_HH >= 0] = pv[dE_HH >= 0] - bss[dE_HH >= 0]
+    Eg_self[dE_HH >= 0] = pv[dE_HH >= 0] - bss[dE_HH >= 0]
     Ec_MV[(dE_HH >= 0) & (dE_LV >= 0)] = dE_HH[(dE_HH >= 0) & (dE_LV >= 0)] / sum_Con_LV_lack[(dE_HH >= 0) & (dE_LV >= 0)] * dE_LV[(dE_HH >= 0) & (dE_LV >= 0)]
     Ec_LV[(dE_HH >= 0) & (dE_LV >= 0)] = dE_HH[(dE_HH >= 0) & (dE_LV >= 0)] / sum_Con_LV_lack[(dE_HH >= 0) & (dE_LV >= 0)] * (sum_Con_LV_lack[(dE_HH >= 0) & (dE_LV >= 0)] - dE_LV[(dE_HH >= 0) & (dE_LV >= 0)])
     Ec_MV[(dE_HH >= 0) & (dE_LV < 0)] = 0
@@ -735,24 +752,43 @@ class EvaluationSingleCase():
     Eg_MV[dE_HH >= 0] = 0
     Eg_LV[dE_HH >= 0] = 0
 
-    Ec_self = abs(Ec_self)
-    Eg_self = abs(Eg_self)
+    Ec_self[(Ec_self<0)] = 0
+    Eg_self[(Eg_self<0)] = 0
+    #Ec_self = abs(Ec_self)
+    #Eg_self = abs(Eg_self)
 
-    '''
+    #'''
     fig, ax = plt.subplots()
-    for i in ['7']:#Ec_LV.columns:
-      ax.plot(flex_pos[i])
+    for i in ['7']:#Ec_LV.columns:#
+      ax.plot(dE_HH[i])
+      #ax.plot(pv[i])
+      ax.plot(bss[i])
+      #ax.plot(hh_load[i] + hp_load[i] + ev_load[i])
+      #ax.plot((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (hh_load + hp_load + ev_load)))
+      #ax.plot((abs(Eg_self) + abs(Eg_MV) + abs(Eg_LV) - (pv - bss)))
     ax.set_xlabel('Time')
     ax.set_ylabel('dP of each HH in MW')
     plt.show()
-    '''
+    #'''
 
 
     #'''    
     ### Calculate how much of the pos and neg flexibility is included in self-sonsumption and locally traded energy
     Eflex_in_Ec_self = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns).fillna(0)
     Eflex_in_Ec_LV = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns).fillna(0)
+    Eflex_in_Eg_self = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns).fillna(0)
     Eflex_in_Eg_LV = pd.DataFrame(index=dE_HH.index, columns=dE_HH.columns).fillna(0)
+
+    load0 = hh_load + hp_load + ev_load - flex_load_pos
+    # load > Ec_self
+    Eflex_in_Ec_self[(flex_load_pos > 0) & (load0 > Ec_self)] = 0
+    Eflex_in_Ec_LV[(flex_load_pos > 0) & (load0 > Ec_self)] = flex_load_pos[(flex_load_pos > 0) & (load0 > Ec_self)]
+    # load <= Ec_self
+    Eflex_in_Ec_self[(flex_load_pos > 0) & (load0 <= Ec_self)] = Ec_self[(flex_load_pos > 0) & (load0 <= Ec_self)] - load0[(flex_load_pos > 0) & (load0 <= Ec_self)]
+    Eflex_in_Ec_LV[(flex_load_pos > 0) & (load0 <= Ec_self)] = Ec_LV[(flex_load_pos > 0) & (load0 <= Ec_self)]
+
+
+    '''
     # case: PV excess, if only own pv energy is consumed
     Eflex_in_Ec_self[flex_pos <= Ec_self] = flex_pos[flex_pos <= Ec_self]
     Eflex_in_Ec_LV[flex_pos <= Ec_self] = 0
@@ -765,7 +801,7 @@ class EvaluationSingleCase():
     # case: Load excess, if own load energy and load energy from community is covered
     Eflex_in_Ec_self[flex_neg > Ec_self] += Ec_self[flex_neg > Ec_self]
     Eflex_in_Eg_LV[flex_neg > Ec_self] = flex_neg[flex_neg > Ec_self] - Ec_self[flex_neg > Ec_self]
-    #'''
+    '''
 
 
     E = pd.DataFrame(index=Ec_self.columns)
@@ -774,21 +810,40 @@ class EvaluationSingleCase():
     E['Eg_self'] = Eg_self.sum()
     E['Ec_MV'] = Ec_MV.sum()
     E['Ec_LV'] = Ec_LV.sum()
-    E['Eg_MV'] = abs(Eg_MV).sum()
-    E['Eg_LV'] = abs(Eg_LV).sum()
+    E['Eg_MV'] = Eg_MV.sum()
+    E['Eg_LV'] = Eg_LV.sum()
     E['Ecur_pv'] = Ecur_pv.sum()
     E['Ecur_load'] = Ecur_load.sum()
     #E['Ec_flex'] = Eflex_pos.sum()
     #E['Eg_flex'] = Eflex_neg.sum()
+    E['Eflex_in_Ec_self'] = Eflex_in_Ec_self.sum()
+    E['Eflex_in_Ec_LV'] = Eflex_in_Ec_LV.sum()
+
+
+    def print_mmm(df):
+      print('Min:  ' + str(df.min().min()))
+      print('Max:  ' + str(df.max().max()))
+      print('Mean: ' + str(df.mean().mean()))
+      print('Error: ' + str(df.sum().sum()/60))
 
     # Bilanzcheck
-    #print((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (hh_load + hp_load + ev_load + bss_pos)))
-    #print((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (hh_load + hp_load + ev_load + bss_pos)))
-    #print((abs(Ec_self) + abs(Eg_MV) + abs(Eg_LV) - (pv - bss_neg)))
-    #print('Consumption (incl. BSS): ' + str(((E.sum(axis=0).Ec_self + E.sum(axis=0).Ec_MV + E.sum(axis=0).Ec_LV)/60).round(3)) + ' MWh')
-    #print('Generation (incl. BSS) : ' + str(((E.sum(axis=0).Ec_self + E.sum(axis=0).Eg_MV + E.sum(axis=0).Eg_LV)/60).round(3)) + ' MWh')
+    print_mmm((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (hh_load + hp_load + ev_load)))
+    print_mmm((abs(Eg_self) + abs(Eg_MV) + abs(Eg_LV) - (pv - bss)))
+    #print(E['Ec_self'].sum()/60)
+    #print(E['Ec_LV'].sum()/60)
+    #print(E['Ec_MV'].sum()/60)
+    #print(E['Eflex_in_Ec_self'].sum()/60)
+    #print(E['Eflex_in_Ec_LV'].sum()/60)
+    #print(flex_load_pos.sum().sum()/60)
 
-    #'''
+    print('Generation (incl. BSS) : ' + str(((E.sum(axis=0).Eg_self + E.sum(axis=0).Eg_MV + E.sum(axis=0).Eg_LV)/60).round(3)) + ' MWh')
+    print('Consumption (incl. BSS): ' + str(((E.sum(axis=0).Ec_self + E.sum(axis=0).Ec_MV + E.sum(axis=0).Ec_LV)/60).round(3)) + ' MWh')
+
+    # Seaborn Colors
+    bright = sns.color_palette("bright", 10)
+    dark = sns.color_palette("dark", 10)
+
+    '''
     # Plot PV
     E_barplot1 = E
     E_barplot1['Eg_LV'] +=  E_barplot1['Eg_self']
@@ -810,29 +865,34 @@ class EvaluationSingleCase():
     plt.xlabel('Households')
     plt.ylabel('PV power in %')
     plt.show()
-
+    '''
+    '''
     # Plot load
     E_barplot2 = E
     E_barplot2['Ec_LV'] +=  E_barplot2['Ec_self']
     E_barplot2['Ec_MV'] +=  E_barplot2['Ec_LV']
     E_barplot2['Ecur_load'] +=  E_barplot2['Ec_MV']
-    #E_barplot1['Ec_flex'] += E_barplot1['Ecur_load']
-    for i in E_barplot2.index: # plot in percent
-      E_barplot2.loc[i] = E_barplot2.loc[i] / E_barplot1['Ecur_load'].loc[i] * 100
+    E_barplot2['Eflex_in_Ec_LV'] += E_barplot2['Ec_self']
+    #for i in E_barplot2.index: # plot in percent
+    #  E_barplot2.loc[i] = E_barplot2.loc[i] / E_barplot1['Ecur_load'].loc[i] * 100
     #s5 = sns.barplot(x = E.index, y = 'Ec_flex', data = E_barplot2, color = 'grey')
     s4 = sns.barplot(x = E.index, y = 'Ecur_load', data = E_barplot2, color = 'yellow')
     s3 = sns.barplot(x = E.index, y = 'Ec_MV', data = E_barplot2, color = 'green')
     s2 = sns.barplot(x = E.index, y = 'Ec_LV', data = E_barplot2, color = 'blue')
+    s2f = sns.barplot(x = E.index, y = 'Eflex_in_Ec_LV', data = E_barplot2, color = dark[0])
     s1 = sns.barplot(x = E.index, y = 'Ec_self', data = E_barplot2, color = 'red')
+    s1f = sns.barplot(x = E.index, y = 'Eflex_in_Ec_self', data = E_barplot2, color = dark[3])
     Ecur_load_bar = mpatches.Patch(color='yellow', label='curtailed')
     Ec_MV_bar = mpatches.Patch(color='green', label='MV grid obtained')
     Ec_LV_bar = mpatches.Patch(color='blue', label='LV grid obtained')
     Ec_self_bar = mpatches.Patch(color='red', label='self consumed')
-    plt.legend(handles=[Ecur_load_bar, Ec_MV_bar, Ec_LV_bar, Ec_self_bar])
+    Ec_self_bar_flex = mpatches.Patch(color=dark[3], label='flex self consumed')
+    Ec_LV_bar_flex = mpatches.Patch(color=dark[0], label='flex LV grid obtained')
+    plt.legend(handles=[Ecur_load_bar, Ec_MV_bar, Ec_LV_bar, Ec_LV_bar_flex, Ec_self_bar, Ec_self_bar_flex])
     plt.xlabel('Households')
     plt.ylabel('Load power in %')
     plt.show()
-    #'''
+    '''
 
     # To-DO
     ## flexibility power tracken und aus verbrauch rausrechnen
@@ -850,6 +910,25 @@ class EvaluationSingleCase():
 
 
 
+
+  def plot_test(self):
+
+    res = self.load_p - self.pv_p + self.storage_p 
+    #self.trafo_p
+
+    HH = '8'
+    HP = '107'
+    EV = '206'
+    fig, ax = plt.subplots()   
+    ax.plot(self.load_p[HH] + self.load_p[HP] + self.load_p[EV])
+    ax.plot(self.pv_p[HH])
+    ax.plot(self.storage_p[HH])
+    #ax.plot(res[HH])
+    plt.xlabel('Time')
+    plt.ylabel('Power in MW')
+    plt.grid(True)
+    plt.legend(['Load', 'PV', 'BSS', 'Res HH'])
+    plt.show()
 
 
 

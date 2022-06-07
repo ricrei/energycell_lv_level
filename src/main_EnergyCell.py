@@ -15,9 +15,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-01-07 00:00:00+01:00',
-               'end_time'   : '2017-01-08 00:00:00+01:00',
-               't_freq'     : '30T',
+time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
+               'end_time'   : '2017-05-31 00:00:00+01:00',
+               't_freq'     : '1T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -70,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope
+time_scope = time_scope_summer
 ###########################################
 
 #######################
@@ -96,9 +96,9 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  7, # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
+  0, # BSS, 0-5
   3, # HP, 0-5
   3, # EV, 0-3
   1, # Curtailment, 0/1
@@ -161,7 +161,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 7
+net_number = 8
 ######################
 
 #############################
@@ -178,7 +178,7 @@ def run_single_simulation():
                     verbose = True)        # default: False
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -208,6 +208,8 @@ def run_single_simulation():
   #e.eva.plot_grid_2() # Baustelle
 
   #e.eva.energyflow_on_HH_level()
+
+  e.eva.plot_test()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
   #e.eva.calculate_resi_week()
