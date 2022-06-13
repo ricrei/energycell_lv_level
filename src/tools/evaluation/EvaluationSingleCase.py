@@ -245,6 +245,7 @@ class EvaluationSingleCase():
     sum_curtailed_load = curtail_p.curtail_load.sum()*f
     losses = losses.sum().sum()
     sum_pv = power.pv.sum()*f
+    sum_total_pv = power.pv.sum()*f + curtail_p.curtail_pv.sum()*f
     sum_hp = power.hp.sum()*f
     sum_ev = power.ev.sum()*f
     sum_load = power.load.sum()*f
@@ -256,10 +257,10 @@ class EvaluationSingleCase():
     Res_neg = Res[Res < 0]
 
     SelfSufficiancy = (sum_total_load + losses + Res_neg.sum())*100/(sum_total_load + losses)
-    if sum_pv > 0:
-      PVConsumption = (sum_pv - Res_pos.sum())*100/sum_pv
+    if sum_total_pv > 0:
+      PVConsumption = (sum_total_pv - Res_pos.sum() - curtail_p.curtail_pv.sum()*f)*100/sum_total_pv
     else:
-      PVConsumption = sum_pv*0.0
+      PVConsumption = sum_total_pv*0.0
       
     print(' ')
     print('PV-Generation: %s MWh' % sum_pv.round(2))

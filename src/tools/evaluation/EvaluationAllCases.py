@@ -59,9 +59,9 @@ class EvaluationAllCases():
           eva[index]['tl'] = self.read_data(output_dir+'res_trafo_load_percent.csv')
           trafo_p = self.read_data(output_dir+'trafo_active_power_MW.csv')
           losses = self.read_data(output_dir+'losses_active_power_MW.csv')
-          eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= self.calculate_relevant_outputdata(eva[index]['power'], losses, trafo_p)
-          eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
           eva[index]['curtailed_power'] = self.calculate_aggregated_curtailed_power(output_dir)
+          eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= self.calculate_relevant_outputdata(eva[index]['power'], losses, trafo_p, eva[index]['curtailed_power'])
+          eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
           eva[index]['storage_power'] = self.read_data(output_dir+'storage_active_power_MW.csv')
           eva[index]['soc_bss'] = self.read_data(output_dir+'storage_state_of_charge_percent.csv')
 
@@ -98,9 +98,10 @@ class EvaluationAllCases():
     return data_shorted
 
   ### Calculate Output Data ###
-  def calculate_relevant_outputdata(self, power, losses, trafo_p):
+  def calculate_relevant_outputdata(self, power, losses, trafo_p, curtail_power):
     losses = losses.sum().sum()
     sum_pv = power.pv.sum()
+    sum_total_pv = power.pv.sum() + curtail_power.pv.sum()
     sum_hp = power.hp.sum()
     sum_ev = power.ev.sum()
     sum_load = power.load.sum()
@@ -112,10 +113,10 @@ class EvaluationAllCases():
     Res_neg = Res[Res < 0]
 
     SelfSufficiancy = (sum_total_load + losses + Res_neg.sum())*100/(sum_total_load + losses)
-    if sum_pv > 0:
-      PVConsumption = (sum_pv - Res_pos.sum())*100/sum_pv
+    if sum_total_pv > 0:
+      PVConsumption = (sum_total_pv - Res_pos.sum() - curtail_power.pv.sum())*100/sum_total_pv
     else:
-      PVConsumption = sum_pv*0.0
+      PVConsumption = sum_total_pv*0.0
 
     return SelfSufficiancy, PVConsumption
 

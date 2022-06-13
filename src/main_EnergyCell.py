@@ -96,9 +96,9 @@ time_scope = time_scope_summer
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  7, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
+  3, # BSS, 0-5
   3, # HP, 0-5
   3, # EV, 0-3
   1, # Curtailment, 0/1
@@ -209,7 +209,7 @@ def run_single_simulation():
 
   #e.eva.energyflow_on_HH_level()
 
-  e.eva.plot_test()
+  #e.eva.plot_test()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
   #e.eva.calculate_resi_week()
@@ -319,8 +319,12 @@ scenarios = [
         [8,1,3,3,3,1,0],
                       ]
 
-run_single_simulation()
+#run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-#run_output_data_conversion(scenarios)
+run_output_data_conversion(scenarios)
 #######################
+
+#to be finish
+
+

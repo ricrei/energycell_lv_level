@@ -23,6 +23,12 @@ plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
 plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
+lan = 'EN' # 'EN', 'DE'
+
+if lan == 'DE':
+  y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
+elif lan == 'EN':
+  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
 
 ### Helper Methods ###
 '''
@@ -336,7 +342,7 @@ def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, s
     t_events[eva[index]['scenario']].loc[eva[index]['net_name']] += len(eva[index]['tl'].columns)/n
 
   #x_ticklabels = ['Conv', 'EV+HP', 'PV', 'PV+EV+HP']
-  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
+  #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
 
   vmax_v = (df_v_heatmap/v_events/minutes_per_week*100).max().max()
   vmax_l = (df_l_heatmap/l_events/minutes_per_week*100).max().max()
@@ -350,10 +356,15 @@ def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, s
   
   plt.figure()
   ax = sns.heatmap(df_v_heatmap/v_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Voltage Violation in %')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Voltage Violation in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Spannungsbandverletzung in %')
+
   #ax.set_title('Voltage Violation in Minutes per Week and Bus')
 
   if save_fig_dir is not None:
@@ -363,10 +374,15 @@ def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, s
 
   plt.figure()
   ax = sns.heatmap(df_l_heatmap/l_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Line Overloading in %')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Line Overloading in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Leitungsüberlastung in %')
+
   #ax.set_title('Line Overloading in Minutes per Week and Line')
 
   if save_fig_dir is not None:
@@ -374,10 +390,15 @@ def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, s
 
   plt.figure()
   ax = sns.heatmap(df_t_heatmap/t_events/minutes_per_week*100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Trafo Overloading in %')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Transformer Overloading in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Trafoüberlastung in %')
+
   #ax.set_title('Line Overloading in Minutes per Week and Line')
 
   if save_fig_dir is not None:
@@ -388,7 +409,6 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
   #minutes_per_week = 7*24*60
 
   seasons = ['spring', 'summer', 'autumn', 'winter']
-  x_ticklabels = seasons
 
   pv_power = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
   load_power = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
@@ -412,8 +432,6 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
   curtailed_power_pv_per_cent = curtailed_power_pv_per_cent.round(2)
   curtailed_power_load_per_cent = curtailed_power_load_per_cent.round(2)
 
-  y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
-
   vmax_pv = curtailed_power_pv.max().max()
   vmax_load = curtailed_power_load.max().max()
   vmax_season = np.array([vmax_pv, vmax_load]).max()
@@ -424,14 +442,22 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
 
   vmin = 0
 
+  #y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
+  if lan == 'EN':
+    x_ticklabels = seasons
+  elif lan == 'DE':
+      x_ticklabels = ['Frühling', 'Sommer', 'Herbst', 'Winter']
+
   plt.figure(figsize=(5.5,4))
   ax = sns.heatmap(curtailed_power_pv_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
-  ax.set(xlabel='Szenario', ylabel='Netz')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  #ax.set_title('Curtailed pv energy in %')
-  ax.set_title('Abgeregelte PV Energie in %')
-  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed pv energy in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte PV Energie in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_season.png', bbox_inches='tight')
@@ -441,12 +467,14 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
 
   plt.figure(figsize=(5.5,4))
   ax = sns.heatmap(curtailed_power_load_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
-  ax.set(xlabel='Szenario', ylabel='Netz')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  #ax.set_title('Curtailed load energy in %')
-  ax.set_title('Abgeregelte Last in %')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed load energy in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte Last in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_season.png', bbox_inches='tight')
@@ -454,11 +482,14 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
 
   plt.figure()
   ax = sns.heatmap(curtailed_power_pv, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Curtailed pv energy in MWh')
-  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed pv energy in MWh')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte PV Energie in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv_season.png', bbox_inches='tight')
@@ -468,11 +499,14 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
 
   plt.figure()
   ax = sns.heatmap(curtailed_power_load, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Curtailed load energy in MWh')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed load energy in MWh')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte Last in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_season.png', bbox_inches='tight')
@@ -506,13 +540,13 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   curtailed_power_pv_per_cent = curtailed_power_pv/(pv_power+curtailed_power_pv)*100
   curtailed_power_load_per_cent = curtailed_power_load/(load_power+curtailed_power_load)*100
 
+  curtailed_power_pv_per_cent = curtailed_power_pv_per_cent.fillna(0)
+
   # round
   curtailed_power_pv = (curtailed_power_pv).round(3)
   curtailed_power_load = (curtailed_power_load).round(3)
   curtailed_power_pv_per_cent = curtailed_power_pv_per_cent.round(0)
   curtailed_power_load_per_cent = curtailed_power_load_per_cent.round(2)
-
-  y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
 
   vmax_summer = curtailed_power_summer.max().max()
   vmax_winter = curtailed_power_winter.max().max()
@@ -530,12 +564,14 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
 
   plt.figure(figsize=(5.5,4))
   ax = sns.heatmap(curtailed_power_pv_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
-  ax.set(xlabel='Szenario', ylabel='Netz')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  #ax.set_title('Curtailed pv energy in %')
-  ax.set_title('Abgeregelte PV Energie in %')
-  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed pv energy in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte PV Energie in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent.png', bbox_inches='tight')
@@ -545,12 +581,14 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
 
   plt.figure(figsize=(5.5,4))
   ax = sns.heatmap(curtailed_power_load_per_cent, vmax = vmax_pv_load_per_cent, vmin = vmin, cmap="rocket_r", annot=True, square=False)#, fmt=".0f")
-  ax.set(xlabel='Szenario', ylabel='Netz')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  #ax.set_title('Curtailed load energy in %')
-  ax.set_title('Abgeregelte Last in %')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed load energy in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte Last in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent.png', bbox_inches='tight')
@@ -558,11 +596,14 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
 
   plt.figure()
   ax = sns.heatmap(curtailed_power_pv, vmax = vmax_pv_load, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Curtailed pv energy in MWh')
-  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed pv energy in MWh')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte PV Energie in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv.png', bbox_inches='tight')
@@ -572,11 +613,14 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
 
   plt.figure()
   ax = sns.heatmap(curtailed_power_load, vmax = vmax_pv_load, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(xlabel='Scenario', ylabel='Grid')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Curtailed load energy in MWh')
-  #ax.set_title('Line Overloading in Minutes per Week and Line')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Curtailed load energy in MWh')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Abgeregelte Last in MWh')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load.png', bbox_inches='tight')
@@ -598,15 +642,18 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
 
   for index in eva:
    if eva[index]['scenario'] in columns_scenarios:
-     df_pv_total[eva[index]['scenario']].loc[eva[index]['net_name']]   += eva[index]['power'].pv.sum()
-     df_pv_self[eva[index]['scenario']].loc[eva[index]['net_name']]    += eva[index]['power'].pv.sum()*eva[index]['PVConsumption']
+     df_pv_total[eva[index]['scenario']].loc[eva[index]['net_name']]   += eva[index]['power'].pv.sum() + eva[index]['curtailed_power'].pv.sum()
+     df_pv_self[eva[index]['scenario']].loc[eva[index]['net_name']]    += (eva[index]['power'].pv.sum() + eva[index]['curtailed_power'].pv.sum())*eva[index]['PVConsumption']
      df_load_total[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()
      df_load_self[eva[index]['scenario']].loc[eva[index]['net_name']]  += (eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum())*eva[index]['SelfSufficiancy']
 
   df_self_sufficiency = df_load_self/df_load_total
   df_pv_consumption = df_pv_self/df_pv_total
 
-  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
+  df_self_sufficiency[df_self_sufficiency < .01] = 0
+  df_pv_consumption = df_pv_consumption.fillna(0)
+
+  #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
 
   # round
   df_self_sufficiency = (df_self_sufficiency).round(3)
@@ -618,11 +665,14 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   
   plt.figure()
   ax = sns.heatmap(df_self_sufficiency, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  #ax.set(xlabel='Scenario', ylabel='Grid')
-  ax.set(xlabel='Grid', ylabel='Scenario')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Self sufficiency in %')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('Self sufficiency in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Autarkiegrad in %')
   #ax.set_title('Voltage Violation in Minutes per Week and Bus')
 
   if save_fig_dir is not None:
@@ -630,11 +680,14 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
      
   plt.figure()
   ax = sns.heatmap(df_pv_consumption, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  #ax.set(xlabel='Scenario', ylabel='Grid')
-  ax.set(xlabel='Grid', ylabel='Scenario')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('PV consumption in %')
+  if lan == 'EN':
+    ax.set(xlabel='Scenario', ylabel='Grid')
+    ax.set_title('PV consumption in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Szenario', ylabel='Netz')
+    ax.set_title('Eigenverbrauch in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_pv_consumption.png', bbox_inches='tight')
@@ -642,7 +695,6 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
 
 def plot_heatmap_self_sufficiency_per_season(eva, scenarios, net_name, save_fig_dir=None):
   seasons = ['spring', 'summer', 'autumn', 'winter']
-  x_ticklabels = seasons
 
   df_self_sufficiency = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
   df_pv_consumption = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
@@ -652,7 +704,7 @@ def plot_heatmap_self_sufficiency_per_season(eva, scenarios, net_name, save_fig_
      df_self_sufficiency[eva[index]['time_scope_name']].loc[eva[index]['net_name']] = eva[index]['SelfSufficiancy']
      df_pv_consumption[eva[index]['time_scope_name']].loc[eva[index]['net_name']] = eva[index]['PVConsumption']
 
-  y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
+  #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
 
   # round
   df_self_sufficiency = (df_self_sufficiency).round(3)
@@ -662,22 +714,36 @@ def plot_heatmap_self_sufficiency_per_season(eva, scenarios, net_name, save_fig_
  
   vmin = 0
   
+  if lan == 'EN':
+    x_ticklabels = seasons
+  elif lan == 'DE':
+      x_ticklabels = ['Frühling', 'Sommer', 'Herbst', 'Winter']
+
   plt.figure()
-  ax = sns.heatmap(df_self_sufficiency, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
-  ax.set(ylabel='Grid', xlabel='Season')
+  ax = sns.heatmap(df_self_sufficiency, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True, fmt=".0f")
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('Self sufficiency in %')
+  if lan == 'EN':
+    ax.set(ylabel='Grid', xlabel='Season')
+    ax.set_title('Self sufficiency in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Jahreszeit', ylabel='Netz')
+    ax.set_title('Autarkiegrad in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_self_sufficiency_per_season.png', bbox_inches='tight')
      
   plt.figure()
-  ax = sns.heatmap(df_pv_consumption, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
+  ax = sns.heatmap(df_pv_consumption, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=True, fmt=".0f")
   ax.set(ylabel='Grid', xlabel='Season')
   ax.set_xticklabels(x_ticklabels)
   ax.set_yticklabels(y_ticklabels)
-  ax.set_title('PV consumption in %')
+  if lan == 'EN':
+    ax.set(ylabel='Grid', xlabel='Season')
+    ax.set_title('PV consumption in %')
+  elif lan == 'DE':
+    ax.set(xlabel='Jahreszeit', ylabel='Netz')
+    ax.set_title('Eigenverbrauch in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_pv_consumption_per_season.png', bbox_inches='tight')
