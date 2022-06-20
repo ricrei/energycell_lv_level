@@ -30,7 +30,7 @@ mpl.rcParams['font.family'] = 'STIXGeneral'
 fig_x, fig_y = 5., 2.
 
 image_format = 'png'
-dpi = 300
+dpi = 500
 
 lan = 'EN' # 'EN', 'DE'
 
@@ -168,6 +168,16 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
   time1 = power_1.index
   time2 = power_2.index
 
+  day = 3
+  time_min_1 = time1[(day-1)*24*60] #pd.to_datetime('2017-03-05 00:00:00+00:00', utc=True)
+  time_max_1 = time1[(day)*24*60-1]#pd.to_datetime('2017-03-05 23:59:00+00:00', utc=True)
+
+  time_min_2 = time2[(day-1)*24*60] #pd.to_datetime('2017-03-05 00:00:00+00:00', utc=True)
+  time_max_2 = time2[(day)*24*60-1]#pd.to_datetime('2017-03-05 23:59:00+00:00', utc=True)
+
+  y_max_pos = [0, 0]
+  y_max_neg = [0, 0]
+
   fig, ax = plt.subplots(1, 2, figsize=(8,4), sharey=True,  gridspec_kw={'wspace': .05})
   for i in [0,1]:
     storage_sum = storage[i].sum(axis=1)
@@ -201,12 +211,19 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
     #storage_sum = shorted_data(storage_sum, '5T')
 
     ax[i].plot(power[i].index, -(power[i].pv-power[i].hp-power[i].load-power[i].ev+storage_sum), color='black', lw=1)
+
+    if i == 0:
+      y_max_pos[i] = (power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load).loc[time_min_1:time_max_1].max()
+      y_max_neg[i] = (-storage_discharge - power[i].pv - curtailed[i].pv).loc[time_min_1:time_max_1].min()
+    else:
+      y_max_pos[i] = (power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load).loc[time_min_2:time_max_2].max()
+      y_max_neg[i] = (-storage_discharge - power[i].pv - curtailed[i].pv).loc[time_min_2:time_max_2].min()
     
     #ax[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
     #ax[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
     ax[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
     ax[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
-    ax[i].set(xlim=(power[i].index[0], power[i].index[-1]), ylim=(-1.200, 1.200))#(-1.900, .400)
+    ax[i].set(xlim=(power[i].index[0], power[i].index[-1]))#, ylim=(-1.200, 1.200))#(-1.900, .400)
     if lan == 'DE':
       patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
@@ -229,30 +246,243 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
     ax[0].legend(handles=patch_list, loc='lower left', shadow=True, prop={'size': 7.5})
 
   if lan == 'DE':
-    ax[0].set_ylabel('Leistung in MW')
+    ax[0].set_ylabel('\nLeistung in MW\n')
     ax[0].set_xlabel('Uhrzeit')
     ax[1].set_xlabel('Uhrzeit')
     #ax[0].set_title('1')
     #ax[1].set_title('2')
   elif lan == 'EN':
-    ax[0].set_ylabel('Power in MW')
+    ax[0].set_ylabel(' \n Power in MW \n ')
     ax[0].set_xlabel('Time')
     ax[1].set_xlabel('Time')
     #ax[0].set_title('1')
     #ax[1].set_title('2')
   
-  day = 3
-  time_min_1 = time1[(day-1)*24*60] #pd.to_datetime('2017-03-05 00:00:00+00:00', utc=True)
-  time_max_1 = time1[(day)*24*60-1]#pd.to_datetime('2017-03-05 23:59:00+00:00', utc=True)
+  y_max = max(y_max_pos)
+  y_min = min(y_max_neg)
 
-  time_min_2 = time2[(day-1)*24*60] #pd.to_datetime('2017-03-05 00:00:00+00:00', utc=True)
-  time_max_2 = time2[(day)*24*60-1]#pd.to_datetime('2017-03-05 23:59:00+00:00', utc=True)
+  y_max += max([abs(y_min), abs(y_max)])*.1
+  y_min -= max([abs(y_min), abs(y_max)])*.1
 
   ax[0].set_xlim(time_min_1, time_max_1)
   ax[1].set_xlim(time_min_2, time_max_2)
+
+  ax[0].set_ylim(y_min, y_max)
+  ax[1].set_ylim(y_min, y_max)
   
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, format=image_format, bbox_inches='tight', dpi=dpi)
+
+
+###############################################
+###############################################
+###############################################
+###############################################
+###############################################
+###############################################
+###############################################
+
+def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
+  prop_cycle = plt.rcParams['axes.prop_cycle']
+  c = prop_cycle.by_key()['color']
+  # res load
+  power_1 = eva1['power']*1
+  power_2 = eva2['power']*1
+  power = [power_1, power_2]
+  storage_1 = -eva1['storage_power']*1
+  storage_2 = -eva2['storage_power']*1
+  storage = [storage_1, storage_2]
+  curtailed_power_1 = eva1['curtailed_power']
+  curtailed_power_2 = eva2['curtailed_power']
+  curtailed = [curtailed_power_1, curtailed_power_2]
+
+  time1 = power_1.index
+  time2 = power_2.index
+
+  day = 3
+  time_min_1 = time1[(day-1)*24*60]
+  time_max_1 = time1[(day)*24*60-1]
+
+  time_min_2 = time2[(day-1)*24*60]
+  time_max_2 = time2[(day)*24*60-1]
+
+  time_min = [time_min_1, time_min_2]
+  time_max = [time_max_1, time_max_2]
+
+  y_max_pos = [0, 0]
+  y_max_neg = [0, 0]
+
+  for i in [0, 1]:
+    storage_sum = storage[i].sum(axis=1)
+    storage_charge = storage[i].copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage[i].copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+    if i == 0:
+      y_max_pos[i] = (power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load).loc[time_min_1:time_max_1].max()
+      y_max_neg[i] = (-storage_discharge - power[i].pv - curtailed[i].pv).loc[time_min_1:time_max_1].min()
+    else:
+      y_max_pos[i] = (power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load).loc[time_min_2:time_max_2].max()
+      y_max_neg[i] = (-storage_discharge - power[i].pv - curtailed[i].pv).loc[time_min_2:time_max_2].min()
+
+  # grid issues
+  power_summer = eva1['power']
+  storage_power_summer = eva1['storage_power']
+  power_summer = power_summer.load+power_summer.hp+power_summer.ev-power_summer.pv+storage_power_summer.sum(axis=1)
+  v_summer = eva1['v']
+  ll_summer = eva1['ll']
+  tl_summer = eva1['tl']
+
+  power_winter = eva2['power']
+  storage_power_winter = eva2['storage_power']
+  power_winter = power_winter.load+power_winter.hp+power_winter.ev-power_winter.pv+storage_power_winter.sum(axis=1)
+  v_winter = eva2['v']
+  ll_winter = eva2['ll']
+  tl_winter = eva2['tl']
+
+  line_v_o_winter = power_winter*0 + 1.1
+  line_v_u_winter = power_winter*0 + .9
+  line_lt_winter = power_winter*0 + 1
+
+  line_v_o_summer = power_summer*0 + 1.1
+  line_v_u_summer = power_summer*0 + .9
+  line_lt_summer = power_summer*0 + 1
+
+  line_v_o = [line_v_o_summer, line_v_o_winter]
+  line_v_u = [line_v_u_summer, line_v_u_winter]
+  line_lt = [line_lt_summer, line_lt_winter]
+
+  v_min = [v_summer.T.min().T, v_winter.T.min().T]
+  v_max = [v_summer.T.max().T, v_winter.T.max().T]
+  ll_max = [ll_summer.T.max().T, ll_winter.T.max().T]
+  tl_max = [tl_summer.T.max().T, tl_winter.T.max().T]
+  power_sum = [power_summer, power_winter]
+
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 2, figsize=(8,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  for i in [0, 1]:
+    #res
+    storage_sum = storage[i].sum(axis=1)
+    storage_charge = storage[i].copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage[i].copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    ax0[i].fill_between(power[i].index,                     -storage_discharge,                     -storage_discharge - power[i].pv, alpha=0.7, color=c[0])
+    ax0[i].fill_between(power[i].index,                         storage_charge,                         power[i].ev + storage_charge, alpha=0.7, color=c[1])
+    ax0[i].fill_between(power[i].index,              power[i].ev + storage_charge,            power[i].load + power[i].ev + storage_charge, alpha=0.7, color=c[2])
+    ax0[i].fill_between(power[i].index, power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge, alpha=0.7, color=c[3])
+    ax0[i].fill_between(power[i].index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    ax0[i].fill_between(power[i].index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    # curtailed power
+    ax0[i].fill_between(power[i].index, power[i].hp + power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load, alpha=0.2, color=c[7])
+    ax0[i].fill_between(power[i].index,                     -storage_discharge - power[i].pv,                       -storage_discharge - power[i].pv - curtailed[i].pv, alpha=0.2, color=c[7])
+
+    ax0[i].plot(power[i].index, -storage_discharge-power[i].pv, lw=.6)
+    ax0[i].plot(power[i].index, storage_charge+power[i].ev, lw=.6)
+    ax0[i].plot(power[i].index, storage_charge+power[i].load+power[i].ev, lw=.6)
+    ax0[i].plot(power[i].index, storage_charge+power[i].hp+power[i].load+power[i].ev, lw=.6)
+    ax0[i].plot(storage[i].index, storage_charge    , lw=.6)
+    ax0[i].plot(storage[i].index, -storage_discharge, lw=.6)
+
+    ax0[i].plot(power[i].index, -(power[i].pv-power[i].hp-power[i].load-power[i].ev+storage_sum), color='black', lw=1)
+
+    ax0[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax0[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax0[i].set(xlim=(power[i].index[0], power[i].index[-1]))
+    if lan == 'DE':
+      patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushalt'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpe'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Speicher'),
+         mpatches.Patch(color=c[7], alpha=0.2, label='Abregelung')
+                 ]
+    elif lan == 'EN':
+      patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Household'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heatpumpp'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         mpatches.Patch(color=c[7], alpha=0.2, label='Curtailment')
+                 ]
+
+    ax0[1].legend(handles=patch_list, loc='lower right', shadow=True, prop={'size': 7.5})
+
+    if lan == 'DE':
+      ax0[0].set_ylabel('\nLeistung in MW\n')
+    elif lan == 'EN':
+      ax0[0].set_ylabel(' \n Power in MW \n ')
+
+    y_max = max(y_max_pos)
+    y_min = min(y_max_neg)
+
+    y_max += max([abs(y_min), abs(y_max)])*.1
+    y_min -= max([abs(y_min), abs(y_max)])*.1
+
+    ax0[0].set_xlim(time_min_1, time_max_1)
+    ax0[1].set_xlim(time_min_2, time_max_2)
+
+    ax0[0].set_ylim(y_min, y_max)
+    ax0[1].set_ylim(y_min, y_max)
+
+    #grid
+    l1 = ax1[i].plot(v_min[i], 'r')[0]
+    ax1[i].plot(line_v_u[i], '--k', lw=.5)
+    l2 = ax1[i].plot(v_max[i], 'y')[0]
+    l_limit = ax1[i].plot(line_v_o[i], '--k', lw=.5)[0]
+    l3 = ax2[i].plot(tl_max[i]/100, 'g')[0]
+    l4 = ax2[i].plot(ll_max[i]/100, 'b')[0]
+    l_limit2 = ax2[i].plot(line_lt[i], '--k', lw=.5)[0]
+    l5 = ax3[i].plot(power_sum[i], 'k')[0]
+    ax1[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax1[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax2[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax2[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax3[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax3[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15)) # voltage band
+    ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(0, 1.1))    # line and trafo loading
+    ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower left", shadow=True, prop={'size': 7.5})
+      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower left", shadow=True, prop={'size': 7.5})
+      ax3[1].legend(handles=[l5], labels=['Residuallast'] ,loc="lower left", shadow=True, prop={'size': 7.5})
+      ax2[0].set_xlabel('Uhrzeit')
+      ax2[1].set_xlabel('Uhrzeit')
+      ax1[0].set_ylabel('Spannung\nin p.u.')
+      ax2[0].set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.')
+      ax3[0].set_ylabel('Leistung\nin MW')
+    elif lan == 'EN':
+      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Max Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax2[0].set_xlabel('Time')
+      ax2[1].set_xlabel('Time')
+      ax1[0].set_ylabel('Voltage\nin p.u.')
+      ax2[0].set_ylabel('Line-\nand Trafo-\nloading in p.u.')
+      ax3[0].set_ylabel('Power\nin MW')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi) 
+
+
+
+
+###############################################
+###############################################
+
 
 def plot_violin_overall_eva(df_eva_v, df_eva_l, save_fig_dir=None):
   print('Create Violin plots')
@@ -748,16 +978,17 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
   
 
-def plot_heatmap_self_sufficiency_per_season(eva, scenarios, net_name, save_fig_dir=None):
+def plot_heatmap_self_sufficiency_per_season(eva, scenario, net_name, save_fig_dir=None):
   seasons = ['spring', 'summer', 'autumn', 'winter']
 
   df_self_sufficiency = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
   df_pv_consumption = pd.DataFrame(index=[net_name[7:12]], columns=seasons).fillna(0)
 
   for index in eva:
-   if eva[index]['time_scope_name'] in seasons:
-     df_self_sufficiency[eva[index]['time_scope_name']].loc[eva[index]['net_name']] = eva[index]['SelfSufficiancy']
-     df_pv_consumption[eva[index]['time_scope_name']].loc[eva[index]['net_name']] = eva[index]['PVConsumption']
+    if str(eva[index]['scenario']) in str(scenario):
+      if eva[index]['time_scope_name'] in seasons:
+        df_self_sufficiency[eva[index]['time_scope_name']].loc[eva[index]['net_name']] = eva[index]['SelfSufficiancy']
+        df_pv_consumption[eva[index]['time_scope_name']].loc[eva[index]['net_name']] = eva[index]['PVConsumption']
 
   # round
   df_self_sufficiency = (df_self_sufficiency).round(3)

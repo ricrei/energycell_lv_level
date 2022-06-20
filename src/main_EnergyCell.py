@@ -70,7 +70,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope_summer
+time_scope = time_scope_autumn
 ###########################################
 
 #######################
@@ -207,7 +207,7 @@ def run_single_simulation():
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
-  #e.eva.energyflow_on_HH_level()
+  e.eva.energyflow_on_HH_level()
 
   #e.eva.plot_test()
 
@@ -319,10 +319,10 @@ scenarios = [
         [8,1,3,3,3,1,0],
                       ]
 
-#run_single_simulation()
+run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-run_output_data_conversion(scenarios)
+#run_output_data_conversion(scenarios)
 #######################
 
 #to be finish

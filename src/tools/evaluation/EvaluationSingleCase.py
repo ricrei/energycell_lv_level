@@ -844,7 +844,7 @@ class EvaluationSingleCase():
     bright = sns.color_palette("bright", 10)
     dark = sns.color_palette("dark", 10)
 
-    '''
+    #'''
     # Plot PV
     E_barplot1 = E
     E_barplot1['Eg_LV'] +=  E_barplot1['Eg_self']
@@ -864,7 +864,7 @@ class EvaluationSingleCase():
     Ec_self_bar = mpatches.Patch(color='red', label='self consumed')
     plt.legend(handles=[Ecur_pv_bar, Eg_MV_bar, Eg_LV_bar, Ec_self_bar])
     plt.xlabel('Households')
-    plt.ylabel('PV power in %')
+    plt.ylabel('PV energy in %')
     plt.show()
     '''
     '''
@@ -874,8 +874,8 @@ class EvaluationSingleCase():
     E_barplot2['Ec_MV'] +=  E_barplot2['Ec_LV']
     E_barplot2['Ecur_load'] +=  E_barplot2['Ec_MV']
     E_barplot2['Eflex_in_Ec_LV'] += E_barplot2['Ec_self']
-    #for i in E_barplot2.index: # plot in percent
-    #  E_barplot2.loc[i] = E_barplot2.loc[i] / E_barplot1['Ecur_load'].loc[i] * 100
+    for i in E_barplot2.index: # plot in percent
+      E_barplot2.loc[i] = E_barplot2.loc[i] / E_barplot1['Ecur_load'].loc[i] * 100
     #s5 = sns.barplot(x = E.index, y = 'Ec_flex', data = E_barplot2, color = 'grey')
     s4 = sns.barplot(x = E.index, y = 'Ecur_load', data = E_barplot2, color = 'yellow')
     s3 = sns.barplot(x = E.index, y = 'Ec_MV', data = E_barplot2, color = 'green')
@@ -891,9 +891,9 @@ class EvaluationSingleCase():
     Ec_LV_bar_flex = mpatches.Patch(color=dark[0], label='flex LV grid obtained')
     plt.legend(handles=[Ecur_load_bar, Ec_MV_bar, Ec_LV_bar, Ec_LV_bar_flex, Ec_self_bar, Ec_self_bar_flex])
     plt.xlabel('Households')
-    plt.ylabel('Load power in %')
+    plt.ylabel('Load energy in %')
     plt.show()
-    '''
+    #'''
 
     # To-DO
     ## flexibility power tracken und aus verbrauch rausrechnen
