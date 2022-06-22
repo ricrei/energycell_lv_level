@@ -238,7 +238,7 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic'),
          mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle'),
          mpatches.Patch(color=c[2], alpha=0.7, label='Household'),
-         mpatches.Patch(color=c[3], alpha=0.7, label='Heatpumpp'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heatpump'),
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
          mpatches.Patch(color=c[7], alpha=0.2, label='Curtailment')
                  ]
@@ -274,17 +274,24 @@ def plot_residualload_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
      plt.savefig(save_fig_dir, format=image_format, bbox_inches='tight', dpi=dpi)
 
 
-###############################################
-###############################################
-###############################################
-###############################################
-###############################################
-###############################################
-###############################################
 
 def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=None):
   prop_cycle = plt.rcParams['axes.prop_cycle']
   c = prop_cycle.by_key()['color']
+
+  if eva1['net_name_i'] == 7:
+    trafo_s_n = 0.16
+  elif eva1['net_name_i'] == 8:
+    trafo_s_n = 0.25
+  elif eva1['net_name_i'] == 9:
+    trafo_s_n = 0.4
+  elif eva1['net_name_i'] == 10:
+    trafo_s_n = 0.4
+  elif eva1['net_name_i'] == 11:
+    trafo_s_n = 0.63
+  else:
+    trafo_s_n = 0
+
   # res load
   power_1 = eva1['power']*1
   power_2 = eva2['power']*1
@@ -362,7 +369,7 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
   tl_max = [tl_summer.T.max().T, tl_winter.T.max().T]
   power_sum = [power_summer, power_winter]
 
-  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 2, figsize=(8,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 2, figsize=(8,10), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
   for i in [0, 1]:
     #res
     storage_sum = storage[i].sum(axis=1)
@@ -392,7 +399,7 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
     ax0[i].plot(storage[i].index, storage_charge    , lw=.6)
     ax0[i].plot(storage[i].index, -storage_discharge, lw=.6)
 
-    ax0[i].plot(power[i].index, -(power[i].pv-power[i].hp-power[i].load-power[i].ev+storage_sum), color='black', lw=1)
+    res_line, = ax0[i].plot(power[i].index, -(power[i].pv-power[i].hp-power[i].load-power[i].ev+storage_sum), color='black', lw=1, label='Residual load')
 
     ax0[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
     ax0[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
@@ -411,17 +418,18 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic'),
          mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle'),
          mpatches.Patch(color=c[2], alpha=0.7, label='Household'),
-         mpatches.Patch(color=c[3], alpha=0.7, label='Heatpumpp'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heatpump'),
          mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
-         mpatches.Patch(color=c[7], alpha=0.2, label='Curtailment')
+         mpatches.Patch(color=c[7], alpha=0.2, label='Curtailment'),
+         res_line
                  ]
 
     ax0[1].legend(handles=patch_list, loc='lower right', shadow=True, prop={'size': 7.5})
 
     if lan == 'DE':
-      ax0[0].set_ylabel('\nLeistung in MW\n')
+      ax0[0].set_ylabel('Leistung in MW')
     elif lan == 'EN':
-      ax0[0].set_ylabel(' \n Power in MW \n ')
+      ax0[0].set_ylabel('Power in MW')
 
     y_max = max(y_max_pos)
     y_min = min(y_max_neg)
@@ -444,6 +452,8 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
     l4 = ax2[i].plot(ll_max[i]/100, 'b')[0]
     l_limit2 = ax2[i].plot(line_lt[i], '--k', lw=.5)[0]
     l5 = ax3[i].plot(power_sum[i], 'k')[0]
+    ax3[i].plot(line_lt[i]*trafo_s_n, '--k', lw=.5)[0]
+    l6 = ax3[i].plot(-line_lt[i]*trafo_s_n, '--k', lw=.5)[0]
     ax1[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
     ax1[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
     ax2[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
@@ -456,9 +466,12 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
     ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-.3, .3))   # Res_load
 
     if lan == 'DE':
-      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower left", shadow=True, prop={'size': 7.5})
-      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower left", shadow=True, prop={'size': 7.5})
-      ax3[1].legend(handles=[l5], labels=['Residuallast'] ,loc="lower left", shadow=True, prop={'size': 7.5})
+      ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      if trafo_s_n == 0:
+        ax3[1].legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      else:
+        ax3[1].legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       ax2[0].set_xlabel('Uhrzeit')
       ax2[1].set_xlabel('Uhrzeit')
       ax1[0].set_ylabel('Spannung\nin p.u.')
@@ -466,22 +479,19 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
       ax3[0].set_ylabel('Leistung\nin MW')
     elif lan == 'EN':
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
-      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Max Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
-      ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      if trafo_s_n == 0:
+        ax3[1].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      else:
+        ax3[1].legend(handles=[l5, l6], labels=['Residual load', 'Trafo limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       ax2[0].set_xlabel('Time')
       ax2[1].set_xlabel('Time')
       ax1[0].set_ylabel('Voltage\nin p.u.')
-      ax2[0].set_ylabel('Line-\nand Trafo-\nloading in p.u.')
-      ax3[0].set_ylabel('Power\nin MW')
+      ax2[0].set_ylabel('Line- and Trafo-\nloading in p.u.')
+      ax3[0].set_ylabel('Power in MW')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi) 
-
-
-
-
-###############################################
-###############################################
 
 
 def plot_violin_overall_eva(df_eva_v, df_eva_l, save_fig_dir=None):
@@ -705,7 +715,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
     ax.set_title('Abgeregelte PV Energie in %')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_season.png', bbox_inches='tight', dpi=dpi)
+     plt.savefig(save_fig_dir + '00b_' + str(scenario[0]) + '_heatmap_curtailed_power_pv_per_cent_season.png', bbox_inches='tight', dpi=dpi)
      #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
   
   #"YlOrBr"
@@ -722,7 +732,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
     ax.set_title('Abgeregelte Last in %')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_season.png', bbox_inches='tight', dpi=dpi)
+     plt.savefig(save_fig_dir + '00b_' + str(scenario[0]) + '_heatmap_curtailed_power_load_per_cent_season.png', bbox_inches='tight', dpi=dpi)
      #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
   plt.figure()
@@ -737,7 +747,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
     ax.set_title('Abgeregelte PV Energie in MWh')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv_season.png', bbox_inches='tight', dpi=dpi)
+     plt.savefig(save_fig_dir + '00c_' + str(scenario[0]) + '_heatmap_curtailed_power_pv_season.png', bbox_inches='tight', dpi=dpi)
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_pv_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
   
   #"YlOrBr"
@@ -754,7 +764,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
     ax.set_title('Abgeregelte Last in MWh')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_season.png', bbox_inches='tight', dpi=dpi)
+     plt.savefig(save_fig_dir + '00c_' + str(scenario[0]) + '_heatmap_curtailed_power_load_season.png', bbox_inches='tight', dpi=dpi)
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
   #plt.show()
@@ -1094,7 +1104,7 @@ def plot_grid_issus_over_time(eva, save_fig_dir=None):
   l5 = ax3.plot(power, 'k')[0]
   ax1.legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right")
   ax2.legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right")
-  ax3.legend(handles=[l5], labels=['Residualload'] ,loc="lower right")
+  ax3.legend(handles=[l5], labels=['Residual load'] ,loc="lower right")
   ax1.set_xlabel('Time')
   ax1.set_ylabel('Voltage\nin p.u.')
   ax2.set_ylabel('Line and Trafo\nLoading in p.u.')
@@ -1168,7 +1178,7 @@ def plot_grid_issus_over_time_subplot(eva1, eva2, detailed=None, save_fig_dir=No
   fig, ax = plt.subplots(3, 2, figsize=(8,4), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05})
   ax1 = ax[1] # Voltage
   ax2 = ax[2] # Line and Trafo
-  ax3 = ax[0] # Residualload
+  ax3 = ax[0] # Residual load
   for i in [0, 1]:
     l1 = ax1[i].plot(v_min[i], 'r')[0]
     ax1[i].plot(line_v_u[i], '--k', lw=.5)
@@ -1180,7 +1190,7 @@ def plot_grid_issus_over_time_subplot(eva1, eva2, detailed=None, save_fig_dir=No
     l5 = ax3[i].plot(power[i], 'k')[0]
     #ax1[i].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right")
     #ax2[i].legend(handles=[l4, l3, l_limit2], labels=['Line Overload', 'Trafo Overload', 'Overload Limit'] ,loc="upper right")
-    #ax3[i].legend(handles=[l5], labels=['Residualload'] ,loc="lower right")
+    #ax3[i].legend(handles=[l5], labels=['Residual load'] ,loc="lower right")
     #ax1[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
     #ax1[i].set_xticklabels(['  Day 1', '  Day 2', '  Day 3', '  Day 4', '  Day 5', '  Day 6', '  Day 7'])
     #ax2[i].set_xticks([k for k in power[i].index if (k.hour == 12) & (k.minute == 0)])
@@ -1201,7 +1211,7 @@ def plot_grid_issus_over_time_subplot(eva1, eva2, detailed=None, save_fig_dir=No
 
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right", shadow=True)
       ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right", shadow=True)
-      ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True)
+      ax3[1].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=True)
 
     else:
       day = 3
@@ -1233,7 +1243,7 @@ def plot_grid_issus_over_time_subplot(eva1, eva2, detailed=None, save_fig_dir=No
     elif lan == 'EN':
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Max Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
-      ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax3[1].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       ax2[0].set_xlabel('Time')
       ax2[1].set_xlabel('Time')
       ax1[0].set_ylabel('Voltage\nin p.u.')
@@ -1244,7 +1254,7 @@ def plot_grid_issus_over_time_subplot(eva1, eva2, detailed=None, save_fig_dir=No
   '''
   ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="upper right", shadow=True)
   ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Lineloading', 'Trafoloading', 'Overload Limit'] ,loc="upper right", shadow=True)
-  ax3[1].legend(handles=[l5], labels=['Residualload'] ,loc="lower right", shadow=True)
+  ax3[1].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=True)
   '''
 
   if save_fig_dir is not None:

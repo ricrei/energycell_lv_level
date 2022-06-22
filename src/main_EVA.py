@@ -96,12 +96,12 @@ evaluation.plot_grid_issus_over_time_subplot(eva1=eva['s4101110n8summer'], eva2=
 evaluation.plot_grid_issus_over_time_subplot(eva1=eva['s4101110n8winter'], eva2=eva['s8133310n8winter'], detailed=True, save_fig_dir=save_fig_dir+ 'grid_s4101110n8winter_s8133310n8winter.png')
 evaluation.plot_grid_issus_over_time(eva['s4101110n8summer'], save_fig_dir=save_fig_dir+ 'n8_summer_plot_grid_issus_over_time_subplot_n8_winter_full.png')
 '''
-
+# --- Power and Components loading --- #
 #'''
 scenarios = ['4101110', '8133310']
 eva = load_scenario_data(scenarios, grids=['n8'], seasons=['summer','winter'])
 evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8summer'], eva2=eva['s4101110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4101110n8summer_s4101110n8winter.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8winter'], eva2=eva['s8133310n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4101110n8winter_s8133310n8winter.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8winter'], eva2=eva['s8133310n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4101110n8winter_s8133310n8winter.png')
 #'''
 
 # --- SOCs --- #
@@ -153,8 +153,8 @@ evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101
 
 # --- Curtailment: PV-Power and Load (Season - Grid) --- #
 '''
-scenarios = ['8133310']
-#eva = load_scenario_data(scenarios)
+scenarios = ['4101110']
+eva = load_scenario_data(scenarios)
 evaluation.plot_heatmap_curtailed_power_per_season(eva, scenarios, net_name, save_fig_dir=save_fig_dir)
 '''
 

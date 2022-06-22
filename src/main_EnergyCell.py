@@ -161,7 +161,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 11
 ######################
 
 #############################
@@ -177,13 +177,16 @@ def run_single_simulation():
                     save_full_data = False, # default: False
                     verbose = True)        # default: False
 
+  print(e.grid.net.load.ev_c_bat.loc[e.grid.ev_index])
+  print(e.grid.net.load.ev_c_bat.loc[e.grid.ev_index].sum())
+
   # Run powerflow
   #e.run_pf_timeseries()
 
   # Initialize Evaluation
-  e.initiate_evaluation()
+  #e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
+  #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   #e.eva.plot_residualload(add_curtail=True, add_losses=False)
@@ -207,7 +210,7 @@ def run_single_simulation():
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
-  e.eva.energyflow_on_HH_level()
+  #e.eva.energyflow_on_HH_level()
 
   #e.eva.plot_test()
 
