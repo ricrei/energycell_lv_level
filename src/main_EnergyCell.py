@@ -7,6 +7,7 @@ Created on Thu May 31 2022
 """
 import tools.EnergyCell as ec
 import tools.evaluation.EvaluationAllCases as EvaAllCases
+import tools.economics.Economics as Economics
 
 import time
 
@@ -96,11 +97,11 @@ time_scope = time_scope_summer
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  6, # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
+  2, # BSS, 0-5
+  1, # HP, 0-5
+  1, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -161,7 +162,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 9
+net_number = 8
 ######################
 
 #############################
@@ -293,6 +294,14 @@ def run_output_data_conversion(scenarios):
   print('Done')
 ####################################
 
+#####################
+### Run Economics ###
+def run_economics():
+  e_eco = Economics.MainEconomics(scenario, net_name[net_number], time_scope)
+  e_eco.calculate_relevant_outputdata()
+  e_eco.energyflow_on_HH_level()
+  
+#####################
 
 #######################
 scenarios = [
@@ -319,12 +328,9 @@ scenarios = [
         [8,1,3,3,3,1,0],
                       ]
 
-run_single_simulation()
+#run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
+run_economics()
 #######################
-
-#to be finish
-
-
