@@ -71,7 +71,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope_summer
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -99,7 +99,7 @@ time_scope = time_scope_summer
 scenario = [
   6, # scenario number, 1-8
   1, # PV, 0-2
-  2, # BSS, 0-5
+  3, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
   1, # Curtailment, 0/1
