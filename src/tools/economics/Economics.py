@@ -49,9 +49,9 @@ class MainEconomics():
 
   def energyflow_on_HH_level(self):
     # plot config
-    in_percent = True
+    in_percent = False
     # development env
-    test_case = True
+    test_case = 0
 
 
     index = self.load_p.columns
@@ -139,17 +139,24 @@ class MainEconomics():
     Eg_MV[dE_HH >= 0] = 0
     Eg_LV[dE_HH >= 0] = 0
 
+    Ec_self[Ec_self < 0] = 0
+    Eg_self[Eg_self < 0] = 0
+
     # BSS Flexibility
-    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load)] = dE_HH[(dE_HH >= 0) & (flex_bss > 0) & (pv > load)]
+    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)] = flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)]
+    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)] = dE_HH[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)]
+    #print(((dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)).sum())
+
     Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)] = flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)]
 
-    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load)] = -dE_HH[(dE_HH < 0) & (flex_bss < 0) & (pv <= load)]
+    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)] = -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)]
+    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)] = -dE_HH[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)]
+
     Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv > load)] = -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv > load)]
 
-    ### CHECKEN !!! ###
-    #Ec_self_flex[(flex_bss > 0)] = flex_bss[(flex_bss > 0)] - Ec_LV_flex[(flex_bss > 0)]
-    #Ec_self -= Ec_self_flex
-    
+    Ec_self_flex[(flex_bss > 0)] = flex_bss[(flex_bss > 0)] - Ec_LV_flex[(flex_bss > 0)]
+    Eg_self_flex[(flex_bss < 0)] = -flex_bss[(flex_bss < 0)] - Eg_LV_flex[(flex_bss < 0)]
+
     # Load Flexibility
     flex_load_pos = flex_load.copy() * 0
     flex_load_neg = flex_load.copy() * 0
@@ -172,11 +179,8 @@ class MainEconomics():
     Eg_LV_flex[  (flex_load < 0) & (pv > load)] += load-pv
     Eg_self_flex[(flex_load < 0) & (pv > load)] += -flex_load_neg - (load-pv)
 
-
     Ec_LV -= Ec_LV_flex
     Eg_LV -= Eg_LV_flex
-    Ec_self -= Ec_self_flex
-    Eg_self -= Eg_self_flex
 
     E = pd.DataFrame(index=Ec_self.columns)
 
@@ -195,38 +199,47 @@ class MainEconomics():
 
     if test_case == True:
       #'''
-      for i in [str(i) for i in range(10,20)]:#Ec_LV.columns:#
-      #for i in ['15']:#Ec_LV.columns:#
+      #for i in [str(i) for i in range(10,20)]:#Ec_LV.columns:#
+      for i in ['15']:#Ec_LV.columns:#
         fig, ax = plt.subplots()
-        #ax.plot(dE_HH[i])
-        #ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i] + Ec_self_flex[i]))
-        #ax.plot(load[i])
-        ax.plot((Eg_self[i] + Eg_LV[i] + Eg_MV[i] + Eg_LV_flex[i] + Eg_self_flex[i]))
-        ax.plot((pv[i] - bss[i]))
+        #ax.plot(dE_HH[i], label='dE_HH')
+        ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i] + Ec_self_flex[i]), label='Ec_self_flex')
+        ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i]), label='Ec_LV_flex')
+        ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i]), label='Ec_MW')
+        ax.plot((Ec_self[i] + Ec_LV[i]), label='Ec_LV')
+        ax.plot((Ec_self[i]), label='Ec_self')
+        #ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i]), label='Ec')        
+        #ax.plot(load[i] + flex_bss_LV[i], label='load')
+        #ax.plot((Ec_self_flex[i]), label='Ec_self_flex')
+        #ax.plot((Eg_self[i] + Eg_LV[i] + Eg_MV[i] + Eg_LV_flex[i]), label='Eg')
+        #ax.plot((pv[i] - bss[i] + flex_bss_LV[i]), label='pv+bss')
         #ax.plot(Ec_self[i] + Ec_LV[i] + Ec_MV[i])
-        #ax.plot(pv[i])
-        #ax.plot(bss[i])
+        #ax.plot(pv[i], label='pv')
+        #ax.plot(load[i], label='load')
         #ax.plot(Eg_self[i])
         #ax.plot(Eg_LV[i])
         #ax.plot(Eg_MV[i])
-        #ax.plot(Eg_LV_flex[i])
-        #ax.plot(Ec_self[i])
-        #ax.plot(Ec_self_flex[i])
-        #ax.plot(Ec_LV_flex[i])
+        #ax.plot(Ec_self[i], label='Ec_self')
+        #ax.plot(Ec_self_flex[i], label='Ec_self_flex')
+        #ax.plot(Ec_LV_flex[i], label='Ec_LV_flex')
+        #ax.plot(-Eg_self_flex[i], label='Eg_self_flex')
+        #ax.plot(-Eg_self_flex[i] - Eg_LV_flex[i], label='Eg_LV_flex')
+        #ax.plot()
         #ax.plot(load[i])
         #ax.plot(pv[i])
-        #ax.plot(flex_load_pos[i])
-        #ax.plot(Ec_self_flex[i])
+        #ax.plot(Eg_self_flex[i])
         #ax.plot(Eg_LV[i])
         #ax.plot(Eg_MV[i])
         #ax.plot(load[i])
         #ax.plot(bss[i])
-        #ax.plot(flex_bss[i] + bss[i])
+        #ax.plot(flex_bss[i], label='flex_bss')
+        #ax.plot(flex_bss_LV[i], label='flex_bss_LV')
         #ax.plot(load[i])
         #ax.plot((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (load)))
         #ax.plot((abs(Eg_self) + abs(Eg_MV) + abs(Eg_LV) - (pv - bss)))
       ax.set_xlabel('Time')
-      ax.set_ylabel('dP of each HH in MW')
+      ax.set_ylabel('P in MW')
+      ax.legend()
       plt.show()
       #'''
 
@@ -237,13 +250,13 @@ class MainEconomics():
         print('Error: ' + str(df.sum().sum()/60))
 
       # Bilanzcheck
-      print_mmm((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) - (load + flex_bss_LV)))#+ abs(Ec_self_flex) + abs(Ec_LV_flex)
+      print_mmm((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) + abs(Ec_LV_flex) - (load + flex_bss_LV)))#+ abs(Ec_self_flex) + abs(Ec_LV_flex)
       print_mmm((abs(Eg_self) + abs(Eg_MV) + abs(Eg_LV) + abs(Eg_LV_flex) - (pv - bss + flex_bss_LV)))
 
-      print('Generation (incl. BSS) : ' + str(((E.sum(axis=0).Eg_self + E.sum(axis=0).Eg_MV + E.sum(axis=0).Eg_LV)/60).round(3)) + ' MWh') # 60
-      print('Consumption (incl. BSS): ' + str(((E.sum(axis=0).Ec_self + E.sum(axis=0).Ec_MV + E.sum(axis=0).Ec_LV + E.sum(axis=0).Ec_LV_flex + E.sum(axis=0).Ec_self_flex)/60).round(3)) + ' MWh') # 60
+      print('Generation (incl. BSS) : ' + str(((E.sum(axis=0).Eg_self + E.sum(axis=0).Eg_MV + E.sum(axis=0).Eg_LV + E.sum(axis=0).Eg_LV_flex + E.sum(axis=0).Eg_self_flex)/60).round(3)) + ' MWh') # 60
+      print('Consumption (incl. BSS): ' + str(((E.sum(axis=0).Ec_self + E.sum(axis=0).Ec_MV + E.sum(axis=0).Ec_LV + E.sum(axis=0).Ec_LV_flex)/60).round(3)) + ' MWh') # 60
 
-      #sys.exit(0)
+      sys.exit(0)
 
     # Seaborn Colors
     bright = sns.color_palette("bright", 10)

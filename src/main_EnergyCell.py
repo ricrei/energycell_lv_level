@@ -71,7 +71,7 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
-time_scope = time_scope_winter
+time_scope = time_scope_spring
 ###########################################
 
 #######################
@@ -97,9 +97,9 @@ time_scope = time_scope_winter
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  6, # scenario number, 1-8
+  4, # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
+  0, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
   1, # Curtailment, 0/1
