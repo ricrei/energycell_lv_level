@@ -12,11 +12,42 @@ import tools.tools as tt
 class MainEconomics():
   def __init__(self, scenario, net_name, time_scope):
     self.time_scope = time_scope
-    self.output_dir = os.path.join("./", "output-files/"+''.join(str(num) for num in scenario)+"/"+str(net_name)+"/"+time_scope['start_time'][0:10]+"_"+time_scope['end_time'][0:10]+"_"+time_scope['t_freq']+"/")
+    self.output_dir = len(self.time_scope) * [' ']
+    i = 0
+    for t in self.time_scope:
+      self.output_dir[i] = os.path.join("./", "output-files/"+''.join(str(num) for num in scenario)+"/"+str(net_name)+"/"+t['start_time'][0:10]+"_"+t['end_time'][0:10]+"_"+t['t_freq']+"/")
+      i += 1
 
-    #self.v = self.read_data(self.output_dir+'res_bus_vm_pu.csv')
-    #self.ll = self.read_data(self.output_dir+'res_line_load_percent.csv')
-    #self.tl = self.read_data(self.output_dir+'res_trafo_load_percent.csv')
+    self.power = pd.DataFrame()
+    self.curtailed_power = pd.DataFrame()
+    self.curtailed_power_pv = pd.DataFrame()
+    self.curtailed_power_load = pd.DataFrame()
+    self.losses_p = pd.DataFrame()
+    self.storage_p = pd.DataFrame()
+    self.trafo_p = pd.DataFrame()
+    self.pv_p = pd.DataFrame()
+    self.load_p = pd.DataFrame()
+    self.bss_p_flex = pd.DataFrame()
+    self.load_p_flex = pd.DataFrame()
+
+    for output_dir in self.output_dir:
+      self.power = self.concat_dfs(self.power, output_dir+'power_total_MW.csv')
+      curtailed_power = self.read_data(output_dir+'curtailed_power_MW.csv')
+      curtailed_power_pv = pd.DataFrame(columns=curtailed_power.columns, index=curtailed_power.index).fillna(0)
+      curtailed_power_load = pd.DataFrame(columns=curtailed_power.columns, index=curtailed_power.index).fillna(0)
+      curtailed_power_pv[curtailed_power >= 0] = curtailed_power[curtailed_power >= 0]
+      curtailed_power_load[curtailed_power < 0] = -curtailed_power[curtailed_power < 0]
+      self.curtailed_power_pv = pd.concat([self.curtailed_power_pv, curtailed_power_pv])
+      self.curtailed_power_load = pd.concat([self.curtailed_power_load, curtailed_power_load])
+      self.losses_p = self.concat_dfs(self.losses_p, output_dir+'losses_active_power_MW.csv')
+      self.storage_p = self.concat_dfs(self.storage_p, output_dir+'storage_active_power_MW.csv')
+      self.trafo_p = self.concat_dfs(self.trafo_p, output_dir+'trafo_active_power_MW.csv')
+      self.pv_p = self.concat_dfs(self.pv_p, output_dir+'pv_active_power_MW.csv')
+      self.load_p = self.concat_dfs(self.load_p, output_dir+'load_active_power_MW.csv')
+      self.bss_p_flex = self.concat_dfs(self.bss_p_flex, output_dir+'bss_active_power_flex_MW.csv')
+      self.load_p_flex = self.concat_dfs(self.load_p_flex, output_dir+'load_active_power_flex_MW.csv')
+
+    '''
     self.power = self.read_data(self.output_dir+'power_total_MW.csv')
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
     self.curtailed_power_pv = pd.DataFrame(columns=self.curtailed_power.columns, index=self.curtailed_power.index).fillna(0)
@@ -25,12 +56,17 @@ class MainEconomics():
     self.curtailed_power_load[self.curtailed_power < 0] = -self.curtailed_power[self.curtailed_power < 0]
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
-    #self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
     self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
     self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
     self.bss_p_flex = self.read_data(self.output_dir+'bss_active_power_flex_MW.csv')
     self.load_p_flex = self.read_data(self.output_dir+'load_active_power_flex_MW.csv')
+    '''
+
+  def concat_dfs(self, df, new_output_dir):
+    data = self.read_data(new_output_dir)
+    data_list = [df, data]
+    return pd.concat(data_list)
 
   def read_data(self, filename):
     data = pd.read_csv(filename, delimiter = ',', low_memory=False)
@@ -262,7 +298,7 @@ class MainEconomics():
     bright = sns.color_palette("bright", 10)
     dark = sns.color_palette("dark", 10)
 
-    #'''
+    '''
     # Plot PV
     E_barplot1 = E
     E_barplot1['Eg_self'] += E_barplot1['Eg_self_flex']
@@ -292,8 +328,8 @@ class MainEconomics():
     else:
       plt.ylabel('Generation in MWh')
     plt.show()
-    #'''
-    #'''
+    '''
+    '''
     # Plot load
     E_barplot2 = E
     E_barplot2['Ec_self'] += E_barplot2['Ec_self_flex']
@@ -323,7 +359,34 @@ class MainEconomics():
     else:
       plt.ylabel('Consumption in MWh')
     plt.show()
-    #'''
+    '''
+
+    print('Generation: ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
+    print('Load: ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
+
+    #define data
+    data = [E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
+    labels = ['self-consumed', 'P2P', 'MV-grid obtained', 'curtailed Load']
+
+    #define Seaborn color palette to use
+    colors = sns.color_palette('pastel')[0:5]
+
+    #create pie chart
+    plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
+    plt.show()
+
+    #define data
+    data = [E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()]
+    labels = ['self-consumed', 'P2P', 'MV-grid feed-in', 'curtailed PV']
+
+    #define Seaborn color palette to use
+    colors = sns.color_palette('pastel')[0:5]
+
+    #create pie chart
+    plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
+    plt.show()
+
+
 
   ### calculate and print relevant parameters ###
   def calculate_relevant_outputdata(self):
@@ -337,7 +400,7 @@ class MainEconomics():
     curtail_p['curtail_pv'] = curtail_pv
     curtail_p['curtail_load'] = curtail_load
 
-    if self.time_scope['t_freq'] != None:#'1D':
+    if self.time_scope[0]['t_freq'] != None:#'1D':
       power = self.shorted_data(power, '1H')
       losses = self.shorted_data(losses, '1H')
       trafo_p = self.shorted_data(trafo_p, '1H')

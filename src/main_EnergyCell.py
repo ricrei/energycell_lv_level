@@ -71,6 +71,13 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'name'       : 'spring'
                     }
 
+time_scope_all_seasons = [
+                      time_scope_spring,
+                      time_scope_summer,
+                      time_scope_autumn,
+                      time_scope_winter
+                      ]
+
 time_scope = time_scope_spring
 ###########################################
 
@@ -97,11 +104,11 @@ time_scope = time_scope_spring
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
+  3, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -297,7 +304,7 @@ def run_output_data_conversion(scenarios):
 #####################
 ### Run Economics ###
 def run_economics():
-  e_eco = Economics.MainEconomics(scenario, net_name[net_number], time_scope)
+  e_eco = Economics.MainEconomics(scenario, net_name[net_number], time_scope_all_seasons)
   e_eco.calculate_relevant_outputdata()
   e_eco.energyflow_on_HH_level()
   
