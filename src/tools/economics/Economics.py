@@ -178,21 +178,6 @@ class MainEconomics():
     Ec_self[Ec_self < 0] = 0
     Eg_self[Eg_self < 0] = 0
 
-    # BSS Flexibility
-    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)] = flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)]
-    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)] = dE_HH[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)]
-    #print(((dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)).sum())
-
-    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)] = flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)]
-
-    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)] = -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)]
-    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)] = -dE_HH[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)]
-
-    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv > load)] = -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv > load)]
-
-    Ec_self_flex[(flex_bss > 0)] = flex_bss[(flex_bss > 0)] - Ec_LV_flex[(flex_bss > 0)]
-    Eg_self_flex[(flex_bss < 0)] = -flex_bss[(flex_bss < 0)] - Eg_LV_flex[(flex_bss < 0)]
-
     # Load Flexibility
     flex_load_pos = flex_load.copy() * 0
     flex_load_neg = flex_load.copy() * 0
@@ -215,8 +200,27 @@ class MainEconomics():
     Eg_LV_flex[  (flex_load < 0) & (pv > load)] += load-pv
     Eg_self_flex[(flex_load < 0) & (pv > load)] += -flex_load_neg - (load-pv)
 
+    #Ec_self -= Ec_self_flex
+    #Eg_self -= Eg_self_flex
+
+    # BSS Flexibility
+    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)] += flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)]
+    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)] += dE_HH[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)]
+
+    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)] += flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)]
+
+    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)] += -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)]
+    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)] += -dE_HH[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)]
+
+    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv > load)] += -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv > load)]
+
+    Ec_self_flex[(flex_bss > 0)] += flex_bss[(flex_bss > 0)] - Ec_LV_flex[(flex_bss > 0)]
+    Eg_self_flex[(flex_bss < 0)] += -flex_bss[(flex_bss < 0)] - Eg_LV_flex[(flex_bss < 0)]
+
     Ec_LV -= Ec_LV_flex
     Eg_LV -= Eg_LV_flex
+
+
 
     E = pd.DataFrame(index=Ec_self.columns)
 
@@ -234,19 +238,30 @@ class MainEconomics():
     E['Eg_self_flex'] = Eg_self_flex.sum()
 
     if test_case == True:
+
+      flex_bss_pos = flex_bss*0
+      flex_bss_neg = flex_bss*0
+      flex_bss_pos[flex_bss > 0] = flex_bss[flex_bss > 0]
+      flex_bss_neg[flex_bss <= 0] = -flex_bss[flex_bss <= 0]
+
+      print(load.sum().sum() + flex_bss_pos.sum().sum())
+      print(Ec_self.sum().sum()+Ec_LV.sum().sum()+Ec_MV.sum().sum()+Ec_LV_flex.sum().sum()+Ec_self_flex.sum().sum())
+
       #'''
       #for i in [str(i) for i in range(10,20)]:#Ec_LV.columns:#
       for i in ['15']:#Ec_LV.columns:#
         fig, ax = plt.subplots()
         #ax.plot(dE_HH[i], label='dE_HH')
+        '''
         ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i] + Ec_self_flex[i]), label='Ec_self_flex')
         ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i]), label='Ec_LV_flex')
         ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i]), label='Ec_MW')
         ax.plot((Ec_self[i] + Ec_LV[i]), label='Ec_LV')
         ax.plot((Ec_self[i]), label='Ec_self')
-        #ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i]), label='Ec')        
-        #ax.plot(load[i] + flex_bss_LV[i], label='load')
-        #ax.plot((Ec_self_flex[i]), label='Ec_self_flex')
+        '''
+        #ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i]), label='Ec')        
+        ax.plot(flex_bss[i], label='flex_bss')
+        ax.plot((Ec_self_flex[i]+Ec_LV_flex[i]), label='Ec_flex')
         #ax.plot((Eg_self[i] + Eg_LV[i] + Eg_MV[i] + Eg_LV_flex[i]), label='Eg')
         #ax.plot((pv[i] - bss[i] + flex_bss_LV[i]), label='pv+bss')
         #ax.plot(Ec_self[i] + Ec_LV[i] + Ec_MV[i])
@@ -289,14 +304,15 @@ class MainEconomics():
       print_mmm((abs(Ec_self) + abs(Ec_MV) + abs(Ec_LV) + abs(Ec_LV_flex) - (load + flex_bss_LV)))#+ abs(Ec_self_flex) + abs(Ec_LV_flex)
       print_mmm((abs(Eg_self) + abs(Eg_MV) + abs(Eg_LV) + abs(Eg_LV_flex) - (pv - bss + flex_bss_LV)))
 
-      print('Generation (incl. BSS) : ' + str(((E.sum(axis=0).Eg_self + E.sum(axis=0).Eg_MV + E.sum(axis=0).Eg_LV + E.sum(axis=0).Eg_LV_flex + E.sum(axis=0).Eg_self_flex)/60).round(3)) + ' MWh') # 60
-      print('Consumption (incl. BSS): ' + str(((E.sum(axis=0).Ec_self + E.sum(axis=0).Ec_MV + E.sum(axis=0).Ec_LV + E.sum(axis=0).Ec_LV_flex)/60).round(3)) + ' MWh') # 60
+      print('Generation (incl. BSS) : ' + str(((E.sum(axis=0).Eg_self + E.sum(axis=0).Eg_MV + E.sum(axis=0).Eg_LV + E.sum(axis=0).Eg_LV_flex + E.sum(axis=0).Eg_self_flex - flex_bss_neg.sum().sum())/60).round(3)) + ' MWh') # 60
+      print('Consumption (incl. BSS): ' + str(((E.sum(axis=0).Ec_self + E.sum(axis=0).Ec_MV + E.sum(axis=0).Ec_LV + E.sum(axis=0).Ec_LV_flex + E.sum(axis=0).Ec_self_flex - flex_bss_pos.sum().sum())/60).round(3)) + ' MWh') # 60
 
       sys.exit(0)
 
     # Seaborn Colors
     bright = sns.color_palette("bright", 10)
     dark = sns.color_palette("dark", 10)
+    colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
 
     '''
     # Plot PV
@@ -314,7 +330,7 @@ class MainEconomics():
     s2 = sns.barplot(x = E.index, y = 'Eg_LV', data = E_barplot1, color = 'blue')
     s2f = sns.barplot(x = E.index, y = 'Eg_LV_flex', data = E_barplot1, color = dark[0])
     s1 = sns.barplot(x = E.index, y = 'Eg_self', data = E_barplot1, color = 'red')
-    s1 = sns.barplot(x = E.index, y = 'Eg_self_flex', data = E_barplot1, color = dark[3])
+    s1f = sns.barplot(x = E.index, y = 'Eg_self_flex', data = E_barplot1, color = dark[3])
     Ecur_pv_bar = mpatches.Patch(color='yellow', label='curtailed')
     Eg_MV_bar = mpatches.Patch(color='green', label='MV feed-in')
     Eg_LV_bar = mpatches.Patch(color='blue', label='LV consumed')
@@ -364,23 +380,20 @@ class MainEconomics():
     print('Generation: ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
     print('Load: ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
 
-    #define data
-    data = [E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
-    labels = ['self-consumed', 'P2P', 'MV-grid obtained', 'curtailed Load']
-
     #define Seaborn color palette to use
-    colors = sns.color_palette('pastel')[0:5]
+    #colors = sns.color_palette('pastel')[0:5]
+
+    #define data
+    data = [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
+    labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
 
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
 
     #define data
-    data = [E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()]
-    labels = ['self-consumed', 'P2P', 'MV-grid feed-in', 'curtailed PV']
-
-    #define Seaborn color palette to use
-    colors = sns.color_palette('pastel')[0:5]
+    data = [(E['Eg_self'].sum() - E['Eg_self_flex'].sum()), E['Eg_self_flex'].sum(), (E['Eg_LV'].sum() - E['Eg_LV_flex'].sum()), E['Eg_LV_flex'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()]
+    labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid feed-in', 'curtailed Load']
 
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')

@@ -78,7 +78,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 
-time_scope = time_scope_spring
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -104,11 +104,11 @@ time_scope = time_scope_spring
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  6, # scenario number, 1-8
   1, # PV, 0-2
   3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
+  1, # HP, 0-5
+  1, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
