@@ -85,7 +85,7 @@ class MainEconomics():
 
   def energyflow_on_HH_level(self):
     # plot config
-    in_percent = False
+    in_percent = True
     # development env
     test_case = 0
 
@@ -217,6 +217,8 @@ class MainEconomics():
     Ec_self_flex[(flex_bss > 0)] += flex_bss[(flex_bss > 0)] - Ec_LV_flex[(flex_bss > 0)]
     Eg_self_flex[(flex_bss < 0)] += -flex_bss[(flex_bss < 0)] - Eg_LV_flex[(flex_bss < 0)]
 
+    Eg_LV_flex[Eg_LV_flex < 0] = 0
+
     Ec_LV -= Ec_LV_flex
     Eg_LV -= Eg_LV_flex
 
@@ -314,9 +316,9 @@ class MainEconomics():
     dark = sns.color_palette("dark", 10)
     colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
 
-    '''
+    #'''
     # Plot PV
-    E_barplot1 = E
+    E_barplot1 = E.copy()
     E_barplot1['Eg_self'] += E_barplot1['Eg_self_flex']
     E_barplot1['Eg_LV_flex'] += E_barplot1['Eg_self']
     E_barplot1['Eg_LV'] +=  E_barplot1['Eg_LV_flex']
@@ -344,10 +346,10 @@ class MainEconomics():
     else:
       plt.ylabel('Generation in MWh')
     plt.show()
-    '''
-    '''
+    #'''
+    #'''
     # Plot load
-    E_barplot2 = E
+    E_barplot2 = E.copy()
     E_barplot2['Ec_self'] += E_barplot2['Ec_self_flex']
     E_barplot2['Ec_LV_flex'] += E_barplot2['Ec_self']
     E_barplot2['Ec_LV'] +=  E_barplot2['Ec_LV_flex']
@@ -355,7 +357,7 @@ class MainEconomics():
     E_barplot2['Ecur_load'] +=  E_barplot2['Ec_MV']
     if in_percent == True:
       for i in E_barplot2.index: # plot in percent
-        E_barplot2.loc[i] = E_barplot2.loc[i] / E_barplot1['Ecur_load'].loc[i] * 100
+        E_barplot2.loc[i] = E_barplot2.loc[i] / E_barplot2['Ecur_load'].loc[i] * 100
     s4 = sns.barplot(x = E.index, y = 'Ecur_load', data = E_barplot2, color = 'yellow')
     s3 = sns.barplot(x = E.index, y = 'Ec_MV', data = E_barplot2, color = 'green')
     s2 = sns.barplot(x = E.index, y = 'Ec_LV', data = E_barplot2, color = 'blue')
@@ -375,7 +377,7 @@ class MainEconomics():
     else:
       plt.ylabel('Consumption in MWh')
     plt.show()
-    '''
+    #'''
 
     print('Generation: ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
     print('Load: ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
@@ -387,13 +389,17 @@ class MainEconomics():
     data = [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
 
+    print(data/sum(data))
+
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
 
     #define data
     data = [(E['Eg_self'].sum() - E['Eg_self_flex'].sum()), E['Eg_self_flex'].sum(), (E['Eg_LV'].sum() - E['Eg_LV_flex'].sum()), E['Eg_LV_flex'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()]
-    labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid feed-in', 'curtailed Load']
+    labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid feed-in', 'curtailed PV']
+
+    print(data/sum(data))
 
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')

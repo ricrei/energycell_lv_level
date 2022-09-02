@@ -17,8 +17,8 @@ class BSScreator:
         self.soc_percent =  control_parameter['BSS_start_soc_percent']#50
         self.soc_percent_winter =  control_parameter['BSS_start_soc_percent_winter']#25
         self.soc_percent_summer =  control_parameter['BSS_start_soc_percent_summer']#75
-        self.sizing_factor = control_parameter['BSS_sizing_factor_power_to_capacity']#.75
-        self.sizing_factor_bss_to_pv = control_parameter['BSS_sizing_factor_bss_to_pv']#.75
+        self.sizing_factor = control_parameter['BSS_sizing_factor_power_to_capacity']#.75    # kW_WR,BSS / kWh_BSS
+        self.sizing_factor_bss_to_pv = control_parameter['BSS_sizing_factor_bss_to_pv']#.75  # kWh_BSS   / kW_PV
 
         if 'name' in grid.time_scope.keys():
           if grid.time_scope['name'] == 'winter':

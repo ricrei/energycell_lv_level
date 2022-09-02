@@ -27,25 +27,17 @@ time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
              }
 '''
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
-                    'end_time'   : '2018-01-01 00:00:00+01:00',
-                    't_freq'     : '1H'
+                    'end_time'   : '2017-12-31 23:59:00+01:00',
+                    't_freq'     : '1T'
+                  }
+
+time_scope_year = { 'start_time' : '2017-01-01 00:00:00+00:00',
+                    'end_time'   : '2017-06-30 23:59:00+00:00',
+                    't_freq'     : '1T'
                   }
 
 # timescopes to examine
-'''
-time_scope_winter_with_extra_time = { 'start_time' : '2017-01-01 00:00:00+01:00',
-                      'end_time'   : '2017-01-10 00:00:00+01:00',
-                      't_freq'     : '1T',
-                      'name'       : 'winter'
-                    }
 
-
-time_scope_summer_with_extra_time = { 'start_time' : '2017-05-27 00:00:00+02:00',
-                      'end_time'   : '2017-06-03 00:00:00+02:00',
-                      't_freq'     : '1T',
-                      'name'       : 'summer'
-                    }
-'''
 time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
                       'end_time'   : '2017-01-10 00:00:00+01:00',
                       't_freq'     : '1T',
@@ -78,7 +70,41 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 
-time_scope = time_scope_winter
+# Seasons long
+'''
+time_scope_winter = { 'start_time' : '2017-01-01 00:00:00+01:00',
+                      'end_time'   : '2017-03-31 00:00:00+01:00',
+                      't_freq'     : '15T',
+                      'name'       : 'winter'
+                    }
+
+
+time_scope_summer = { 'start_time' : '2017-07-01 00:00:00+02:00',
+                      'end_time'   : '2017-09-30 00:00:00+02:00',
+                      't_freq'     : '15T',
+                      'name'       : 'summer'
+                    }
+
+time_scope_autumn = { 'start_time' : '2017-10-01 00:00:00+02:00',
+                      'end_time'   : '2017-12-31 00:00:00+02:00',
+                      't_freq'     : '15T',
+                      'name'       : 'autumn'
+                    }
+
+time_scope_spring = { 'start_time' : '2017-04-01 00:00:00+01:00',
+                      'end_time'   : '2017-06-30 00:00:00+01:00',
+                      't_freq'     : '15T',
+                      'name'       : 'spring'
+                    }
+
+time_scope_all_seasons = [
+                      time_scope_spring,
+                      time_scope_summer,
+                      time_scope_autumn,
+                      time_scope_winter
+                      ]
+'''
+time_scope = time_scope_summer
 ###########################################
 
 #######################
@@ -104,11 +130,11 @@ time_scope = time_scope_winter
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  6, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
   3, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
+  3, # HP, 0-5
+  3, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -183,7 +209,7 @@ def run_single_simulation():
                     control_parameter = control_parameter,
                     time_scope = time_scope,
                     save_full_data = False, # default: False
-                    verbose = True)        # default: False
+                    verbose = False)        # default: False
 
   # Run powerflow
   #e.run_pf_timeseries()
@@ -191,7 +217,7 @@ def run_single_simulation():
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
+  #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   #e.eva.plot_residualload(add_curtail=True, add_losses=False)
@@ -215,7 +241,7 @@ def run_single_simulation():
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
-  e.eva.energyflow_on_HH_level()
+  #e.eva.energyflow_on_HH_level() # ??? Ist das nicht bereits ausgelagert?
 
   #e.eva.plot_test()
 
@@ -239,7 +265,7 @@ def run_multiple_simulations(scenarios):
   start = time.perf_counter()
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
-    for net_name_i in [7, 8, 9, 10, 11]:
+    for net_name_i in [8]:#[7, 8, 9, 10, 11]:
       for scenario_i in scenarios:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
@@ -277,7 +303,7 @@ def run_multiple_simulations_multiprocessing(scenarios):
 
     pool = mp.Pool(6)
     time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
-    net_names = [7, 8, 9, 10, 11]
+    net_names = [8]#[7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
       results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for scenario_i in scenarios for time_scope_i in time_scope for net_name_i in net_names]
@@ -312,25 +338,25 @@ def run_economics():
 
 #######################
 scenarios = [
-        [1,0,0,0,0,0,0],
+        #[1,0,0,0,0,0,0],
         #[2,0,0,1,1,0,0],
-        [2,0,0,1,1,1,0],
+        #[2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
-        [3,1,0,0,0,1,0],
+        #[3,1,0,0,0,1,0],
         #[4,1,0,1,1,0,0],
-        [4,1,0,1,1,1,0],
+        #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
-        [6,1,1,1,1,1,0],
+        #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
-        [6,1,2,1,1,1,0],
+        #[6,1,2,1,1,1,0],
         #[6,1,3,1,1,0,0],
-        [6,1,3,1,1,1,0],
+        #[6,1,3,1,1,1,0],
         #[6,1,4,1,1,0,0],
-        [6,1,4,1,1,1,0],
+        #[6,1,4,1,1,1,0],
         #[6,1,5,1,1,0,0],
-        [6,1,5,1,1,1,0],
+        #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
-        [7,1,0,3,3,1,0],
+        #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
         [8,1,3,3,3,1,0],
                       ]

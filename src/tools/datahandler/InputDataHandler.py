@@ -102,8 +102,8 @@ class InputDataHandler():
           f = open(self.folder + 'daterange.csv','w')
           f.write(self.dates)
           f.close()
-          #print('FINISH!')
-          #sys.exit(0)
+          print('FINISH!')
+          sys.exit(0)
 
   def get_time_df(self, df):
         return df.index

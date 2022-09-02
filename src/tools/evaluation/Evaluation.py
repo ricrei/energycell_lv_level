@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -470,6 +471,10 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
 def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, eva4, save_fig_dir=None):
   prop_cycle = plt.rcParams['axes.prop_cycle']
   c = prop_cycle.by_key()['color']
+  font_size_legend = 9
+  framealpha_legend = 1
+  shadow_legend = True
+  x_pos_legend = .95 # default .9
 
   if eva1['net_name_i'] == 7:
     trafo_s_n = 0.16
@@ -506,8 +511,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   time3 = power_3.index
   time4 = power_4.index
 
-  day1 = 1
-  day2 = 7
+  day1 = 3
+  day2 = 3
   time_min_1 = time1[(day1-1)*24*60]
   time_max_1 = time1[(day2)*24*60-1]
 
@@ -653,7 +658,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
          res_line
                  ]
 
-    ax0[3].legend(handles=patch_list, loc='lower right', shadow=True, prop={'size': 7.5})
+    ax0[3].legend(handles=patch_list, loc='lower right', shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.455), bbox_transform=fig.transFigure)
 
     if lan == 'DE':
       ax0[0].set_ylabel('Leistung in MW')
@@ -699,12 +704,12 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
     ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-.3, .3))   # Res_load
 
     if lan == 'DE':
-      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
-      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.225), bbox_transform=fig.transFigure)
+      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.111), bbox_transform=fig.transFigure)
       if trafo_s_n == 0:
-        ax3[3].legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+        ax3[3].legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
       else:
-        ax3[3].legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+        ax3[3].legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="upper right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
       ax2[0].set_xlabel('Uhrzeit')
       ax2[1].set_xlabel('Uhrzeit')
       ax2[2].set_xlabel('Uhrzeit')
@@ -713,12 +718,12 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
       ax2[0].set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.')
       ax3[0].set_ylabel('Leistung\nin MW')
     elif lan == 'EN':
-      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
-      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.225), bbox_transform=fig.transFigure)
+      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.111), bbox_transform=fig.transFigure)
       if trafo_s_n == 0:
-        ax3[3].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+        ax3[3].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
       else:
-        ax3[3].legend(handles=[l5, l6], labels=['Residual load', 'Trafo limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+        ax3[3].legend(handles=[l5, l6], labels=['Residual load', 'Trafo limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.34), bbox_transform=fig.transFigure)
       ax2[0].set_xlabel('Time')
       ax2[1].set_xlabel('Time')
       ax2[2].set_xlabel('Time')
@@ -897,6 +902,136 @@ def plot_heatmap_grid_issus(eva, net_name, columns_scenarios, x_ticklabels, n, s
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_trafoloading.png', bbox_inches='tight', dpi=dpi)
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+
+
+def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_ticklabels, save_fig_dir=None):
+  minutes_per_hour = 60
+
+  seasons = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+
+  vu_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  vo_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  ll_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  tl_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+
+  vu_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(1)
+  vo_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  ll_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  tl_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+
+  for index in eva:
+    if eva[index]['scenario'] in columns_scenarios:
+
+      seasons[eva[index]['scenario']].loc[eva[index]['net_name']] += 1 
+
+      vu_mean[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['v'][eva[index]['v'] < 1.0].min(axis=1).mean()
+      vo_mean[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['v'][eva[index]['v'] > 1.0].max(axis=1).mean()
+      ll_mean[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['ll'].max(axis=1).mean()
+      tl_mean[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['tl'].max(axis=1).mean()
+
+      vu_peak[eva[index]['scenario']].loc[eva[index]['net_name']] = min([eva[index]['v'][eva[index]['v'] < 1.0].min(axis=1).min(), vu_peak[eva[index]['scenario']].loc[eva[index]['net_name']][0]])
+      vo_peak[eva[index]['scenario']].loc[eva[index]['net_name']] = max([eva[index]['v'][eva[index]['v'] > 1.0].max(axis=1).max(), vo_peak[eva[index]['scenario']].loc[eva[index]['net_name']][0]])
+      ll_peak[eva[index]['scenario']].loc[eva[index]['net_name']] = max([eva[index]['ll'].max(axis=1).max(), ll_peak[eva[index]['scenario']].loc[eva[index]['net_name']][0]])
+      tl_peak[eva[index]['scenario']].loc[eva[index]['net_name']] = max([eva[index]['tl'].max(axis=1).max(), tl_peak[eva[index]['scenario']].loc[eva[index]['net_name']][0]])
+
+  vu_mean = vu_mean/seasons
+  vo_mean = vo_mean/seasons
+  ll_mean = ll_mean/seasons
+  tl_mean = tl_mean/seasons
+
+  #'''
+  print(vu_mean)
+  print(vo_mean)
+  print(ll_mean)
+  print(tl_mean)
+  print(vu_peak)
+  print(vo_peak)
+  print(ll_peak)
+  print(tl_peak)
+  #'''
+
+  vmax = 1.04
+  vmin = .97
+  tlmax = 100.
+
+  cmap = "rocket_r"
+  cmap_dual = "twilight_shifted"#"seismic"
+
+  # mean
+  fig, ax = plt.subplots(2, 2, figsize=(6,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .2})
+  sns.heatmap(ax=ax[0][0], data=vu_mean, vmax = vmax, vmin = vmin, cmap=cmap_dual, annot=True, square=False, cbar=False, fmt=".3f")
+  sns.heatmap(ax=ax[0][1], data=vo_mean, vmax = vmax, vmin = vmin, cmap=cmap_dual, annot=True, square=False, cbar=False, fmt=".3f")
+  sns.heatmap(ax=ax[1][0], data=ll_mean, vmax = tlmax, vmin = -100., cmap=cmap_dual, annot=True, square=False, cbar=False)#, fmt=".0f")
+  sns.heatmap(ax=ax[1][1], data=tl_mean, vmax = tlmax, vmin = -100., cmap=cmap_dual, annot=True, square=False, cbar=False)#, fmt=".0f")
+
+  for x in [0, 1]:
+    for y in [0, 1]:
+      ax[x][y].set_xticklabels(x_ticklabels)
+      ax[x][y].set_yticklabels(y_ticklabels)
+
+  if lan == 'EN':
+    ax[0][0].set(xlabel='', ylabel='Grid')
+    ax[0][0].set_title('Mean Undervoltage in p.u.')
+    ax[0][1].set(xlabel='', ylabel='')
+    ax[0][1].set_title('Mean Overvoltage in p.u.')
+    ax[1][0].set(xlabel='Scenario', ylabel='Grid')
+    ax[1][0].set_title('Mean Lineloading in %')
+    ax[1][1].set(xlabel='Scenario', ylabel='')
+    ax[1][1].set_title('Mean Trafoloading in %')
+
+  elif lan == 'DE':
+    print('German x- and y-label not implemented')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + 'heatmap_subplot_component_loading_mean.png', bbox_inches='tight', dpi=dpi)
+
+  # peak
+  fig, ax = plt.subplots(2, 2, figsize=(6,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .2})
+  sns.heatmap(ax=ax[0][0], data=vu_peak, vmax = vmax, vmin = vmin, cmap=cmap_dual, annot=True, square=False, cbar=False, fmt=".3f")
+  sns.heatmap(ax=ax[0][1], data=vo_peak, vmax = vmax, vmin = vmin, cmap=cmap_dual, annot=True, square=False, cbar=False, fmt=".3f")
+  sns.heatmap(ax=ax[1][0], data=ll_peak, vmax = tlmax, vmin = -100., cmap=cmap_dual, annot=True, square=False, cbar=False)#, fmt=".0f")
+  sns.heatmap(ax=ax[1][1], data=tl_peak, vmax = tlmax, vmin = -100., cmap=cmap_dual, annot=True, square=False, cbar=False)#, fmt=".0f")
+
+  for x in [0, 1]:
+    for y in [0, 1]:
+      ax[x][y].set_xticklabels(x_ticklabels)
+      ax[x][y].set_yticklabels(y_ticklabels)
+
+  if lan == 'EN':
+    ax[0][0].set(xlabel='', ylabel='Grid')
+    ax[0][0].set_title('Peak Undervoltage in p.u.')
+    ax[0][1].set(xlabel='', ylabel='')
+    ax[0][1].set_title('Peak Overvoltage in p.u.')
+    ax[1][0].set(xlabel='Scenario', ylabel='Grid')
+    ax[1][0].set_title('Peak Lineloading in %')
+    ax[1][1].set(xlabel='Scenario', ylabel='')
+    ax[1][1].set_title('Peak Trafoloading in %')
+
+  elif lan == 'DE':
+    print('German x- and y-label not implemented')
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + 'heatmap_subplot_component_loading_peak.png', bbox_inches='tight', dpi=dpi)
+
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
+##########################################################################################
+
+
+
+
+
+
 
 def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
@@ -1131,7 +1266,7 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
     ax[0].set(xlabel='Scenario', ylabel='Grid')
     ax[1].set(xlabel='Scenario', ylabel='')
     ax[0].set_title('Curtailed load energy in %')
-    ax[1].set_title('Curtailed pv energy in %')
+    ax[1].set_title('Curtailed PV energy in %')
   elif lan == 'DE':
     ax[0].set(xlabel='Szenario', ylabel='Netz')
     ax[1].set(xlabel='Szenario', ylabel='')
@@ -1182,7 +1317,7 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   ax.set_yticklabels(y_ticklabels)
   if lan == 'EN':
     ax.set(xlabel='Scenario', ylabel='Grid')
-    ax.set_title('Self sufficiency in %')
+    ax.set_title('Degree of self sufficiency in %')
   elif lan == 'DE':
     ax.set(xlabel='Szenario', ylabel='Netz')
     ax.set_title('Autarkiegrad in %')
@@ -1197,7 +1332,7 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   ax.set_yticklabels(y_ticklabels)
   if lan == 'EN':
     ax.set(xlabel='Scenario', ylabel='Grid')
-    ax.set_title('PV consumption in %')
+    ax.set_title('Self consumption rate in %')
   elif lan == 'DE':
     ax.set(xlabel='Szenario', ylabel='Netz')
     ax.set_title('Eigenverbrauch in %')
@@ -1215,8 +1350,10 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   if lan == 'EN':
     ax[0].set(xlabel='Scenario', ylabel='Grid')
     ax[1].set(xlabel='Scenario', ylabel='')
-    ax[1].set_title('PV consumption in %')
-    ax[0].set_title('Self sufficiency in %')
+    #ax[1].set_title('PV consumption in %')
+    #ax[0].set_title('Self sufficiency in %')
+    ax[1].set_title('Self-consumption rate in %')
+    ax[0].set_title('Degree of self-sufficiency in %')
   elif lan == 'DE':
     ax[0].set(xlabel='Szenario', ylabel='Netz')
     ax[1].set(xlabel='Szenario', ylabel='')
