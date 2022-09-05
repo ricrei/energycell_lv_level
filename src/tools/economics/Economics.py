@@ -9,6 +9,8 @@ import seaborn as sns
 
 import tools.tools as tt
 
+import parameter_economics
+
 class MainEconomics():
   def __init__(self, scenario, net_name, time_scope):
     self.time_scope = time_scope
@@ -62,6 +64,17 @@ class MainEconomics():
     self.bss_p_flex = self.read_data(self.output_dir+'bss_active_power_flex_MW.csv')
     self.load_p_flex = self.read_data(self.output_dir+'load_active_power_flex_MW.csv')
     '''
+
+    self.economics_folder = os.path.join("./", "output-files/001_economics/"+''.join(str(num) for num in scenario)+"/"+str(net_name)+"/")
+    # Create output directory
+    if not os.path.isdir(self.economics_folder):
+      try:
+        os.makedirs(self.economics_folder)
+      except OSError:
+        print("Error: Creation of output directory %s failed" % self.economics_folder)
+      else:
+        #print("Create outout directory %s" % self.economics_folder)
+        pass
 
   def concat_dfs(self, df, new_output_dir):
     data = self.read_data(new_output_dir)
@@ -389,8 +402,6 @@ class MainEconomics():
     data = [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
 
-    print(data/sum(data))
-
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
@@ -399,13 +410,15 @@ class MainEconomics():
     data = [(E['Eg_self'].sum() - E['Eg_self_flex'].sum()), E['Eg_self_flex'].sum(), (E['Eg_LV'].sum() - E['Eg_LV_flex'].sum()), E['Eg_LV_flex'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid feed-in', 'curtailed PV']
 
-    print(data/sum(data))
-
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
 
-
+    print(E)
+    #tt.compress_pickle(self.economics_folder + 'energy_share_MWh.pbz2', E)
+    E.round(6).to_csv(self.economics_folder + 'energy_share_MWh.csv', header=True, index = True)
+    Eg_LV.round(6).to_csv(self.economics_folder + 'Eg_LV_MW.csv', header=True, index = True)
+    Ec_LV.round(6).to_csv(self.economics_folder + 'Ec_LV_MW.csv', header=True, index = True)
 
   ### calculate and print relevant parameters ###
   def calculate_relevant_outputdata(self):
@@ -465,4 +478,79 @@ class MainEconomics():
     print('PV consumption rate: %s %%' % ((PVConsumption).round(2)))
     print(' ')
 
+
+  def determine_local_energy_trading_price(self):
+    # Calculate supply-demand-ratio according to Dyn22
+
+    index = self.load_p.columns
+    index_cut = int((int(self.load_p.columns[-1])+1)/3)
+    load_index = index[0:index_cut]
+    hp_index = index[index_cut:2*index_cut]
+    ev_index = index[2*index_cut:3*index_cut]
+
+    load_index = [str(i) for i in load_index]
+    hp_index = [str(i) for i in hp_index]
+    ev_index = [str(i) for i in ev_index]
+
+    # HP-load per HH
+    hp_load = self.load_p[hp_index]
+    hp_load.columns = load_index
+    # EV-load per HH
+    ev_load = self.load_p[ev_index]
+    ev_load.columns = load_index
+    # HH-load per HH
+    hh_load = self.load_p[load_index]
+
+    l = hh_load + hp_load + ev_load
+    g = self.pv_p
+
+    s = g - l
+    s[s<0] = 0
+    d = l - g
+    d[d<0] = 0
+
+    s_total = s.sum(axis=1)
+    d_total = d.sum(axis=1)
+
+    r = s_total / d_total
+    r[r>1.] = 1.
+
+    p_fit = parameter_economics.energycosts_income['C_market_fit']
+    p_u = parameter_economics.energycosts_income['C_market_obtain']
+
+    p_t = r*0
+    p_t[r<1.] = r[r<1.]*p_fit + (1 - r[r<1.])*p_u
+    p_t[r>=1.] = parameter_economics.energycosts_income['C_market_fit']
+
+    '''
+    fig, ax = plt.subplots()
+    ax.plot(p_t)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('P in MW')
+    ax.legend()
+    plt.show()
+    '''
+    p_t.round(3).to_csv(self.economics_folder + 'trading_price_LV_cent.csv', header=True, index = True)
+
+  def determine_grid_charges(self):
+    pass
+
+  def determine_annutiy_costs_revenues(self):
+    p_t = self.read_data(self.economics_folder + 'trading_price_LV_cent.csv')
+    Eg_LV = self.read_data(self.economics_folder + 'Eg_LV_MW.csv') / 60
+    Ec_LV = self.read_data(self.economics_folder + 'Ec_LV_MW.csv') / 60
+
+    print(Ec_LV['0'])
+    print(p_t)
+
+    #'''
+    fig, ax = plt.subplots()
+    ax.plot(p_t * Ec_LV['0'])
+    ax.set_xlabel('Time')
+    ax.set_ylabel('P in MW')
+    ax.legend()
+    plt.show()
+    #'''
+    
+    
 

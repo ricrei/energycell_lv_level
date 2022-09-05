@@ -331,8 +331,12 @@ def run_output_data_conversion(scenarios):
 ### Run Economics ###
 def run_economics():
   e_eco = Economics.MainEconomics(scenario, net_name[net_number], time_scope_all_seasons)
-  e_eco.calculate_relevant_outputdata()
-  e_eco.energyflow_on_HH_level()
+  #e_eco.calculate_relevant_outputdata()
+  #e_eco.energyflow_on_HH_level()
+  #e_eco.determine_local_energy_trading_price()
+  #e_eco.determine_annutiy_costs_revenues()
+  #e_eco.determine_grid_charges()
+
   
 #####################
 

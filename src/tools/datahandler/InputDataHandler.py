@@ -74,7 +74,7 @@ class InputDataHandler():
           elif self.season == 'spring':
             self.inputfolder = self.folder + 'XX_inputdata_spring/'
           else:
-            raise ValueError('season in time_scope is invailed!') 
+            raise ValueError('Season in time_scope is invailed!') 
         
         elif self.season == None:
         
@@ -102,8 +102,8 @@ class InputDataHandler():
           f = open(self.folder + 'daterange.csv','w')
           f.write(self.dates)
           f.close()
-          print('FINISH!')
-          sys.exit(0)
+          #print('FINISH!')
+          #sys.exit(0)
 
   def get_time_df(self, df):
         return df.index
