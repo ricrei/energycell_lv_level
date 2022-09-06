@@ -235,8 +235,6 @@ class MainEconomics():
     Ec_LV -= Ec_LV_flex
     Eg_LV -= Eg_LV_flex
 
-
-
     E = pd.DataFrame(index=Ec_self.columns)
 
     E['Ec_self'] = Ec_self.sum()
@@ -419,6 +417,8 @@ class MainEconomics():
     E.round(6).to_csv(self.economics_folder + 'energy_share_MWh.csv', header=True, index = True)
     Eg_LV.round(6).to_csv(self.economics_folder + 'Eg_LV_MW.csv', header=True, index = True)
     Ec_LV.round(6).to_csv(self.economics_folder + 'Ec_LV_MW.csv', header=True, index = True)
+    Eg_LV_flex.round(6).to_csv(self.economics_folder + 'Eg_LV_flex_MW.csv', header=True, index = True)
+    Ec_LV_flex.round(6).to_csv(self.economics_folder + 'Ec_LV_flex_MW.csv', header=True, index = True)
 
   ### calculate and print relevant parameters ###
   def calculate_relevant_outputdata(self):
@@ -501,8 +501,14 @@ class MainEconomics():
     # HH-load per HH
     hh_load = self.load_p[load_index]
 
-    l = hh_load + hp_load + ev_load
-    g = self.pv_p
+    bss = self.storage_p
+    bss_neg = bss.copy()
+    bss_pos = bss.copy()
+    bss_neg[bss_neg > 0] = 0
+    bss_pos[bss_pos < 0] = 0
+
+    l = hh_load + hp_load + ev_load + bss_pos
+    g = self.pv_p - bss_neg
 
     s = g - l
     s[s<0] = 0
@@ -520,37 +526,162 @@ class MainEconomics():
 
     p_t = r*0
     p_t[r<1.] = r[r<1.]*p_fit + (1 - r[r<1.])*p_u
-    p_t[r>=1.] = parameter_economics.energycosts_income['C_market_fit']
+    p_t[r>=1.] = p_fit
 
     '''
     fig, ax = plt.subplots()
-    ax.plot(p_t)
+    ax.plot(bss)
     ax.set_xlabel('Time')
     ax.set_ylabel('P in MW')
     ax.legend()
     plt.show()
     '''
-    p_t.round(3).to_csv(self.economics_folder + 'trading_price_LV_cent.csv', header=True, index = True)
+    p_t.round(3).to_csv(self.economics_folder + 'trading_price_LV_euro_per_MWh.csv', header=True, index = True)
 
   def determine_grid_charges(self):
     pass
 
   def determine_annutiy_costs_revenues(self):
-    p_t = self.read_data(self.economics_folder + 'trading_price_LV_cent.csv')
+    E = pd.read_csv(self.economics_folder + 'energy_share_MWh.csv', delimiter = ',', low_memory=False) / 60
+
+    # EnergyCell management costs and revenues
+    EC_costs = {
+      'flex_LV' : 0,
+      'flex_self' : 0,
+      'curtailed_load' : 0,
+      'curtailed_pv' : 0
+    }
+    EC_reven = {
+      'grid_charges' : 0,
+    }
+
+    # LV traded energy, LV flex, costs and revenues
+    p_t = self.read_data(self.economics_folder + 'trading_price_LV_euro_per_MWh.csv')
     Eg_LV = self.read_data(self.economics_folder + 'Eg_LV_MW.csv') / 60
     Ec_LV = self.read_data(self.economics_folder + 'Ec_LV_MW.csv') / 60
+    Eg_LV_flex = self.read_data(self.economics_folder + 'Eg_LV_flex_MW.csv') / 60
+    Ec_LV_flex = self.read_data(self.economics_folder + 'Ec_LV_flex_MW.csv') / 60
+    df_HH = pd.DataFrame(columns=Ec_LV_flex.columns)
 
-    print(Ec_LV['0'])
-    print(p_t)
+    p_flex_LV = parameter_economics.energycosts_income['C_flex_LV']
 
-    #'''
-    fig, ax = plt.subplots()
-    ax.plot(p_t * Ec_LV['0'])
-    ax.set_xlabel('Time')
-    ax.set_ylabel('P in MW')
-    ax.legend()
+    Ec_LV_costs = Ec_LV.copy()*0
+    Eg_LV_reven = Eg_LV.copy()*0
+    Ec_LV_flex_reven = Ec_LV_flex.copy()*0
+    Eg_LV_flex_reven = Eg_LV_flex.copy()*0
+
+    for c in Ec_LV.columns:
+      Ec_LV_costs[c] = Ec_LV[c] * p_t['0']
+      Eg_LV_reven[c] = Eg_LV[c] * p_t['0']
+      Ec_LV_flex_reven[c] = Ec_LV_flex[c] * p_flex_LV
+      Eg_LV_flex_reven[c] = Eg_LV_flex[c] * (p_t['0'] + p_flex_LV)
+      EC_costs['flex_LV'] += (Ec_LV_flex[c] * p_flex_LV).sum()
+      EC_costs['flex_LV'] += (Eg_LV_flex[c] * (p_t['0'] + p_flex_LV)).sum()
+
+    # Self consumed flex energy
+    Ec_self_flex_reven = df_HH.copy()
+    Eg_self_flex_reven = df_HH.copy()
+    p_flex_self = parameter_economics.energycosts_income['C_flex_self']
+
+    Ec_self_flex_reven = E['Ec_self_flex'] * p_flex_self
+    Eg_self_flex_reven = E['Eg_self_flex'] * p_flex_self
+    EC_costs['flex_self'] += (E['Ec_self_flex'] * p_flex_self).sum()
+    EC_costs['flex_self'] += (E['Eg_self_flex'] * p_flex_self).sum()
+
+    # Curtailed Energy
+    Ec_cur_load_reven = df_HH.copy()
+    Eg_cur_pv_reven   = df_HH.copy()
+    p_cur_load = parameter_economics.energycosts_income['C_cur_load']
+    p_cur_pv = parameter_economics.energycosts_income['C_cur_pv']
+
+    Ec_cur_load_reven = E['Ecur_load'] * p_cur_load
+    Eg_cur_pv_reven   = E['Ecur_pv'] * p_cur_pv
+    EC_costs['curtailed_load'] += (E['Ecur_load'] * p_cur_load).sum()
+    EC_costs['curtailed_pv'] += (E['Ecur_pv'] * p_cur_pv).sum()
+
+    # MV grid obtained, feed-in
+    Ec_MV_costs = df_HH.copy()
+    Eg_MV_reven = df_HH.copy()
+    p_MV_fit = parameter_economics.energycosts_income['C_market_fit']
+    p_MV_obtain = parameter_economics.energycosts_income['C_market_obtain']
+
+    Ec_MV_costs = E['Ec_MV'] * p_MV_obtain
+    Eg_MV_reven = E['Eg_MV'] * p_MV_fit
+
+    # Put all together in a DataFrame and save it
+    E_costs = pd.DataFrame(index=E.index)
+    E_reven = pd.DataFrame(index=E.index)
+
+    E_costs['Ec_LV_costs'] = Ec_LV_costs.sum().values
+    E_costs['Ec_MV_costs'] = Ec_MV_costs#.values
+
+    E_reven['Ec_LV_flex_reven'] = Ec_LV_flex_reven.sum().values
+    E_reven['Eg_LV_flex_reven'] = Eg_LV_flex_reven.sum().values
+    E_reven['Ec_self_flex_reven'] = Ec_self_flex_reven#.sum().values
+    E_reven['Eg_self_flex_reven'] = Eg_self_flex_reven#.sum().values
+    E_reven['Ec_cur_load_reven'] = Ec_cur_load_reven#.sum().values
+    E_reven['Eg_cur_pv_reven'] = Eg_cur_pv_reven#.sum().values
+    E_reven['Eg_MV_reven'] = Eg_MV_reven#.sum().values
+    E_reven['Eg_LV_reven'] = Eg_LV_reven.sum().values
+
+    E_costs.round(3).to_csv(self.economics_folder + 'Costs_per_HH_in_Euro.csv', header=True, index = True)
+    E_reven.round(3).to_csv(self.economics_folder + 'Revenues_per_HH_in_Euro.csv', header=True, index = True)
+    EC_costs = pd.DataFrame(data=EC_costs, index=[0])
+    EC_costs.round(3).to_csv(self.economics_folder + 'Costs_ECM_in_Euro.csv', header=True, index = True)
+    EC_reven = pd.DataFrame(data=EC_reven, index=[0])
+    EC_reven.round(3).to_csv(self.economics_folder + 'Revenues_ECM_in_Euro.csv', header=True, index = True)
+
+
+  def plot_costs_revenues_per_HH(self):
+    E_costs = pd.read_csv(self.economics_folder + 'Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_reven = pd.read_csv(self.economics_folder + 'Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+
+    print(E_costs.sum())
+    print(E_reven.sum())
+
+    bright = sns.color_palette("bright", 10)
+    dark = sns.color_palette("dark", 10)
+    colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
+
+    # Plot PV
+    E_barplot1 = E_costs.copy()
+    E_barplot2 = E_reven.copy()
+
+    E_barplot1['Ec_MV_costs'] += E_barplot1['Ec_LV_costs']
+
+    E_barplot2['Eg_MV_reven'] += E_barplot2['Eg_LV_reven']
+    E_barplot2['Eg_self_flex_reven'] += E_barplot2['Eg_MV_reven']
+    E_barplot2['Ec_self_flex_reven'] += E_barplot2['Eg_self_flex_reven']
+    E_barplot2['Eg_LV_flex_reven'] += E_barplot2['Ec_self_flex_reven']
+    E_barplot2['Ec_LV_flex_reven'] += E_barplot2['Eg_LV_flex_reven']
+    E_barplot2['Eg_cur_pv_reven'] += E_barplot2['Ec_LV_flex_reven']
+    E_barplot2['Ec_cur_load_reven'] += E_barplot2['Eg_cur_pv_reven']
+
+    s10 = sns.barplot(x = E_barplot1.index, y = 'Ec_MV_costs', data = -E_barplot1, color = dark[1])
+    s9 = sns.barplot(x = E_barplot1.index, y = 'Ec_LV_costs', data = -E_barplot1, color = dark[0])
+
+    s8 = sns.barplot(x = E_barplot2.index, y = 'Ec_cur_load_reven', data = E_barplot2, color = bright[7])
+    s7 = sns.barplot(x = E_barplot2.index, y = 'Eg_cur_pv_reven', data = E_barplot2, color = bright[6])
+    s6 = sns.barplot(x = E_barplot2.index, y = 'Ec_LV_flex_reven', data = E_barplot2, color = bright[5])
+    s5 = sns.barplot(x = E_barplot2.index, y = 'Eg_LV_flex_reven', data = E_barplot2, color = bright[4])
+    s4 = sns.barplot(x = E_barplot2.index, y = 'Ec_self_flex_reven', data = E_barplot2, color = bright[3])
+    s3 = sns.barplot(x = E_barplot2.index, y = 'Eg_self_flex_reven', data = E_barplot2, color = bright[2])
+    s2 = sns.barplot(x = E_barplot2.index, y = 'Eg_MV_reven', data = E_barplot2, color = bright[1])
+    s1 = sns.barplot(x = E_barplot2.index, y = 'Eg_LV_reven', data = E_barplot2, color = bright[0])
+
+    Ec_MV_bar = mpatches.Patch(color=dark[1], label='MV obtained')
+    Ec_LV_bar = mpatches.Patch(color=dark[0], label='LV obtained')
+
+    Ec_cur_load_bar = mpatches.Patch(color=bright[7], label='curtailed load')
+    Eg_cur_pv_flex_bar = mpatches.Patch(color=bright[6], label='curtailed pv')
+    Ec_LV_flex_bar = mpatches.Patch(color=bright[5], label='LV flex con')
+    Eg_LV_flex_bar = mpatches.Patch(color=bright[4], label='LV flex gen')
+    Ec_self_flex_bar = mpatches.Patch(color=bright[3], label='self flex con')
+    Eg_self_flex_bar = mpatches.Patch(color=bright[2], label='self flex gen')
+    Eg_MV_bar = mpatches.Patch(color=bright[1], label='MV feed-in')
+    Eg_LV_bar = mpatches.Patch(color=bright[0], label='LV traded')
+    plt.legend(handles=[Ec_cur_load_bar, Eg_cur_pv_flex_bar, Ec_LV_flex_bar, Eg_LV_flex_bar, Ec_self_flex_bar, Eg_self_flex_bar, Eg_MV_bar, Eg_LV_bar, Ec_LV_bar, Ec_MV_bar])
+    plt.xlabel('Households')
+    plt.ylabel('Revenue in Euro')
     plt.show()
-    #'''
-    
-    
 
