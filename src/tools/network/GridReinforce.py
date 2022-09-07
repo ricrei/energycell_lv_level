@@ -7,6 +7,7 @@ from pandapower.plotting.plotly import create_bus_trace
 
 import simbench as sb
 
+from os.path import exists
 import pandas as pd
 import math
 import numpy as np
@@ -16,13 +17,15 @@ import tools.tools as tt
 
 class GridReinforce:
 
-  def __init__(self, grid, output_dir_worst_case, output_dir, use_data_of_scenario):
+  def __init__(self, grid, output_dir_worst_case, output_dir, use_data_of_scenario, control_parameter):
     self.grid = grid
     self.net_name = self.grid.net_name
     self.output_dir = output_dir
     self.output_dir_worst_case = output_dir_worst_case
 
     self.use_data_of_scenario = use_data_of_scenario
+
+    self.control_parameter = control_parameter
 
     self.load_scenario_output_data()
 
@@ -95,10 +98,19 @@ class GridReinforce:
          self.ll = tt.read_data(self.output_dir_worst_case+'res_line_load_percent.csv')
          self.tl = tt.read_data(self.output_dir_worst_case+'res_trafo_load_percent.csv')
          self.load_p = tt.read_data(self.output_dir_worst_case+'load_active_power_MW.csv')
-         self.load_q = tt.read_data(self.output_dir_worst_case+'load_reactive_power_MW.csv')
+         if exists(self.output_dir_worst_case+'load_reactive_power_MW.csv'):
+           self.load_q = tt.read_data(self.output_dir_worst_case+'load_reactive_power_MW.csv')
+         else:
+           self.load_q = self.load_p * np.tan(np.arccos(0.99))
          self.pv_p = tt.read_data(self.output_dir_worst_case+'pv_active_power_MW.csv')
-         self.pv_q = tt.read_data(self.output_dir_worst_case+'pv_reactive_power_MW.csv')
-         self.v_pu_ext_grid = tt.read_data(self.output_dir_worst_case+'v_pu_ext_grid.csv')
+         if exists(self.output_dir_worst_case+'pv_reactive_power_MW.csv'):
+           self.pv_q = tt.read_data(self.output_dir_worst_case+'pv_reactive_power_MW.csv')
+         else:
+           self.pv_q = self.pv_p * np.tan(np.arccos(self.control_parameter['PV_cos_phi']))
+         if exists(self.output_dir_worst_case+'v_pu_ext_grid.csv'):
+           self.v_pu_ext_grid = tt.read_data(self.output_dir_worst_case+'v_pu_ext_grid.csv')
+         else:
+           self.v_pu_ext_grid = self.tl * 0 + 1.0
        except:
          raise KeyError('Run first Scenario '+str(self.grid.scenario))         
     else:
@@ -366,5 +378,6 @@ class GridReinforce:
     print('Total Linecosts                 : %s Euro' % (round(float(total_line_costs))))
     print('Total line- and transformercosts: %s Euro' % (round(float(total_line_costs + total_trafo_costs))))
 
+    pp.runpp(self.grid.net)
     #pf_res_plotly(self.grid.net, aspectratio=(1,1))
 

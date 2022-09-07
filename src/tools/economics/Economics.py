@@ -13,11 +13,14 @@ import parameter_economics
 
 class MainEconomics():
   def __init__(self, scenario, net_name, time_scope):
+    self.scenario = scenario
     self.time_scope = time_scope
     self.output_dir = len(self.time_scope) * [' ']
     i = 0
     for t in self.time_scope:
       self.output_dir[i] = os.path.join("./", "output-files/"+''.join(str(num) for num in scenario)+"/"+str(net_name)+"/"+t['start_time'][0:10]+"_"+t['end_time'][0:10]+"_"+t['t_freq']+"/")
+      if t['name'] == 'summer':
+        self.output_dir_components = self.output_dir[i]
       i += 1
 
     self.power = pd.DataFrame()
@@ -49,21 +52,7 @@ class MainEconomics():
       self.bss_p_flex = self.concat_dfs(self.bss_p_flex, output_dir+'bss_active_power_flex_MW.csv')
       self.load_p_flex = self.concat_dfs(self.load_p_flex, output_dir+'load_active_power_flex_MW.csv')
 
-    '''
-    self.power = self.read_data(self.output_dir+'power_total_MW.csv')
-    self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
-    self.curtailed_power_pv = pd.DataFrame(columns=self.curtailed_power.columns, index=self.curtailed_power.index).fillna(0)
-    self.curtailed_power_load = pd.DataFrame(columns=self.curtailed_power.columns, index=self.curtailed_power.index).fillna(0)
-    self.curtailed_power_pv[self.curtailed_power >= 0] = self.curtailed_power[self.curtailed_power >= 0]
-    self.curtailed_power_load[self.curtailed_power < 0] = -self.curtailed_power[self.curtailed_power < 0]
-    self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
-    self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
-    self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
-    self.pv_p = self.read_data(self.output_dir+'pv_active_power_MW.csv')
-    self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
-    self.bss_p_flex = self.read_data(self.output_dir+'bss_active_power_flex_MW.csv')
-    self.load_p_flex = self.read_data(self.output_dir+'load_active_power_flex_MW.csv')
-    '''
+    self.component_parameter = pd.read_csv(self.output_dir_components + '02_component_data.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
     self.economics_folder = os.path.join("./", "output-files/001_economics/"+''.join(str(num) for num in scenario)+"/"+str(net_name)+"/")
     # Create output directory
@@ -478,7 +467,86 @@ class MainEconomics():
     print('PV consumption rate: %s %%' % ((PVConsumption).round(2)))
     print(' ')
 
+  #################################
+  ### 01 annuity of investmentcosts
+  #################################
+  def determine_annuity_investments(self):
+    investment_costs = parameter_economics.investment_costs
 
+    #print(self.component_parameter)
+    #print(investment_costs)
+
+    def calculate_anf(i, n):
+      anf = (i * (1 + i)**n) / ((1 + i)**n - 1)
+      return anf
+
+    E_invest_HH = pd.DataFrame(index=self.component_parameter.index)
+    E_invest_ECM = pd.DataFrame(index=[0])
+
+    ### HH ###
+    # BSS #
+    anf_bss_HH = calculate_anf(investment_costs['intrest_rate'], investment_costs['battery_lifespan'])
+    E_invest_HH['BSS'] = self.component_parameter['BSS_energy']*1000 * investment_costs['battery'] * anf_bss_HH if self.scenario[2] in [0, 1, 2, 3] else 0.
+
+    # TES #
+    anf_tes = calculate_anf(investment_costs['intrest_rate'], investment_costs['tes_lifespan'])
+    E_invest_HH['TES'] = self.component_parameter['TES_energy']*1000 * investment_costs['tes'] * anf_tes
+
+    # smart consumers #
+    anf_sgr = calculate_anf(investment_costs['intrest_rate'], investment_costs['smart_grid_lifespan'])
+    E_invest_HH['SG'] = investment_costs['smart_grid'] * anf_sgr if self.scenario[0] in [7, 8] else 0.
+
+    ### ECM ###
+    # BSS #
+    anf_bss_ECM = calculate_anf(investment_costs['intrest_rate'], investment_costs['battery_lifespan'])
+    E_invest_ECM['BSS'] = self.component_parameter['BSS_energy'].sum()*1000 * investment_costs['battery'] * anf_bss_ECM if self.scenario[2] in [4, 5] else 0.
+
+    # Grid #
+
+    #print(E_invest_HH)
+    #print(E_invest_ECM)
+
+    E_invest_HH.round(2).to_csv(self.economics_folder + '01_invest_per_HH_in_Euro.csv', header=True, index = True)
+    E_invest_ECM.round(2).to_csv(self.economics_folder + '01_invest_ECM_in_Euro.csv', header=True, index = True)
+
+  #####################################
+  ### 02 determine operational expanses
+  #####################################
+  def determine_operational_expanses(self):
+    E_invest_HH = pd.read_csv(self.economics_folder + '01_invest_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_invest_ECM = pd.read_csv(self.economics_folder + '01_invest_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+
+    E_opex_HH = pd.DataFrame(index=self.component_parameter.index)
+    E_opex_ECM = pd.DataFrame(index=[0])
+
+    percent = parameter_economics.operating_costs['percent']
+
+    ### HH ###
+    # BSS #
+    E_opex_HH['BSS'] = E_invest_HH['BSS'] * percent
+
+    # smart consumers #
+    E_opex_HH['TES'] = E_invest_HH['TES'] * percent
+
+    # smart consumers #
+    E_opex_HH['SG'] = E_invest_HH['SG'] * percent
+
+    ### ECM ###
+    # BSS #
+    E_opex_ECM['BSS'] = E_invest_ECM['BSS'] * percent
+
+    # Grid #
+
+    #print(E_opex_HH)
+    #print(E_opex_ECM)
+
+    E_opex_HH.round(2).to_csv(self.economics_folder + '02_opex_per_HH_in_Euro.csv', header=True, index = True)
+    E_opex_ECM.round(2).to_csv(self.economics_folder + '02_opex_EMC_in_Euro.csv', header=True, index = True)
+
+
+  ########################################
+  ### 03 costs and revenues of energyflows
+  ########################################
   def determine_local_energy_trading_price(self):
     # Calculate supply-demand-ratio according to Dyn22
 
@@ -541,7 +609,7 @@ class MainEconomics():
   def determine_grid_charges(self):
     pass
 
-  def determine_annutiy_costs_revenues(self):
+  def determine_energy_costs_revenues(self):
     E = pd.read_csv(self.economics_folder + 'energy_share_MWh.csv', delimiter = ',', low_memory=False) / 60
 
     # EnergyCell management costs and revenues
@@ -624,17 +692,20 @@ class MainEconomics():
     E_reven['Eg_MV_reven'] = Eg_MV_reven#.sum().values
     E_reven['Eg_LV_reven'] = Eg_LV_reven.sum().values
 
-    E_costs.round(3).to_csv(self.economics_folder + 'Costs_per_HH_in_Euro.csv', header=True, index = True)
-    E_reven.round(3).to_csv(self.economics_folder + 'Revenues_per_HH_in_Euro.csv', header=True, index = True)
+    E_costs.round(3).to_csv(self.economics_folder + '03_Costs_per_HH_in_Euro.csv', header=True, index = True)
+    E_reven.round(3).to_csv(self.economics_folder + '03_Revenues_per_HH_in_Euro.csv', header=True, index = True)
     EC_costs = pd.DataFrame(data=EC_costs, index=[0])
-    EC_costs.round(3).to_csv(self.economics_folder + 'Costs_ECM_in_Euro.csv', header=True, index = True)
+    EC_costs.round(3).to_csv(self.economics_folder + '03_Costs_ECM_in_Euro.csv', header=True, index = True)
     EC_reven = pd.DataFrame(data=EC_reven, index=[0])
-    EC_reven.round(3).to_csv(self.economics_folder + 'Revenues_ECM_in_Euro.csv', header=True, index = True)
+    EC_reven.round(3).to_csv(self.economics_folder + '03_Revenues_ECM_in_Euro.csv', header=True, index = True)
 
 
+  ########################################
+  ### Sum up of annuity Costs and Revenues
+  ########################################
   def plot_costs_revenues_per_HH(self):
-    E_costs = pd.read_csv(self.economics_folder + 'Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
-    E_reven = pd.read_csv(self.economics_folder + 'Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_costs = pd.read_csv(self.economics_folder + '03_Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_reven = pd.read_csv(self.economics_folder + '03_Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
     print(E_costs.sum())
     print(E_reven.sum())

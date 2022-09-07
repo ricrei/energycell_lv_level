@@ -130,12 +130,12 @@ time_scope = time_scope_summer
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  4, # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
-  1, # Curtailment, 0/1
+  0, # BSS, 0-5
+  1, # HP, 0-5
+  1, # EV, 0-3
+  0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -215,7 +215,7 @@ def run_single_simulation():
   #e.run_pf_timeseries()
 
   # Initialize Evaluation
-  e.initiate_evaluation()
+  #e.initiate_evaluation()
 
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
@@ -276,7 +276,7 @@ def run_multiple_simulations(scenarios):
                           time_scope = time_scope_i,
                           save_full_data = False, # default: False
                           verbose = False)         # default: False)
-        e.run_pf_timeseries()
+        #e.run_pf_timeseries()
         #------------
         #e.initiate_evaluation()
         #e.eva.calculate_relevant_outputdata()
@@ -296,14 +296,14 @@ def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
                           save_full_data = False)
-        e.run_pf_timeseries()
+        #e.run_pf_timeseries()
 
 def run_multiple_simulations_multiprocessing(scenarios):
     start = time.perf_counter()
 
     pool = mp.Pool(6)
-    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
-    net_names = [8]#[7, 8, 9, 10, 11]
+    time_scope = [time_scope_summer]#[time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
+    net_names = [7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
       results = [executor.submit(run_mp_on_ec, time_scope_i, net_name_i, scenario_i, control_parameter) for scenario_i in scenarios for time_scope_i in time_scope for net_name_i in net_names]
@@ -333,11 +333,19 @@ def run_economics():
   e_eco = Economics.MainEconomics(scenario, net_name[net_number], time_scope_all_seasons)
   #e_eco.calculate_relevant_outputdata()
   #e_eco.energyflow_on_HH_level()
+
+  ### determine annuity of investmentcosts (01)
+  e_eco.determine_annuity_investments()
+
+  ### determine operational expanses (02)
+  e_eco.determine_operational_expanses()
+
+  ### determine Costs and Revenues of Energyflows (03)
   #e_eco.determine_local_energy_trading_price()
   #e_eco.determine_grid_charges()
-  #e_eco.determine_annutiy_costs_revenues()
+  #e_eco.determine_energy_costs_revenues()
 
-  e_eco.plot_costs_revenues_per_HH()
+  #e_eco.plot_costs_revenues_per_HH()
   
 #####################
 
@@ -348,7 +356,7 @@ scenarios = [
         #[2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
-        #[4,1,0,1,1,0,0],
+        [4,1,0,1,1,0,0],
         #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
@@ -363,12 +371,12 @@ scenarios = [
         #[7,1,0,3,3,0,0],
         #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        [8,1,3,3,3,1,0],
+        #[8,1,3,3,3,1,0],
                       ]
 
 #run_single_simulation()
 #run_multiple_simulations(scenarios)
-#run_multiple_simulations_multiprocessing(scenarios)
+run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-run_economics()
+#run_economics()
 #######################

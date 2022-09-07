@@ -83,7 +83,7 @@ class EnergyCell():
 
         self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = self.controls['curtailment'])
 
-        self.output_data_handler = OutputDataHandler(save_full_data, self.control_parameter)
+        self.output_data_handler = OutputDataHandler(save_full_data, self.control_parameter, self.grid)
         self.output_dir = self.output_data_handler.create_output_dir(
                                          self.net_name,
                                          self.scenario,
@@ -92,7 +92,7 @@ class EnergyCell():
         self.pf = PowerFlow(self.output_dir)
         self.energy_manager = EnergyManagement(self.scenario)
 
-        self.grid_reinforcement(exit=0)
+        self.grid_reinforcement(exit=True)
 
         self.output_data_handler.create_output_dataframes(self.grid)
 
@@ -160,7 +160,8 @@ class EnergyCell():
                                          self.grid,
                                          self.output_dir_worst_case,
                                          self.output_dir,
-                                         use_data_of_scenario)
+                                         use_data_of_scenario,
+                                         self.control_parameter)
           self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
           self.grid = self.grid_reinforce.reinforce_lines(self.grid)
           self.grid_reinforce.final_grid_check()
