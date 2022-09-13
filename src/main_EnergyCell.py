@@ -64,10 +64,10 @@ time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                     }
 
 time_scope_all_seasons = [
-                      time_scope_spring,
+#                      time_scope_spring,
                       time_scope_summer,
-                      time_scope_autumn,
-                      time_scope_winter
+#                      time_scope_autumn,
+#                      time_scope_winter
                       ]
 
 # Seasons long
@@ -215,9 +215,9 @@ def run_single_simulation():
   #e.run_pf_timeseries()
 
   # Initialize Evaluation
-  #e.initiate_evaluation()
+  e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   #e.eva.plot_residualload(add_curtail=True, add_losses=False)
@@ -264,8 +264,8 @@ def run_single_simulation():
 def run_multiple_simulations(scenarios):
   start = time.perf_counter()
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
-    for net_name_i in [8]:#[7, 8, 9, 10, 11]:
+  for time_scope_i in [time_scope_summer]:#[time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
+    for net_name_i in [7, 8, 9, 10, 11]:
       for scenario_i in scenarios:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
@@ -332,20 +332,26 @@ def run_output_data_conversion(scenarios):
 def run_economics():
   e_eco = Economics.MainEconomics(scenario, net_name[net_number], time_scope_all_seasons)
   #e_eco.calculate_relevant_outputdata()
-  #e_eco.energyflow_on_HH_level()
+  e_eco.energyflow_on_HH_level()
 
   ### determine annuity of investmentcosts (01)
-  e_eco.determine_annuity_investments()
+  e_eco.determine_annuity_investments(include_grid_reinforce = True)
 
   ### determine operational expanses (02)
   e_eco.determine_operational_expanses()
 
   ### determine Costs and Revenues of Energyflows (03)
-  #e_eco.determine_local_energy_trading_price()
-  #e_eco.determine_grid_charges()
-  #e_eco.determine_energy_costs_revenues()
+  e_eco.determine_local_energy_trading_price()
+  e_eco.determine_grid_charges()
+  e_eco.determine_energy_costs_revenues()
 
-  #e_eco.plot_costs_revenues_per_HH()
+  e_eco.plot_costs_revenues_per_HH()
+
+  # [4,1,0,1,1,1,0] Basis mit Abregelung							-
+  # [4,1,0,1,1,0,1] Basis mit Netzausbau							alles durchlaufen			
+  # [8,1,3,3,3,1,0] Heimspeicher + flexible verbraucher				-
+  # [8,1,5,3,3,1,0] Communityspeicher + flexible verbraucher		alles durchlaufen
+  # [8,1,3,3,3,1,1] moderater Netzausbau							alles durchlaufen
   
 #####################
 
@@ -356,7 +362,7 @@ scenarios = [
         #[2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
-        [4,1,0,1,1,0,0],
+        [4,1,0,1,1,0,1],
         #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
@@ -376,7 +382,7 @@ scenarios = [
 
 #run_single_simulation()
 #run_multiple_simulations(scenarios)
-run_multiple_simulations_multiprocessing(scenarios)
+#run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-#run_economics()
+run_economics()
 #######################

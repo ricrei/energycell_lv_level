@@ -21,6 +21,9 @@ class MainEconomics():
       self.output_dir[i] = os.path.join("./", "output-files/"+''.join(str(num) for num in scenario)+"/"+str(net_name)+"/"+t['start_time'][0:10]+"_"+t['end_time'][0:10]+"_"+t['t_freq']+"/")
       if t['name'] == 'summer':
         self.output_dir_components = self.output_dir[i]
+        scenario_reinforce = scenario.copy()
+        scenario_reinforce[-1] = 1
+        self.output_dir_components_grid_reinforce = os.path.join("./", "output-files/"+''.join(str(num) for num in scenario_reinforce)+"/"+str(net_name)+"/"+t['start_time'][0:10]+"_"+t['end_time'][0:10]+"_"+t['t_freq']+"/")
       i += 1
 
     self.power = pd.DataFrame()
@@ -470,7 +473,7 @@ class MainEconomics():
   #################################
   ### 01 annuity of investmentcosts
   #################################
-  def determine_annuity_investments(self):
+  def determine_annuity_investments(self, include_grid_reinforce = True):
     investment_costs = parameter_economics.investment_costs
 
     #print(self.component_parameter)
@@ -502,12 +505,30 @@ class MainEconomics():
     E_invest_ECM['BSS'] = self.component_parameter['BSS_energy'].sum()*1000 * investment_costs['battery'] * anf_bss_ECM if self.scenario[2] in [4, 5] else 0.
 
     # Grid #
-
-    #print(E_invest_HH)
-    #print(E_invest_ECM)
+    anf_grid_ECM = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
+    costs_trafo, costs_lines = self.get_grid_reinforcment_costs(include_grid_reinforce)
+    E_invest_ECM['Grid_Lines'] = costs_lines * anf_grid_ECM
+    E_invest_ECM['Grid_Trafo'] = costs_trafo * anf_grid_ECM
 
     E_invest_HH.round(2).to_csv(self.economics_folder + '01_invest_per_HH_in_Euro.csv', header=True, index = True)
     E_invest_ECM.round(2).to_csv(self.economics_folder + '01_invest_ECM_in_Euro.csv', header=True, index = True)
+
+
+  def get_grid_reinforcment_costs(self, include_grid_reinforce):
+    file_line_costs = 'reinforced_lines.csv'
+    file_trafo_costs = 'reinforced_trafo.csv'
+    if include_grid_reinforce == False:
+      return 0., 0.
+    elif include_grid_reinforce == True:
+      if os.path.exists(self.output_dir_components_grid_reinforce + file_line_costs) and os.path.exists(self.output_dir_components_grid_reinforce + file_trafo_costs):
+        line_costs = pd.read_csv(self.output_dir_components_grid_reinforce + file_line_costs, delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+        trafo_costs = pd.read_csv(self.output_dir_components_grid_reinforce + file_trafo_costs, delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+        return line_costs['total_costs'].sum(), trafo_costs['costs'].sum()
+      else:
+        print('Warning: include_grid_reinforce is set to True. But files reinforced_lines.csv and reinforced_trafo.csv could not be found. Grid cost = 0 is returned.')
+        return 0., 0.
+    else:
+      raise ValueError('Not sure wheater include grid reinforcment costs or not. Please set include_grid_reinforce True or False.')    
 
   #####################################
   ### 02 determine operational expanses
@@ -536,9 +557,8 @@ class MainEconomics():
     E_opex_ECM['BSS'] = E_invest_ECM['BSS'] * percent
 
     # Grid #
-
-    #print(E_opex_HH)
-    #print(E_opex_ECM)
+    E_opex_ECM['Grid_Lines'] = E_invest_ECM['Grid_Lines'] * percent
+    E_opex_ECM['Grid_Trafo'] = E_invest_ECM['Grid_Trafo'] * percent
 
     E_opex_HH.round(2).to_csv(self.economics_folder + '02_opex_per_HH_in_Euro.csv', header=True, index = True)
     E_opex_ECM.round(2).to_csv(self.economics_folder + '02_opex_EMC_in_Euro.csv', header=True, index = True)

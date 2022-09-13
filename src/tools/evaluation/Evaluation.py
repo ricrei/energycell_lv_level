@@ -511,8 +511,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   time3 = power_3.index
   time4 = power_4.index
 
-  day1 = 3
-  day2 = 3
+  day1 = 2
+  day2 = 2
   time_min_1 = time1[(day1-1)*24*60]
   time_max_1 = time1[(day2)*24*60-1]
 
@@ -603,7 +603,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   tl_max = [tl_plot1.T.max().T, tl_plot2.T.max().T, tl_plot3.T.max().T, tl_plot4.T.max().T]
   power_sum = [power_plot1, power_plot2, power_plot3, power_plot4]
 
-  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 4, figsize=(10,10), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  # figsize=(10,10)
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 4, figsize=(15,7.5), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
   for i in [0, 1, 2, 3]:
     #res
     storage_sum = storage[i].sum(axis=1)

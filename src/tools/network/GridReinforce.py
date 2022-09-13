@@ -273,17 +273,17 @@ class GridReinforce:
       # Strang 3
       self.connect_buses(bus_to_trafo=19, former_bus=37, line_type='NAYY 4x150SE 0.6/1kV')
       # Strang 4
-      self.connect_buses(bus_to_trafo=75, former_bus=80, line_type='NAYY 4x300SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=10, former_bus=71, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo= 5, former_bus=17, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo= 6, former_bus=92, line_type='NAYY 4x150SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=42, former_bus=75, line_type='NAYY 4x240SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=20, former_bus=13, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=82, former_bus=0, line_type='NAYY 4x185SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=41, former_bus=36, line_type='NAYY 4x185SE 0.6/1kV')
       return None
     elif self.net_name == "simbench_rural_3":
       # Strang 1
       self.connect_buses(bus_to_trafo=74, former_bus=58, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=37, former_bus=126, line_type='NAYY 4x150SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=5, former_bus=None, line_type='NAYY 4x150SE 0.6/1kV')
       # Strang 6
-      self.connect_buses(bus_to_trafo=46, former_bus=61, line_type='NAYY 4x150SE 0.6/1kV')
+      self.connect_buses(bus_to_trafo=39, former_bus=None, line_type='NAYY 4x150SE 0.6/1kV')
       # Strang 7
       self.connect_buses(bus_to_trafo=108, former_bus=33, line_type='NAYY 4x185SE 0.6/1kV')
       self.connect_buses(bus_to_trafo=125, former_bus=53, line_type='NAYY 4x185SE 0.6/1kV')
@@ -379,5 +379,5 @@ class GridReinforce:
     print('Total line- and transformercosts: %s Euro' % (round(float(total_line_costs + total_trafo_costs))))
 
     pp.runpp(self.grid.net)
-    #pf_res_plotly(self.grid.net, aspectratio=(1,1))
+    pf_res_plotly(self.grid.net, aspectratio=(1,1))
 
