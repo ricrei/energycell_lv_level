@@ -6,14 +6,14 @@ energycosts_income = { # Euro / MWh
   'C_flex_LV'       : 100,
   'C_flex_self'     : 20,
   'C_cur_load'      : 300,
-  'C_cur_pv'        : 30,
+  'C_cur_pv'        : 10,
 }
 
 investment_costs = {
-  'intrest_rate' : .0507,
-  'battery' : 1000, # in Euro/kWh
-  'battery_lifespan' : 15, # years
-  'tes' : 1500, # in Euro/kWh				# prüfen
+  'intrest_rate' : .0307,
+  'battery' : 500, # in Euro/kWh
+  'battery_lifespan' : 20, # years
+  'tes' : 100, # in Euro/kWh				# prüfen
   'tes_lifespan' : 20, # years				# prüfen
   'smart_grid' : 1500, # in Euro			# prüfen
   'smart_grid_lifespan' : 20, # years		# prüfen

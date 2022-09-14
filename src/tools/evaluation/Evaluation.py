@@ -474,7 +474,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   font_size_legend = 9
   framealpha_legend = 1
   shadow_legend = True
-  x_pos_legend = .95 # default .9
+  x_pos_legend = 1.005#.95 # default .9
 
   if eva1['net_name_i'] == 7:
     trafo_s_n = 0.16
@@ -604,7 +604,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   power_sum = [power_plot1, power_plot2, power_plot3, power_plot4]
 
   # figsize=(10,10)
-  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 4, figsize=(15,7.5), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 4, figsize=(12,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
   for i in [0, 1, 2, 3]:
     #res
     storage_sum = storage[i].sum(axis=1)
@@ -648,6 +648,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
          mpatches.Patch(color=c[4], alpha=0.7, label='Speicher'),
          mpatches.Patch(color=c[7], alpha=0.2, label='Abregelung')
                  ]
+
     elif lan == 'EN':
       patch_list = [
          mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic'),
@@ -719,8 +720,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
       ax2[0].set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.')
       ax3[0].set_ylabel('Leistung\nin MW')
     elif lan == 'EN':
-      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.225), bbox_transform=fig.transFigure)
-      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.111), bbox_transform=fig.transFigure)
+      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.22), bbox_transform=fig.transFigure) #0.225
+      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.09), bbox_transform=fig.transFigure) #0.111
       if trafo_s_n == 0:
         ax3[3].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
       else:
@@ -730,7 +731,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
       ax2[2].set_xlabel('Time')
       ax2[3].set_xlabel('Time')
       ax1[0].set_ylabel('Voltage\nin p.u.')
-      ax2[0].set_ylabel('Line- and Trafo-\nloading in p.u.')
+      #ax2[0].set_ylabel('Line- and Trafo-\nloading in p.u.')
+      ax2[0].set_ylabel('Line- and\nTrafoloading\nin p.u.')
       ax3[0].set_ylabel('Power in MW')
 
   if save_fig_dir is not None:
