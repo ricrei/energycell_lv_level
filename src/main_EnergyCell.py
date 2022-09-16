@@ -264,7 +264,7 @@ def run_single_simulation():
 def run_multiple_simulations(scenarios):
   start = time.perf_counter()
   i = 1
-  for time_scope_i in [time_scope_summer]:#[time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
+  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
     for net_name_i in [7, 8, 9, 10, 11]:
       for scenario_i in scenarios:
         print(' ')
@@ -276,7 +276,7 @@ def run_multiple_simulations(scenarios):
                           time_scope = time_scope_i,
                           save_full_data = False, # default: False
                           verbose = False)         # default: False)
-        #e.run_pf_timeseries()
+        e.run_pf_timeseries()
         #------------
         #e.initiate_evaluation()
         #e.eva.calculate_relevant_outputdata()
@@ -296,13 +296,13 @@ def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
                           save_full_data = False)
-        #e.run_pf_timeseries()
+        e.run_pf_timeseries()
 
 def run_multiple_simulations_multiprocessing(scenarios):
     start = time.perf_counter()
 
     pool = mp.Pool(6)
-    time_scope = [time_scope_summer]#[time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
+    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
     net_names = [7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -367,7 +367,7 @@ scenarios = [
         #[2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
-        [4,1,0,1,1,0,1],
+        #[4,1,0,1,1,0,1],
         #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
@@ -383,11 +383,12 @@ scenarios = [
         #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
         #[8,1,3,3,3,1,0],
+        [8,1,5,3,3,1,0],
                       ]
 
 #run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-#run_output_data_conversion(scenarios)
-run_economics()
+run_output_data_conversion(scenarios)
+#run_economics()
 #######################

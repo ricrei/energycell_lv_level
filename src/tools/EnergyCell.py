@@ -92,7 +92,7 @@ class EnergyCell():
         self.pf = PowerFlow(self.output_dir)
         self.energy_manager = EnergyManagement(self.scenario)
 
-        self.grid_reinforcement(exit=True)
+        self.grid_reinforcement(exit=False)
 
         self.output_data_handler.create_output_dataframes(self.grid)
 

@@ -379,5 +379,5 @@ class GridReinforce:
     print('Total line- and transformercosts: %s Euro' % (round(float(total_line_costs + total_trafo_costs))))
 
     pp.runpp(self.grid.net)
-    pf_res_plotly(self.grid.net, aspectratio=(1,1))
+    #pf_res_plotly(self.grid.net, aspectratio=(1,1))
 
