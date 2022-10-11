@@ -4,7 +4,7 @@ energycosts_income = { # Euro / MWh
   'C_grid_charge'   : 50,
   'C_p2p'           : [],
   'C_flex_LV'       : 100,
-  'C_flex_self'     : 20,
+  'C_flex_self'     : 30,
   'C_cur_load'      : 300,
   'C_cur_pv'        : 10,
 }

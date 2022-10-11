@@ -1295,6 +1295,19 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_subplot_component_loading_peak.png', bbox_inches='tight', dpi=dpi)
 
+  import matplotlib
+  from scipy.stats import norm
+
+  matplotlib.use("pgf")
+  matplotlib.rcParams.update({
+    "pgf.texsystem": "pdflatex",
+    'font.family': 'serif',
+    'text.usetex': True,
+    'pgf.rcfonts': False,
+  })
+
+  plt.savefig('testheatmap.pgf', format='pgf')
+
 
 def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')

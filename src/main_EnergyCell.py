@@ -130,11 +130,11 @@ time_scope = time_scope_summer
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  4, # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
+  0, # BSS, 0-5
+  1, # HP, 0-5
+  1, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -389,6 +389,6 @@ scenarios = [
 #run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-run_output_data_conversion(scenarios)
-#run_economics()
+#run_output_data_conversion(scenarios)
+run_economics()
 #######################

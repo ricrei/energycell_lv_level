@@ -17,7 +17,8 @@ class MainEconomics():
     self.net_name = net_name
     self.time_scope = time_scope
     self.output_dir = len(self.time_scope) * [' ']
-    self.conclusion_folder = os.path.join("./", "output-files/00_conclusion/")
+    #self.conclusion_folder = os.path.join("./", "output-files/00_conclusion/")
+    self.projection_full_year = 365/(4*7) # 4 weeks and 7 days per week
     i = 0
     for t in self.time_scope:
       self.output_dir[i] = os.path.join("./", "output-files/"+''.join(str(num) for num in scenario)+"/"+str(net_name)+"/"+t['start_time'][0:10]+"_"+t['end_time'][0:10]+"_"+t['t_freq']+"/")
@@ -102,8 +103,6 @@ class MainEconomics():
     in_percent = True
     # development env
     test_case = 0
-
-    projection_full_year = 365/(4*7) # 4 weeks and 7 days per week
 
     index = self.load_p.columns
     index_cut = int((int(self.load_p.columns[-1])+1)/3)
@@ -415,7 +414,7 @@ class MainEconomics():
     plt.show()
 
     E = E / 60 # MW -> MWh
-    E = E * projection_full_year
+    E = E * self.projection_full_year
 
     E.round(6).to_csv(self.economics_folder + 'energy_share_MWh.csv', header=True, index = True)
     Eg_LV.round(6).to_csv(self.economics_folder + 'Eg_LV_MW.csv', header=True, index = True)
@@ -428,8 +427,6 @@ class MainEconomics():
     in_percent = True
     # development env
     test_case = 0
-
-    projection_full_year = 365/(4*7) # 4 weeks and 7 days per week
 
     index = self.load_p.columns
     index_cut = int((int(self.load_p.columns[-1])+1)/3)
@@ -750,7 +747,7 @@ class MainEconomics():
     plt.show()
 
     E = E / 60 # MW -> MWh
-    E = E * projection_full_year
+    E = E * self.projection_full_year
 
     E.round(6).to_csv(self.economics_folder + 'energy_share_MWh.csv', header=True, index = True)
     Eg_LV.round(6).to_csv(self.economics_folder + 'Eg_LV_MW.csv', header=True, index = True)
@@ -759,7 +756,6 @@ class MainEconomics():
     Ec_LV_flex.round(6).to_csv(self.economics_folder + 'Ec_LV_flex_MW.csv', header=True, index = True)
     bss_neg.round(6).to_csv(self.economics_folder + 'Eg_LV_ECM_MW.csv', header=True, index = True)
     bss_pos.round(6).to_csv(self.economics_folder + 'Ec_LV_ECM_MW.csv', header=True, index = True)
-
 
   ### calculate and print relevant parameters ###
   def calculate_relevant_outputdata(self):
@@ -967,9 +963,9 @@ class MainEconomics():
 
     '''
     fig, ax = plt.subplots()
-    ax.plot(bss)
+    ax.plot(p_t)
     ax.set_xlabel('Time')
-    ax.set_ylabel('P in MW')
+    ax.set_ylabel('trading_price')
     ax.legend()
     plt.show()
     '''
@@ -977,24 +973,33 @@ class MainEconomics():
 
   def determine_grid_charges(self):
     investment_costs = parameter_economics.investment_costs
+    energycosts_income = parameter_economics.energycosts_income
 
     def calculate_anf(i, n):
       anf = (i * (1 + i)**n) / ((1 + i)**n - 1)
       return anf
 
+    E = pd.read_csv(self.economics_folder + 'energy_share_MWh.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    Ecur_load = E['Ecur_load'].sum()
+    Ecur_pv = E['Ecur_pv'].sum()
+    Ec_MV = E['Ec_MV'].sum()
+    Eg_MV = E['Eg_MV'].sum()
+    Ec_LV = E['Ec_LV'].sum()
+    Eg_LV = E['Eg_LV'].sum()
+    Ec_LV_flex = E['Ec_LV_flex'].sum()
+    Eg_LV_flex = E['Eg_LV_flex'].sum()
+    Ec_self_flex = E['Ec_self_flex'].sum()
+    Eg_self_flex = E['Eg_self_flex'].sum()
+
+    # grid charges derived from GRID REINFORCEMENT
     trafo_costs, line_costs = self.get_grid_reinforcment_costs(include_grid_reinforce = True)
     anf_grid = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
     trafo_costs *= anf_grid
     line_costs  *= anf_grid
 
-    E = pd.read_csv(self.economics_folder + 'energy_share_MWh.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
-    grid_charges = pd.DataFrame()
+    grid_charges = pd.DataFrame(index=[0])
 
     # grid charges based on load
-    Ecur_load = E['Ecur_load'].sum()
-    Ec_MV = E['Ec_MV'].sum()
-    Ec_LV = E['Ec_LV'].sum()
-
     a_load = (Ecur_load + Ec_MV)/(Ec_LV + Ecur_load + Ec_MV)
 
     grid_charge_MV_load = (a_load*line_costs + trafo_costs)/(Ecur_load + Ec_MV)
@@ -1004,10 +1009,7 @@ class MainEconomics():
     #print("grid charges load MV: " + str(grid_charge_LV_load))
 
     # grid charges based on pv
-    Ecur_pv = E['Ecur_pv'].sum()
-    Eg_MV = E['Eg_MV'].sum()
-    Eg_LV = E['Eg_LV'].sum()
-
+    '''
     a_pv = (Ecur_pv + Eg_MV)/(Eg_LV + Ecur_pv + Eg_MV)
 
     grid_charge_MV_pv = (a_pv*line_costs + trafo_costs)/(Ecur_pv + Eg_MV)
@@ -1015,11 +1017,45 @@ class MainEconomics():
 
     #print("grid charges pv LV: " + str(grid_charge_MV_pv))
     #print("grid charges pv MV: " + str(grid_charge_LV_pv))
+    '''
 
     grid_charges['grid_charge_MV_load'] = grid_charge_MV_load
     grid_charges['grid_charge_LV_load'] = grid_charge_LV_load
-    grid_charges['grid_charge_MV_pv'] = grid_charge_MV_pv
-    grid_charges['grid_charge_LV_pv'] = grid_charge_LV_pv
+    #grid_charges['grid_charge_MV_pv'] = grid_charge_MV_pv
+    #grid_charges['grid_charge_LV_pv'] = grid_charge_LV_pv
+
+    # grid charges derived from FLEXIBILITY
+    c_LV_flex = (Ec_LV_flex + Eg_LV_flex)*energycosts_income['C_flex_LV']
+    c_self_flex = (Ec_self_flex + Eg_self_flex)*energycosts_income['C_flex_self']
+    grid_charges['grid_charges_flex'] = (c_LV_flex + c_self_flex) / (Ec_LV + Ec_MV)
+    '''
+    print(' ')
+    print(Ec_LV_flex)
+    print(Eg_LV_flex)
+    print(energycosts_income['C_flex_LV'])
+    print(c_LV_flex)
+
+    print(' ')
+    print(Ec_self_flex)
+    print(Eg_self_flex)
+    print(energycosts_income['C_flex_self'])
+    print(c_self_flex)
+
+    print(Ec_LV)
+    print(Ec_MV)
+
+    print('gc flex: ' + str(grid_charges['grid_charges_flex'][0]))
+    '''
+    # grid charges derived from CURTAILMENT
+    c_cur_load = Ecur_load*energycosts_income['C_cur_load']
+    c_cur_pv = Ecur_pv*energycosts_income['C_cur_pv']
+    grid_charges['grid_charges_cur'] = (c_cur_load + c_cur_pv) / (Ec_LV + Ec_MV)
+
+    #print('gc cur:  ' + str(grid_charges['grid_charges_cur'][0]))
+
+    # TOTAL grid charges
+    grid_charges['grid_charges_total_LV'] = grid_charges['grid_charge_LV_load'] + grid_charges['grid_charges_cur'] + grid_charges['grid_charges_flex']
+    grid_charges['grid_charges_total_MV'] = grid_charges['grid_charge_MV_load'] + grid_charges['grid_charges_cur'] + grid_charges['grid_charges_flex']
 
     grid_charges.round(3).to_csv(self.economics_folder + 'grid_charges_euro_per_MWh.csv', header=True, index = True)
 
@@ -1039,17 +1075,22 @@ class MainEconomics():
       'bss_LV' : 0,
     }
 
+    # grid charges
+    grid_charges = pd.read_csv(self.economics_folder + 'grid_charges_euro_per_MWh.csv', delimiter = ',', low_memory=False)
+    gc_LV = grid_charges['grid_charges_total_LV'].loc[0]
+    gc_MV = grid_charges['grid_charges_total_MV'].loc[0]
+
     # LV traded energy, LV flex, costs and revenues
     p_t = self.read_data(self.economics_folder + 'trading_price_LV_euro_per_MWh.csv')
-    Eg_LV = self.read_data(self.economics_folder + 'Eg_LV_MW.csv') / 60
-    Ec_LV = self.read_data(self.economics_folder + 'Ec_LV_MW.csv') / 60
-    Eg_LV_flex = self.read_data(self.economics_folder + 'Eg_LV_flex_MW.csv') / 60
-    Ec_LV_flex = self.read_data(self.economics_folder + 'Ec_LV_flex_MW.csv') / 60
+    Eg_LV = self.read_data(self.economics_folder + 'Eg_LV_MW.csv') / 60 * self.projection_full_year
+    Ec_LV = self.read_data(self.economics_folder + 'Ec_LV_MW.csv') / 60 * self.projection_full_year
+    Eg_LV_flex = self.read_data(self.economics_folder + 'Eg_LV_flex_MW.csv') / 60 * self.projection_full_year
+    Ec_LV_flex = self.read_data(self.economics_folder + 'Ec_LV_flex_MW.csv') / 60 * self.projection_full_year
     df_HH = pd.DataFrame(columns=Ec_LV_flex.columns)
 
     if os.path.exists(self.economics_folder + 'Eg_LV_ECM_MW.csv') and os.path.exists(self.economics_folder + 'Ec_LV_ECM_MW.csv'):
-      Eg_LV_ECM = self.read_data(self.economics_folder + 'Eg_LV_ECM_MW.csv') / 60
-      Ec_LV_ECM = self.read_data(self.economics_folder + 'Ec_LV_ECM_MW.csv') / 60
+      Eg_LV_ECM = self.read_data(self.economics_folder + 'Eg_LV_ECM_MW.csv') / 60 * self.projection_full_year
+      Ec_LV_ECM = self.read_data(self.economics_folder + 'Ec_LV_ECM_MW.csv') / 60 * self.projection_full_year
     else:
       Eg_LV_ECM = 0
       Ec_LV_ECM = 0
@@ -1059,15 +1100,39 @@ class MainEconomics():
     Ec_LV_costs = Ec_LV.copy()*0
     Eg_LV_reven = Eg_LV.copy()*0
     Ec_LV_flex_reven = Ec_LV_flex.copy()*0
+    Ec_LV_flex_costs = Ec_LV_flex.copy()*0
     Eg_LV_flex_reven = Eg_LV_flex.copy()*0
 
     for c in Ec_LV.columns:
-      Ec_LV_costs[c] = Ec_LV[c] * p_t['0']
+      Ec_LV_costs[c] = Ec_LV[c] * (p_t['0'] + gc_LV)
       Eg_LV_reven[c] = Eg_LV[c] * p_t['0']
-      Ec_LV_flex_reven[c] = Ec_LV_flex[c] * p_flex_LV
+      Ec_LV_flex_costs[c].loc[p_t['0'] > p_flex_LV] = Ec_LV_flex[c].loc[p_t['0'] > p_flex_LV] * (p_t['0'] - p_flex_LV) # if p_t > p_flex_LV -> costs
+      Ec_LV_flex_reven[c].loc[p_t['0'] <= p_flex_LV] = Ec_LV_flex[c].loc[p_t['0'] <= p_flex_LV] * (p_flex_LV - p_t['0']) # if p_t < p_flex_LV -> reven
       Eg_LV_flex_reven[c] = Eg_LV_flex[c] * (p_t['0'] + p_flex_LV)
+
       EC_costs['flex_LV'] += (Ec_LV_flex[c] * p_flex_LV).sum()
-      EC_costs['flex_LV'] += (Eg_LV_flex[c] * (p_t['0'] + p_flex_LV)).sum()
+      EC_costs['flex_LV'] += (Eg_LV_flex[c] * p_flex_LV).sum()
+    EC_reven['grid_charges'] += (Ec_LV * gc_LV).sum().sum()
+
+    '''
+    fig, ax = plt.subplots()
+    #ax.plot(Ec_LV.sum(axis=1))
+    #ax.plot(-Eg_LV.sum(axis=1))
+    #ax.plot(Ec_LV.sum(axis=1) + Ec_LV_flex.sum(axis=1))
+    #ax.plot(-Eg_LV.sum(axis=1)- Eg_LV_flex.sum(axis=1))
+    ax.plot(p_t['0'] - p_flex_LV)
+    ax.plot(Ec_LV_flex.sum(axis=1))
+    ax.set_xlabel('Time')
+    ax.set_ylabel('P in MW')
+    ax.legend(['pt','Ec_flex','Ec flex','Eg flex'])
+    plt.show()
+    #print(Ec_LV.sum(axis=1))
+    '''
+    '''
+    print(p_flex_LV)
+    print(Ec_LV_flex.sum().sum())
+    print(Eg_LV_flex.sum().sum())
+    '''
 
     # Self consumed flex energy
     Ec_self_flex_reven = df_HH.copy()
@@ -1078,6 +1143,13 @@ class MainEconomics():
     Eg_self_flex_reven = E['Eg_self_flex'] * p_flex_self
     EC_costs['flex_self'] += (E['Ec_self_flex'] * p_flex_self).sum()
     EC_costs['flex_self'] += (E['Eg_self_flex'] * p_flex_self).sum()
+    '''
+    print(EC_costs['flex_self'])
+
+    print(p_flex_self)
+    print(E['Ec_self_flex'].sum())
+    print(E['Eg_self_flex'].sum())
+    '''
 
     # Curtailed Energy
     Ec_cur_load_reven = df_HH.copy()
@@ -1096,8 +1168,13 @@ class MainEconomics():
     p_MV_fit = parameter_economics.energycosts_income['C_market_fit']
     p_MV_obtain = parameter_economics.energycosts_income['C_market_obtain']
 
-    Ec_MV_costs = E['Ec_MV'] * p_MV_obtain
+    Ec_MV_costs = E['Ec_MV'] * (p_MV_obtain + gc_MV)
     Eg_MV_reven = E['Eg_MV'] * p_MV_fit
+    EC_reven['grid_charges'] += E['Ec_MV'].sum() * gc_MV
+    '''
+    print(EC_reven['grid_charges'])
+    print('gc total: ' + str(EC_reven['grid_charges']/(E['Ec_MV'].sum() + E['Ec_LV'].sum())))
+    '''
 
     # For ECM, only with community storage
     EC_costs['bss_LV'] = (Ec_LV_ECM * p_t).sum().values
@@ -1107,7 +1184,7 @@ class MainEconomics():
     E_costs = pd.DataFrame(index=E.index)
     E_reven = pd.DataFrame(index=E.index)
 
-    E_costs['Ec_LV_costs'] = Ec_LV_costs.sum().values
+    E_costs['Ec_LV_costs'] = Ec_LV_costs.sum().values + Ec_LV_flex_costs.sum().values
     E_costs['Ec_MV_costs'] = Ec_MV_costs
 
     E_reven['Ec_LV_flex_reven'] = Ec_LV_flex_reven.sum().values
@@ -1194,19 +1271,22 @@ class MainEconomics():
     E_reven_HH = pd.read_csv(self.economics_folder + '03_Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
     print(self.scenario)
-    C = pd.DataFrame()
-    C = pd.concat([C, -capex_HH], axis=1)
-    C = pd.concat([C, -opex_HH], axis=1)
-    C['E_costs'] = -E_costs_HH.sum(axis=1)
-    C['E_reven'] = E_reven_HH.sum(axis=1)
-    #C = pd.concat([C, E_costs_HH], axis=1)
-    #C = pd.concat([C, E_reven_HH], axis=1)
+    C_HH = pd.DataFrame()
+    C_HH = pd.concat([C_HH, -capex_HH], axis=1)
+    C_HH = pd.concat([C_HH, -opex_HH], axis=1)
+    C_HH['E_costs'] = -E_costs_HH.sum(axis=1)
+    C_HH['E_reven'] = E_reven_HH.sum(axis=1)
 
-    print(C)
-    print(C.sum(axis=1))
-    '''
-    if os.path.exists(self.conclusion_folder + str(net_name)):
-      C = pd.read_csv(self.conclusion_folder + str(net_name), delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
-    else:
-      pass
-    '''
+    C_ECM = pd.DataFrame()
+    C_ECM = pd.concat([C_ECM, -capex_ECM], axis=1)
+    C_ECM = pd.concat([C_ECM, -opex_ECM], axis=1)
+    C_ECM['E_costs'] = -E_costs_ECM.sum(axis=1)
+    C_ECM['E_reven'] = E_reven_ECM.sum(axis=1)
+
+    #print(C_HH)
+    #print(C_HH.sum(axis=1))
+    print(C_HH.sum(axis=1).sum())
+    C_HH.round(3).to_csv(self.economics_folder + '10_conclusion_economics_HH.csv', header=True, index = True)
+    C_ECM.round(3).to_csv(self.economics_folder + '10_conclusion_economics_ECM.csv', header=True, index = True)
+
+    
