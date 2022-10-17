@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import sys
 import os
+import datetime
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -70,6 +71,24 @@ class MainEconomics():
       else:
         #print("Create outout directory %s" % self.economics_folder)
         pass
+
+    self.write_control_parameter_to_csv()
+
+  def write_control_parameter_to_csv(self):
+    date = datetime.datetime.today()
+    with open(self.economics_folder + '00_simulation_date.csv', 'w') as f:
+        f.write(str(date))
+
+    with open(self.economics_folder + '00_control_paramters.csv', 'w') as f:
+      energycosts_income = parameter_economics.energycosts_income
+      investment_costs = parameter_economics.investment_costs
+      operating_costs = parameter_economics.operating_costs
+      for key in energycosts_income.keys():
+        f.write("%s, %s\n"%(key,energycosts_income[key]))
+      for key in investment_costs.keys():
+        f.write("%s, %s\n"%(key,investment_costs[key]))
+      for key in operating_costs.keys():
+        f.write("%s, %s\n"%(key,operating_costs[key]))
 
   def concat_dfs(self, df, new_output_dir):
     data = self.read_data(new_output_dir)
@@ -328,7 +347,7 @@ class MainEconomics():
     dark = sns.color_palette("dark", 10)
     colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
 
-    #'''
+    '''
     # Plot PV
     E_barplot1 = E.copy()
     E_barplot1['Eg_self'] += E_barplot1['Eg_self_flex']
@@ -358,8 +377,8 @@ class MainEconomics():
     else:
       plt.ylabel('Generation in MWh')
     plt.show()
-    #'''
-    #'''
+    '''
+    '''
     # Plot load
     E_barplot2 = E.copy()
     E_barplot2['Ec_self'] += E_barplot2['Ec_self_flex']
@@ -389,14 +408,14 @@ class MainEconomics():
     else:
       plt.ylabel('Consumption in MWh')
     plt.show()
-    #'''
+    '''
 
-    print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
-    print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
+    #print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
+    #print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
 
     #define Seaborn color palette to use
     #colors = sns.color_palette('pastel')[0:5]
-
+    '''
     #define data
     data = [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
@@ -412,6 +431,7 @@ class MainEconomics():
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
+    '''
 
     E = E / 60 # MW -> MWh
     E = E * self.projection_full_year
@@ -661,7 +681,7 @@ class MainEconomics():
     dark = sns.color_palette("dark", 10)
     colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
 
-    #'''
+    '''
     # Plot PV
     E_barplot1 = E.copy()
     E_barplot1['Eg_self'] += E_barplot1['Eg_self_flex']
@@ -691,8 +711,8 @@ class MainEconomics():
     else:
       plt.ylabel('Generation in MWh')
     plt.show()
-    #'''
-    #'''
+    '''
+    '''
     # Plot load
     E_barplot2 = E.copy()
     E_barplot2['Ec_self'] += E_barplot2['Ec_self_flex']
@@ -722,14 +742,14 @@ class MainEconomics():
     else:
       plt.ylabel('Consumption in MWh')
     plt.show()
-    #'''
+    '''
 
-    print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
-    print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
+    #print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
+    #print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
 
     #define Seaborn color palette to use
     #colors = sns.color_palette('pastel')[0:5]
-
+    '''
     #define data
     data = [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
@@ -745,7 +765,7 @@ class MainEconomics():
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
-
+    '''
     E = E / 60 # MW -> MWh
     E = E * self.projection_full_year
 
@@ -965,7 +985,7 @@ class MainEconomics():
     fig, ax = plt.subplots()
     ax.plot(p_t)
     ax.set_xlabel('Time')
-    ax.set_ylabel('trading_price')
+    ax.set_ylabel('trading_price in Euro/MWh')
     ax.legend()
     plt.show()
     '''
@@ -1211,8 +1231,8 @@ class MainEconomics():
     E_costs = pd.read_csv(self.economics_folder + '03_Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
     E_reven = pd.read_csv(self.economics_folder + '03_Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
-    print(E_costs.sum())
-    print(E_reven.sum())
+    #print(E_costs.sum())
+    #print(E_reven.sum())
 
     bright = sns.color_palette("bright", 10)
     dark = sns.color_palette("dark", 10)
@@ -1270,7 +1290,7 @@ class MainEconomics():
     E_costs_HH = pd.read_csv(self.economics_folder + '03_Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
     E_reven_HH = pd.read_csv(self.economics_folder + '03_Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
-    print(self.scenario)
+    #print(self.scenario)
     C_HH = pd.DataFrame()
     C_HH = pd.concat([C_HH, -capex_HH], axis=1)
     C_HH = pd.concat([C_HH, -opex_HH], axis=1)
@@ -1285,7 +1305,7 @@ class MainEconomics():
 
     #print(C_HH)
     #print(C_HH.sum(axis=1))
-    print(C_HH.sum(axis=1).sum())
+    #print(C_HH.sum(axis=1).sum())
     C_HH.round(3).to_csv(self.economics_folder + '10_conclusion_economics_HH.csv', header=True, index = True)
     C_ECM.round(3).to_csv(self.economics_folder + '10_conclusion_economics_ECM.csv', header=True, index = True)
 
