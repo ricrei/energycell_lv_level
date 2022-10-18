@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.patches as mpatches
 import pandapower.plotting.plotly as ppply
 import seaborn as sns
 from datetime import datetime, timedelta
@@ -160,7 +161,7 @@ def boxplot_diff_costs_reven(eva, save_fig_dir=save_fig_dir):
      plt.savefig(save_fig_dir + '00f_boxplot_annualized_costs_grids.png', bbox_inches='tight', dpi=dpi)
   #'''
 
-def bar_revenue_costs(eva):
+def bar_revenue_costs(eva, save_fig_dir=save_fig_dir):
   # get all column names of costs and revenues
   for i in list(eva.keys()):
     if i[0] != '_':
@@ -181,64 +182,306 @@ def bar_revenue_costs(eva):
       for c in columns_total:
         df[c].loc[k] = eva[i]['total_HH'].sum()[c]
       for c in columns_costs:
-        df[c].loc[k] = eva[i]['energy_costs_HH'].sum()[c]
+        df[c].loc[k] = -eva[i]['energy_costs_HH'].sum()[c]
       for c in columns_reven:
         df[c].loc[k] = eva[i]['energy_reven_HH'].sum()[c]
       k += 1
-    
 
-  print(df)
-
-
+  # colors
+  bright = sns.color_palette("bright", 10)
+  dark = sns.color_palette("dark", 10)
+  colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
+  rocket = sns.color_palette("rocket")
   '''
-    E_costs = pd.read_csv(self.economics_folder + '03_Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
-    E_reven = pd.read_csv(self.economics_folder + '03_Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+  ### SCENARIO - detailed ###
+  # costs
+  columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
+  df_barplot1 = df[columns_costs_barplot].groupby(['scenario']).sum().reset_index()
 
-    bright = sns.color_palette("bright", 10)
-    dark = sns.color_palette("dark", 10)
-    colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
+  df_barplot1['Ec_MV_costs'] += df_barplot1['Ec_LV_costs']
+  df_barplot1['BSS_capex']   += df_barplot1['Ec_MV_costs']
+  df_barplot1['BSS_opex']    += df_barplot1['BSS_capex']
+  df_barplot1['TES_capex']   += df_barplot1['BSS_opex']
+  df_barplot1['TES_opex']    += df_barplot1['TES_capex']
+  df_barplot1['SG_capex']    += df_barplot1['TES_opex']
+  df_barplot1['SG_opex']     += df_barplot1['SG_capex']
 
-    # Plot PV
-    E_barplot1 = E_costs.copy()
-    E_barplot2 = E_reven.copy()
+  s16 = sns.barplot(x = df_barplot1['scenario'], y = 'SG_opex',     data = df_barplot1, color = dark[7])
+  s15 = sns.barplot(x = df_barplot1['scenario'], y = 'SG_capex',    data = df_barplot1, color = dark[6])
+  s14 = sns.barplot(x = df_barplot1['scenario'], y = 'TES_opex',    data = df_barplot1, color = dark[5])
+  s13 = sns.barplot(x = df_barplot1['scenario'], y = 'TES_capex',   data = df_barplot1, color = dark[4])
+  s12 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_opex',    data = df_barplot1, color = dark[3])
+  s11 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_capex',   data = df_barplot1, color = dark[2])
+  s10 = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_MV_costs', data = df_barplot1, color = dark[1])
+  s9  = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_LV_costs', data = df_barplot1, color = dark[0])
 
-    E_barplot1['Ec_MV_costs'] += E_barplot1['Ec_LV_costs']
+  SG_opex_bar   = mpatches.Patch(color=dark[7], label='SG opex')
+  SG_capex_bar  = mpatches.Patch(color=dark[6], label='SG capex')
+  TES_opex_bar  = mpatches.Patch(color=dark[5], label='TES opex')
+  TES_capex_bar = mpatches.Patch(color=dark[4], label='TES capex')
+  BSS_opex_bar  = mpatches.Patch(color=dark[3], label='BSS opex')
+  BSS_capex_bar = mpatches.Patch(color=dark[2], label='BSS capex')
+  Ec_MV_bar     = mpatches.Patch(color=dark[1], label='MV obtained')
+  Ec_LV_bar     = mpatches.Patch(color=dark[0], label='LV obtained')
+  handle_costs  = [Ec_LV_bar, Ec_MV_bar, BSS_capex_bar, BSS_opex_bar, TES_capex_bar, TES_opex_bar, SG_capex_bar, SG_opex_bar]
 
-    E_barplot2['Eg_MV_reven'] += E_barplot2['Eg_LV_reven']
-    E_barplot2['Eg_self_flex_reven'] += E_barplot2['Eg_MV_reven']
-    E_barplot2['Ec_self_flex_reven'] += E_barplot2['Eg_self_flex_reven']
-    E_barplot2['Eg_LV_flex_reven'] += E_barplot2['Ec_self_flex_reven']
-    E_barplot2['Ec_LV_flex_reven'] += E_barplot2['Eg_LV_flex_reven']
-    E_barplot2['Eg_cur_pv_reven'] += E_barplot2['Ec_LV_flex_reven']
-    E_barplot2['Ec_cur_load_reven'] += E_barplot2['Eg_cur_pv_reven']
+  # revenues
+  columns_reven_barplot = ['scenario', 'grid'] + columns_reven
+  df_barplot2 = df[columns_reven_barplot].groupby(['scenario']).sum().reset_index()
 
-    s10 = sns.barplot(x = E_barplot1.index, y = 'Ec_MV_costs', data = -E_barplot1, color = dark[1])
-    s9 = sns.barplot(x = E_barplot1.index, y = 'Ec_LV_costs', data = -E_barplot1, color = dark[0])
+  df_barplot2['Ec_self_flex_reven'] += df_barplot2['Eg_self_flex_reven']
+  df_barplot2['Eg_LV_flex_reven']   += df_barplot2['Ec_self_flex_reven']
+  df_barplot2['Ec_LV_flex_reven']   += df_barplot2['Eg_LV_flex_reven']
+  df_barplot2['Eg_LV_reven']        += df_barplot2['Ec_LV_flex_reven']
+  df_barplot2['Eg_MV_reven']        += df_barplot2['Eg_LV_reven']
+  df_barplot2['Eg_cur_pv_reven']    += df_barplot2['Eg_MV_reven']
+  df_barplot2['Ec_cur_load_reven']  += df_barplot2['Eg_cur_pv_reven']
 
-    s8 = sns.barplot(x = E_barplot2.index, y = 'Ec_cur_load_reven', data = E_barplot2, color = bright[7])
-    s7 = sns.barplot(x = E_barplot2.index, y = 'Eg_cur_pv_reven', data = E_barplot2, color = bright[6])
-    s6 = sns.barplot(x = E_barplot2.index, y = 'Ec_LV_flex_reven', data = E_barplot2, color = bright[5])
-    s5 = sns.barplot(x = E_barplot2.index, y = 'Eg_LV_flex_reven', data = E_barplot2, color = bright[4])
-    s4 = sns.barplot(x = E_barplot2.index, y = 'Ec_self_flex_reven', data = E_barplot2, color = bright[3])
-    s3 = sns.barplot(x = E_barplot2.index, y = 'Eg_self_flex_reven', data = E_barplot2, color = bright[2])
-    s2 = sns.barplot(x = E_barplot2.index, y = 'Eg_MV_reven', data = E_barplot2, color = bright[1])
-    s1 = sns.barplot(x = E_barplot2.index, y = 'Eg_LV_reven', data = E_barplot2, color = bright[0])
+  s8 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_cur_load_reven',  data = df_barplot2, color = bright[7])
+  s7 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_cur_pv_reven',    data = df_barplot2, color = bright[6])
+  s6 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_MV_reven',        data = df_barplot2, color = bright[5])
+  s5 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_LV_reven',        data = df_barplot2, color = bright[4])
+  s4 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_LV_flex_reven',   data = df_barplot2, color = bright[3])
+  s3 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_LV_flex_reven',   data = df_barplot2, color = bright[2])
+  s2 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_self_flex_reven', data = df_barplot2, color = bright[1])
+  s1 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_self_flex_reven', data = df_barplot2, color = bright[0])
 
-    Ec_MV_bar = mpatches.Patch(color=dark[1], label='MV obtained')
-    Ec_LV_bar = mpatches.Patch(color=dark[0], label='LV obtained')
+  Ec_cur_load_bar    = mpatches.Patch(color=bright[7], label='curtailed load')
+  Eg_cur_pv_flex_bar = mpatches.Patch(color=bright[6], label='curtailed pv')
+  Eg_MV_bar          = mpatches.Patch(color=bright[5], label='MV feed-in')
+  Eg_LV_bar          = mpatches.Patch(color=bright[4], label='LV traded')
+  Ec_LV_flex_bar     = mpatches.Patch(color=bright[3], label='LV flex con')
+  Eg_LV_flex_bar     = mpatches.Patch(color=bright[2], label='LV flex gen')
+  Ec_self_flex_bar   = mpatches.Patch(color=bright[1], label='self flex con')
+  Eg_self_flex_bar   = mpatches.Patch(color=bright[0], label='self flex gen')
+  handle_reven       = [Eg_self_flex_bar, Ec_self_flex_bar, Eg_LV_flex_bar, Ec_LV_flex_bar, Eg_LV_bar, Eg_MV_bar, Eg_cur_pv_flex_bar, Ec_cur_load_bar]
 
-    Ec_cur_load_bar = mpatches.Patch(color=bright[7], label='curtailed load')
-    Eg_cur_pv_flex_bar = mpatches.Patch(color=bright[6], label='curtailed pv')
-    Ec_LV_flex_bar = mpatches.Patch(color=bright[5], label='LV flex con')
-    Eg_LV_flex_bar = mpatches.Patch(color=bright[4], label='LV flex gen')
-    Ec_self_flex_bar = mpatches.Patch(color=bright[3], label='self flex con')
-    Eg_self_flex_bar = mpatches.Patch(color=bright[2], label='self flex gen')
-    Eg_MV_bar = mpatches.Patch(color=bright[1], label='MV feed-in')
-    Eg_LV_bar = mpatches.Patch(color=bright[0], label='LV traded')
-    plt.legend(handles=[Ec_cur_load_bar, Eg_cur_pv_flex_bar, Ec_LV_flex_bar, Eg_LV_flex_bar, Ec_self_flex_bar, Eg_self_flex_bar, Eg_MV_bar, Eg_LV_bar, Ec_LV_bar, Ec_MV_bar])
-    plt.xlabel('Households')
-    plt.ylabel('Revenue in Euro')
-    plt.show()
+  # plt
+  plt.legend(handles = handle_reven[::-1] + handle_costs)
+  plt.xlabel('Scenario')
+  plt.ylabel('Revenue / Costs in Euro per Year')
+  plt.show()
+  '''
+  #'''
+  ### SCENARIO - aggregated ###
+  # costs
+  columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
+  df_barplot1 = (df[columns_costs_barplot].groupby(['scenario']).sum()/1000).reset_index()
+
+  df_barplot1['Ec_MV_costs'] += df_barplot1['Ec_LV_costs']
+  df_barplot1['BSS_capex']   += df_barplot1['Ec_MV_costs']
+  df_barplot1['BSS_opex']    += df_barplot1['BSS_capex']
+  df_barplot1['TES_capex']   += df_barplot1['BSS_opex']
+  df_barplot1['TES_opex']    += df_barplot1['TES_capex']
+  df_barplot1['SG_capex']    += df_barplot1['TES_opex']
+  df_barplot1['SG_opex']     += df_barplot1['SG_capex']
+
+  s16 = sns.barplot(x = df_barplot1['scenario'], y = 'SG_opex',     data = df_barplot1, color = rocket[1])
+  #s15 = sns.barplot(x = df_barplot1['scenario'], y = 'SG_capex',    data = df_barplot1, color = dark[6])
+  s14 = sns.barplot(x = df_barplot1['scenario'], y = 'TES_opex',    data = df_barplot1, color = rocket[3])
+  #s13 = sns.barplot(x = df_barplot1['scenario'], y = 'TES_capex',   data = df_barplot1, color = dark[4])
+  s12 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_opex',    data = df_barplot1, color = rocket[5])
+  #s11 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_capex',   data = df_barplot1, color = dark[2])
+  s10 = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_MV_costs', data = df_barplot1, color = dark[0])
+  s9  = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_LV_costs', data = df_barplot1, color = dark[8])
+
+  SG_opex_bar   = mpatches.Patch(color=rocket[1], label='SG')
+  #SG_capex_bar  = mpatches.Patch(color=dark[6], label='SG capex')
+  TES_opex_bar  = mpatches.Patch(color=rocket[3], label='TES')
+  #TES_capex_bar = mpatches.Patch(color=dark[4], label='TES capex')
+  BSS_opex_bar  = mpatches.Patch(color=rocket[5], label='BSS')
+  #BSS_capex_bar = mpatches.Patch(color=dark[2], label='BSS capex')
+  Ec_MV_bar     = mpatches.Patch(color=dark[0], label='MV obtained')
+  Ec_LV_bar     = mpatches.Patch(color=dark[8], label='LV obtained')
+  handle_costs  = [Ec_LV_bar, Ec_MV_bar, BSS_opex_bar, TES_opex_bar, SG_opex_bar]
+
+  # revenues
+  columns_reven_barplot = ['scenario', 'grid'] + columns_reven
+  df_barplot2 = (df[columns_reven_barplot].groupby(['scenario']).sum()/1000).reset_index()
+
+  df_barplot2['Eg_MV_reven']        += df_barplot2['Eg_LV_reven']
+  df_barplot2['Eg_self_flex_reven'] += df_barplot2['Eg_MV_reven']
+  df_barplot2['Ec_self_flex_reven'] += df_barplot2['Eg_self_flex_reven']
+  df_barplot2['Eg_LV_flex_reven']   += df_barplot2['Ec_self_flex_reven']
+  df_barplot2['Ec_LV_flex_reven']   += df_barplot2['Eg_LV_flex_reven']
+  df_barplot2['Eg_cur_pv_reven']    += df_barplot2['Ec_LV_flex_reven']
+  df_barplot2['Ec_cur_load_reven']  += df_barplot2['Eg_cur_pv_reven']
+
+  s8 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_cur_load_reven',  data = df_barplot2, color = bright[7])
+  #s7 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_cur_pv_reven',    data = df_barplot2, color = bright[6])
+  s4 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_LV_flex_reven',   data = df_barplot2, color = bright[6])
+  s6 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_MV_reven',        data = df_barplot2, color = bright[0])
+  s5 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_LV_reven',        data = df_barplot2, color = bright[8])
+  #s3 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_LV_flex_reven',   data = df_barplot2, color = bright[2])
+  #s2 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_self_flex_reven', data = df_barplot2, color = bright[1])
+  #s1 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_self_flex_reven', data = df_barplot2, color = bright[0])
+
+  Ec_cur_load_bar    = mpatches.Patch(color=bright[7], label='Curtailed PV + load')
+  #Eg_cur_pv_flex_bar = mpatches.Patch(color=bright[6], label='curtailed pv')
+  Eg_MV_bar          = mpatches.Patch(color=bright[0], label='MV feed-in')
+  Eg_LV_bar          = mpatches.Patch(color=bright[8], label='LV traded')
+  Ec_LV_flex_bar     = mpatches.Patch(color=bright[6], label='Flexibility')
+  #Eg_LV_flex_bar     = mpatches.Patch(color=bright[2], label='LV flex gen')
+  #Ec_self_flex_bar   = mpatches.Patch(color=bright[1], label='self flex con')
+  #Eg_self_flex_bar   = mpatches.Patch(color=bright[0], label='self flex gen')
+  handle_reven       = [Eg_LV_bar, Eg_MV_bar, Ec_LV_flex_bar, Ec_cur_load_bar]
+
+  # plt
+  plt.legend(handles = handle_reven[::-1] + handle_costs)
+  plt.xlabel('Scenario')
+  plt.ylabel('Revenue / Costs in TEuro per Year')
+  #plt.show()
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '01a_RevenueCosts_Scenarios.png', bbox_inches='tight', dpi=dpi)
+  #'''
+  '''
+  ### GRID ###
+  # costs
+  columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
+  df_barplot1 = df[columns_costs_barplot].groupby(['grid']).sum().reset_index()
+
+  df_barplot1['Ec_MV_costs'] += df_barplot1['Ec_LV_costs']
+  df_barplot1['BSS_capex']   += df_barplot1['Ec_MV_costs']
+  df_barplot1['BSS_opex']    += df_barplot1['BSS_capex']
+  df_barplot1['TES_capex']   += df_barplot1['BSS_opex']
+  df_barplot1['TES_opex']    += df_barplot1['TES_capex']
+  df_barplot1['SG_capex']    += df_barplot1['TES_opex']
+  df_barplot1['SG_opex']     += df_barplot1['SG_capex']
+
+  s16 = sns.barplot(x = df_barplot1['grid'], y = 'SG_opex',     data = df_barplot1, color = dark[7])
+  s15 = sns.barplot(x = df_barplot1['grid'], y = 'SG_capex',    data = df_barplot1, color = dark[6])
+  s14 = sns.barplot(x = df_barplot1['grid'], y = 'TES_opex',    data = df_barplot1, color = dark[5])
+  s13 = sns.barplot(x = df_barplot1['grid'], y = 'TES_capex',   data = df_barplot1, color = dark[4])
+  s12 = sns.barplot(x = df_barplot1['grid'], y = 'BSS_opex',    data = df_barplot1, color = dark[3])
+  s11 = sns.barplot(x = df_barplot1['grid'], y = 'BSS_capex',   data = df_barplot1, color = dark[2])
+  s10 = sns.barplot(x = df_barplot1['grid'], y = 'Ec_MV_costs', data = df_barplot1, color = dark[1])
+  s9  = sns.barplot(x = df_barplot1['grid'], y = 'Ec_LV_costs', data = df_barplot1, color = dark[0])
+
+  SG_opex_bar   = mpatches.Patch(color=dark[7], label='SG opex')
+  SG_capex_bar  = mpatches.Patch(color=dark[6], label='SG capex')
+  TES_opex_bar  = mpatches.Patch(color=dark[5], label='TES opex')
+  TES_capex_bar = mpatches.Patch(color=dark[4], label='TES capex')
+  BSS_opex_bar  = mpatches.Patch(color=dark[3], label='BSS opex')
+  BSS_capex_bar = mpatches.Patch(color=dark[2], label='BSS capex')
+  Ec_MV_bar     = mpatches.Patch(color=dark[1], label='MV obtained')
+  Ec_LV_bar     = mpatches.Patch(color=dark[0], label='LV obtained')
+  handle_costs  = [Ec_LV_bar, Ec_MV_bar, BSS_capex_bar, BSS_opex_bar, TES_capex_bar, TES_opex_bar, SG_capex_bar, SG_opex_bar]
+
+  # revenues
+  columns_reven_barplot = ['scenario', 'grid'] + columns_reven
+  df_barplot2 = df[columns_reven_barplot].groupby(['grid']).sum().reset_index()
+
+  df_barplot2['Ec_self_flex_reven'] += df_barplot2['Eg_self_flex_reven']
+  df_barplot2['Eg_LV_flex_reven']   += df_barplot2['Ec_self_flex_reven']
+  df_barplot2['Ec_LV_flex_reven']   += df_barplot2['Eg_LV_flex_reven']
+  df_barplot2['Eg_LV_reven']        += df_barplot2['Ec_LV_flex_reven']
+  df_barplot2['Eg_MV_reven']        += df_barplot2['Eg_LV_reven']
+  df_barplot2['Eg_cur_pv_reven']    += df_barplot2['Eg_MV_reven']
+  df_barplot2['Ec_cur_load_reven']  += df_barplot2['Eg_cur_pv_reven']
+
+  s8 = sns.barplot(x = df_barplot2['grid'], y = 'Ec_cur_load_reven',  data = df_barplot2, color = bright[7])
+  s7 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_cur_pv_reven',    data = df_barplot2, color = bright[6])
+  s6 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_MV_reven',        data = df_barplot2, color = bright[5])
+  s5 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_LV_reven',        data = df_barplot2, color = bright[4])
+  s4 = sns.barplot(x = df_barplot2['grid'], y = 'Ec_LV_flex_reven',   data = df_barplot2, color = bright[3])
+  s3 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_LV_flex_reven',   data = df_barplot2, color = bright[2])
+  s2 = sns.barplot(x = df_barplot2['grid'], y = 'Ec_self_flex_reven', data = df_barplot2, color = bright[1])
+  s1 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_self_flex_reven', data = df_barplot2, color = bright[0])
+
+  Ec_cur_load_bar    = mpatches.Patch(color=bright[7], label='curtailed load')
+  Eg_cur_pv_flex_bar = mpatches.Patch(color=bright[6], label='curtailed pv')
+  Eg_MV_bar          = mpatches.Patch(color=bright[5], label='MV feed-in')
+  Eg_LV_bar          = mpatches.Patch(color=bright[4], label='LV traded')
+  Ec_LV_flex_bar     = mpatches.Patch(color=bright[3], label='LV flex con')
+  Eg_LV_flex_bar     = mpatches.Patch(color=bright[2], label='LV flex gen')
+  Ec_self_flex_bar   = mpatches.Patch(color=bright[1], label='self flex con')
+  Eg_self_flex_bar   = mpatches.Patch(color=bright[0], label='self flex gen')
+  handle_reven       = [Eg_self_flex_bar, Ec_self_flex_bar, Eg_LV_flex_bar, Ec_LV_flex_bar, Eg_LV_bar, Eg_MV_bar, Eg_cur_pv_flex_bar, Ec_cur_load_bar]
+
+  # plt
+  plt.legend(handles = handle_reven[::-1] + handle_costs)
+  plt.xlabel('grid')
+  plt.ylabel('Revenue / Costs in Euro per Year')
+  plt.show()
+
+  ### GRID - aggregated ###
+  df_hh_per_grid = pd.Series([12, 98, 118, 41, 102])
+  # costs
+  columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
+  df_barplot1 = (df[columns_costs_barplot].drop('scenario', axis=1).groupby(['grid']).sum()/1000).reset_index()
+  for i in df_barplot1.index:
+   for c in df_barplot1.columns:
+    if c != 'grid':
+     df_barplot1[c].loc[i] = df_barplot1[c].loc[i]/df_hh_per_grid.loc[i]
+
+  df_barplot1['Ec_MV_costs'] += df_barplot1['Ec_LV_costs']
+  df_barplot1['BSS_capex']   += df_barplot1['Ec_MV_costs']
+  df_barplot1['BSS_opex']    += df_barplot1['BSS_capex']
+  df_barplot1['TES_capex']   += df_barplot1['BSS_opex']
+  df_barplot1['TES_opex']    += df_barplot1['TES_capex']
+  df_barplot1['SG_capex']    += df_barplot1['TES_opex']
+  df_barplot1['SG_opex']     += df_barplot1['SG_capex']
+
+  s16 = sns.barplot(x = df_barplot1['grid'], y = 'SG_opex',     data = df_barplot1, color = rocket[1])
+  #s15 = sns.barplot(x = df_barplot1['grid'], y = 'SG_capex',    data = df_barplot1, color = dark[6])
+  s14 = sns.barplot(x = df_barplot1['grid'], y = 'TES_opex',    data = df_barplot1, color = rocket[3])
+  #s13 = sns.barplot(x = df_barplot1['grid'], y = 'TES_capex',   data = df_barplot1, color = dark[4])
+  s12 = sns.barplot(x = df_barplot1['grid'], y = 'BSS_opex',    data = df_barplot1, color = rocket[5])
+  #s11 = sns.barplot(x = df_barplot1['grid'], y = 'BSS_capex',   data = df_barplot1, color = dark[2])
+  s10 = sns.barplot(x = df_barplot1['grid'], y = 'Ec_MV_costs', data = df_barplot1, color = dark[0])
+  s9  = sns.barplot(x = df_barplot1['grid'], y = 'Ec_LV_costs', data = df_barplot1, color = dark[8])
+
+  SG_opex_bar   = mpatches.Patch(color=rocket[1], label='SG')
+  #SG_capex_bar  = mpatches.Patch(color=dark[6], label='SG capex')
+  TES_opex_bar  = mpatches.Patch(color=rocket[3], label='TES')
+  #TES_capex_bar = mpatches.Patch(color=dark[4], label='TES capex')
+  BSS_opex_bar  = mpatches.Patch(color=rocket[5], label='BSS')
+  #BSS_capex_bar = mpatches.Patch(color=dark[2], label='BSS capex')
+  Ec_MV_bar     = mpatches.Patch(color=dark[0], label='MV obtained')
+  Ec_LV_bar     = mpatches.Patch(color=dark[8], label='LV obtained')
+  handle_costs  = [Ec_LV_bar, Ec_MV_bar, BSS_opex_bar, TES_opex_bar, SG_opex_bar]
+
+  # revenues
+  columns_reven_barplot = ['scenario', 'grid'] + columns_reven
+  df_barplot2 = (df[columns_reven_barplot].drop('scenario', axis=1).groupby(['grid']).sum()/1000).reset_index()
+  for i in df_barplot2.index:
+   for c in df_barplot2.columns:
+    if c != 'grid':
+     df_barplot2[c].loc[i] = df_barplot2[c].loc[i]/df_hh_per_grid.loc[i]
+
+  df_barplot2['Eg_MV_reven']        += df_barplot2['Eg_LV_reven']
+  df_barplot2['Eg_self_flex_reven'] += df_barplot2['Eg_MV_reven']
+  df_barplot2['Ec_self_flex_reven'] += df_barplot2['Eg_self_flex_reven']
+  df_barplot2['Eg_LV_flex_reven']   += df_barplot2['Ec_self_flex_reven']
+  df_barplot2['Ec_LV_flex_reven']   += df_barplot2['Eg_LV_flex_reven']
+  df_barplot2['Eg_cur_pv_reven']    += df_barplot2['Ec_LV_flex_reven']
+  df_barplot2['Ec_cur_load_reven']  += df_barplot2['Eg_cur_pv_reven']
+
+  s8 = sns.barplot(x = df_barplot2['grid'], y = 'Ec_cur_load_reven',  data = df_barplot2, color = bright[7])
+  #s7 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_cur_pv_reven',    data = df_barplot2, color = bright[6])
+  s4 = sns.barplot(x = df_barplot2['grid'], y = 'Ec_LV_flex_reven',   data = df_barplot2, color = bright[6])
+  s6 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_MV_reven',        data = df_barplot2, color = bright[0])
+  s5 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_LV_reven',        data = df_barplot2, color = bright[8])
+  #s3 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_LV_flex_reven',   data = df_barplot2, color = bright[2])
+  #s2 = sns.barplot(x = df_barplot2['grid'], y = 'Ec_self_flex_reven', data = df_barplot2, color = bright[1])
+  #s1 = sns.barplot(x = df_barplot2['grid'], y = 'Eg_self_flex_reven', data = df_barplot2, color = bright[0])
+
+  Ec_cur_load_bar    = mpatches.Patch(color=bright[7], label='Curtailed PV + load')
+  #Eg_cur_pv_flex_bar = mpatches.Patch(color=bright[6], label='curtailed pv')
+  Eg_MV_bar          = mpatches.Patch(color=bright[0], label='MV feed-in')
+  Eg_LV_bar          = mpatches.Patch(color=bright[8], label='LV traded')
+  Ec_LV_flex_bar     = mpatches.Patch(color=bright[6], label='Flexibility')
+  #Eg_LV_flex_bar     = mpatches.Patch(color=bright[2], label='LV flex gen')
+  #Ec_self_flex_bar   = mpatches.Patch(color=bright[1], label='self flex con')
+  #Eg_self_flex_bar   = mpatches.Patch(color=bright[0], label='self flex gen')
+  handle_reven       = [Eg_LV_bar, Eg_MV_bar, Ec_LV_flex_bar, Ec_cur_load_bar]
+
+  # plt
+  plt.legend(handles = handle_reven[::-1] + handle_costs)
+  plt.xlabel('Grid')
+  plt.ylabel('Revenue / Costs in TEuro per Year')
+  plt.show()
   '''
 
 eva = load_scenario_data(scenarios)
