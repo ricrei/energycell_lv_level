@@ -8,17 +8,18 @@ energycosts_income = { # Euro / MWh
 }
 
 investment_costs = {
-  'intrest_rate' : .0307,
-  'battery' : 500, # in Euro/kWh
-  'battery_lifespan' : 20, # years
-  'tes' : 100, # in Euro/kWh				# prüfen
-  'tes_lifespan' : 20, # years				# prüfen
-  'smart_grid' : 1500, # in Euro			# prüfen
-  'smart_grid_lifespan' : 20, # years		# prüfen
-  'grid'    : 1000,
-  'grid_lifespan' : 30, # years
+  'intrest_rate'    : .0307,
+  'battery'         : 500,    # in Euro/kWh   # unterscheiden in HBSS und CBSS
+  'battery_lifespan': 20,     # years
+  'tes'             : 100,    # in Euro/kWh	  # prüfen
+  'tes_lifespan'    : 20,     # years	      # prüfen
+  'smart_grid'      : 1500,   # in Euro		  # prüfen
+  'smart_grid_lifespan' : 20, # years		  # prüfen
+  'grid'            : 1000,
+  'grid_lifespan'   : 30,     # years
 }
 
 operating_costs = {
-  'percent' : .01, # in %/100 of the investmentcosts
+  'percent' : .01,            # in %/100 of the investmentcosts
 }
+

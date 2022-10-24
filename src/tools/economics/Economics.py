@@ -1088,11 +1088,11 @@ class MainEconomics():
       'flex_self' : 0,
       'curtailed_load' : 0,
       'curtailed_pv' : 0,
-      'bss_LV' : 0,
+      'bss_LV_costs' : 0,
     }
     EC_reven = {
       'grid_charges' : 0,
-      'bss_LV' : 0,
+      'bss_LV_reven' : 0,
     }
 
     # grid charges
@@ -1197,8 +1197,8 @@ class MainEconomics():
     '''
 
     # For ECM, only with community storage
-    EC_costs['bss_LV'] = (Ec_LV_ECM * p_t).sum().values
-    EC_reven['bss_LV'] = (Eg_LV_ECM * p_t).sum().values
+    EC_costs['bss_LV_costs'] = (Ec_LV_ECM * p_t).sum().values
+    EC_reven['bss_LV_reven'] = (Eg_LV_ECM * p_t).sum().values
 
     # Put all together in a DataFrame and save it
     E_costs = pd.DataFrame(index=E.index)

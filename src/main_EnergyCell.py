@@ -131,13 +131,13 @@ time_scope = time_scope_summer
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  4, # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
-  1, # Curtailment, 0/1
-  0  # Grid reinforcement, 0/1
+  0, # BSS, 0-5
+  1, # HP, 0-5
+  1, # EV, 0-3
+  0, # Curtailment, 0/1
+  1  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -221,12 +221,12 @@ def run_single_simulation():
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  #e.eva.plot_grid_issus_over_time()
+  e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_hp_soc()
@@ -303,7 +303,7 @@ def run_multiple_simulations_multiprocessing(scenarios):
     start = time.perf_counter()
 
     pool = mp.Pool(6)
-    time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
+    time_scope = [time_scope_winter, time_scope_autumn, time_scope_spring]#, time_scope_summer]
     net_names = [7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -358,9 +358,9 @@ def run_economics(scenarios):
 
 
   # [4,1,0,1,1,1,0] Basis mit Abregelung							-
-  # [4,1,0,1,1,0,1] Basis mit Netzausbau							alles durchlaufen			
+  # [4,1,0,1,1,0,1] Basis mit Netzausbau							durchlaufen			
   # [8,1,3,3,3,1,0] Heimspeicher + flexible verbraucher				-
-  # [8,1,5,3,3,1,0] Communityspeicher + flexible verbraucher		alles durchlaufen
+  # [8,1,5,3,3,1,0] Communityspeicher + flexible verbraucher		durchlaufen
   # [8,1,3,3,3,1,1] moderater Netzausbau							alles durchlaufen
   
 #####################
@@ -373,7 +373,8 @@ scenarios = [
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
         #[4,1,0,1,1,0,1],
-        [4,1,0,1,1,1,0],
+        #[4,1,0,1,1,0,0],
+        #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
@@ -388,7 +389,7 @@ scenarios = [
         [7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
         [8,1,3,3,3,1,0],
-        #[8,1,5,3,3,1,0],
+        #[8,1,4,3,3,1,0],
                       ]
 
 #run_single_simulation()
