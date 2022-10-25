@@ -854,7 +854,7 @@ class MainEconomics():
     ### HH ###
     # BSS #
     anf_bss_HH = calculate_anf(investment_costs['intrest_rate'], investment_costs['battery_lifespan'])
-    E_invest_HH['BSS_capex'] = self.component_parameter['BSS_energy']*1000 * investment_costs['battery'] * anf_bss_HH if self.scenario[2] in [0, 1, 2, 3] else 0.
+    E_invest_HH['BSS_capex'] = self.component_parameter['BSS_energy']*1000 * investment_costs['battery_HH'] * anf_bss_HH if self.scenario[2] in [0, 1, 2, 3] else 0.
 
     # TES #
     anf_tes = calculate_anf(investment_costs['intrest_rate'], investment_costs['tes_lifespan'])
@@ -867,7 +867,7 @@ class MainEconomics():
     ### ECM ###
     # BSS #
     anf_bss_ECM = calculate_anf(investment_costs['intrest_rate'], investment_costs['battery_lifespan'])
-    E_invest_ECM['BSS_capex'] = self.component_parameter['BSS_energy'].sum()*1000 * investment_costs['battery'] * anf_bss_ECM if self.scenario[2] in [4, 5] else 0.
+    E_invest_ECM['BSS_capex'] = self.component_parameter['BSS_energy'].sum()*1000 * investment_costs['battery_ECM'] * anf_bss_ECM if self.scenario[2] in [4, 5] else 0.
 
     # Grid #
     anf_grid_ECM = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
@@ -960,8 +960,14 @@ class MainEconomics():
     bss_neg[bss_neg > 0] = 0
     bss_pos[bss_pos < 0] = 0
 
-    l = hh_load + hp_load + ev_load + bss_pos
-    g = self.pv_p - bss_neg
+    if self.scenario[2] in [0,1,2,3]:
+      l = hh_load + hp_load + ev_load + bss_pos
+      g = self.pv_p - bss_neg
+    elif self.scenario[2] in [4,5]:
+      l = hh_load + hp_load + ev_load
+      g = self.pv_p
+    else:
+      raise ValueError('No proper scenario to calculate energyflow.')
 
     s = g - l
     s[s<0] = 0
@@ -984,6 +990,8 @@ class MainEconomics():
     '''
     fig, ax = plt.subplots()
     ax.plot(p_t)
+    #ax.plot(l.sum(axis=1))
+    #ax.plot(-g.sum(axis=1))
     ax.set_xlabel('Time')
     ax.set_ylabel('trading_price in Euro/MWh')
     ax.legend()
@@ -1136,15 +1144,19 @@ class MainEconomics():
 
     '''
     fig, ax = plt.subplots()
-    #ax.plot(Ec_LV.sum(axis=1))
-    #ax.plot(-Eg_LV.sum(axis=1))
+    ax.plot(p_t['0']/3000)
+    ax.plot(Ec_LV.sum(axis=1) + Ec_LV_ECM.sum(axis=1))
+    ax.plot(-Eg_LV.sum(axis=1)-Eg_LV_ECM.sum(axis=1))
+    #ax.plot(Ec_LV_ECM)
+    #ax.plot(-Eg_LV_ECM)
+    
     #ax.plot(Ec_LV.sum(axis=1) + Ec_LV_flex.sum(axis=1))
     #ax.plot(-Eg_LV.sum(axis=1)- Eg_LV_flex.sum(axis=1))
-    ax.plot(p_t['0'] - p_flex_LV)
-    ax.plot(Ec_LV_flex.sum(axis=1))
+    #ax.plot(p_t['0'] - p_flex_LV)
+    #ax.plot(Ec_LV_flex.sum(axis=1))
     ax.set_xlabel('Time')
     ax.set_ylabel('P in MW')
-    ax.legend(['pt','Ec_flex','Ec flex','Eg flex'])
+    ax.legend(['p_t', 'Ec_LV','Eg_LV','Ec_LV_ECM','Eg_LV_ECM'])
     plt.show()
     #print(Ec_LV.sum(axis=1))
     '''

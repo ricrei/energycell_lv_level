@@ -131,13 +131,13 @@ time_scope = time_scope_summer
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
-  0, # Curtailment, 0/1
-  1  # Grid reinforcement, 0/1
+  3, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
+  1, # Curtailment, 0/1
+  0  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -303,7 +303,7 @@ def run_multiple_simulations_multiprocessing(scenarios):
     start = time.perf_counter()
 
     pool = mp.Pool(6)
-    time_scope = [time_scope_winter, time_scope_autumn, time_scope_spring]#, time_scope_summer]
+    time_scope = [time_scope_winter, time_scope_autumn, time_scope_spring, time_scope_summer]
     net_names = [7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -337,7 +337,7 @@ def run_economics(scenarios):
         print('\33[32m' + 'Durchlauf: ' + str(scenario_i) + ' ' + str(net_name[net_name_i]) + '\33[0m')
         e_eco = Economics.MainEconomics(scenario_i, net_name[net_name_i], time_scope_all_seasons)
         #e_eco.calculate_relevant_outputdata()
-        e_eco.energyflow()
+        #e_eco.energyflow()
 
         ### determine annuity of investmentcosts (01)
         e_eco.determine_annuity_investments(include_grid_reinforce = True)
@@ -358,10 +358,10 @@ def run_economics(scenarios):
 
 
   # [4,1,0,1,1,1,0] Basis mit Abregelung							-
-  # [4,1,0,1,1,0,1] Basis mit Netzausbau							durchlaufen			
+  # [4,1,0,1,1,0,1] Basis mit Netzausbau							-			
   # [8,1,3,3,3,1,0] Heimspeicher + flexible verbraucher				-
-  # [8,1,5,3,3,1,0] Communityspeicher + flexible verbraucher		durchlaufen
-  # [8,1,3,3,3,1,1] moderater Netzausbau							alles durchlaufen
+  # [8,1,5,3,3,1,0] Communityspeicher + flexible verbraucher		-
+  # [8,1,3,3,3,1,1] moderater Netzausbau							Netzausbau implementieren / alles muss durchlaufen
   
 #####################
 
@@ -374,21 +374,21 @@ scenarios = [
         #[3,1,0,0,0,1,0],
         #[4,1,0,1,1,0,1],
         #[4,1,0,1,1,0,0],
-        #[4,1,0,1,1,1,0],
+        [4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
         #[6,1,2,1,1,1,0],
         #[6,1,3,1,1,0,0],
-        [6,1,3,1,1,1,0],
+        #[6,1,3,1,1,1,0],
         #[6,1,4,1,1,0,0],
         #[6,1,4,1,1,1,0],
         #[6,1,5,1,1,0,0],
         #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
-        [7,1,0,3,3,1,0],
+        #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        [8,1,3,3,3,1,0],
+        #[8,1,3,3,3,1,0],
         #[8,1,4,3,3,1,0],
                       ]
 
