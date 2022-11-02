@@ -15,6 +15,8 @@ import time
 import multiprocessing as mp
 import concurrent.futures
 
+print('\33[1;31m... You are running BEVinLVgrids ...\33[0m')
+
 ##########################################
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
@@ -131,13 +133,13 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  6, # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
+  1, # BSS, 0-5
+  1, # HP, 0-5
+  1, # EV, 0-3
   1, # Curtailment, 0/1
-  1  # Grid reinforcement, 0/1
+  0  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -395,9 +397,9 @@ scenarios = [
         #[8,1,4,3,3,1,1],
                       ]
 
-#run_single_simulation()
+run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-run_economics(scenarios)
+#run_economics(scenarios)
 #######################
