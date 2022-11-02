@@ -415,7 +415,7 @@ class MainEconomics():
 
     #define Seaborn color palette to use
     #colors = sns.color_palette('pastel')[0:5]
-    '''
+    #'''
     #define data
     data = [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
@@ -431,7 +431,7 @@ class MainEconomics():
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
-    '''
+    #'''
 
     E = E / 60 # MW -> MWh
     E = E * self.projection_full_year

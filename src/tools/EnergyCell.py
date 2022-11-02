@@ -42,7 +42,7 @@ from tools.evaluation.EvaBSSsizing import EvaBSSsizing
 
 class EnergyCell():
 
-    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False):
+    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False, grid_reinforce_dev_mode = False):
         self.run_time('start')
 
         self.save_full_data = save_full_data
@@ -92,6 +92,7 @@ class EnergyCell():
         self.pf = PowerFlow(self.output_dir)
         self.energy_manager = EnergyManagement(self.scenario)
 
+        self.grid_reinforce_dev_mode = grid_reinforce_dev_mode
         self.grid_reinforcement(exit=False)
 
         self.output_data_handler.create_output_dataframes(self.grid)
@@ -151,22 +152,25 @@ class EnergyCell():
         if self.scenario[6] == 1:
           use_data_of_scenario = np.copy(np.array(self.scenario))
           use_data_of_scenario[6] = 0
+          if use_data_of_scenario[0] != 4: use_data_of_scenario = [4,1,0,1,1,0,0]
           self.output_data_handler_worst_case = OutputDataHandler(save_full_data = False)
           self.output_dir_worst_case = self.output_data_handler_worst_case.create_output_dir(
-                                         self.net_name,
-                                         use_data_of_scenario,
-                                         self.time_scope)
+                                       self.net_name,
+                                       use_data_of_scenario,
+                                       self.time_scope)
           self.grid_reinforce = GridReinforce(
-                                         self.grid,
-                                         self.output_dir_worst_case,
-                                         self.output_dir,
-                                         use_data_of_scenario,
-                                         self.control_parameter)
+                                       self.grid,
+                                       self.output_dir_worst_case,
+                                       self.output_dir,
+                                       use_data_of_scenario,
+                                       self.control_parameter,
+                                       self.grid_reinforce_dev_mode)
           self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
           self.grid = self.grid_reinforce.reinforce_lines(self.grid)
-          self.grid_reinforce.final_grid_check()
-          if exit == True:
+          if self.grid_reinforce_dev_mode == True:
+            self.grid_reinforce.final_grid_check()
             sys.exit(0)
+          if exit == True: sys.exit(0)
 
     ####################################################
     ### initiate evaluation object for a single case ###
@@ -216,7 +220,7 @@ class EnergyCell():
         [6,1,5,1,1,0,0], [6,1,5,1,1,1,0], [6,1,5,1,1,0,1],
         [7,1,0,2,2,0,0], [7,1,0,2,2,1,0], [7,1,0,2,2,0,1],
         [7,1,0,3,3,0,0], [7,1,0,3,3,1,0], [7,1,0,3,3,0,1],
-        [8,1,3,3,3,0,0], [8,1,3,3,3,1,0], [8,1,3,3,3,0,1], [8,1,4,3,3,1,0],
+        [8,1,3,3,3,0,0], [8,1,3,3,3,1,0], [8,1,3,3,3,0,1], [8,1,3,3,3,1,1], [8,1,5,3,3,1,0],
                       ]
 
       if self.scenario not in phd_scenarios:

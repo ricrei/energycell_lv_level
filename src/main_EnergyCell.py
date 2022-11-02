@@ -105,7 +105,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope_summer
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -137,7 +137,7 @@ scenario = [
   3, # HP, 0-5
   3, # EV, 0-3
   1, # Curtailment, 0/1
-  0  # Grid reinforcement, 0/1
+  1  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -209,16 +209,17 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = False, # default: False
-                    verbose = False)        # default: False
+                    save_full_data = False, 		 	# default: False
+                    verbose = True,        		 		# default: False
+                    grid_reinforce_dev_mode = False) 	# default: False
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
+  #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=False)
@@ -226,7 +227,7 @@ def run_single_simulation():
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
-  e.eva.plot_grid_issus_over_time()
+  #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_hp_soc()
@@ -276,7 +277,7 @@ def run_multiple_simulations(scenarios):
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
                           save_full_data = False, # default: False
-                          verbose = False)         # default: False)
+                          verbose = False)        # default: False)
         e.run_pf_timeseries()
         #------------
         #e.initiate_evaluation()
@@ -321,7 +322,7 @@ def run_multiple_simulations_multiprocessing(scenarios):
 def run_output_data_conversion(scenarios):
 
   evaluation_all = EvaAllCases.EvaluationAllCases(
-                                 net_names = [7,8,9,10,11],
+                                 net_names = [7, 8, 9, 10, 11],
                                  scenarios = scenarios,#[[4,1,0,1,1,1,0]],
                                  time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
 
@@ -337,7 +338,7 @@ def run_economics(scenarios):
         print('\33[32m' + 'Durchlauf: ' + str(scenario_i) + ' ' + str(net_name[net_name_i]) + '\33[0m')
         e_eco = Economics.MainEconomics(scenario_i, net_name[net_name_i], time_scope_all_seasons)
         #e_eco.calculate_relevant_outputdata()
-        #e_eco.energyflow()
+        e_eco.energyflow()
 
         ### determine annuity of investmentcosts (01)
         e_eco.determine_annuity_investments(include_grid_reinforce = True)
@@ -374,7 +375,7 @@ scenarios = [
         #[3,1,0,0,0,1,0],
         #[4,1,0,1,1,0,1],
         #[4,1,0,1,1,0,0],
-        [4,1,0,1,1,1,0],
+        #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
@@ -388,8 +389,10 @@ scenarios = [
         #[7,1,0,3,3,0,0],
         #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        #[8,1,3,3,3,1,0],
+        [8,1,3,3,3,1,0],
+        #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
+        #[8,1,4,3,3,1,1],
                       ]
 
 #run_single_simulation()

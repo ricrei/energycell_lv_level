@@ -33,7 +33,7 @@ fig_x, fig_y = 5., 2.
 image_format = 'png'
 dpi = 500
 
-lan = 'EN' # 'EN', 'DE'
+lan = 'DE' # 'EN', 'DE'
 
 if lan == 'DE':
   y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
@@ -656,7 +656,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
     y_min -= max([abs(y_min), abs(y_max)])*.1
 
     y_max = 1.2
-    y_min = -1.8
+    y_min = -1.2
 
     ax0[0].set_xlim(time_min_1, time_max_1)
     ax0[1].set_xlim(time_min_2, time_max_2)

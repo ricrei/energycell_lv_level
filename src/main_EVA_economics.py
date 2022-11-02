@@ -44,7 +44,9 @@ scenarios = [
         [7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
         [8,1,3,3,3,1,0],
+        [8,1,3,3,3,1,1],
         [8,1,4,3,3,1,0],
+        [8,1,4,3,3,1,1],
                       ]
 #############################
 ### Define all gird names ###
@@ -68,12 +70,14 @@ save_fig_dir = 'img/economics/'
 dpi = 500
 
 scenario_names = {
-  '4101110' : '4 Ref',
-  '4101101' : '5 Grid\nRein.',
-  '6131110' : '6 HBSS',
-  '7103310' : '7 FlexC',
-  '8133310' : '8 HBSS+\nFlexC',
-  '8143310' : '8 CBSS+\nFlexC',
+  '4101110' : '4\nRef',
+  '4101101' : '5\nGrid\nRein.',
+  '6131110' : '6\nHBSS',
+  '7103310' : '7\nFlexC',
+  '8133310' : '8\nHBSS+\nFlexC',
+  '8133311' : '8\nHBSS+\nFlexC+\nGridRein',
+  '8143310' : '8\nCBSS+\nFlexC',
+  '8143311' : '8\nCBSS+\nFlexC+\nGridRein',
 }
 
 ############################
@@ -315,6 +319,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   df_barplot1['SG_opex']     += df_barplot1['SG_capex']
 
   df_barplot1 = rename_scenarios(df_barplot1)
+  df_barplot1 = change_df_rows(df_barplot1, row_ref=1)
 
   fig7, ax7 = plt.subplots()
 
@@ -350,6 +355,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   df_barplot2['Ec_cur_load_reven']  += df_barplot2['Eg_cur_pv_reven']
 
   df_barplot2 = rename_scenarios(df_barplot2)
+  df_barplot2 = change_df_rows(df_barplot2, row_ref=1)
 
   s8 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_cur_load_reven',  data = df_barplot2, color = bright[7])
   s7 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_cur_pv_reven',    data = df_barplot2, color = bright[6])
@@ -394,6 +400,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   df_barplot1['SG_opex']     += df_barplot1['SG_capex']
 
   df_barplot1 = rename_scenarios(df_barplot1)
+  df_barplot1 = change_df_rows(df_barplot1, row_ref=1)
 
   fig8, ax8 = plt.subplots()
 
@@ -429,6 +436,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   df_barplot2['Ec_cur_load_reven']  += df_barplot2['Eg_cur_pv_reven']
 
   df_barplot2 = rename_scenarios(df_barplot2)
+  df_barplot2 = change_df_rows(df_barplot2, row_ref=1)
 
   s8 = sns.barplot(x = df_barplot2['scenario'], y = 'Ec_cur_load_reven',  data = df_barplot2, color = bright[7])
   #s7 = sns.barplot(x = df_barplot2['scenario'], y = 'Eg_cur_pv_reven',    data = df_barplot2, color = bright[6])

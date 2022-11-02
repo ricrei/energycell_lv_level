@@ -17,15 +17,14 @@ import tools.tools as tt
 
 class GridReinforce:
 
-  def __init__(self, grid, output_dir_worst_case, output_dir, use_data_of_scenario, control_parameter):
+  def __init__(self, grid, output_dir_worst_case, output_dir, use_data_of_scenario, control_parameter, dev_mode):
     self.grid = grid
     self.net_name = self.grid.net_name
     self.output_dir = output_dir
     self.output_dir_worst_case = output_dir_worst_case
-
     self.use_data_of_scenario = use_data_of_scenario
-
     self.control_parameter = control_parameter
+    self.dev_mode = dev_mode
 
     self.load_scenario_output_data()
 
@@ -128,13 +127,15 @@ class GridReinforce:
   ##########################
   def reinforce_transformer(self, grid):
     self.grid = grid
-    print(' ')
-    print(tt.text1('Transfromer reinforcement: ')+ str(self.trafo_overloading_time))
-    print('Maximum trafo loading within the grid: ' + str(self.trafo_overloading) + ' %')
+    if self.dev_mode == True:
+      print(' ')
+      print(tt.text1('Transfromer reinforcement: ')+ str(self.trafo_overloading_time))
+      print('Maximum trafo loading within the grid: ' + str(self.trafo_overloading) + ' %')
     if (self.trafo_overloading > 100).any():# or self.use_data_of_scenario[0] == 5:
-      print(tt.textred('Transformer reinforcement needed.'))
-      print('Original transformer:')
-      self.print_trafo_loading()
+      if self.dev_mode == True:
+        print(tt.textred('Transformer reinforcement needed.'))
+        print('Original transformer:')
+        self.print_trafo_loading()
       lv_bus = int(self.grid.net.trafo.lv_bus.values)
       hv_bus = int(self.grid.net.trafo.hv_bus.values)
       transformer_types = self.get_transformer_type()
@@ -144,56 +145,66 @@ class GridReinforce:
         for trafo_type in transformer_types:
           pp.create_transformer(self.grid.net, hv_bus, lv_bus, trafo_type)
       else:
-        print('No transformer changed')
+        if self.dev_mode == True: print('No transformer changed')
       self.fill_grid_with_power_values(self.trafo_overloading_time)
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       self.trafo_overloading = self.grid.net.res_trafo.loading_percent.values.round(0)
-      print('Transformer changed to:')
-      self.print_trafo_loading()
+      if self.dev_mode == True: print('Transformer changed to:')
+      if self.dev_mode == True: self.print_trafo_loading()
 
       for trafotype in transformer_types:
         result = pd.DataFrame(data=[[trafotype, self.trafo_costs_dir[trafotype]['inv_cost']]], columns=self.result_trafo.columns.values)
         self.result_trafo = self.result_trafo.append(result, ignore_index=True)  
       self.result_trafo.round(3).to_csv(self.output_dir + 'reinforced_trafo.csv',
                                    mode='w', header=True, index=True)
-      print(self.result_trafo)
+      if self.dev_mode == True: print(self.result_trafo)
     else:
-      print(tt.textgreen('No transformer reinforcement needed.'))
-    print(' ')
+      if self.dev_mode == True: print(tt.textgreen('No transformer reinforcement needed.'))
+    if self.dev_mode == True: print(' ')
+
+    self.grid.s_trafo_power = self.grid.net.trafo.sn_mva.sum()
 
     return self.grid
 
   def get_transformer_type(self):
-    if self.net_name == "kerber_rural_1":
-      return ['0.25 MVA 10/0.4 kV']
-      #return self.grid.net.trafo.std_type.loc[0]
-    elif self.net_name == "kerber_rural_2":
-      return self.grid.net.trafo.std_type.loc[0]
-    elif self.net_name == "kerber_rural_3":
-      return self.grid.net.trafo.std_type.loc[0]
-    elif self.net_name == "kerber_rural_4":
-      return self.grid.net.trafo.std_type.loc[0]
-    elif self.net_name == "kerber_village":
-      return self.grid.net.trafo.std_type.loc[0]
-    elif self.net_name == "kerber_suburb_1":
-      return self.grid.net.trafo.std_type.loc[0]
-    elif self.net_name == "kerber_suburb_2":
-      return self.grid.net.trafo.std_type.loc[0]
-    elif self.net_name == "simbench_rural_1":
-      return ['0.25 MVA 20/0.4 kV']
-    elif self.net_name == "simbench_rural_2":
-      return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
-    elif self.net_name == "simbench_rural_3":
-      self.keep_trafo = True
-      return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']#, '0.25 MVA 20/0.4 kV']
-    elif self.net_name == "simbench_suburb_4":
-      return ['0.63 MVA 20/0.4 kV']
-    elif self.net_name == "simbench_suburb_5":
-      return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
-    elif self.net_name == "simbench_urban_6":
-      return None
-    elif self.net_name == "test_net_one_load_branch":
-      return None
+    if self.grid.scenario[0] == 4:
+      if self.net_name == "kerber_rural_1": return ['0.25 MVA 10/0.4 kV']
+      elif self.net_name == "kerber_rural_2": return self.grid.net.trafo.std_type.loc[0]
+      elif self.net_name == "kerber_rural_3": return self.grid.net.trafo.std_type.loc[0]
+      elif self.net_name == "kerber_rural_4": return self.grid.net.trafo.std_type.loc[0]
+      elif self.net_name == "kerber_village": return self.grid.net.trafo.std_type.loc[0]
+      elif self.net_name == "kerber_suburb_1": return self.grid.net.trafo.std_type.loc[0]
+      elif self.net_name == "kerber_suburb_2": return self.grid.net.trafo.std_type.loc[0]
+      elif self.net_name == "simbench_rural_1": return ['0.25 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_rural_2": return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_rural_3":
+        self.keep_trafo = True
+        return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']#, '0.25 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_suburb_4": return ['0.63 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_suburb_5": return ['0.63 MVA 20/0.4 kV', '0.63 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_urban_6": return None
+      elif self.net_name == "test_net_one_load_branch": return None
+    else:
+      if self.net_name == "kerber_rural_1": return None
+      elif self.net_name == "kerber_rural_2": return None
+      elif self.net_name == "kerber_rural_3": return None
+      elif self.net_name == "kerber_rural_4": return None
+      elif self.net_name == "kerber_village": return None
+      elif self.net_name == "kerber_suburb_1": return None
+      elif self.net_name == "kerber_suburb_2": return None
+      elif self.net_name == "simbench_rural_1": return ['0.25 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_rural_2":
+        self.keep_trafo = True
+        return ['0.63 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_rural_3":
+        self.keep_trafo = True
+        return ['0.63 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_suburb_4": return ['0.63 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_suburb_5": 
+        self.keep_trafo = True
+        return ['0.63 MVA 20/0.4 kV']
+      elif self.net_name == "simbench_urban_6": return None
+      elif self.net_name == "test_net_one_load_branch": return None
 
   def print_trafo_loading(self):
     print('Trafo %s loaded to %s %%' % (self.grid.net.trafo.std_type.values, (self.trafo_overloading)))
@@ -208,107 +219,115 @@ class GridReinforce:
   ##########################
   def reinforce_lines(self, grid):
     self.grid = grid
-    print(' ')
-    print(tt.text1('Line reinforcement: '))
-    self.print_loading_voltage()
+    if self.dev_mode == True:
+      print(' ')
+      print(tt.text1('Line reinforcement: '))
+      self.print_loading_voltage()
 
-    if (self.line_overloading > 100) or (self.overvoltage > 1.1) or (self.undervoltage < .9):# or self.use_data_of_scenario[0] == 5:
+    if (self.line_overloading > 100) or (self.overvoltage > 1.1) or (self.undervoltage < .9):
       self.install_line_by_gridtype()
     else:
-      print(tt.textgreen('No line reinforcement needed.'))
+      if self.dev_mode == True: print(tt.textgreen('No line reinforcement needed.'))
 
     if self.line_overloading > 100:
-      print(tt.textred('Line reinforcement needed (Overloading).'))
+      if self.dev_mode == True: print(tt.textred('Line reinforcement needed (Overloading).'))
       self.fill_grid_with_power_values(self.line_overloading_time)
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       self.line_overloading = self.grid.net.res_line.loading_percent.max()
 
     if self.overvoltage > 1.1:
-      print(tt.textred('Line reinforcement needed (Overvoltage).'))
+      if self.dev_mode == True: print(tt.textred('Line reinforcement needed (Overvoltage).'))
       self.fill_grid_with_power_values(self.overvoltage_time)
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       self.overvoltage = self.grid.net.res_bus.vm_pu.max().max()
 
     if self.undervoltage < .9:
-      print(tt.textred('Line reinforcement needed (Undervoltage).'))
+      if self.dev_mode == True: print(tt.textred('Line reinforcement needed (Undervoltage).'))
       self.fill_grid_with_power_values(self.undervoltage_time)
       pp.runpp(self.grid.net, algorithm='nr', init='results', max_iteration=30, tolerance_mva=1e-6)
       self.undervoltage = self.grid.net.res_bus.vm_pu.min().min()
 
-    print('Line(s) changed to: ')
-    print(self.result_lines)
-    self.print_loading_voltage()
-    #pp.plotting.to_html(self.grid.net, 'test.html', respect_switches=True, include_lines=True, include_trafos=True, show_tables=True)
+    if self.dev_mode == True: 
+      print('Line(s) changed to: ')
+      print(self.result_lines)
+      self.print_loading_voltage()
     self.result_lines.round(3).to_csv(self.output_dir + 'reinforced_lines.csv',
                                    mode='w', header=True, index=True)
 
-    print(' ')
+    if self.dev_mode == True: print(' ')
 
     return self.grid
 
 
   def install_line_by_gridtype(self):
-    if self.net_name == "kerber_rural_1":
-      return None
-    elif self.net_name == "kerber_rural_2":
-      return None
-    elif self.net_name == "kerber_rural_3":
-      return None
-    elif self.net_name == "kerber_rural_4":
-      return None
-    elif self.net_name == "kerber_village":
-      return None
-    elif self.net_name == "kerber_suburb_1":
-      return None
-    elif self.net_name == "kerber_suburb_2":
-      return None
-    elif self.net_name == "simbench_rural_1":
-      return None
-    elif self.net_name == "simbench_rural_2":
-      # Strang 1
-      self.connect_buses(bus_to_trafo=74, former_bus=None, line_type='NAYY 4x240SE 0.6/1kV')
-      self.disconnect_buses(22, 68)
-      # Strang 2
-      self.connect_buses(bus_to_trafo=4, former_bus=16, line_type='NAYY 4x150SE 0.6/1kV')
-      # Strang 3
-      self.connect_buses(bus_to_trafo=19, former_bus=37, line_type='NAYY 4x150SE 0.6/1kV')
-      # Strang 4
-      self.connect_buses(bus_to_trafo=42, former_bus=75, line_type='NAYY 4x240SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=20, former_bus=13, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=82, former_bus=0, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=41, former_bus=36, line_type='NAYY 4x185SE 0.6/1kV')
-      return None
-    elif self.net_name == "simbench_rural_3":
-      # Strang 1
-      self.connect_buses(bus_to_trafo=74, former_bus=58, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=5, former_bus=None, line_type='NAYY 4x150SE 0.6/1kV')
-      # Strang 6
-      self.connect_buses(bus_to_trafo=39, former_bus=None, line_type='NAYY 4x150SE 0.6/1kV')
-      # Strang 7
-      self.connect_buses(bus_to_trafo=108, former_bus=33, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=125, former_bus=53, line_type='NAYY 4x185SE 0.6/1kV')
-      # Strang 8
-      self.connect_buses(bus_to_trafo=95, former_bus=92, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=102, former_bus=41, line_type='NAYY 4x150SE 0.6/1kV')
-      # Strang 9
-      self.connect_buses(bus_to_trafo=111, former_bus=31, line_type='NAYY 4x185SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=48, former_bus=107, line_type='NAYY 4x150SE 0.6/1kV')
-      return None
-    elif self.net_name == "simbench_suburb_4":
-      # Strang 3
-      self.connect_buses(bus_to_trafo=22, former_bus=10, line_type='NAYY 4x150SE 0.6/1kV')
-      return None
-    elif self.net_name == "simbench_suburb_5":
-      # Strang 2
-      self.connect_buses(bus_to_trafo=79, former_bus=2, line_type='NAYY 4x185SE 0.6/1kV')
-      # Strang 4
-      self.connect_buses(bus_to_trafo=56, former_bus=10, line_type='NAYY 4x150SE 0.6/1kV')
-      self.connect_buses(bus_to_trafo=80, former_bus=59, line_type='NAYY 4x150SE 0.6/1kV')
-      return None
-    elif self.net_name == "simbench_urban_6":
-      return None
-    elif self.net_name == "test_net_one_load_branch":
-      return None
+    if self.grid.scenario[0] == 4:
+      if self.net_name == "kerber_rural_1": return None
+      elif self.net_name == "kerber_rural_2": return None
+      elif self.net_name == "kerber_rural_3": return None
+      elif self.net_name == "kerber_rural_4": return None
+      elif self.net_name == "kerber_village": return None
+      elif self.net_name == "kerber_suburb_1": return None
+      elif self.net_name == "kerber_suburb_2": return None
+      elif self.net_name == "simbench_rural_1": return None
+      elif self.net_name == "simbench_rural_2":
+        # Strang 1
+        self.connect_buses(bus_to_trafo=74, former_bus=None, line_type='NAYY 4x240SE 0.6/1kV')
+        self.disconnect_buses(22, 68)
+        # Strang 2
+        self.connect_buses(bus_to_trafo=4, former_bus=16, line_type='NAYY 4x150SE 0.6/1kV')
+        # Strang 3
+        self.connect_buses(bus_to_trafo=19, former_bus=37, line_type='NAYY 4x150SE 0.6/1kV')
+        # Strang 4
+        self.connect_buses(bus_to_trafo=42, former_bus=75, line_type='NAYY 4x240SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=20, former_bus=13, line_type='NAYY 4x185SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=82, former_bus=0, line_type='NAYY 4x185SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=41, former_bus=36, line_type='NAYY 4x185SE 0.6/1kV')
+        return None
+      elif self.net_name == "simbench_rural_3":
+        # Strang 1
+        self.connect_buses(bus_to_trafo=74, former_bus=58, line_type='NAYY 4x185SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=5, former_bus=None, line_type='NAYY 4x150SE 0.6/1kV')
+        # Strang 6
+        self.connect_buses(bus_to_trafo=39, former_bus=None, line_type='NAYY 4x150SE 0.6/1kV')
+        # Strang 7
+        self.connect_buses(bus_to_trafo=108, former_bus=33, line_type='NAYY 4x185SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=125, former_bus=53, line_type='NAYY 4x185SE 0.6/1kV')
+        # Strang 8
+        self.connect_buses(bus_to_trafo=95, former_bus=92, line_type='NAYY 4x185SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=102, former_bus=41, line_type='NAYY 4x150SE 0.6/1kV')
+        # Strang 9
+        self.connect_buses(bus_to_trafo=111, former_bus=31, line_type='NAYY 4x185SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=48, former_bus=107, line_type='NAYY 4x150SE 0.6/1kV')
+        return None
+      elif self.net_name == "simbench_suburb_4":
+        # Strang 3
+        self.connect_buses(bus_to_trafo=22, former_bus=10, line_type='NAYY 4x150SE 0.6/1kV')
+        return None
+      elif self.net_name == "simbench_suburb_5":
+        # Strang 2
+        self.connect_buses(bus_to_trafo=79, former_bus=2, line_type='NAYY 4x185SE 0.6/1kV')
+        # Strang 4
+        self.connect_buses(bus_to_trafo=56, former_bus=10, line_type='NAYY 4x150SE 0.6/1kV')
+        self.connect_buses(bus_to_trafo=80, former_bus=59, line_type='NAYY 4x150SE 0.6/1kV')
+        return None
+      elif self.net_name == "simbench_urban_6": return None
+      elif self.net_name == "test_net_one_load_branch": return None
+    else:
+      if self.net_name == "kerber_rural_1": return None
+      elif self.net_name == "kerber_rural_2": return None
+      elif self.net_name == "kerber_rural_3": return None
+      elif self.net_name == "kerber_rural_4": return None
+      elif self.net_name == "kerber_village": return None
+      elif self.net_name == "kerber_suburb_1": return None
+      elif self.net_name == "kerber_suburb_2": return None
+      elif self.net_name == "simbench_rural_1": return None
+      elif self.net_name == "simbench_rural_2": return None
+      elif self.net_name == "simbench_rural_3": return None
+      elif self.net_name == "simbench_suburb_4": return None
+      elif self.net_name == "simbench_suburb_5": return None
+      elif self.net_name == "simbench_urban_6": return None
+      elif self.net_name == "test_net_one_load_branch": return None
+    
 
 
   def connect_buses(self, bus_to_trafo, former_bus, line_type):
@@ -379,5 +398,5 @@ class GridReinforce:
     print('Total line- and transformercosts: %s Euro' % (round(float(total_line_costs + total_trafo_costs))))
 
     pp.runpp(self.grid.net)
-    #pf_res_plotly(self.grid.net, aspectratio=(1,1))
+    pf_res_plotly(self.grid.net, aspectratio=(1,1))
 

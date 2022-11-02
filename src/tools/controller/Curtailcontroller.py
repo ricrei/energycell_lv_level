@@ -92,7 +92,7 @@ class CurtailmentHomeStorage:
 class Curtailment:
 
   def __init__(self, grid):
-    self.trafo_power = grid.net.trafo.sn_mva.sum()
+    self.trafo_power = grid.net.trafo.sn_mva.sum()#grid.s_trafo_power
     self.sf_pv =  1#.95 # safty factor
     self.sf_load = 1#.95 # safty factor
     if grid.scenario[2] in [4]:
@@ -102,7 +102,7 @@ class Curtailment:
     else:
       self.Curtailment_regarding_Storage = CurtailmentHomeStorage()
 
-  def curtail(self,grid, t):
+  def curtail(self, grid, t):
 
     res_s, res_p = grid.get_residualload_s_sum()
 
@@ -113,16 +113,16 @@ class Curtailment:
     res_s, res_p = grid.get_residualload_s_sum()
     res_p_HH = self.Curtailment_regarding_Storage.get_residualload_p_per_household(grid)
     curtail_factor_trafo = 1
-    if (-res_s > self.trafo_power*self.sf_pv):
+    if (-res_s > grid.s_trafo_power*self.sf_pv):
       #print('Trafo PV')
       total_pv_power = (grid.net.sgen.p_mw[res_p_HH < 0].sum()**2 + grid.net.sgen[res_p_HH < 0].q_mvar.sum()**2)**.5
-      curtail_power = -res_s - self.trafo_power*self.sf_pv
+      curtail_power = -res_s - grid.s_trafo_power*self.sf_pv
       curtail_factor_trafo = (1 - curtail_power/total_pv_power)
-    if (res_s > self.trafo_power*self.sf_load):
+    if (res_s > grid.s_trafo_power*self.sf_load):
       #print('Trafo Load')
       res_p_HH = np.concatenate((res_p_HH, res_p_HH, res_p_HH))
       total_load_power = (grid.net.load.p_mw[res_p_HH > 0].sum()**2 + grid.net.load.q_mvar[res_p_HH > 0].sum()**2)**.5
-      curtail_power = res_s - self.trafo_power*self.sf_load
+      curtail_power = res_s - grid.s_trafo_power*self.sf_load
       curtail_factor_trafo = (1 - curtail_power/total_load_power)
 
     # Lineoverloading
@@ -169,7 +169,7 @@ class Curtailment:
     # Trafo overloading
     res_s, res_p = grid.get_residualload_s_sum()
     res_p_HH = self.Curtailment_regarding_Storage.get_residualload_p_per_household(grid)
-    if (-res_s > self.trafo_power*self.sf_pv):
+    if (-res_s > grid.s_trafo_power*self.sf_pv):
       #print('Trafo PV')
       total_pv_power = (grid.net.sgen.p_mw[res_p_HH < 0].sum()**2 + grid.net.sgen.q_mvar[res_p_HH < 0].sum()**2)**.5
       total_pv_power_mw_df = grid.net.sgen.p_mw.copy()
@@ -177,7 +177,7 @@ class Curtailment:
       curtail_power = grid.net.sgen.p_mw.copy()*0
       curtail_factor_trafo = grid.net.sgen.p_mw.copy()*0
 
-      curtail_power_total = -res_s - self.trafo_power*self.sf_pv
+      curtail_power_total = -res_s - grid.s_trafo_power*self.sf_pv
 
       curtail_power[res_p_HH < 0] =  (res_p_HH[res_p_HH < 0] / res_p_HH[res_p_HH < 0].sum()) * curtail_power_total
 
@@ -188,12 +188,12 @@ class Curtailment:
 
       grid.curtailed_pv_power_df += total_pv_power_mw_df - grid.net.sgen.p_mw.copy()
 
-    if (res_s > self.trafo_power*self.sf_load):
+    if (res_s > grid.s_trafo_power*self.sf_load):
       #print('Trafo Load')
       res_p_HH = np.concatenate((res_p_HH, res_p_HH, res_p_HH))
       total_load_power = (grid.net.load.p_mw[res_p_HH > 0].sum()**2 + grid.net.load.q_mvar[res_p_HH > 0].sum()**2)**.5
       total_load_power_mw_df = grid.net.load.p_mw.copy()
-      curtail_power = res_s - self.trafo_power*self.sf_load
+      curtail_power = res_s - grid.s_trafo_power*self.sf_load
       curtail_factor_trafo = (1 - curtail_power/total_load_power)
 
       grid.net.load.p_mw[res_p_HH > 0] = grid.net.load.p_mw[res_p_HH > 0] * curtail_factor_trafo
