@@ -841,9 +841,6 @@ class MainEconomics():
   def determine_annuity_investments(self, include_grid_reinforce = True):
     investment_costs = parameter_economics.investment_costs
 
-    #print(self.component_parameter)
-    #print(investment_costs)
-
     def calculate_anf(i, n):
       anf = (i * (1 + i)**n) / ((1 + i)**n - 1)
       return anf
@@ -871,7 +868,7 @@ class MainEconomics():
 
     # Grid #
     anf_grid_ECM = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
-    costs_trafo, costs_lines = self.get_grid_reinforcment_costs(include_grid_reinforce)
+    costs_lines, costs_trafo = self.get_grid_reinforcment_costs(include_grid_reinforce)
     E_invest_ECM['Grid_Lines_capex'] = costs_lines * anf_grid_ECM
     E_invest_ECM['Grid_Trafo_capex'] = costs_trafo * anf_grid_ECM
 
@@ -1020,28 +1017,34 @@ class MainEconomics():
     Eg_self_flex = E['Eg_self_flex'].sum()
 
     # grid charges derived from GRID REINFORCEMENT
-    trafo_costs, line_costs = self.get_grid_reinforcment_costs(include_grid_reinforce = True)
+    line_costs, trafo_costs = self.get_grid_reinforcment_costs(include_grid_reinforce = True)
     anf_grid = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
     trafo_costs *= anf_grid
     line_costs  *= anf_grid
 
+    #print("Line costs:  " + str(line_costs))
+    #print("Trafo costs: " + str(trafo_costs))
+    #print("Total costs: " + str(trafo_costs + line_costs))
+
     grid_charges = pd.DataFrame(index=[0])
 
     # grid charges based on load
-    a_load = (Ecur_load + Ec_MV)/(Ec_LV + Ecur_load + Ec_MV)
+    a_load = (Ec_MV)/(Ec_LV + Ec_MV)
 
-    grid_charge_MV_load = (a_load*line_costs + trafo_costs)/(Ecur_load + Ec_MV)
-    grid_charge_LV_load = ((1-a_load)*line_costs + trafo_costs)/(Ec_LV)
+    grid_charge_MV_load = (a_load*line_costs + trafo_costs)/(Ec_MV)
+    grid_charge_LV_load = ((1-a_load)*line_costs)/(Ec_LV)
 
-    #print("grid charges load LV: " + str(grid_charge_MV_load))
-    #print("grid charges load MV: " + str(grid_charge_LV_load))
+    #print("grid charges load MV: " + str(grid_charge_MV_load))
+    #print("grid charges load LV: " + str(grid_charge_LV_load))
+
+    #print("Total grid charges: " + str(grid_charge_MV_load*Ec_MV + grid_charge_LV_load*Ec_LV))
 
     # grid charges based on pv
     '''
     a_pv = (Ecur_pv + Eg_MV)/(Eg_LV + Ecur_pv + Eg_MV)
 
     grid_charge_MV_pv = (a_pv*line_costs + trafo_costs)/(Ecur_pv + Eg_MV)
-    grid_charge_LV_pv = ((1-a_pv)*line_costs + trafo_costs)/(Eg_LV)
+    grid_charge_LV_pv = ((1-a_pv)*line_costs)/(Eg_LV)
 
     #print("grid charges pv LV: " + str(grid_charge_MV_pv))
     #print("grid charges pv MV: " + str(grid_charge_LV_pv))
@@ -1126,13 +1129,15 @@ class MainEconomics():
     p_flex_LV = parameter_economics.energycosts_income['C_flex_LV']
 
     Ec_LV_costs = Ec_LV.copy()*0
+    Ec_LV_grid_charges_costs = Ec_LV.copy()*0
     Eg_LV_reven = Eg_LV.copy()*0
     Ec_LV_flex_reven = Ec_LV_flex.copy()*0
     Ec_LV_flex_costs = Ec_LV_flex.copy()*0
     Eg_LV_flex_reven = Eg_LV_flex.copy()*0
 
     for c in Ec_LV.columns:
-      Ec_LV_costs[c] = Ec_LV[c] * (p_t['0'] + gc_LV)
+      Ec_LV_costs[c] = Ec_LV[c] * (p_t['0'])
+      Ec_LV_grid_charges_costs[c] = Ec_LV[c] * (gc_LV)
       Eg_LV_reven[c] = Eg_LV[c] * p_t['0']
       Ec_LV_flex_costs[c].loc[p_t['0'] > p_flex_LV] = Ec_LV_flex[c].loc[p_t['0'] > p_flex_LV] * (p_t['0'] - p_flex_LV) # if p_t > p_flex_LV -> costs
       Ec_LV_flex_reven[c].loc[p_t['0'] <= p_flex_LV] = Ec_LV_flex[c].loc[p_t['0'] <= p_flex_LV] * (p_flex_LV - p_t['0']) # if p_t < p_flex_LV -> reven
@@ -1196,11 +1201,13 @@ class MainEconomics():
 
     # MV grid obtained, feed-in
     Ec_MV_costs = df_HH.copy()
+    Ec_MV_grid_charges_costs = df_HH.copy()
     Eg_MV_reven = df_HH.copy()
     p_MV_fit = parameter_economics.energycosts_income['C_market_fit']
     p_MV_obtain = parameter_economics.energycosts_income['C_market_obtain']
 
-    Ec_MV_costs = E['Ec_MV'] * (p_MV_obtain + gc_MV)
+    Ec_MV_costs = E['Ec_MV'] * (p_MV_obtain)
+    Ec_MV_grid_charges_costs = E['Ec_MV'] * (gc_MV)
     Eg_MV_reven = E['Eg_MV'] * p_MV_fit
     EC_reven['grid_charges'] += E['Ec_MV'].sum() * gc_MV
     '''
@@ -1217,7 +1224,9 @@ class MainEconomics():
     E_reven = pd.DataFrame(index=E.index)
 
     E_costs['Ec_LV_costs'] = Ec_LV_costs.sum().values + Ec_LV_flex_costs.sum().values
+    E_costs['Ec_LV_gc_costs'] = Ec_LV_grid_charges_costs.sum().values
     E_costs['Ec_MV_costs'] = Ec_MV_costs
+    E_costs['Ec_MV_gc_costs'] = Ec_MV_grid_charges_costs
 
     E_reven['Ec_LV_flex_reven'] = Ec_LV_flex_reven.sum().values
     E_reven['Eg_LV_flex_reven'] = Eg_LV_flex_reven.sum().values
