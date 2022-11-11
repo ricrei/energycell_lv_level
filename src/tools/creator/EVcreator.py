@@ -7,6 +7,7 @@ class EVcreator:
 
   def __init__(self, inputfolder, control_parameter):
     self.inputfolder = inputfolder
+    self.control_parameter = control_parameter
     self.usable_c_bat = control_parameter['EV_usable_c_bat']#100 # in %
     self.ev_start_soc = control_parameter['EV_start_soc']#100 # in %
 
@@ -24,6 +25,7 @@ class EVcreator:
           raise ValueError('No valid grid.category defined. Not able to choose EV type.')
 
       self.ev = tt.decompress_pickle(self.ev_data_file)
+      self.ev *= self.control_parameter['NEP']['ev']
       self.ev_para = {'ev_types' : self.ev.columns}
 
       grid.net.load['ev_c_bat'] = np.nan

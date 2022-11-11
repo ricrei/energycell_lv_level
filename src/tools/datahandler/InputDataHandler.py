@@ -11,8 +11,6 @@ class InputDataHandler():
     self.scenario = scenario
     self.folder = 'input-files/'
     self.inputfolder = self.folder
-    if self.scenario[0] in ['A','B','C']:
-      self.inputfolder += 'YY_inputdata_BEVinLV/'
     if 'name' in time_scope.keys():
       if time_scope['name'] in ['summer','winter','autumn','spring']:
         self.season = time_scope['name']
@@ -67,6 +65,8 @@ class InputDataHandler():
 
         
       if self.season != None:
+          if self.scenario[0] in ['A','B','C']:
+            self.inputfolder += 'YY_inputdata_BEVinLV/'
           if self.season == 'summer':
             self.inputfolder = self.inputfolder + 'XX_inputdata_summer/'
           elif self.season == 'winter':

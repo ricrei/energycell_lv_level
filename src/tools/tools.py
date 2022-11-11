@@ -208,6 +208,18 @@ class VerboseOFF():
   def progress_finished(self):
     pass
 
+
+
+####################################################
+###         method to pass on NEP data           ###
+####################################################
+class NEPscenario():
+  def __init__(self):
+    pass
+  def get_NEP_data():
+    pass
+
+
 ####################################################
 ###         method to print progress bar   # █   ###
 ####################################################

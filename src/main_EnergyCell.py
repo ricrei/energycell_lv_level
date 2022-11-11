@@ -12,6 +12,8 @@ import tools.economics.Economics as Economics
 
 import time
 
+import parameter_BEVinLV
+
 import multiprocessing as mp
 import concurrent.futures
 
@@ -21,7 +23,7 @@ print('\33[1;31m... You are running BEVinLVgrids ...\33[0m')
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
                'end_time'   : '2017-05-31 00:00:00+01:00',
-               't_freq'     : '30T',
+               't_freq'     : '15T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -134,7 +136,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope_winter_15T
+time_scope = time_scope
 ###########################################
 
 #######################
@@ -165,12 +167,12 @@ A = 'A'
 B = 'B'
 C = 'C'
 scenario = [
-  A, # scenario number, 1-8
+  C, # scenario number, 1-8
   1, # PV, 0-2
   1, # BSS, 0-5
   1, # HP, 0-5
-  0, # EV, 0-3
-  1, # Curtailment, 0/1
+  1, # EV, 0-3
+  0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -209,6 +211,7 @@ control_parameter = {
   'HP_lower_TES_reserve': 0., # default = 0 
   'HP_upper_TES_reserve_summer': .5, # default = 1
   'HP_lower_TES_reserve_winter': .1, # default = 0
+  'NEP' : parameter_BEVinLV.NEP[scenario[0]] if scenario[0] in [A, B, C] else parameter_BEVinLV.NEP['X'],
 }
 ############################
 
@@ -248,7 +251,7 @@ def run_single_simulation():
                     grid_reinforce_dev_mode = False) 	# default: False
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   #e.initiate_evaluation()
@@ -314,7 +317,7 @@ def run_multiple_simulations(scenarios):
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
                           save_full_data = False, # default: False
-                          verbose = False)        # default: False)
+                          verbose = True)        # default: False)
         e.run_pf_timeseries()
         #------------
         #e.initiate_evaluation()
@@ -432,14 +435,14 @@ scenarios = [
         #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
-        [A,1,1,1,0,1,0],
-        #[B,1,1,1,0,1,0],
-        #[C,1,1,1,0,1,0],
+        #[A,1,1,1,0,0,0],
+        #[B,1,1,1,0,0,0],
+        [C,1,1,1,0,0,0],
                       ]
 
 #run_single_simulation()
-#run_multiple_simulations(scenarios)
-run_multiple_simulations_multiprocessing(scenarios)
+run_multiple_simulations(scenarios)
+#run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
 #run_economics(scenarios)
 #######################

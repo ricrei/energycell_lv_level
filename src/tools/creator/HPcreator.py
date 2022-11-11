@@ -9,6 +9,7 @@ class HPcreator:
         self.inputfolder = inputfolder
         self.hp_data_file = self.inputfolder + '13_hp_short.pbz2'
         self.hp = tt.decompress_pickle(self.hp_data_file)
+        self.hp *= control_parameter['NEP']['hp']
         self.hp_para = {}
         #self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
         self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]

@@ -6,7 +6,7 @@ import tools.tools as tt
 
 class PVcreator:
 
-  def __init__(self, inputfolder):
+  def __init__(self, inputfolder, control_parameter):
     self.inputfolder = inputfolder
     self.pv_data_file = self.inputfolder + '12_pv_short.pbz2'
 
@@ -14,7 +14,7 @@ class PVcreator:
     # rate: frequency of occurrence of pv-orientation
     self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
                         'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
-                        'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        'installed_power_scaling' : [i*control_parameter['NEP']['pv'] for i in [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10}
     #TODO: power urban has to be verified
 

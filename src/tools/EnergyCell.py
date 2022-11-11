@@ -61,7 +61,7 @@ class EnergyCell():
         self.grid = Grid(self.net_name, self.scenario, self.time_scope)
 
         self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
-        self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
+        self.pv_creator = PVcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.bss_creator = BSScreator(self.grid, self.control_parameter)
