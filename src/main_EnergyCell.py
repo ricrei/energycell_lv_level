@@ -73,6 +73,33 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 
+# 15T
+
+time_scope_winter_15T = { 'start_time' : '2017-01-03 00:00:00+01:00',
+                      'end_time'   : '2017-01-10 00:00:00+01:00',
+                      't_freq'     : '15T',
+                      'name'       : 'winter'
+                    }
+
+
+time_scope_summer_15T = { 'start_time' : '2017-05-27 00:00:00+02:00',
+                      'end_time'   : '2017-06-03 00:00:00+02:00',
+                      't_freq'     : '15T',
+                      'name'       : 'summer'
+                    }
+
+time_scope_autumn_15T = { 'start_time' : '2017-10-20 00:00:00+02:00',
+                      'end_time'   : '2017-10-27 00:00:00+02:00',
+                      't_freq'     : '15T',
+                      'name'       : 'autumn'
+                    }
+
+time_scope_spring_15T = { 'start_time' : '2017-03-05 00:00:00+01:00',
+                      'end_time'   : '2017-03-12 00:00:00+01:00',
+                      't_freq'     : '15T',
+                      'name'       : 'spring'
+                    }
+
 # Seasons long
 '''
 time_scope_winter = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -107,7 +134,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope
+time_scope = time_scope_winter_15T
 ###########################################
 
 #######################
@@ -116,6 +143,7 @@ time_scope = time_scope
 ## 1: conventional, 2: full-electrified
 ## 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
 ## 6: battery storage systems, 7: smart consumers, 8: battery storage systems and smart consumers
+## A: 2021, B: 2037, C: 2045
 # Second number: PV
 ## 0: no PV, 1: Q(U), 2: fix cos(phi)
 # Third number: BSS
@@ -128,16 +156,20 @@ time_scope = time_scope
 ## 5: residual-load-driven
 # Fifth number: EV
 ## 0: no EV, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
+## 4: greedy, 5: balanced, 6: market-oriented, 7: residual-based
 # Sixth number: Curtailment
 ## 0: No Curtailment, 1: Curtailed Operation (residualload oriented)
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
+A = 'A'
+B = 'B'
+C = 'C'
 scenario = [
-  6, # scenario number, 1-8
+  A, # scenario number, 1-8
   1, # PV, 0-2
   1, # BSS, 0-5
   1, # HP, 0-5
-  1, # EV, 0-3
+  0, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -219,12 +251,12 @@ def run_single_simulation():
   e.run_pf_timeseries()
 
   # Initialize Evaluation
-  e.initiate_evaluation()
+  #e.initiate_evaluation()
 
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -268,7 +300,10 @@ def run_single_simulation():
 def run_multiple_simulations(scenarios):
   start = time.perf_counter()
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
+  time_scope = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]
+  if scenarios[0][0] in ['A','B','C']:
+    time_scope = [time_scope_winter_15T, time_scope_summer_15T, time_scope_autumn_15T, time_scope_spring_15T]
+  for time_scope_i in time_scope:
     for net_name_i in [7, 8, 9, 10, 11]:
       for scenario_i in scenarios:
         print(' ')
@@ -307,6 +342,8 @@ def run_multiple_simulations_multiprocessing(scenarios):
 
     pool = mp.Pool(6)
     time_scope = [time_scope_winter, time_scope_autumn, time_scope_spring, time_scope_summer]
+    if scenarios[0][0] in ['A','B','C']:
+      time_scope = [time_scope_winter_15T, time_scope_summer_15T, time_scope_autumn_15T, time_scope_spring_15T]
     net_names = [7, 8, 9, 10, 11]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -391,15 +428,18 @@ scenarios = [
         #[7,1,0,3,3,0,0],
         #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        [8,1,3,3,3,1,0],
+        #[8,1,3,3,3,1,0],
         #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
+        [A,1,1,1,0,1,0],
+        #[B,1,1,1,0,1,0],
+        #[C,1,1,1,0,1,0],
                       ]
 
-run_single_simulation()
+#run_single_simulation()
 #run_multiple_simulations(scenarios)
-#run_multiple_simulations_multiprocessing(scenarios)
+run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
 #run_economics(scenarios)
 #######################

@@ -55,7 +55,7 @@ class EnergyCell():
         self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
         self.time_scope['intervall_in_seconds'] = self.intervall_in_seconds
 
-        self.input_data_handler = InputDataHandler(self.time_scope)
+        self.input_data_handler = InputDataHandler(self.time_scope, self.scenario)
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.grid = Grid(self.net_name, self.scenario, self.time_scope)

@@ -7,9 +7,12 @@ import tools.tools as tt
 
 class InputDataHandler():
 
-  def __init__(self, time_scope):
+  def __init__(self, time_scope, scenario):
+    self.scenario = scenario
     self.folder = 'input-files/'
     self.inputfolder = self.folder
+    if self.scenario[0] in ['A','B','C']:
+      self.inputfolder += 'YY_inputdata_BEVinLV/'
     if 'name' in time_scope.keys():
       if time_scope['name'] in ['summer','winter','autumn','spring']:
         self.season = time_scope['name']
@@ -17,7 +20,6 @@ class InputDataHandler():
         self.season = None
     else:
       self.season = None
-
 
   ##############################
   ### Adjustment of Datasets ###
@@ -62,21 +64,23 @@ class InputDataHandler():
       dates_old = dates_old.strip(']')
       dates_old = dates_old.strip('\'')
 
-      if self.dates != dates_old:
+
         
-        if self.season != None:
+      if self.season != None:
           if self.season == 'summer':
-            self.inputfolder = self.folder + 'XX_inputdata_summer/'
+            self.inputfolder = self.inputfolder + 'XX_inputdata_summer/'
           elif self.season == 'winter':
-            self.inputfolder = self.folder + 'XX_inputdata_winter/'
+            self.inputfolder = self.inputfolder + 'XX_inputdata_winter/'
           elif self.season == 'autumn':
-            self.inputfolder = self.folder + 'XX_inputdata_autumn/'
+            self.inputfolder = self.inputfolder + 'XX_inputdata_autumn/'
           elif self.season == 'spring':
-            self.inputfolder = self.folder + 'XX_inputdata_spring/'
+            self.inputfolder = self.inputfolder + 'XX_inputdata_spring/'
           else:
             raise ValueError('Season in time_scope is invailed!') 
         
-        elif self.season == None:
+      elif self.season == None:
+
+        if self.dates != dates_old:
         
           print('Adjust input datasets ...')
 

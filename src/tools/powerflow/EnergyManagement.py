@@ -18,6 +18,8 @@ class EnergyManagement:
       self.energy_manager = EnergyManagementStorage()
     elif (self.scenario[0] in [7, 8]):
       self.energy_manager = EnergyManagementAdvanced()
+    elif (self.scenario[0] in ['A','B','C']):
+      self.energy_manager = EnergyManagementStorage()
     else:
       raise ValueError('No appropriate scenario to choose EnergyManagement.')
 
