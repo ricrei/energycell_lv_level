@@ -192,7 +192,7 @@ class EnergyCell():
       pv = [None, 'qu', 'cos_phi']
       bss = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH', 'grid-oriented_feed-in_damping_LVbus', 'grid-oriented_feed-in_damping_feeder']
       hp = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'evu_lock', 'residual_load_driven']
-      ev = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
+      ev = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'greedy', 'balanced', 'market', 'residual_load_driven']
       curtailment = [False, True]
       grid_reinforce = [False, True]
       try:

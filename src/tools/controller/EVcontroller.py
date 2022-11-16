@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+import sys
+
 import tools.tools as tt
 
 class EVcontroller:
@@ -34,6 +36,19 @@ class EVcontroller:
       self.ev_charging_demand = tt.decompress_pickle(self.ev_data_file_charging_demand)
       self.ev_parking_time = tt.decompress_pickle(self.ev_data_file_parking_time)
 
+      if grid.scenario[4] == 4:
+        charging_strategy = 'gre'
+      elif grid.scenario[4] == 5:
+        charging_strategy = 'bal'
+      elif grid.scenario[4] == 6:
+        charging_strategy = 'mar'
+      elif grid.scenario[4] == 7:
+        charging_strategy = 'res'
+      if grid.scenario[0] in ['A','B','C']:
+        self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.category)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
+        self.ev_charging_demand = tt.decompress_pickle(self.ev_data_file)
+        self.ev_charging_demand *= control_parameter['NEP']['ev']
+
       ### initilize controller ###
       if (self.control != None):
         if self.control == 'direct':
@@ -42,6 +57,8 @@ class EVcontroller:
           self.P_controller = EV_P_control_hh_fid(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
         elif self.control == 'grid-oriented_feed-in_damping':
           self.P_controller = EV_P_control_grid_fid(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
+        elif self.control in ['greedy', 'balanced', 'market', 'residual_load_driven']: # ['A','B','C']
+          self.P_controller = EV_P_control_ev_profile(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
       else:
         self.P_controller = EV_P_control_no_ev(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
 
@@ -110,6 +127,23 @@ class EV_P_control:
          print('Warning: ev soc exceeds 1! ' + str(max(ev.ev_soc)))
       if (ev.ev_soc < 0).any():
          print('Warning: ev soc is below 0! ' + str(min(ev.ev_soc)))
+
+### greedy, balanced, market, res ###
+class EV_P_control_ev_profile(EV_P_control):
+
+  def __init__(self, grid, ev_parameter, charging_demand, parking_time):
+      super().__init__(grid, ev_parameter, charging_demand, parking_time)
+      self.ev_charging_demand = charging_demand
+      self.ev_charging_demand['ev_000_000kWh_xxxxx'] = 0
+      self.limit_direct = 0.
+      self.limit_p_res = 0.
+      self.limit_trafo = 0.
+
+  def pcontrol_direct_charge(self, grid, t, limit):
+      ev = grid.net.load.loc[grid.ev_index]
+      ev.p_mw = self.ev_charging_demand[ev.type].loc[t].values / 1000
+
+      return ev
 
 ### no ev ###
 class EV_P_control_no_ev(EV_P_control):
