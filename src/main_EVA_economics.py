@@ -21,6 +21,38 @@ import tools.tools as tt
 import bz2
 import _pickle as cPickle
 
+#######################
+time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
+                      'end_time'   : '2017-01-10 00:00:00+01:00',
+                      't_freq'     : '1T',
+                      'name'       : 'winter'
+                    }
+
+
+time_scope_summer = { 'start_time' : '2017-05-27 00:00:00+02:00',
+                      'end_time'   : '2017-06-03 00:00:00+02:00',
+                      't_freq'     : '1T',
+                      'name'       : 'summer'
+                    }
+
+time_scope_autumn = { 'start_time' : '2017-10-20 00:00:00+02:00',
+                      'end_time'   : '2017-10-27 00:00:00+02:00',
+                      't_freq'     : '1T',
+                      'name'       : 'autumn'
+                    }
+
+time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
+                      'end_time'   : '2017-03-12 00:00:00+01:00',
+                      't_freq'     : '1T',
+                      'name'       : 'spring'
+                    }
+
+time_scope_all_seasons = [
+                      time_scope_spring,
+                      time_scope_summer,
+                      time_scope_autumn,
+                      time_scope_winter
+                      ]
 
 #######################
 scenarios = [
@@ -30,24 +62,24 @@ scenarios = [
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
         [4,1,0,1,1,1,0],
-        [4,1,0,1,1,0,1],
+        #[4,1,0,1,1,0,1],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
         #[6,1,2,1,1,1,0],
         #[6,1,3,1,1,0,0],
-        [6,1,3,1,1,1,0],
+        #[6,1,3,1,1,1,0],
         #[6,1,4,1,1,0,0],
         #[6,1,4,1,1,1,0],
         #[6,1,5,1,1,0,0],
         #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
-        [7,1,0,3,3,1,0],
+        #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
         [8,1,3,3,3,1,0],
-        [8,1,3,3,3,1,1],
-        [8,1,4,3,3,1,0],
-        [8,1,4,3,3,1,1],
+        #[8,1,3,3,3,1,1],
+        #[8,1,4,3,3,1,0],
+        #[8,1,4,3,3,1,1],
                       ]
 #############################
 ### Define all gird names ###
@@ -122,6 +154,45 @@ def check_economic_parameter(economics_folder, economics_folder_before):
       print(economics_folder_before)
       print(economics_folder)
 
+def get_component_data(scenarios, time_scope_all_seasons, grids=[7,8,9,10,11]):
+  print('Load component dict ...')
+  folder = None
+  cd = {} # cd = component dict
+  cd['_grids'] = grids
+  cd['_scenarios'] = []
+  for s in scenarios:
+    cd['_scenarios'].append(''.join(str(num) for num in s))
+  t = time_scope_winter
+  for n in grids:
+   for s in scenarios:
+    #for t in time_scope_all_seasons:
+      scenario = ''.join(str(num) for num in s)
+      index = 's' + str(scenario) + 'n' + str(n)
+      folder = os.path.join("./", "output-files/"+''.join(str(num) for num in s)+"/"+str(net_name[n])+"/"+t['start_time'][0:10]+"_"+t['end_time'][0:10]+"_"+t['t_freq']+"/")
+      economics_folder = os.path.join("./", "output-files/001_economics/"+str(scenario)+"/"+str(net_name[n])+"/")
+
+      cd[index] = {}
+      cd[index]['grid'] = n
+      cd[index]['scenario'] = scenario
+      cd[index]['installed'] = pd.read_csv(folder + '02_component_data.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+      df = pd.read_csv(economics_folder + 'energy_share_MWh.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+      df['gen'] = 0
+      df['con'] = 0
+      for c in df.columns:
+        #print(c[0:1])
+        if c[0:2] == 'Ec':
+          df['con'] += df[c]
+        elif c[0:2] == 'Eg':
+          df['gen'] += df[c]
+        else:
+          pass#print('WARNING: ' + c + ' is not identified as generation or consumption')
+
+      cd[index]['gen'] = df['gen']
+      cd[index]['con'] = df['con']
+
+  return cd
+
+
 def generate_bar_plot_df(df, column):
     for index, c in enumerate(column):
       if index > 0:
@@ -139,6 +210,8 @@ def rename_scenarios(df):
     df['scenario'].loc[index] = scenario_names[s]
   return df
 
+
+### Start evaluation methods ###
 def boxplot_diff_costs_reven_HH(eva, save_fig_dir=save_fig_dir):
   ref = '4101110'
 
@@ -658,11 +731,50 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
 
 
 
+def plot_dot_anu_costs_over_component_data(eva, cd):
+  df = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z']) # x = PV energy / consumption, y = BSS capacity / consuption, z = anulised costs
+
+  plot_scenario = '8133310'
+  ref_scenario = '4101110'
+
+
+  for i in eva.keys():
+   if i[0] != '_':
+    if eva[i]['scenario'] == plot_scenario:
+      df_helper = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z'], index=eva[i]['total_HH'].index)
+      df_helper['grid'] = eva[i]['grid']
+      df_helper['scenario'] = eva[i]['scenario']
+      df_helper['x'] = cd[i]['gen'] / cd[i]['con']
+      df_helper['y'] = cd[i]['installed']['BSS_energy'] #/ cd[i]['con']
+      j = i[:1] + ref_scenario + i[8:]
+      df_helper['z_diff'] = eva[i]['total_HH'].sum(axis=1) - eva[j]['total_HH'].sum(axis=1)
+      df_helper['z'] = eva[i]['total_HH'].sum(axis=1)
+      df = pd.concat([df, df_helper])
+
+  df = df.reset_index()
+  df_grid = df[df['grid'] == 9]
+
+  f, ax = plt.subplots(figsize=(6.5, 6.5))
+  #sns.despine(f, left=True, bottom=True)
+  #clarity_ranking = ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"]
+  sns.scatterplot(x='x', y='y',
+                  hue='z_diff', size='grid',
+                  #palette='ch:r=-.2,d=.3_r',
+                  #hue_order=clarity_ranking,
+                  sizes=(100, 200), linewidth=0,
+                  data=df_grid, ax=ax)
+  plt.show()
+
+
 
 eva = load_scenario_data(scenarios)
 
 #boxplot_diff_costs_reven_HH(eva)
 #boxplot_diff_costs_reven_ECM(eva)
-bar_revenue_costs_HH(eva)
+#bar_revenue_costs_HH(eva)
 #bar_revenue_costs_ECM(eva)
+
+cd = get_component_data(scenarios, time_scope_all_seasons)
+
+plot_dot_anu_costs_over_component_data(eva, cd)
 
