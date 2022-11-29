@@ -254,12 +254,12 @@ def run_single_simulation():
   #e.run_pf_timeseries()
 
   # Initialize Evaluation
-  #e.initiate_evaluation()
+  e.initiate_evaluation()
 
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
