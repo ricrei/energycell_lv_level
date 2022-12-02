@@ -849,6 +849,10 @@ class MainEconomics():
     E_invest_ECM = pd.DataFrame(index=[0])
 
     ### HH ###
+    # PV #
+    anf_pv_HH = calculate_anf(investment_costs['intrest_rate'], investment_costs['pv_lifespan'])
+    E_invest_HH['PV_capex'] = self.component_parameter['PV_power']*1000 * investment_costs['pv'] * anf_pv_HH if self.scenario[1] in [1, 2, 3] else 0.
+
     # BSS #
     anf_bss_HH = calculate_anf(investment_costs['intrest_rate'], investment_costs['battery_lifespan'])
     E_invest_HH['BSS_capex'] = self.component_parameter['BSS_energy']*1000 * investment_costs['battery_HH'] * anf_bss_HH if self.scenario[2] in [0, 1, 2, 3] else 0.
@@ -905,6 +909,9 @@ class MainEconomics():
     percent = parameter_economics.operating_costs['percent']
 
     ### HH ###
+    # PV #
+    E_opex_HH['PV_opex'] = E_invest_HH['PV_capex'] * percent
+
     # BSS #
     E_opex_HH['BSS_opex'] = E_invest_HH['BSS_capex'] * percent
 

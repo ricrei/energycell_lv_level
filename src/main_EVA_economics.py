@@ -58,7 +58,7 @@ time_scope_all_seasons = [
 scenarios = [
         #[1,0,0,0,0,0,0],
         #[2,0,0,1,1,0,0],
-        #[2,0,0,1,1,1,0],
+        [2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
         [4,1,0,1,1,1,0],
@@ -180,9 +180,9 @@ def get_component_data(scenarios, time_scope_all_seasons, grids=[7,8,9,10,11]):
       df['con'] = 0
       for c in df.columns:
         #print(c[0:1])
-        if c[0:2] == 'Ec':
+        if (c[0:3] == 'Ec_') or (c == 'Ecur_load'):
           df['con'] += df[c]
-        elif c[0:2] == 'Eg':
+        elif (c[0:3] == 'Eg_') or (c == 'Ecur_pv'):
           df['gen'] += df[c]
         else:
           pass#print('WARNING: ' + c + ' is not identified as generation or consumption')
@@ -383,16 +383,8 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   # costs
   columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
   df_barplot1 = df[columns_costs_barplot].groupby(['scenario']).sum().reset_index()
-  '''
-  df_barplot1['Ec_MV_costs'] += df_barplot1['Ec_LV_costs']
-  df_barplot1['BSS_capex']   += df_barplot1['Ec_MV_costs']
-  df_barplot1['BSS_opex']    += df_barplot1['BSS_capex']
-  df_barplot1['TES_capex']   += df_barplot1['BSS_opex']
-  df_barplot1['TES_opex']    += df_barplot1['TES_capex']
-  df_barplot1['SG_capex']    += df_barplot1['TES_opex']
-  df_barplot1['SG_opex']     += df_barplot1['SG_capex']
-  '''
-  column = ['Ec_LV_costs', 'Ec_LV_gc_costs', 'Ec_MV_gc_costs', 'Ec_MV_costs', 'BSS_capex', 'BSS_opex', 'TES_capex', 'TES_opex', 'SG_capex', 'SG_opex']
+
+  column = ['Ec_LV_costs', 'Ec_LV_gc_costs', 'Ec_MV_gc_costs', 'Ec_MV_costs', 'PV_capex', 'PV_opex', 'BSS_capex', 'BSS_opex', 'TES_capex', 'TES_opex', 'SG_capex', 'SG_opex']
 
   df_barplot1 = generate_bar_plot_df(df_barplot1, column)
   df_barplot1 = rename_scenarios(df_barplot1)
@@ -406,13 +398,15 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   s13 = sns.barplot(x = df_barplot1['scenario'], y = 'TES_capex',   data = df_barplot1, color = dark[4])
   s12 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_opex',    data = df_barplot1, color = dark[3])
   s11 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_capex',   data = df_barplot1, color = dark[2])
+  s12b = sns.barplot(x = df_barplot1['scenario'], y = 'PV_opex',     data = df_barplot1, color = dark[1])
+  s11b = sns.barplot(x = df_barplot1['scenario'], y = 'PV_capex',    data = df_barplot1, color = dark[0])
   s10 = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_MV_costs',    data = df_barplot1, color = dark[1])
   s10 = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_MV_gc_costs', data = df_barplot1, color = dark[1])
   s9  = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_LV_gc_costs', data = df_barplot1, color = dark[0])
   s9  = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_LV_costs',    data = df_barplot1, color = dark[0])
 
   num_locations = len(df_barplot1.scenario.unique())
-  hatches = itertools.cycle(['', '', '', '', '', '', '', '////', '////', ''])
+  hatches = itertools.cycle(['', '', '', '', '', '', '', '', '', '////', '////', ''])
   for i, bar in enumerate(ax7.patches):
     if i % num_locations == 0:
         hatch = next(hatches)
@@ -422,6 +416,8 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   SG_capex_bar  = mpatches.Patch(color=dark[6], label='SG capex')
   TES_opex_bar  = mpatches.Patch(color=dark[5], label='TES opex')
   TES_capex_bar = mpatches.Patch(color=dark[4], label='TES capex')
+  PV_opex_bar  = mpatches.Patch(color=dark[1], label='PV opex')
+  PV_capex_bar = mpatches.Patch(color=dark[0], label='PV capex')
   BSS_opex_bar  = mpatches.Patch(color=dark[3], label='BSS opex')
   BSS_capex_bar = mpatches.Patch(color=dark[2], label='BSS capex')
   #Ec_MV_gc_bar  = mpatches.Patch(color=dark[1], label='MV obtained')
@@ -431,7 +427,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   grid_charge   = mpatches.Patch(label='grid charges')
   grid_charge.set_alpha(.1)
   grid_charge.set_hatch('////')
-  handle_costs  = [Ec_LV_bar, Ec_MV_bar, BSS_capex_bar, BSS_opex_bar, TES_capex_bar, TES_opex_bar, SG_capex_bar, SG_opex_bar, grid_charge]
+  handle_costs  = [Ec_LV_bar, Ec_MV_bar, PV_capex_bar, PV_opex_bar, BSS_capex_bar, BSS_opex_bar, TES_capex_bar, TES_opex_bar, SG_capex_bar, SG_opex_bar, grid_charge]
 
   # revenues
   columns_reven_barplot = ['scenario', 'grid'] + columns_reven
@@ -482,7 +478,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
   df_barplot1 = (df[columns_costs_barplot].groupby(['scenario']).sum()/1000).reset_index()
 
-  column = ['Ec_LV_costs', 'Ec_LV_gc_costs', 'Ec_MV_gc_costs', 'Ec_MV_costs', 'BSS_capex', 'BSS_opex', 'TES_capex', 'TES_opex', 'SG_capex', 'SG_opex']
+  column = ['Ec_LV_costs', 'Ec_LV_gc_costs', 'Ec_MV_gc_costs', 'Ec_MV_costs', 'PV_capex', 'PV_opex', 'BSS_capex', 'BSS_opex', 'TES_capex', 'TES_opex', 'SG_capex', 'SG_opex']
 
   df_barplot1 = generate_bar_plot_df(df_barplot1, column)
   df_barplot1 = rename_scenarios(df_barplot1)
@@ -496,13 +492,15 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   #s13 = sns.barplot(x = df_barplot1['scenario'], y = 'TES_capex',   data = df_barplot1, color = dark[4])
   s12 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_opex',    data = df_barplot1, color = rocket[5])
   #s11 = sns.barplot(x = df_barplot1['scenario'], y = 'BSS_capex',   data = df_barplot1, color = dark[2])
+  s12b = sns.barplot(x = df_barplot1['scenario'], y = 'PV_opex',    data = df_barplot1, color = rocket[0])
+  #s11b = sns.barplot(x = df_barplot1['scenario'], y = 'PV_capex',   data = df_barplot1, color = dark[0])
   s10 = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_MV_costs', data = df_barplot1, color = dark[0])
   s10 = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_MV_gc_costs', data = df_barplot1, color = dark[0])
   s9  = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_LV_gc_costs', data = df_barplot1, color = dark[8])
   s9  = sns.barplot(x = df_barplot1['scenario'], y = 'Ec_LV_costs', data = df_barplot1, color = dark[8])
 
   num_locations = len(df_barplot1.scenario.unique())
-  hatches = itertools.cycle(['', '', '', '', '////', '////', ''])
+  hatches = itertools.cycle(['', '', '', '', '', '////', '////', ''])
   for i, bar in enumerate(ax8.patches):
     if i % num_locations == 0:
         hatch = next(hatches)
@@ -512,6 +510,8 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   #SG_capex_bar  = mpatches.Patch(color=dark[6], label='SG capex')
   TES_opex_bar  = mpatches.Patch(color=rocket[3], label='TES')
   #TES_capex_bar = mpatches.Patch(color=dark[4], label='TES capex')
+  PV_opex_bar  = mpatches.Patch(color=rocket[0], label='PV')
+  #PV_capex_bar = mpatches.Patch(color=dark[0], label='PV capex')
   BSS_opex_bar  = mpatches.Patch(color=rocket[5], label='BSS')
   #BSS_capex_bar = mpatches.Patch(color=dark[2], label='BSS capex')
   Ec_MV_bar     = mpatches.Patch(color=dark[0], label='MV obtained')
@@ -519,7 +519,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   grid_charge   = mpatches.Patch(label='grid charges')
   grid_charge.set_alpha(.1)
   grid_charge.set_hatch('////')
-  handle_costs  = [Ec_LV_bar, Ec_MV_bar, BSS_opex_bar, TES_opex_bar, SG_opex_bar, grid_charge]
+  handle_costs  = [Ec_LV_bar, Ec_MV_bar, PV_opex_bar, BSS_opex_bar, TES_opex_bar, SG_opex_bar, grid_charge]
 
   # revenues
   columns_reven_barplot = ['scenario', 'grid'] + columns_reven
@@ -734,8 +734,10 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
 def plot_dot_anu_costs_over_component_data(eva, cd):
   df = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z']) # x = PV energy / consumption, y = BSS capacity / consuption, z = anulised costs
 
-  plot_scenario = '8133310'
-  ref_scenario = '4101110'
+  #plot_scenario = '8133310'
+  plot_scenario = '4101110'
+  #ref_scenario = '4101110'
+  ref_scenario = '2001110'
 
 
   for i in eva.keys():
@@ -744,25 +746,19 @@ def plot_dot_anu_costs_over_component_data(eva, cd):
       df_helper = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z'], index=eva[i]['total_HH'].index)
       df_helper['grid'] = eva[i]['grid']
       df_helper['scenario'] = eva[i]['scenario']
-      df_helper['x'] = cd[i]['gen'] / cd[i]['con']
-      df_helper['y'] = cd[i]['installed']['BSS_energy'] #/ cd[i]['con']
+      df_helper['x'] = cd[i]['gen'] #/ cd[i]['con']
+      df_helper['y'] = cd[i]['con']#cd[i]['installed']['BSS_energy']# / cd[i]['con']
       j = i[:1] + ref_scenario + i[8:]
       df_helper['z_diff'] = eva[i]['total_HH'].sum(axis=1) - eva[j]['total_HH'].sum(axis=1)
       df_helper['z'] = eva[i]['total_HH'].sum(axis=1)
       df = pd.concat([df, df_helper])
 
   df = df.reset_index()
-  df_grid = df[df['grid'] == 9]
+  df_grid = df[df['grid'] == 8]
 
   f, ax = plt.subplots(figsize=(6.5, 6.5))
-  #sns.despine(f, left=True, bottom=True)
-  #clarity_ranking = ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"]
-  sns.scatterplot(x='x', y='y',
-                  hue='z_diff', size='grid',
-                  #palette='ch:r=-.2,d=.3_r',
-                  #hue_order=clarity_ranking,
-                  sizes=(100, 200), linewidth=0,
-                  data=df_grid, ax=ax)
+  sns.scatterplot(x='x', y='y', hue='z_diff', size='grid', sizes=(100, 200), linewidth=0, data=df_grid, ax=ax)
+  #sns.scatterplot(x='x', y='y', sizes=(100, 200), linewidth=0, data=df_grid, ax=ax)
   plt.show()
 
 

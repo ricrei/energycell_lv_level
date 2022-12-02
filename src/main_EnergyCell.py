@@ -347,9 +347,9 @@ def run_economics(scenarios):
         e_eco.determine_operational_expanses()
 
         ### determine Costs and Revenues of Energyflows (03)
-        e_eco.determine_local_energy_trading_price()
-        e_eco.determine_grid_charges()
-        e_eco.determine_energy_costs_revenues()
+        #e_eco.determine_local_energy_trading_price()
+        #e_eco.determine_grid_charges()
+        #e_eco.determine_energy_costs_revenues()
 
         # concate (01) - (03) in one table
         e_eco.write_to_conclusion_table()
@@ -370,29 +370,29 @@ def run_economics(scenarios):
 scenarios = [
         #[1,0,0,0,0,0,0],
         #[2,0,0,1,1,0,0],
-        #[2,0,0,1,1,1,0],
+        [2,0,0,1,1,1,0],
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
-        [4,1,0,1,1,0,1],
+        #[4,1,0,1,1,0,1],
         #[4,1,0,1,1,0,0],
-        [4,1,0,1,1,1,0],
+        #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
         #[6,1,2,1,1,1,0],
         #[6,1,3,1,1,0,0],
-        [6,1,3,1,1,1,0],
+        #[6,1,3,1,1,1,0],
         #[6,1,4,1,1,0,0],
         #[6,1,4,1,1,1,0],
         #[6,1,5,1,1,0,0],
         #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
-        [7,1,0,3,3,1,0],
+        #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        [8,1,3,3,3,1,0],
-        [8,1,3,3,3,1,1],
-        [8,1,4,3,3,1,0],
-        [8,1,4,3,3,1,1],
+        #[8,1,3,3,3,1,0],
+        #[8,1,3,3,3,1,1],
+        #[8,1,4,3,3,1,0],
+        #[8,1,4,3,3,1,1],
                       ]
 
 #run_single_simulation()

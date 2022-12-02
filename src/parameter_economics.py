@@ -12,6 +12,8 @@ investment_costs = {
   'battery_HH'      : 500,    # in Euro/kWh   # HBSS
   'battery_ECM'     : 300,    # in Euro/kWh   # CBSS
   'battery_lifespan': 20,     # years
+  'pv'              : 100,    # in Euro/kW
+  'pv_lifespan'     : 30,     # years
   'tes'             : 150,    # in Euro/kWh	  # prüfen
   'tes_lifespan'    : 20,     # years	      # prüfen
   'smart_grid'      : 0,      # in Euro		  # prüfen
