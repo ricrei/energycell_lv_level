@@ -21,10 +21,10 @@ print('\33[1;31m... You are running BEVinLVgrids ...\33[0m')
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
-               'end_time'   : '2017-05-31 00:00:00+01:00',
-               't_freq'     : '15T',
-             }
+time_scope = { 'start_time' : '2017-10-20 00:00:00+02:00',
+                      'end_time'   : '2017-10-27 00:00:00+02:00',
+                      't_freq'     : '15T'
+                    }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
                'end_time'   : '2017-05-28 00:00:00+02:00',
@@ -167,12 +167,12 @@ A = 'A'
 B = 'B'
 C = 'C'
 scenario = [
-  C, # scenario number, 1-8
+  7, # scenario number, 1-8
   1, # PV, 0-2
-  1, # BSS, 0-5
-  1, # HP, 0-5
-  4, # EV, 0-3
-  0, # Curtailment, 0/1
+  0, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -246,12 +246,12 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = False, 		 	# default: False
+                    save_full_data = True, 		 	# default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = False) 	# default: False
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -267,7 +267,7 @@ def run_single_simulation():
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_hp_soc()
+  e.eva.plot_hp_soc()
   #e.eva.plot_hp_cop()
   #e.eva.plot_hp_active_power()
   #e.eva.plot_hp_eva_th()
