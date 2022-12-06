@@ -915,12 +915,51 @@ def plot_dot_anu_costs_over_component_data(eva, cd):
     plt.savefig(save_fig_dir + '02_'+zlabel+'_'+xlabel+'_'+ylabel+'_grid'+str(g)+'.png', bbox_inches='tight', dpi=dpi)
 
 
+def plot_anu_costs_over_component_data(eva, cd):
+  df = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z'])
+
+  plot_scenario = '8133310'
+  #plot_scenario = '4101110'
+  ref_scenario = '4101110'
+  #	ref_scenario = '2001110'
+
+
+  for i in eva.keys():
+   if i[0] != '_':
+    if eva[i]['scenario'] == plot_scenario:
+      df_helper = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z'], index=eva[i]['total_HH'].index)
+      df_helper['grid'] = eva[i]['grid']
+      df_helper['scenario'] = eva[i]['scenario']
+      j = i[:1] + ref_scenario + i[8:]
+      df_helper['x'] = eva[i]['total_HH'].sum(axis=1) - eva[j]['total_HH'].sum(axis=1)#cd[i]['gen'] / cd[i]['con']
+      df_helper['y'] = cd[i]['installed']['BSS_energy']# / cd[i]['con']
+      df_helper['z_diff'] = eva[i]['total_HH'].sum(axis=1) - eva[j]['total_HH'].sum(axis=1)
+      df_helper['z'] = eva[i]['total_HH'].sum(axis=1)
+      df = pd.concat([df, df_helper])
+
+  df = df.reset_index()
+
+  xlabel = 'AnnuCosts'
+  ylabel = 'BSScapa'
+  zlabel = 'AnnuCosts'
+
+  for g in [7,8,9,10,11]:
+    df_grid = df[df['grid'] == g]
+    zzz = df_grid.eval('z_diff').rename(zlabel+' in Euro')
+
+    f, ax = plt.subplots(figsize=(6.5, 6.5))
+    sns.scatterplot(x='x', y='y', size='grid', sizes=(100, 200), linewidth=0, data=df_grid, ax=ax)
+    plt.xlabel(xlabel + ' in Euro')
+    plt.ylabel(ylabel + ' in MWh')
+    #plt.show()
+    plt.savefig(save_fig_dir + '02b_'+zlabel+'_'+xlabel+'_'+ylabel+'_grid'+str(g)+'.png', bbox_inches='tight', dpi=dpi)
+
 def evaluate_bss_sizing(eva, cd):
   df = pd.DataFrame(columns=['grid', 'scenario'])
 
   plot_scenario = '8133310'
   #plot_scenario = '4101110'
-  #ref_scenario = '4101110'
+  ref_scenario = '4101110'
   #	ref_scenario = '2001110'
 
 
@@ -933,6 +972,8 @@ def evaluate_bss_sizing(eva, cd):
       df_helper['pv_power'] = cd[i]['installed']['PV_power']
       df_helper['consumption'] = cd[i]['con']
       df_helper['bss_capa'] = cd[i]['installed']['BSS_energy']*1000
+      j = i[:1] + ref_scenario + i[8:]
+      df_helper['annuCosts'] = eva[i]['total_HH'].sum(axis=1) - eva[j]['total_HH'].sum(axis=1)
       df = pd.concat([df, df_helper])
 
   df = df.reset_index()
@@ -973,18 +1014,30 @@ def evaluate_bss_sizing(eva, cd):
   #plt.show()
   plt.savefig(save_fig_dir + '03_BSS_sizing.png', bbox_inches='tight', dpi=dpi)
 
+  xlabel = 'AnnuCosts'
+  ylabel = 'BSScapa'
+
+  for g in [7,8,9,10,11]:
+    f, ax = plt.subplots(figsize=(6.5, 6.5))
+    sns.scatterplot(x='annuCosts', y='bss_capa', hue='to_big', size='grid', sizes=(100, 200), linewidth=0, data=df[df['grid']==g], ax=ax)
+    plt.xlabel(xlabel + ' in Euro')
+    plt.ylabel(ylabel + ' in MWh')
+    #plt.show()
+    plt.savefig(save_fig_dir + '03b_BSS_sizing_annuiCosts_grid'+str(g)+'.png', bbox_inches='tight', dpi=dpi)
+
 
 
 eva = load_scenario_data(scenarios)
 
 #boxplot_diff_costs_reven_HH(eva)
-boxplot_diff_costs_reven_ECM(eva)
+#boxplot_diff_costs_reven_ECM(eva)
 #bar_revenue_costs_HH(eva)
 #bar_revenue_costs_HH_each_HH(eva)
-bar_revenue_costs_ECM(eva)
+#bar_revenue_costs_ECM(eva)
 
-#cd = get_component_data(scenarios, time_scope_all_seasons)
+cd = get_component_data(scenarios, time_scope_all_seasons)
 
 #plot_dot_anu_costs_over_component_data(eva, cd)
-#evaluate_bss_sizing(eva, cd)
+#plot_anu_costs_over_component_data(eva, cd)
+evaluate_bss_sizing(eva, cd)
 
