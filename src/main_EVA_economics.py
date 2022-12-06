@@ -282,6 +282,8 @@ def boxplot_diff_costs_reven_HH(eva, save_fig_dir=save_fig_dir):
 def boxplot_diff_costs_reven_ECM(eva, save_fig_dir=save_fig_dir):
   ref = '4101110'
 
+  print(eva['s4101101n8']['total_ECM'].sum(axis=1))
+
   df_sns = pd.DataFrame(columns=['hh', 'scenario', 'data', 'data_diff', 'grid'])
   for i in eva.keys():
     df_sns_helper = pd.DataFrame(columns=['hh', 'scenario', 'data', 'data_diff', 'grid'])
@@ -295,6 +297,8 @@ def boxplot_diff_costs_reven_ECM(eva, save_fig_dir=save_fig_dir):
       df_sns = pd.concat([df_sns, df_sns_helper])
 
   df_sns = rename_scenarios(df_sns.reset_index())
+
+  #print(df_sns)
 
   #'''
   fig1, ax1 = plt.subplots()
@@ -371,8 +375,6 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
       for c in columns_reven:
         df[c].loc[k] = eva[i]['energy_reven_HH'].sum()[c]
       k += 1
-
-  print(eva[i]['total_HH'])
 
   # colors
   bright = sns.color_palette("bright", 10)
@@ -976,13 +978,13 @@ def evaluate_bss_sizing(eva, cd):
 eva = load_scenario_data(scenarios)
 
 #boxplot_diff_costs_reven_HH(eva)
-#boxplot_diff_costs_reven_ECM(eva)
+boxplot_diff_costs_reven_ECM(eva)
 #bar_revenue_costs_HH(eva)
 #bar_revenue_costs_HH_each_HH(eva)
-#bar_revenue_costs_ECM(eva)
+bar_revenue_costs_ECM(eva)
 
-cd = get_component_data(scenarios, time_scope_all_seasons)
+#cd = get_component_data(scenarios, time_scope_all_seasons)
 
-plot_dot_anu_costs_over_component_data(eva, cd)
-evaluate_bss_sizing(eva, cd)
+#plot_dot_anu_costs_over_component_data(eva, cd)
+#evaluate_bss_sizing(eva, cd)
 

@@ -1026,8 +1026,8 @@ class MainEconomics():
     # grid charges derived from GRID REINFORCEMENT
     line_costs, trafo_costs = self.get_grid_reinforcment_costs(include_grid_reinforce = True)
     anf_grid = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
-    trafo_costs *= anf_grid
-    line_costs  *= anf_grid
+    trafo_costs *= anf_grid * (1 + parameter_economics.operating_costs['percent'])
+    line_costs  *= anf_grid * (1 + parameter_economics.operating_costs['percent'])
 
     #print("Line costs:  " + str(line_costs))
     #print("Trafo costs: " + str(trafo_costs))
