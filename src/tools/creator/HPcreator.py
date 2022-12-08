@@ -38,6 +38,8 @@ class HPcreator:
       grid.net.load['hp_tes_th'] = np.nan
       grid.net.load['hp_tes_losses_th'] = np.nan
 
+      print(grid.net.load['type'])
+
       return grid
 
   ##########################################

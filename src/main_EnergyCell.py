@@ -17,9 +17,9 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
-               'end_time'   : '2017-05-31 00:00:00+01:00',
-               't_freq'     : '30T',
+time_scope = { 'start_time' : '2017-12-01 00:00:00+01:00',
+               'end_time'   : '2017-12-31 00:00:00+01:00',
+               't_freq'     : '15T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -131,13 +131,13 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
-  1, # PV, 0-2
-  3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
-  1, # Curtailment, 0/1
-  1  # Grid reinforcement, 0/1
+  2, # scenario number, 1-8
+  0, # PV, 0-2
+  0, # BSS, 0-5
+  1, # HP, 0-5
+  0, # EV, 0-3
+  0, # Curtailment, 0/1
+  0  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -162,7 +162,7 @@ control_parameter = {
   'EV_linear_charge_limit' : 90,
   'EV_linear_charge_limit_summer' : 80,
   'HP_cos_phi' : 1,
-  'HP_t_sink' : 45,
+  'HP_t_sink' : 50,
   'HP_t_ground_source' : 8,
   'HP_TES_max_capacity_mwh' : .0325,
   'HP_building_capacity_mwh' : .014,
@@ -196,7 +196,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 13
 ######################
 
 #############################
@@ -209,7 +209,7 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = False, 		 	# default: False
+                    save_full_data = True, 		 	# default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = False) 	# default: False
 
@@ -219,8 +219,11 @@ def run_single_simulation():
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
+  
+  ##calc values for pauls issues
+  e.eva.calc_hp_values()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
@@ -395,9 +398,9 @@ scenarios = [
         #[8,1,4,3,3,1,1],
                       ]
 
-#run_single_simulation()
+run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-run_economics(scenarios)
+#run_economics(scenarios)
 #######################
