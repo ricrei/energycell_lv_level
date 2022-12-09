@@ -1004,6 +1004,10 @@ def evaluate_bss_sizing(eva, cd):
   print('BSS capacity sum    : ' + str(df['bss_capa'].sum()))
   print('max BSS capacity sum: ' + str(df['max_bss_capa'].sum()))
 
+  print(df)
+
+  #tt.compress_pickle('input-files/'+'20_bss_sizes', data)
+  df.round(3).to_csv('input-files/'+'20_bss_sizes.csv', header=True, index = True)
 
   f, ax = plt.subplots(figsize=(6.5, 6.5))
   sns.scatterplot(x='hh', y='bss_capa', hue='to_big', sizes=(100, 200), linewidth=0, data=df, ax=ax)

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pandapower as pp
 
 import tools.tools as tt
@@ -47,9 +48,36 @@ class BSScreator:
   ### Create Loads at each bus for all HP ### # anpassen
   ###########################################
   def create_bss_at_each_bus(self, grid): 
-      # create bss at each bus 
+      # load bss sizes
+      if grid.scenario[0] == 9:
+        df = pd.read_csv('input-files/'+'20_bss_sizes.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
-      for index in grid.component_buses.index:
+        dict_grid = {
+          "simbench_rural_1" : 7,
+          "simbench_rural_2" : 8,
+          "simbench_rural_3" : 9,
+          "simbench_suburb_4" : 10,
+          "simbench_suburb_5" : 11,
+        }
+
+        num = dict_grid[grid.net_name]
+      
+        bss_size = df[df.grid == num]['max_bss_capa'].reset_index().drop('index', axis=1)
+
+        # create bss at each bus
+        for index in grid.component_buses.index:
+          print(str(index) + ' : ' + str(bss_size.loc[index].values[0]))
+          pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
+                            p_mw = 0, \
+                            max_e_mwh = bss_size.loc[index].values[0] * 10**(-3), \
+                            soc_percent = self.soc_percent , \
+                            name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
+                            type = 'bss', \
+                            max_p_mw = bss_size.loc[index].values[0] * self.sizing_factor * 10**(-3))
+
+      else:
+        # create bss at each bus
+        for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
                             max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.sizing_factor_bss_to_pv, \

@@ -109,7 +109,7 @@ class Grid:
         for index in self.net.sgen.index:
           self.net.sgen.drop(index=index, inplace=True)
 
-        # needed to create HHL, HP, EV and BSS as each bus
+        # needed to create HHL, HP, EV and BSS at each bus
         self.component_buses = self.net.load.bus
 
         self.s_trafo_power = self.net.trafo.sn_mva.sum()
