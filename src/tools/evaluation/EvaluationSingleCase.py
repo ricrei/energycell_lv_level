@@ -279,6 +279,35 @@ class EvaluationSingleCase():
     print('PV consumption rate: %s %%' % ((PVConsumption).round(2)))
     print(' ')
 
+  ###calc values for pauls issues
+  def calc_hp_values(self):
+    
+    print(' ')
+    ##
+    #bus = str(self.hp_demand_th.columns[2])
+    self.hp_hp_th = self.shorted_data(self.hp_hp_th, '1H')
+    print('HP- thermal Consumption: %s MWh' % self.hp_hp_th.sum().round(2))    
+    
+    temp = tt.get_amb_temp(self.time_scope)
+    temp = self.shorted_data(temp, '1H')
+    
+    print('Mean_Value of Temp: %s MWh' % temp.mean().round(2))
+    
+    #folder = 'input-files/'
+    #file_ambient_temp = folder + '15_temperature_ambient_short.pbz2'
+    #temp = decompress_pickle(file_ambient_temp)
+    
+    #print (self.time_scope['t_freq'])
+  
+    #print (self.time_scope['t_freq'])
+    
+    #print(self.hp_hp_th.sum()
+    
+    ##for i in bus:
+    #print( i)
+    #print( result)
+
+
   def calculate_net_problems(self):
 
     v = self.v
@@ -522,7 +551,8 @@ class EvaluationSingleCase():
     ax.set_ylabel('hp_el_demand in MW')
     #plt.legend(grid.component_buses.index)
     plt.show()
-
+      
+  
   def plot_hp_eva_th(self):
     prop_cycle = plt.rcParams['axes.prop_cycle']
     c = prop_cycle.by_key()['color']

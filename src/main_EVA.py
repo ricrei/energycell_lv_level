@@ -49,6 +49,15 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch"]  #13
 ############################
 
+#############################
+### Define all gird names ###
+sfh_name = ["SFH15", 	#A
+            "SFH45", 	#B
+            "SFH100" ] 	#C
+############################
+
+
+
 # Image output directory
 save_fig_dir = 'img/'
 
@@ -112,7 +121,8 @@ evaluation.plot_grid_issus_over_time(eva['s4101110n8summer'], save_fig_dir=save_
 # --- Power and Components loading --- #
 #'''
 #scenarios = ['4101110', '6111110', '6121110', '6131110']
-scenarios = ['1000000', '4101110', '6131110', '8133310']
+#scenarios = ['A103110', 'B103110', 'C103110']
+scenarios = ['C106110', 'C107110', 'C108110']
 eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8summer'], eva2=eva['s4101110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4101110n8summer_s4101110n8winter.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8winter'], eva2=eva['s6131110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4101110n8winter_s6131110n8winter.png')
@@ -121,7 +131,10 @@ eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s6131110n8summer'], eva2=eva['s6131110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s6131110n8summer_s6131110n8winter.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8winter'], eva2=eva['s8133310n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s6131110n8summer_s6131110n8winter.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['s1000000n8summer'], eva2=eva['s4101110n8summer'], eva3=eva['s8133310n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_s148_summer_4plots.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['s1000000n8winter'], eva2=eva['s4101110n8winter'], eva3=eva['s8133310n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s148_winter_4plots.png')
+
+#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA103110n8winter'], eva2=eva['sB103110n8winter'], eva3=eva['sC103110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_all_sfh_winter_4plots.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106110n8winter'], eva2=eva['sC107110n8winter'], eva3=eva['sC108110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_all_sfh_winter_4plots.png')
+
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['s4101110n8summer'], eva2=eva['s6111110n8summer'], eva3=eva['s6121110n8summer'], eva4=eva['s6131110n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_s6X_summer_4plots.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['s4101110n8winter'], eva2=eva['s6111110n8winter'], eva3=eva['s6121110n8winter'], eva4=eva['s6131110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s6X_winter_4plots.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['s4101110n8spring'], eva2=eva['s6111110n8spring'], eva3=eva['s6121110n8spring'], eva4=eva['s6131110n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_s6X_spring_4plots.png')
@@ -156,16 +169,17 @@ evaluation.plot_heatmap_grid_issus(eva, net_name, scenarios, x_ticklabels, n, sa
 '''
 
 # --- Componentloading mean, peak (Scenario - Grid) --- #
-'''
+
 #scenarios = ['1000000', '2001110', '3100010', '4101110', '6131110', '7103310', '8133310']
 #scenarios = ['1000000', '2001110', '3100010', '4101110']
 #scenarios = ['4101110', '6111110', '6121110', '6131110', '6141110', '6151110']
-scenarios = ['4101110', '6131110', '7103310', '8133310']
+scenarios = ['C106110', 'C107110', 'C108110']
 eva = load_scenario_data(scenarios)
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['1', '2', '3', '4', '5', '6', '7'], save_fig_dir=save_fig_dir+'3_')
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], save_fig_dir=save_fig_dir+'2_')
-evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5', '6', '7'], save_fig_dir=save_fig_dir+'1_')
-'''
+evaluation.plot_heatmap_componentloading_mean_peak(eva, sfh_name, columns_scenarios = ['C106110', 'C107110', 'C108110'], x_ticklabels = ['6', '7', '8'], save_fig_dir=save_fig_dir+'1_')
+
+
 
 # --- Curtailment: PV-Power and Load (Scenario - Grid) --- #
 '''

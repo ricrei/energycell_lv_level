@@ -5,13 +5,36 @@ import tools.tools as tt
 
 class HPcreator:
 
-  def __init__(self, inputfolder, control_parameter):
+  def __init__(self, inputfolder, control_parameter, scenario):
         self.inputfolder = inputfolder
-        self.hp_data_file = self.inputfolder + '13_hp_short.pbz2'
+        self.scenario = scenario
+
+        ## choose hp_short_sfhXXX in case of scenario A, B, C
+        ## In case of default choose hp_short
+        if (self.scenario[0] == 'A'):
+          self.hp_data_file = self.inputfolder + '13_hp_short_sfh15.pbz2'
+        elif (self.scenario[0] == 'B'):
+          self.hp_data_file = self.inputfolder + '13_hp_short_sfh45.pbz2'
+        elif (self.scenario[0] == 'C'):
+          self.hp_data_file = self.inputfolder + '13_hp_short_sfh100.pbz2'
+        else:
+          self.hp_data_file = self.inputfolder + '13_hp_short.pbz2'        
+         
         self.hp = tt.decompress_pickle(self.hp_data_file)
         self.hp_para = {}
+        
+        ##obsolet?
         #self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_el_')]
-        self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]
+        
+        #in case of hp_tes_scenarios use only air_sourced_hp
+        if (self.scenario[0] in ['A', 'B', 'C']) :
+          #Select only air_spurced hp
+          self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('_Air') & \
+                          self.hp.columns.str.contains('Demand_th_')]
+        #in default use air_sourced and ground_sourced
+        else :
+          self.hp_para['hp_types'] = self.hp.columns[self.hp.columns.str.contains('Demand_th_')]
+      
 
   ###########################################
   ### Create Loads at each bus for all HP ###
@@ -37,6 +60,8 @@ class HPcreator:
       grid.net.load['hp_hp_th'] = np.nan
       grid.net.load['hp_tes_th'] = np.nan
       grid.net.load['hp_tes_losses_th'] = np.nan
+
+      #print(grid.net.load['type'].head())
 
       return grid
 

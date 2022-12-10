@@ -7,7 +7,8 @@ import tools.tools as tt
 
 class InputDataHandler():
 
-  def __init__(self, time_scope):
+  def __init__(self, time_scope, scenario):
+    self.scenario = scenario
     self.folder = 'input-files/'
     self.inputfolder = self.folder
     if 'name' in time_scope.keys():
@@ -65,6 +66,8 @@ class InputDataHandler():
       if self.dates != dates_old:
         
         if self.season != None:
+          if self.scenario[0] in ['A','B','C']:
+            self.inputfolder += 'YY_inputdata_HPandTES/'
           if self.season == 'summer':
             self.inputfolder = self.folder + 'XX_inputdata_summer/'
           elif self.season == 'winter':
@@ -88,6 +91,9 @@ class InputDataHandler():
           data_processing('01_q0_load.pbz2', 'mean', '11_q0_short.pbz2')
           data_processing('02_pv_gen.pbz2',  'mean', '12_pv_short.pbz2', time_df = 1)
           data_processing('03_hp_load.pbz2', 'mean', '13_hp_short.pbz2')
+          data_processing('03_hp_load_sfh15.pbz2', 'mean', '13_hp_short_sfh15.pbz2')
+          data_processing('03_hp_load_sfh45.pbz2', 'mean', '13_hp_short_sfh45.pbz2')
+          data_processing('03_hp_load_sfh100.pbz2', 'mean', '13_hp_short_sfh100.pbz2')
           data_processing('04_ev_load_rural.pbz2',    'mean', '14_ev_short_rural.pbz2')
           data_processing('04_ev_load_suburban.pbz2', 'mean', '14_ev_short_suburban.pbz2')
           data_processing('04_ev_load_urban.pbz2',    'mean', '14_ev_short_urban.pbz2')

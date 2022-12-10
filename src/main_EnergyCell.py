@@ -17,16 +17,19 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
-               'end_time'   : '2017-05-31 00:00:00+01:00',
-               't_freq'     : '30T',
+## T ~ minutes
+## H ~ hours
+'''
+time_scope = { 'start_time' : '2017-01-08 00:00:00+01:00',
+               'end_time'   : '2017-01-08 02:00:00+01:00',
+               't_freq'     : '1H'
              }
 '''
-time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
-               'end_time'   : '2017-05-28 00:00:00+02:00',
-               't_freq'     : '30T'
+time_scope = { 'start_time' : '2017-03-05 00:00:00+01:00',
+               'end_time'   : '2017-03-12 00:00:00+01:00',
+               't_freq'     : '15T'
              }
-'''
+
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2017-12-31 23:59:00+01:00',
                     't_freq'     : '1T'
@@ -41,26 +44,25 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+00:00',
 
 time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
                       'end_time'   : '2017-01-10 00:00:00+01:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '15T',
                       'name'       : 'winter'
                     }
 
-
 time_scope_summer = { 'start_time' : '2017-05-27 00:00:00+02:00',
                       'end_time'   : '2017-06-03 00:00:00+02:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '15T',
                       'name'       : 'summer'
                     }
 
 time_scope_autumn = { 'start_time' : '2017-10-20 00:00:00+02:00',
                       'end_time'   : '2017-10-27 00:00:00+02:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '15T',
                       'name'       : 'autumn'
                     }
 
 time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
                       'end_time'   : '2017-03-12 00:00:00+01:00',
-                      't_freq'     : '1T',
+                      't_freq'     : '15T',
                       'name'       : 'spring'
                     }
 
@@ -105,7 +107,9 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope
+
+#time_scope = time_scope
+#time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -114,6 +118,7 @@ time_scope = time_scope
 ## 1: conventional, 2: full-electrified
 ## 3: maximum pv-expantion, 4: full-electrified and maximum pv-expansion
 ## 6: battery storage systems, 7: smart consumers, 8: battery storage systems and smart consumers
+## A: SFH15, B: SFH45, C: SFH100
 # Second number: PV
 ## 0: no PV, 1: Q(U), 2: fix cos(phi)
 # Third number: BSS
@@ -124,6 +129,7 @@ time_scope = time_scope
 ## 0: no HP, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
 ## 4: evu-lock (EnWG §14a),
 ## 5: residual-load-driven
+## 6: small TES, 7: medium TES, 8: large TES
 # Fifth number: EV
 ## 0: no EV, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
 # Sixth number: Curtailment
@@ -131,13 +137,13 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  'A', # scenario number, 1-8
   1, # PV, 0-2
-  3, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
+  0, # BSS, 0-5
+  6, # HP, 0-5
+  1, # EV, 0-3
   1, # Curtailment, 0/1
-  1  # Grid reinforcement, 0/1
+  0  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -162,9 +168,12 @@ control_parameter = {
   'EV_linear_charge_limit' : 90,
   'EV_linear_charge_limit_summer' : 80,
   'HP_cos_phi' : 1,
-  'HP_t_sink' : 45,
+  'HP_t_sink' : 50,
   'HP_t_ground_source' : 8,
-  'HP_TES_max_capacity_mwh' : .0325,
+  'HP_TES_max_capacity_def_mwh' : .0325,
+  'HP_TES_max_capacity_small_mwh' : .005,
+  'HP_TES_max_capacity_medium_mwh' : .015,
+  'HP_TES_max_capacity_large_mwh' : .0325,
   'HP_building_capacity_mwh' : .014,
   'HP_TES_start_soc' : .5, # 0-1
   'HP_TES_start_soc_winter' : 0.25, # 0-1
@@ -209,7 +218,7 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = False, 		 	# default: False
+                    save_full_data = True, 		 	# default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = False) 	# default: False
 
@@ -217,12 +226,15 @@ def run_single_simulation():
   e.run_pf_timeseries()
 
   # Initialize Evaluation
-  e.initiate_evaluation()
+  #e.initiate_evaluation()
 
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
+  
+  ##calc values for pauls issues
+  #e.eva.calc_hp_values()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -266,8 +278,9 @@ def run_single_simulation():
 def run_multiple_simulations(scenarios):
   start = time.perf_counter()
   i = 1
-  for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
-    for net_name_i in [7, 8, 9, 10, 11]:
+  #for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
+  for time_scope_i in [time_scope_winter]:
+    for net_name_i in [8]:
       for scenario_i in scenarios:
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
@@ -322,9 +335,11 @@ def run_multiple_simulations_multiprocessing(scenarios):
 def run_output_data_conversion(scenarios):
 
   evaluation_all = EvaAllCases.EvaluationAllCases(
-                                 net_names = [7, 8, 9, 10, 11],
+                                 #net_names = [7, 8, 9, 10, 11],
+                                 net_names = [8],
                                  scenarios = scenarios,#[[4,1,0,1,1,1,0]],
-                                 time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
+                                 #time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
+                                 time_scopes = [time_scope_winter])
 
   print('Done')
 ####################################
@@ -389,15 +404,26 @@ scenarios = [
         #[7,1,0,3,3,0,0],
         #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
-        [8,1,3,3,3,1,0],
+        #[8,1,3,3,3,1,0],
         #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
-                      ]
+        #['A',1,0,3,1,1,0],
+        #['B',1,0,3,1,1,0],
+        ['A',1,0,6,1,1,0],
+        ['A',1,0,7,1,1,0],
+        ['A',1,0,8,1,1,0],
+        ['B',1,0,6,1,1,0],
+        ['B',1,0,7,1,1,0],
+        ['B',1,0,8,1,1,0],
+        ['C',1,0,6,1,1,0],
+        ['C',1,0,7,1,1,0],
+        ['C',1,0,8,1,1,0],
+            ]
 
 #run_single_simulation()
-#run_multiple_simulations(scenarios)
+run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-#run_output_data_conversion(scenarios)
-run_economics(scenarios)
+run_output_data_conversion(scenarios)
+#run_economics(scenarios)
 #######################

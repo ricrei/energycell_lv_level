@@ -21,6 +21,12 @@ class HPcontroller:
           self.P_controller = HP_P_control_evu_lock(grid, control_parameter)
         elif self.control == 'residual_load_driven':
           self.P_controller = HP_P_control_resi_load_driven(grid, control_parameter)
+        elif self.control == 'sg_ready_small_tes':
+          self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
+        elif self.control == 'sg_ready_medium_tes':
+          self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
+        elif self.control == 'sg_ready_large_tes':
+          self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
       else:
         self.P_controller =  HP_P_control_no_hp(grid, control_parameter)
 
@@ -46,11 +52,33 @@ class HP_P_control:
       self.HP_storages = HPstorages(grid, control_parameter)
       self.HP_storages.create_hp_storages(grid)
 
+      ## Lists of weightet sink_temperatures per month
+      self.t_sink_sfh15 = [39, 40, 44, 44, 53, 60, 60, 60, 60, 50, 42, 40]
+      self.t_sink_sfh45 = [41, 39, 36, 38, 44, 60, 60, 60, 45, 41, 35, 39]
+      self.t_sink_sfh100 = [48, 46, 44, 41, 38, 52, 52, 52, 39, 40, 45, 45]
+
+      #morningstart = dt.datetime(1970, 1, 1, 10, 45, 00)
+
+      ##due to the building-type and heat demand choose SCOP-curve
+      
+      if (grid.scenario[0] == 'A') :
+        print('SFH15')
+        self.t_sink = self.t_sink_sfh15 
+      elif (grid.scenario[0] == 'B') :
+        print('SFH45')
+        self.t_sink = self.t_sink_sfh45 
+      elif (grid.scenario[0] == 'C') :
+        print('SFH100')
+        self.t_sink = self.t_sink_sfh100
+      else :
+        print('SFH_defaulz')
+        self.t_sink =  self.t_sink_sfh45
+
       #set static sink-temprature und calc delta_T
-      self.t_sink = control_parameter['HP_t_sink']     ###buidling-side
+      #self.t_sink = control_parameter['HP_t_sink']     ###buidling-side
       self.t_ground_source = control_parameter['HP_t_ground_source']
-      self.delta_T_ground = self.t_sink - self.t_ground_source
-      self.COP_ground = 8.77 - 0.15 * self.delta_T_ground + 0.000734 * self.delta_T_ground**2
+      #self.delta_T_ground = self.t_sink[0] - self.t_ground_source
+      #self.COP_ground = 8.77 - 0.15 * self.delta_T_ground + 0.000734 * self.delta_T_ground**2
 
       self.timedelta_charging_delay = 0.125 # in % t_sunset - t
 
@@ -76,13 +104,17 @@ class HP_P_control:
   def get_cop(self, grid, d, t):
       hps = grid.net.load.loc[grid.hp_index]
       #set current ambient temprature locate by timestamp t
-      t_source = grid.df_t_amb.loc[t].ta
+      t_air_source = grid.df_t_amb.loc[t].ta
+      t_ground_source = self.t_ground_source
 
-      delta_T = self.t_sink - t_source
       #calc cop for air-sourced HPs
-      hps.hp_cop[hps.type.str.contains('Air')] = 6.81 - 0.121 * delta_T + 0.00063 * delta_T**2
+      hps.hp_cop[hps.type.str.contains('Air')] = \
+        6.81 - 0.121 * (self.t_sink[t.month] - t_air_source) + \
+          0.00063 * (self.t_sink[t.month] - t_air_source)**2
       #calc cop for ground-sourced HPs
-      hps.hp_cop[hps.type.str.contains('Ground')] = self.COP_ground
+      hps.hp_cop[hps.type.str.contains('Ground')] = \
+        8.77 - 0.15 * (self.t_sink[t.month] - t_ground_source) + \
+          0.000734 * (self.t_sink[t.month] - t_ground_source)**2
 
       ### -> Optimierung bei Init ermittelte 
       ### Werte in den df d für hp_th_demand und cop

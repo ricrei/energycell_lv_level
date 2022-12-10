@@ -24,7 +24,7 @@ class HPstorages():
             })
 
         self.hp_stor_para = {'hp_max_capacity_mwh': 0,
-                             'hp_TES_max_capacity_mwh': control_parameter['HP_TES_max_capacity_mwh'],#.0325,
+                             'hp_TES_max_capacity_mwh': control_parameter['HP_TES_max_capacity_def_mwh'],#.0325,
                              'hp_building_capacity_mwh': 0.,
                              'hp_start_soc': control_parameter['HP_TES_start_soc'], #0.5, # 0-1
                              'hp_loss_per_s': control_parameter['HP_TES_loss_per_s'], #0.04 / 86400,   #4% per day / 86400s
@@ -33,7 +33,27 @@ class HPstorages():
                              'upper_tes_reserve': control_parameter['HP_upper_TES_reserve'], #1., # default = 1
                              'lower_tes_reserve': control_parameter['HP_lower_TES_reserve']  #0 # default = 0
                             }
+        
+        ##choose size of tes due to scenario
+        if (grid.scenario[3] == 6) :
+          self.hp_stor_para['hp_TES_max_capacity_mwh'] = control_parameter['HP_TES_max_capacity_small_mwh']
+          print('scenario:')
+          print(grid.scenario[3])
+          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
+        elif (grid.scenario[3] == 7) :
+          self.hp_stor_para['hp_TES_max_capacity_mwh'] = control_parameter['HP_TES_max_capacity_medium_mwh']
+          print('scenario:')
+          print(grid.scenario[3])
+          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
+        elif (grid.scenario[3] == 8) : 
+          self.hp_stor_para['hp_TES_max_capacity_mwh'] = control_parameter['HP_TES_max_capacity_large_mwh']
+          print('scenario:')
+          print(grid.scenario[3])
+          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
+        else :
+          self.hp_stor_para['hp_TES_max_capacity_mwh'] = control_parameter['HP_TES_max_capacity_def_mwh']
 
+        ## varies upper_tes_reserve depending on seasons
         if 'name' in grid.time_scope.keys():
           if grid.time_scope['name'] in ['winter', 'spring', 'autumn']:
             self.hp_stor_para['hp_building_capacity_mwh'] = control_parameter['HP_building_capacity_mwh']#.014
@@ -45,7 +65,8 @@ class HPstorages():
             self.hp_stor_para['hp_start_soc'] = control_parameter['HP_TES_start_soc_summer']#.75
 
 
-        self.hp_stor_para['hp_max_capacity_mwh'] = self.hp_stor_para['hp_building_capacity_mwh'] + self.hp_stor_para['hp_TES_max_capacity_mwh']
+        self.hp_stor_para['hp_max_capacity_mwh'] = self.hp_stor_para['hp_building_capacity_mwh'] \
+          + self.hp_stor_para['hp_TES_max_capacity_mwh']
         
         self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
 

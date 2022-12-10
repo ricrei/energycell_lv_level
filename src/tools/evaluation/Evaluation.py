@@ -509,6 +509,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
 
   day1 = 3
   day2 = 3
+  '''
   time_min_1 = time1[(day1-1)*24*60]
   time_max_1 = time1[(day2)*24*60-1]
 
@@ -517,6 +518,16 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
 
   time_min_3 = time3[(day1-1)*24*60]
   time_max_3 = time3[(day2)*24*60-1]
+  '''
+  time_min_1 = time1[(day1-1)*24*4]
+  time_max_1 = time1[(day2)*24*4-1]
+
+  time_min_2 = time2[(day1-1)*24*4]
+  time_max_2 = time2[(day2)*24*4-1]
+
+  time_min_3 = time3[(day1-1)*24*4]
+  time_max_3 = time3[(day2)*24*4-1]
+
 
   time_min = [time_min_1, time_min_2, time_min_3]
   time_max = [time_max_1, time_max_2, time_max_3]

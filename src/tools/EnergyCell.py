@@ -55,14 +55,14 @@ class EnergyCell():
         self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
         self.time_scope['intervall_in_seconds'] = self.intervall_in_seconds
 
-        self.input_data_handler = InputDataHandler(self.time_scope)
+        self.input_data_handler = InputDataHandler(self.time_scope,  self.scenario)
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.grid = Grid(self.net_name, self.scenario, self.time_scope)
 
         self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
         self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
-        self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter)
+        self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter, self.scenario)
         self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.bss_creator = BSScreator(self.grid, self.control_parameter)
 
@@ -190,9 +190,25 @@ class EnergyCell():
     def scenario_interpreter(self, scenario):
       self.scenario = scenario
       pv = [None, 'qu', 'cos_phi']
-      bss = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH', 'grid-oriented_feed-in_damping_LVbus', 'grid-oriented_feed-in_damping_feeder']
-      hp = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'evu_lock', 'residual_load_driven']
-      ev = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
+      bss = [None, \
+             'direct', \
+             'household-oriented_feed-in_damping', \
+             'grid-oriented_feed-in_damping_HH', \
+             'grid-oriented_feed-in_damping_LVbus', \
+             'grid-oriented_feed-in_damping_feeder']
+      hp = [None, \
+            'direct', \
+            'household-oriented_feed-in_damping', \
+            'grid-oriented_feed-in_damping', \
+            'evu_lock', \
+            'residual_load_driven', \
+            'sg_ready_small_tes', \
+            'sg_ready_medium_tes', \
+            'sg_ready_large_tes' ]
+      ev = [None, \
+            'direct', \
+            'household-oriented_feed-in_damping', \
+            'grid-oriented_feed-in_damping']
       curtailment = [False, True]
       grid_reinforce = [False, True]
       try:
