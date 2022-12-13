@@ -66,7 +66,7 @@ class BSScreator:
 
         # create bss at each bus
         for index in grid.component_buses.index:
-          print(str(index) + ' : ' + str(bss_size.loc[index].values[0]))
+          #print(str(index) + ' : ' + str(bss_size.loc[index].values[0]))
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
                             max_e_mwh = bss_size.loc[index].values[0] * 10**(-3), \

@@ -44,11 +44,11 @@ class OutputDataHandler():
         f.write("%s, %s\n"%(key,self.control_parameter[key]))
 
   def write_component_data_to_csv(self):
-    is_pv  = 1 if self.scenario_frame[0] in [3,4,6,7,8] else 0
-    is_bss = 1 if self.scenario_frame[0] in [6,8]       else 0
-    is_hp  = 1 if self.scenario_frame[0] in [2,4,6,7,8] else 0
-    is_tes = 1 if self.scenario_frame[0] in [7,8]       else 0
-    is_ev  = 1 if self.scenario_frame[0] in [2,4,6,7,8] else 0
+    is_pv  = 1 if self.scenario_frame[0] in [3,4,6,7,8,9] else 0
+    is_bss = 1 if self.scenario_frame[0] in [6,8,9]       else 0
+    is_hp  = 1 if self.scenario_frame[0] in [2,4,6,7,8,9] else 0
+    is_tes = 1 if self.scenario_frame[0] in [7,8,9]       else 0
+    is_ev  = 1 if self.scenario_frame[0] in [2,4,6,7,8,9] else 0
 
     # PV-P, BSS-P, BSS-E, HP-P, TES-E, EV-E, 
     df = pd.DataFrame(index=self.grid.net.sgen.index)

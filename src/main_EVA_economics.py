@@ -80,6 +80,8 @@ scenarios = [
         [8,1,3,3,3,1,1],
         [8,1,4,3,3,1,0],
         [8,1,4,3,3,1,1],
+        [9,1,3,3,3,1,0],
+        [9,1,3,3,3,1,1],
                       ]
 #############################
 ### Define all gird names ###
@@ -111,6 +113,8 @@ scenario_names = {
   '8133311' : '8\nHBSS+\nFlexC+\nGridRein',
   '8143310' : '8\nCBSS+\nFlexC',
   '8143311' : '8\nCBSS+\nFlexC+\nGridRein',
+  '9133310' : '8\nHBSS*+\nFlexC',
+  '9133311' : '8\nHBSS*+\nFlexC+\nGridRein',
 }
 
 ############################
@@ -282,7 +286,7 @@ def boxplot_diff_costs_reven_HH(eva, save_fig_dir=save_fig_dir):
 def boxplot_diff_costs_reven_ECM(eva, save_fig_dir=save_fig_dir):
   ref = '4101110'
 
-  print(eva['s4101101n8']['total_ECM'].sum(axis=1))
+  #print(eva['s4101101n8']['total_ECM'].sum(axis=1))
 
   df_sns = pd.DataFrame(columns=['hh', 'scenario', 'data', 'data_diff', 'grid'])
   for i in eva.keys():
@@ -612,12 +616,12 @@ def bar_revenue_costs_HH_each_HH(eva, save_fig_dir=save_fig_dir):
   columns_reven_barplot = ['scenario', 'grid','hh'] + columns_reven
 
   for g in [7,8,9,10,11]:
-    print('Grid: '+str(g))
+    #print('Grid: '+str(g))
     df_bar = df[df['grid'] == g]
     df_barplot_one = df_bar[columns_costs_barplot]# df[columns_costs_barplot].groupby(['scenario']).sum().reset_index()
     df_barplot_two = df_bar[columns_reven_barplot]#(df[columns_reven_barplot].groupby(['scenario']).sum()/1000).reset_index()
     for hh in range(df_barplot_one['hh'][df_barplot_one['grid'] == g].max()+1):
-      print('HoHo: '+str(hh))
+      #print('HoHo: '+str(hh))
       df_barplot1 = df_barplot_one[df_barplot_one['hh'] == hh].reset_index()
       df_barplot2 = df_barplot_two[df_barplot_two['hh'] == hh].reset_index()
       
@@ -918,7 +922,7 @@ def plot_dot_anu_costs_over_component_data(eva, cd):
 def plot_anu_costs_over_component_data(eva, cd):
   df = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z'])
 
-  plot_scenario = '8133310'
+  plot_scenario = '9133310'
   #plot_scenario = '4101110'
   ref_scenario = '4101110'
   #	ref_scenario = '2001110'
@@ -957,7 +961,7 @@ def plot_anu_costs_over_component_data(eva, cd):
 def evaluate_bss_sizing(eva, cd):
   df = pd.DataFrame(columns=['grid', 'scenario'])
 
-  plot_scenario = '8133310'
+  plot_scenario = '9133310'
   #plot_scenario = '4101110'
   ref_scenario = '4101110'
   #	ref_scenario = '2001110'
@@ -1004,8 +1008,6 @@ def evaluate_bss_sizing(eva, cd):
   print('BSS capacity sum    : ' + str(df['bss_capa'].sum()))
   print('max BSS capacity sum: ' + str(df['max_bss_capa'].sum()))
 
-  print(df)
-
   #tt.compress_pickle('input-files/'+'20_bss_sizes', data)
   df.round(3).to_csv('input-files/'+'20_bss_sizes.csv', header=True, index = True)
 
@@ -1027,21 +1029,21 @@ def evaluate_bss_sizing(eva, cd):
     plt.xlabel(xlabel + ' in Euro')
     plt.ylabel(ylabel + ' in MWh')
     #plt.show()
-    plt.savefig(save_fig_dir + '03b_BSS_sizing_annuiCosts_grid'+str(g)+'.png', bbox_inches='tight', dpi=dpi)
+    plt.savefig(save_fig_dir + '03b_BSS_sizing_annuiCosts_grid'+str(g)+'_scenario'+str(plot_scenario)+'.png', bbox_inches='tight', dpi=dpi)
 
 
 
 eva = load_scenario_data(scenarios)
 
-#boxplot_diff_costs_reven_HH(eva)
-#boxplot_diff_costs_reven_ECM(eva)
-#bar_revenue_costs_HH(eva)
+boxplot_diff_costs_reven_HH(eva)
+boxplot_diff_costs_reven_ECM(eva)
+bar_revenue_costs_HH(eva)
 #bar_revenue_costs_HH_each_HH(eva)
-#bar_revenue_costs_ECM(eva)
+bar_revenue_costs_ECM(eva)
 
 cd = get_component_data(scenarios, time_scope_all_seasons)
 
-#plot_dot_anu_costs_over_component_data(eva, cd)
-#plot_anu_costs_over_component_data(eva, cd)
+plot_dot_anu_costs_over_component_data(eva, cd)
+plot_anu_costs_over_component_data(eva, cd)
 evaluate_bss_sizing(eva, cd)
 

@@ -402,7 +402,7 @@ scenarios = [
 
 #run_single_simulation()
 #run_multiple_simulations(scenarios)
-run_multiple_simulations_multiprocessing(scenarios)
+#run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-#run_economics(scenarios)
+run_economics(scenarios)
 #######################
