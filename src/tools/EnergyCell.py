@@ -61,7 +61,7 @@ class EnergyCell():
         self.grid = Grid(self.net_name, self.scenario, self.time_scope)
 
         self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
-        self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
+        self.pv_creator = PVcreator(self.input_data_handler.inputfolder, self.scenario)
         self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter, self.scenario)
         self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.bss_creator = BSScreator(self.grid, self.control_parameter)
@@ -189,7 +189,7 @@ class EnergyCell():
     #####################################################
     def scenario_interpreter(self, scenario):
       self.scenario = scenario
-      pv = [None, 'qu', 'cos_phi']
+      pv = [None, 'qu', 'cos_phi', 'half_power_qu']
       bss = [None, \
              'direct', \
              'household-oriented_feed-in_damping', \

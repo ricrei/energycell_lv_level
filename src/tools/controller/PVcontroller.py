@@ -15,6 +15,8 @@ class PVcontroller:
           self.Q_controller = PV_Q_controlQU(grid, self.pv_para)
         elif self.control == 'cos_phi':
           self.Q_controller = PV_Q_controlCOSPHI(self.pv_para)
+        if self.control == 'half_power_qu':
+          self.Q_controller = PV_Q_controlQU(grid, self.pv_para)
       else:
         self.P_controller = PV_P_control_no_pv(self.pv_para)
         self.Q_controller = PV_Q_control(self.pv_para)

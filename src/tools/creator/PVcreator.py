@@ -6,17 +6,29 @@ import tools.tools as tt
 
 class PVcreator:
 
-  def __init__(self, inputfolder):
+  def __init__(self, inputfolder, scenario):
+    self.scenario = scenario
     self.inputfolder = inputfolder
     self.pv_data_file = self.inputfolder + '12_pv_short.pbz2'
 
-    # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
-    # rate: frequency of occurrence of pv-orientation
-    self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
+    ##in case of half use a different scaling
+    if (self.scenario[1] == 3) :
+      # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
+      # rate: frequency of occurrence of pv-orientation
+      self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
+                        'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
+                        'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        'power_rural' : 18/2, 'power_village' : 16.7/2, 'power_suburban' : 11.6/2, 'power_urban': 10/2}
+      #TODO: power urban has to be verified
+
+    else:
+      # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
+      # rate: frequency of occurrence of pv-orientation
+      self.pv_para = {'orientation' : [90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
                         'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10}
-    #TODO: power urban has to be verified
+      #TODO: power urban has to be verified
 
   ############################################################
   ### Create sGen and Loads at each bus for all PV, HP, EV ###
