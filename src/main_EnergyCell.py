@@ -17,8 +17,15 @@ import concurrent.futures
 
 ##########################################
 ### Define timescope and timestepwidth ###
+
 ## T ~ minutes
 ## H ~ hours
+
+time_scope = { 'start_time' : '2017-12-01 00:00:00+01:00',
+               'end_time'   : '2017-12-31 00:00:00+01:00',
+               't_freq'     : '15T',
+             }
+
 '''
 time_scope = { 'start_time' : '2017-01-08 00:00:00+01:00',
                'end_time'   : '2017-01-08 02:00:00+01:00',
@@ -205,7 +212,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 13
 ######################
 
 #############################
@@ -228,9 +235,9 @@ def run_single_simulation():
   # Initialize Evaluation
   #e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
-  
+
   ##calc values for pauls issues
   #e.eva.calc_hp_values()
 
@@ -423,9 +430,11 @@ scenarios = [
         ['C',3,0,8,1,1,0],
             ]
 
+
 #run_single_simulation()
 run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-run_output_data_conversion(scenarios)
+#run_output_data_conversion(scenarios)
 #run_economics(scenarios)
+>>>>>>> b5b0ccaba383cba2f011ee7b1d5461adca3b28b3
 #######################
