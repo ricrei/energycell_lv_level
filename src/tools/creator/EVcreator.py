@@ -23,6 +23,8 @@ class EVcreator:
         charging_strategy = 'mar'
       elif grid.scenario[4] == 7:
         charging_strategy = 'res'
+      else:
+        charging_strategy = 'gre'
 
       if grid.scenario[0] in ['A','B','C']:
         self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.category)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
@@ -44,7 +46,7 @@ class EVcreator:
       grid.net.load['ev_c_bat'] = np.nan
       grid.net.load['ev_soc'] = np.nan
       grid.net.load['ev_parking'] = np.nan
-      grid.net.load['p_mw_flex'] = 0
+      grid.net.load['ev_amount'] = 0
 
       if grid.scenario[0] in ['A','B','C']:
         x = round(len(self.ev.columns) / len(grid.component_buses.index))
@@ -54,6 +56,9 @@ class EVcreator:
       share = 0 # share of bev in net
       n_ev = 0
       n_noev = 0
+
+      share_double = 0 # share of hh with two bevs
+      n_ev_double = 0
 
       # create ev-loads at each bus 
       for index in grid.component_buses.index:
@@ -69,6 +74,13 @@ class EVcreator:
                          )
           grid.net.load['ev_c_bat'].loc[index_ev] = int(grid.net.load.type[index_ev][7:10])*self.usable_c_bat/100
           grid.net.load['ev_soc'].loc[index_ev] = self.ev_start_soc
+          if share_double < self.control_parameter['NEP']['ev'] - 1:
+            grid.net.load['ev_amount'].loc[index_ev] = 2
+            n_ev_double += 1
+          else:
+            grid.net.load['ev_amount'].loc[index_ev] = 1
+
+          share_double = n_ev_double / (n_ev + n_noev)
 
           share = n_ev / (n_ev + n_noev)
 
@@ -83,6 +95,8 @@ class EVcreator:
                          )
 
           share = n_ev / (n_ev + n_noev)
+
+      grid.net.load['p_mw_flex'] = 0
 
       return grid
 

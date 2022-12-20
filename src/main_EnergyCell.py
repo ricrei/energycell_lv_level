@@ -167,12 +167,12 @@ A = 'A'
 B = 'B'
 C = 'C'
 scenario = [
-  7, # scenario number, 1-8
+  C, # scenario number, 1-8
   1, # PV, 0-2
   0, # BSS, 0-5
-  3, # HP, 0-5
-  3, # EV, 0-3
-  1, # Curtailment, 0/1
+  1, # HP, 0-5
+  4, # EV, 0-3
+  0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -233,7 +233,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 7
+net_number = 8
 ######################
 
 #############################
@@ -267,7 +267,7 @@ def run_single_simulation():
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  e.eva.plot_hp_soc()
+  #e.eva.plot_hp_soc()
   #e.eva.plot_hp_cop()
   #e.eva.plot_hp_active_power()
   #e.eva.plot_hp_eva_th()
