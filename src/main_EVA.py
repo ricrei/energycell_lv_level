@@ -168,7 +168,7 @@ evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenar
 '''
 
 # --- Curtailment: PV-Power and Load (Scenario - Grid) --- #
-#'''
+'''
 #scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
 #scenarios = ['4101110', '6111110', '6121110', '6131110', '6141110', '6151110']
 scenarios = ['4101110', '6131110', '7103310', '8133310', '9133310']
@@ -177,7 +177,7 @@ eva = load_scenario_data(scenarios)
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '6111110', '6121110', '6131110', '6141110', '6151110'], x_ticklabels = ['Reference', 'd-HBSS', 'p-HBSS', 'pc-HBSS', 'pc-CBSS-LVBB', 'pc-CBSS-line'], save_fig_dir=save_fig_dir+'1')
 evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '6131110', '7103310', '8133310', '9133310'], x_ticklabels = ['4', '6', '7', '8', '9'], save_fig_dir=save_fig_dir+'2')
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['Reference', 'Home\nBSS', 'Smarte\nconsumers', 'BSS +\nsmarte Con.'], save_fig_dir=save_fig_dir+'3')
-#'''
+'''
 
 # --- Self-Sufficiancy and PV Consumption --- #
 #'''
