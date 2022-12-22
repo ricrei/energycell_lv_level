@@ -33,7 +33,7 @@ fig_x, fig_y = 5., 2.
 image_format = 'png'
 dpi = 500
 
-lan = 'DE' # 'EN', 'DE'
+lan = 'EN' # 'EN', 'DE'
 
 if lan == 'DE':
   y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
@@ -648,6 +648,9 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
       ax0[0].set_ylabel('Leistung in MW')
     elif lan == 'EN':
       ax0[0].set_ylabel('Power in MW')
+      ax0[0].set_title('Scenario 1')
+      ax0[1].set_title('Scenario 4')
+      ax0[2].set_title('Scenario 7')
 
     y_max = max(y_max_pos)
     y_min = min(y_max_neg)
@@ -656,7 +659,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
     y_min -= max([abs(y_min), abs(y_max)])*.1
 
     y_max = 1.2
-    y_min = -1.2
+    y_min = -1.75
 
     ax0[0].set_xlim(time_min_1, time_max_1)
     ax0[1].set_xlim(time_min_2, time_max_2)

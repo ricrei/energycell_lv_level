@@ -113,8 +113,8 @@ scenario_names = {
   '8133311' : '8\nHBSS+\nFlexC+\nGridRein',
   '8143310' : '8\nCBSS+\nFlexC',
   '8143311' : '8\nCBSS+\nFlexC+\nGridRein',
-  '9133310' : '8\nHBSS*+\nFlexC',
-  '9133311' : '8\nHBSS*+\nFlexC+\nGridRein',
+  '9133310' : '9\nHBSS+\nFlexC',
+  '9133311' : '9\nHBSS+\nFlexC+\nGridRein',
 }
 
 ############################
@@ -142,10 +142,13 @@ def load_scenario_data(scenarios, grids=[7,8,9,10,11]):
       eva[index]['scenario'] = scenario
       eva[index]['total_HH'] = pd.read_csv(economics_folder + '10_conclusion_economics_HH.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
       eva[index]['total_ECM'] = pd.read_csv(economics_folder + '10_conclusion_economics_ECM.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+      eva[index]['total_CBSS'] = pd.read_csv(economics_folder + '10_conclusion_economics_CBSS.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
       eva[index]['energy_costs_HH'] = pd.read_csv(economics_folder + '03_Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
       eva[index]['energy_costs_ECM'] = pd.read_csv(economics_folder + '03_Costs_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+      eva[index]['energy_costs_CBSS'] = pd.read_csv(economics_folder + '03_Costs_CBSS_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
       eva[index]['energy_reven_HH'] = pd.read_csv(economics_folder + '03_Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
       eva[index]['energy_reven_ECM'] = pd.read_csv(economics_folder + '03_Revenues_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+      eva[index]['energy_reven_CBSS'] = pd.read_csv(economics_folder + '03_Revenues_CBSS_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
   return eva
 
@@ -196,6 +199,20 @@ def get_component_data(scenarios, time_scope_all_seasons, grids=[7,8,9,10,11]):
 
   return cd
 
+def calculate_bss_capacity(cd, scenarios, grids=[7,8,9,10,11]):
+
+  bss_capa = {}
+  for n in grids:
+    for s in scenarios:
+      scenario = ''.join(str(num) for num in s)
+      if scenario in ['8133310','9133310']:
+        index = 's' + str(scenario) + 'n' + str(n)
+
+        bss_capa[index] = {}
+        bss_capa[index]['grid'] = n
+        bss_capa[index]['scenario'] = scenario
+
+        print('BSS_capa ' + str(index) + ' ' + str(cd[index]['installed']['BSS_energy'].sum()))
 
 def generate_bar_plot_df(df, column):
     for index, c in enumerate(column):
@@ -352,6 +369,77 @@ def boxplot_diff_costs_reven_ECM(eva, save_fig_dir=save_fig_dir):
   
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00l_boxplot_annualized_costs_grids_ECM.png', bbox_inches='tight', dpi=dpi)
+  #'''
+
+def boxplot_diff_costs_reven_CBSS(eva, save_fig_dir=save_fig_dir):
+  ref = '4101110'
+
+  #print(eva['s4101101n8']['total_CBSS'].sum(axis=1))
+
+  df_sns = pd.DataFrame(columns=['hh', 'scenario', 'data', 'data_diff', 'grid'])
+  for i in eva.keys():
+    df_sns_helper = pd.DataFrame(columns=['hh', 'scenario', 'data', 'data_diff', 'grid'])
+    if i[0] != '_':
+      df_sns_helper['data'] = eva[i]['total_CBSS'].sum(axis=1)
+      j = i[:1] + ref + i[8:]
+      df_sns_helper['data_diff'] = eva[i]['total_CBSS'].sum(axis=1) - eva[j]['total_CBSS'].sum(axis=1)
+      df_sns_helper['scenario'] = eva[i]['scenario']
+      df_sns_helper['grid'] = eva[i]['grid']
+      df_sns_helper['hh'] = eva[i]['total_CBSS'].index
+      df_sns = pd.concat([df_sns, df_sns_helper])
+
+  df_sns = rename_scenarios(df_sns.reset_index())
+
+  #print(df_sns)
+
+  #'''
+  fig1, ax1 = plt.subplots()
+  sns.boxplot(data=df_sns, y='data_diff', x='scenario', orient='v')
+  ax1.set(xlabel='Scenario', ylabel='Difference of annualized costs in euro per year')
+  ax1.set_title(' ')
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00g_boxplot_diff_annualized_costs_CBSS.png', bbox_inches='tight', dpi=dpi)
+
+  fig2, ax2 = plt.subplots()
+  sns.boxplot(data=df_sns, y='data', x='scenario', orient='v')
+  ax2.set(xlabel='Scenario', ylabel='Annualized costs in euro per year')
+  ax2.set_title(' ')
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00h_boxplot_annualized_costs_CBSS.png', bbox_inches='tight', dpi=dpi)
+
+  fig3, ax3 = plt.subplots()
+  sns.boxplot(data=df_sns, y='data_diff', x='scenario', orient='v', hue='grid')
+  ax3.set(xlabel='Scenario', ylabel='Difference of annualized costs in euro per year')
+  ax3.set_title(' ')
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00i_boxplot_diff_annualized_costs_grids_CBSS.png', bbox_inches='tight', dpi=dpi)
+
+  fig4, ax4 = plt.subplots()
+  sns.boxplot(data=df_sns, y='data', x='scenario', orient='v', hue='grid')
+  ax4.set(xlabel='Scenario', ylabel='Annualized costs in euro per year')
+  ax4.set_title(' ')
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00j_boxplot_annualized_costs_grids_CBSS.png', bbox_inches='tight', dpi=dpi)
+
+  fig5, ax5 = plt.subplots()
+  sns.boxplot(data=df_sns, y='data_diff', x='grid', orient='v', hue='scenario')
+  ax5.set(xlabel='Scenario', ylabel='Difference of annualized costs in euro per year')
+  ax5.set_title(' ')
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00k_boxplot_diff_annualized_costs_grids_CBSS.png', bbox_inches='tight', dpi=dpi)
+
+  fig6, ax6 = plt.subplots()
+  sns.boxplot(data=df_sns, y='data', x='grid', orient='v', hue='scenario')
+  ax6.set(xlabel='Scenario', ylabel='Annualized costs in euro per year')
+  ax6.set_title(' ')
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '00l_boxplot_annualized_costs_grids_CBSS.png', bbox_inches='tight', dpi=dpi)
   #'''
 
 def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
@@ -706,8 +794,6 @@ def bar_revenue_costs_HH_each_HH(eva, save_fig_dir=save_fig_dir):
          plt.savefig(save_fig_dir + '01e_RevenueCosts_Scenarios_grid'+str(g)+'_hh'+str(hh)+'.png', bbox_inches='tight', dpi=dpi)
   #'''
 
-
-
 def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
   # get all column names of costs and revenues
   for i in list(eva.keys()):
@@ -746,7 +832,7 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
   columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
   df_barplot1 = df[columns_costs_barplot].groupby(['scenario']).sum().reset_index()
 
-  column = ['bss_LV_costs', 'curtailed_load', 'curtailed_pv', 'flex_LV', 'flex_self', 'Grid_Trafo_capex', 'Grid_Trafo_opex', 'Grid_Lines_capex', 'Grid_Lines_opex', 'BSS_capex', 'BSS_opex']
+  column = ['curtailed_load', 'curtailed_pv', 'flex_LV', 'flex_self', 'Grid_Trafo_capex', 'Grid_Trafo_opex', 'Grid_Lines_capex', 'Grid_Lines_opex']
 
   df_barplot1 = generate_bar_plot_df(df_barplot1, column)
   df_barplot1 = change_df_rows(df_barplot1, row_ref=1)
@@ -754,47 +840,47 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
 
   fig7, ax7 = plt.subplots()
 
-  s16 = sns.barplot(x = df_barplot1['scenario'], y = column[-1], data = df_barplot1, color = dark[7])
-  s15 = sns.barplot(x = df_barplot1['scenario'], y = column[-2], data = df_barplot1, color = dark[6])
-  s14 = sns.barplot(x = df_barplot1['scenario'], y = column[-3], data = df_barplot1, color = dark[5])
-  s13 = sns.barplot(x = df_barplot1['scenario'], y = column[-4], data = df_barplot1, color = dark[4])
-  s12 = sns.barplot(x = df_barplot1['scenario'], y = column[-5], data = df_barplot1, color = dark[3])
-  s11 = sns.barplot(x = df_barplot1['scenario'], y = column[-6], data = df_barplot1, color = dark[2])
-  s10 = sns.barplot(x = df_barplot1['scenario'], y = column[-7], data = df_barplot1, color = dark[1])
-  s9  = sns.barplot(x = df_barplot1['scenario'], y = column[-8], data = df_barplot1, color = dark[0])
-  s8  = sns.barplot(x = df_barplot1['scenario'], y = column[-9], data = df_barplot1, color = dark[8])
-  s7  = sns.barplot(x = df_barplot1['scenario'], y = column[-10], data = df_barplot1, color = dark[9])
-  s6  = sns.barplot(x = df_barplot1['scenario'], y = column[-11], data = df_barplot1, color = dark[0])
+  #s16 = sns.barplot(x = df_barplot1['scenario'], y = column[-1], data = df_barplot1, color = dark[7])
+  #s15 = sns.barplot(x = df_barplot1['scenario'], y = column[-2], data = df_barplot1, color = dark[6])
+  s14 = sns.barplot(x = df_barplot1['scenario'], y = column[7], data = df_barplot1, color = dark[5])
+  s13 = sns.barplot(x = df_barplot1['scenario'], y = column[6], data = df_barplot1, color = dark[4])
+  s12 = sns.barplot(x = df_barplot1['scenario'], y = column[5], data = df_barplot1, color = dark[3])
+  s11 = sns.barplot(x = df_barplot1['scenario'], y = column[4], data = df_barplot1, color = dark[2])
+  s10 = sns.barplot(x = df_barplot1['scenario'], y = column[3], data = df_barplot1, color = dark[1])
+  s9  = sns.barplot(x = df_barplot1['scenario'], y = column[2], data = df_barplot1, color = dark[0])
+  s8  = sns.barplot(x = df_barplot1['scenario'], y = column[1], data = df_barplot1, color = dark[8])
+  s7  = sns.barplot(x = df_barplot1['scenario'], y = column[0], data = df_barplot1, color = dark[9])
+  #s6  = sns.barplot(x = df_barplot1['scenario'], y = column[-11], data = df_barplot1, color = dark[0])
 
-  BSS_opex_bar    = mpatches.Patch(color=dark[7], label=column[-1])
-  BSS_capex_bar   = mpatches.Patch(color=dark[6], label=column[-2])
-  Lines_opex_bar  = mpatches.Patch(color=dark[5], label=column[-3])
-  Lines_capex_bar = mpatches.Patch(color=dark[4], label=column[-4])
-  Trafo_opex_bar  = mpatches.Patch(color=dark[3], label=column[-5])
-  Trafo_capex_bar = mpatches.Patch(color=dark[2], label=column[-6])
-  flex_self_bar   = mpatches.Patch(color=dark[1], label=column[-7])
-  flex_LV_bar     = mpatches.Patch(color=dark[0], label=column[-8])
-  cur_pv_bar      = mpatches.Patch(color=dark[8], label=column[-9])
-  cur_load_bar    = mpatches.Patch(color=dark[9], label=column[-10])
-  bss_LV_costs_bar= mpatches.Patch(color=dark[0], label=column[-11])
-  handle_costs    = [bss_LV_costs_bar,cur_load_bar, cur_pv_bar, flex_LV_bar, flex_self_bar, Trafo_capex_bar, Trafo_opex_bar, Lines_capex_bar, Lines_opex_bar, BSS_capex_bar, BSS_opex_bar]
+  #BSS_opex_bar    = mpatches.Patch(color=dark[7], label=column[-1])
+  #BSS_capex_bar   = mpatches.Patch(color=dark[6], label=column[-2])
+  Lines_opex_bar  = mpatches.Patch(color=dark[5], label=column[7])
+  Lines_capex_bar = mpatches.Patch(color=dark[4], label=column[6])
+  Trafo_opex_bar  = mpatches.Patch(color=dark[3], label=column[5])
+  Trafo_capex_bar = mpatches.Patch(color=dark[2], label=column[4])
+  flex_self_bar   = mpatches.Patch(color=dark[1], label=column[3])
+  flex_LV_bar     = mpatches.Patch(color=dark[0], label=column[2])
+  cur_pv_bar      = mpatches.Patch(color=dark[8], label=column[1])
+  cur_load_bar    = mpatches.Patch(color=dark[9], label=column[0])
+  #bss_LV_costs_bar= mpatches.Patch(color=dark[0], label=column[-11])
+  handle_costs    = [cur_load_bar, cur_pv_bar, flex_LV_bar, flex_self_bar, Trafo_capex_bar, Trafo_opex_bar, Lines_capex_bar, Lines_opex_bar]
 
   # revenues
   columns_reven_barplot = ['scenario', 'grid'] + columns_reven
   df_barplot2 = df[columns_reven_barplot].groupby(['scenario']).sum().reset_index()
 
-  column = ['bss_LV_reven', 'grid_charges']
+  column = ['grid_charges']
 
   df_barplot2 = generate_bar_plot_df(df_barplot2, column)
   df_barplot2 = change_df_rows(df_barplot2, row_ref = 1)
   df_barplot2 = rename_scenarios(df_barplot2)
 
   s2 = sns.barplot(x = df_barplot2['scenario'], y = column[-1], data = df_barplot2, color = bright[1])
-  s1 = sns.barplot(x = df_barplot2['scenario'], y = column[-2], data = df_barplot2, color = bright[0])
+  #s1 = sns.barplot(x = df_barplot2['scenario'], y = column[-2], data = df_barplot2, color = bright[0])
 
   grid_charges_bar   = mpatches.Patch(color=bright[1], label=column[-1])
-  bss_LV_reven_bar   = mpatches.Patch(color=bright[0], label=column[-2])
-  handle_reven       = [bss_LV_reven_bar, grid_charges_bar]
+  #bss_LV_reven_bar   = mpatches.Patch(color=bright[0], label=column[-2])
+  handle_reven       = [grid_charges_bar]
 
   # plt
   plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right" , bbox_to_anchor=(1.4, 0.22))
@@ -811,7 +897,7 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
   columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
   df_barplot1 = (df[columns_costs_barplot].groupby(['scenario']).sum()/1000).reset_index()
 
-  column = ['bss_LV_costs', 'curtailed_load', 'curtailed_pv', 'flex_LV', 'flex_self', 'Grid_Trafo_capex', 'Grid_Trafo_opex', 'Grid_Lines_capex', 'Grid_Lines_opex', 'BSS_capex', 'BSS_opex']
+  column = ['curtailed_load', 'curtailed_pv', 'flex_LV', 'flex_self', 'Grid_Trafo_capex', 'Grid_Trafo_opex', 'Grid_Lines_capex', 'Grid_Lines_opex']
 
   df_barplot1 = generate_bar_plot_df(df_barplot1, column)
   df_barplot1 = change_df_rows(df_barplot1, row_ref=1)
@@ -819,19 +905,19 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
 
   fig8, ax8 = plt.subplots()
 
-  s16 = sns.barplot(x = df_barplot1['scenario'], y = column[-1], data = df_barplot1, color = dark[7])
+  #s16 = sns.barplot(x = df_barplot1['scenario'], y = column[-1], data = df_barplot1, color = dark[7])
   #s15 = sns.barplot(x = df_barplot1['scenario'], y = column[-2], data = df_barplot1, color = dark[6])
-  s14 = sns.barplot(x = df_barplot1['scenario'], y = column[-3], data = df_barplot1, color = dark[5])
+  s14 = sns.barplot(x = df_barplot1['scenario'], y = column[7], data = df_barplot1, color = dark[5])
   #s13 = sns.barplot(x = df_barplot1['scenario'], y = column[-4], data = df_barplot1, color = dark[4])
-  s12 = sns.barplot(x = df_barplot1['scenario'], y = column[-5], data = df_barplot1, color = dark[3])
+  s12 = sns.barplot(x = df_barplot1['scenario'], y = column[5], data = df_barplot1, color = dark[3])
   #s11 = sns.barplot(x = df_barplot1['scenario'], y = column[-6], data = df_barplot1, color = dark[2])
-  s10 = sns.barplot(x = df_barplot1['scenario'], y = column[-7], data = df_barplot1, color = dark[1])
+  s10 = sns.barplot(x = df_barplot1['scenario'], y = column[3], data = df_barplot1, color = dark[1])
   #s9  = sns.barplot(x = df_barplot1['scenario'], y = column[-8], data = df_barplot1, color = dark[0])
-  s8  = sns.barplot(x = df_barplot1['scenario'], y = column[-9], data = df_barplot1, color = dark[8])
+  s8  = sns.barplot(x = df_barplot1['scenario'], y = column[1], data = df_barplot1, color = dark[8])
   #s7  = sns.barplot(x = df_barplot1['scenario'], y = column[-10], data = df_barplot1, color = dark[9])
-  s6  = sns.barplot(x = df_barplot1['scenario'], y = column[-11], data = df_barplot1, color = dark[0])
+  #s6  = sns.barplot(x = df_barplot1['scenario'], y = column[-11], data = df_barplot1, color = dark[0])
 
-  BSS_opex_bar    = mpatches.Patch(color=dark[7], label='CBSS')
+  #BSS_opex_bar    = mpatches.Patch(color=dark[7], label='CBSS')
   #BSS_capex_bar   = mpatches.Patch(color=dark[6], label=column[-2])
   Lines_opex_bar  = mpatches.Patch(color=dark[5], label='Lines')
   #Lines_capex_bar = mpatches.Patch(color=dark[4], label=column[-4])
@@ -841,25 +927,25 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
   #flex_LV_bar     = mpatches.Patch(color=dark[0], label=column[-8])
   cur_pv_bar      = mpatches.Patch(color=dark[8], label='Curtailment')
   #cur_load_bar    = mpatches.Patch(color=dark[9], label=column[-10])
-  bss_LV_costs_bar= mpatches.Patch(color=dark[0], label='Energy LV costs')
-  handle_costs    = [bss_LV_costs_bar, cur_pv_bar, flex_self_bar, Trafo_opex_bar, Lines_opex_bar, BSS_opex_bar]
+  #bss_LV_costs_bar= mpatches.Patch(color=dark[0], label='Energy LV costs')
+  handle_costs    = [cur_pv_bar, flex_self_bar, Trafo_opex_bar, Lines_opex_bar]
 
   # revenues
   columns_reven_barplot = ['scenario', 'grid'] + columns_reven
   df_barplot2 = (df[columns_reven_barplot].groupby(['scenario']).sum()/1000).reset_index()
 
-  column = ['bss_LV_reven', 'grid_charges']
+  column = ['grid_charges']
 
   df_barplot2 = generate_bar_plot_df(df_barplot2, column)
   df_barplot2 = change_df_rows(df_barplot2, row_ref=1)
   df_barplot2 = rename_scenarios(df_barplot2)
 
-  s2 = sns.barplot(x = df_barplot2['scenario'], y = column[-1], data = df_barplot2, color = bright[1])
-  s1 = sns.barplot(x = df_barplot2['scenario'], y = column[-2], data = df_barplot2, color = bright[0])
+  s2 = sns.barplot(x = df_barplot2['scenario'], y = column[0], data = df_barplot2, color = bright[1])
+  #s1 = sns.barplot(x = df_barplot2['scenario'], y = column[-2], data = df_barplot2, color = bright[0])
 
-  grid_charges_bar   = mpatches.Patch(color=bright[1], label=column[-1])
-  bss_LV_reven_bar   = mpatches.Patch(color=bright[0], label='Energy LV revenues')
-  handle_reven       = [bss_LV_reven_bar, grid_charges_bar]
+  grid_charges_bar   = mpatches.Patch(color=bright[1], label=column[0])
+  #bss_LV_reven_bar   = mpatches.Patch(color=bright[0], label='Energy LV revenues')
+  handle_reven       = [grid_charges_bar]
 
   # plt
   plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right", bbox_to_anchor=(1.4, 0.22))
@@ -871,7 +957,168 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
      plt.savefig(save_fig_dir + '01d_RevenueCosts_Scenarios_ECM.png', bbox_inches='tight', dpi=dpi)
   #'''
 
+def bar_revenue_costs_CBSS(eva, save_fig_dir=save_fig_dir):
+  # get all column names of costs and revenues
+  for i in list(eva.keys()):
+    if i[0] != '_':
+      break
 
+  columns_total = list(eva[i]['total_CBSS'].columns[:-2])
+  columns_costs = list(eva[i]['energy_costs_CBSS'].columns)
+  columns_reven = list(eva[i]['energy_reven_CBSS'].columns)
+  l = ['scenario','grid'] + columns_total + columns_costs + columns_reven
+  
+  df = pd.DataFrame(columns=l, index=range(0,len(eva['_scenarios'])*len(eva['_grids'])))
+
+  k = 0
+  for i in list(eva.keys()):
+    if i[0] != '_':
+      df['scenario'].loc[k] = eva[i]['scenario']
+      df['grid'].loc[k] = eva[i]['grid']
+      for c in columns_total:
+        df[c].loc[k] = eva[i]['total_CBSS'].sum()[c]
+      for c in columns_costs:
+        df[c].loc[k] = -eva[i]['energy_costs_CBSS'].sum()[c]
+      for c in columns_reven:
+        df[c].loc[k] = eva[i]['energy_reven_CBSS'].sum()[c]
+      k += 1
+
+  # colors
+  bright = sns.color_palette("bright", 10)
+  dark = sns.color_palette("dark", 10)
+  colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
+  rocket = sns.color_palette("rocket")
+
+  #'''
+  ### SCENARIO - detailed ###
+  # costs
+  columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
+  df_barplot1 = df[columns_costs_barplot].groupby(['scenario']).sum().reset_index()
+
+  column = ['bss_LV_costs', 'BSS_capex', 'BSS_opex']
+
+  df_barplot1 = generate_bar_plot_df(df_barplot1, column)
+  df_barplot1 = change_df_rows(df_barplot1, row_ref=1)
+  df_barplot1 = rename_scenarios(df_barplot1)
+
+  fig7, ax7 = plt.subplots()
+
+  s16 = sns.barplot(x = df_barplot1['scenario'], y = column[-1], data = df_barplot1, color = dark[7])
+  s15 = sns.barplot(x = df_barplot1['scenario'], y = column[-2], data = df_barplot1, color = dark[6])
+  #s14 = sns.barplot(x = df_barplot1['scenario'], y = column[-3], data = df_barplot1, color = dark[5])
+  #s13 = sns.barplot(x = df_barplot1['scenario'], y = column[-4], data = df_barplot1, color = dark[4])
+  #s12 = sns.barplot(x = df_barplot1['scenario'], y = column[-5], data = df_barplot1, color = dark[3])
+  #s11 = sns.barplot(x = df_barplot1['scenario'], y = column[-6], data = df_barplot1, color = dark[2])
+  #s10 = sns.barplot(x = df_barplot1['scenario'], y = column[-7], data = df_barplot1, color = dark[1])
+  #s9  = sns.barplot(x = df_barplot1['scenario'], y = column[-8], data = df_barplot1, color = dark[0])
+  #s8  = sns.barplot(x = df_barplot1['scenario'], y = column[-9], data = df_barplot1, color = dark[8])
+  #s7  = sns.barplot(x = df_barplot1['scenario'], y = column[-10], data = df_barplot1, color = dark[9])
+  s6  = sns.barplot(x = df_barplot1['scenario'], y = column[-3], data = df_barplot1, color = dark[0])
+
+  BSS_opex_bar    = mpatches.Patch(color=dark[2], label=column[-1])
+  BSS_capex_bar   = mpatches.Patch(color=dark[1], label=column[-2])
+  #Lines_opex_bar  = mpatches.Patch(color=dark[5], label=column[-3])
+  #Lines_capex_bar = mpatches.Patch(color=dark[4], label=column[-4])
+  #Trafo_opex_bar  = mpatches.Patch(color=dark[3], label=column[-5])
+  #Trafo_capex_bar = mpatches.Patch(color=dark[2], label=column[-6])
+  #flex_self_bar   = mpatches.Patch(color=dark[1], label=column[-7])
+  #flex_LV_bar     = mpatches.Patch(color=dark[0], label=column[-8])
+  #cur_pv_bar      = mpatches.Patch(color=dark[8], label=column[-9])
+  #cur_load_bar    = mpatches.Patch(color=dark[9], label=column[-10])
+  bss_LV_costs_bar= mpatches.Patch(color=dark[0], label=column[-3])
+  handle_costs    = [bss_LV_costs_bar, BSS_capex_bar, BSS_opex_bar]
+
+  # revenues
+  columns_reven_barplot = ['scenario', 'grid'] + columns_reven
+  df_barplot2 = df[columns_reven_barplot].groupby(['scenario']).sum().reset_index()
+
+  column = ['bss_LV_reven']
+
+  df_barplot2 = generate_bar_plot_df(df_barplot2, column)
+  df_barplot2 = change_df_rows(df_barplot2, row_ref = 1)
+  df_barplot2 = rename_scenarios(df_barplot2)
+
+  #s2 = sns.barplot(x = df_barplot2['scenario'], y = column[-1], data = df_barplot2, color = bright[1])
+  s1 = sns.barplot(x = df_barplot2['scenario'], y = column[-1], data = df_barplot2, color = bright[0])
+
+  #grid_charges_bar   = mpatches.Patch(color=bright[1], label=column[-1])
+  bss_LV_reven_bar   = mpatches.Patch(color=bright[0], label=column[-1])
+  handle_reven       = [bss_LV_reven_bar]
+
+  # plt
+  plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right" , bbox_to_anchor=(1.4, 0.22))
+  plt.xlabel('Scenario')
+  plt.ylabel('Revenue / Costs in Euro per Year')
+  #plt.show()
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '01c_RevenueCosts_Scenarios_detailed_CBSS.png', bbox_inches='tight', dpi=dpi)
+  #'''
+  #'''
+  ### SCENARIO - aggregated ###
+  # costs
+  columns_costs_barplot = ['scenario', 'grid'] + columns_total + columns_costs
+  df_barplot1 = (df[columns_costs_barplot].groupby(['scenario']).sum()/1000).reset_index()
+
+  column = ['bss_LV_costs', 'BSS_capex', 'BSS_opex']
+
+  df_barplot1 = generate_bar_plot_df(df_barplot1, column)
+  df_barplot1 = change_df_rows(df_barplot1, row_ref=1)
+  df_barplot1 = rename_scenarios(df_barplot1)
+
+  fig8, ax8 = plt.subplots()
+
+  s16 = sns.barplot(x = df_barplot1['scenario'], y = column[2], data = df_barplot1, color = dark[7])
+  #s15 = sns.barplot(x = df_barplot1['scenario'], y = column[-2], data = df_barplot1, color = dark[6])
+  #s14 = sns.barplot(x = df_barplot1['scenario'], y = column[-3], data = df_barplot1, color = dark[5])
+  #s13 = sns.barplot(x = df_barplot1['scenario'], y = column[-4], data = df_barplot1, color = dark[4])
+  #s12 = sns.barplot(x = df_barplot1['scenario'], y = column[-5], data = df_barplot1, color = dark[3])
+  #s11 = sns.barplot(x = df_barplot1['scenario'], y = column[-6], data = df_barplot1, color = dark[2])
+  #s10 = sns.barplot(x = df_barplot1['scenario'], y = column[-7], data = df_barplot1, color = dark[1])
+  #s9  = sns.barplot(x = df_barplot1['scenario'], y = column[-8], data = df_barplot1, color = dark[0])
+  #s8  = sns.barplot(x = df_barplot1['scenario'], y = column[-9], data = df_barplot1, color = dark[8])
+  #s7  = sns.barplot(x = df_barplot1['scenario'], y = column[-10], data = df_barplot1, color = dark[9])
+  s6  = sns.barplot(x = df_barplot1['scenario'], y = column[0], data = df_barplot1, color = dark[0])
+
+  BSS_opex_bar    = mpatches.Patch(color=dark[7], label='CBSS')
+  #BSS_capex_bar   = mpatches.Patch(color=dark[6], label=column[-2])
+  #Lines_opex_bar  = mpatches.Patch(color=dark[5], label='Lines')
+  #Lines_capex_bar = mpatches.Patch(color=dark[4], label=column[-4])
+  #Trafo_opex_bar  = mpatches.Patch(color=dark[3], label='Trafo')
+  #Trafo_capex_bar = mpatches.Patch(color=dark[2], label=column[-6])
+  #flex_self_bar   = mpatches.Patch(color=dark[1], label='Flexibility')
+  #flex_LV_bar     = mpatches.Patch(color=dark[0], label=column[-8])
+  #cur_pv_bar      = mpatches.Patch(color=dark[8], label='Curtailment')
+  #cur_load_bar    = mpatches.Patch(color=dark[9], label=column[-10])
+  bss_LV_costs_bar= mpatches.Patch(color=dark[0], label='Energy LV costs')
+  handle_costs    = [bss_LV_costs_bar, BSS_opex_bar]
+
+  # revenues
+  columns_reven_barplot = ['scenario', 'grid'] + columns_reven
+  df_barplot2 = (df[columns_reven_barplot].groupby(['scenario']).sum()/1000).reset_index()
+
+  column = ['bss_LV_reven']
+
+  df_barplot2 = generate_bar_plot_df(df_barplot2, column)
+  df_barplot2 = change_df_rows(df_barplot2, row_ref=1)
+  df_barplot2 = rename_scenarios(df_barplot2)
+
+  #s2 = sns.barplot(x = df_barplot2['scenario'], y = column[-1], data = df_barplot2, color = bright[1])
+  s1 = sns.barplot(x = df_barplot2['scenario'], y = column[0], data = df_barplot2, color = bright[0])
+
+  #grid_charges_bar   = mpatches.Patch(color=bright[1], label=column[-1])
+  bss_LV_reven_bar   = mpatches.Patch(color=bright[0], label='Energy LV revenues')
+  handle_reven       = [bss_LV_reven_bar]
+
+  # plt
+  plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right", bbox_to_anchor=(1.4, 0.22))
+  plt.xlabel('Scenario')
+  plt.ylabel('Revenue / Costs in TEuro per Year')
+  #plt.show()
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir + '01d_RevenueCosts_Scenarios_CBSS.png', bbox_inches='tight', dpi=dpi)
+  #'''
 
 def plot_dot_anu_costs_over_component_data(eva, cd):
   df = pd.DataFrame(columns=['grid', 'scenario', 'x', 'y', 'z']) # x = PV energy / consumption, y = BSS capacity / consuption, z = anulised costs
@@ -1008,7 +1255,6 @@ def evaluate_bss_sizing(eva, cd):
   print('BSS capacity sum    : ' + str(df['bss_capa'].sum()))
   print('max BSS capacity sum: ' + str(df['max_bss_capa'].sum()))
 
-  #tt.compress_pickle('input-files/'+'20_bss_sizes', data)
   df.round(3).to_csv('input-files/'+'20_bss_sizes.csv', header=True, index = True)
 
   f, ax = plt.subplots(figsize=(6.5, 6.5))
@@ -1032,16 +1278,19 @@ def evaluate_bss_sizing(eva, cd):
     plt.savefig(save_fig_dir + '03b_BSS_sizing_annuiCosts_grid'+str(g)+'_scenario'+str(plot_scenario)+'.png', bbox_inches='tight', dpi=dpi)
 
 
-
 eva = load_scenario_data(scenarios)
 
 boxplot_diff_costs_reven_HH(eva)
 boxplot_diff_costs_reven_ECM(eva)
+boxplot_diff_costs_reven_CBSS(eva)
 bar_revenue_costs_HH(eva)
 #bar_revenue_costs_HH_each_HH(eva)
 bar_revenue_costs_ECM(eva)
+bar_revenue_costs_CBSS(eva)
 
 cd = get_component_data(scenarios, time_scope_all_seasons)
+
+calculate_bss_capacity(cd, scenarios, grids=[7,8,9,10,11])
 
 plot_dot_anu_costs_over_component_data(eva, cd)
 plot_anu_costs_over_component_data(eva, cd)

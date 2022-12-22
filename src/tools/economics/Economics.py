@@ -847,6 +847,7 @@ class MainEconomics():
 
     E_invest_HH = pd.DataFrame(index=self.component_parameter.index)
     E_invest_ECM = pd.DataFrame(index=[0])
+    E_invest_CBSS = pd.DataFrame(index=[0])
 
     ### HH ###
     # PV #
@@ -865,11 +866,11 @@ class MainEconomics():
     anf_sgr = calculate_anf(investment_costs['intrest_rate'], investment_costs['smart_grid_lifespan'])
     E_invest_HH['SG_capex'] = investment_costs['smart_grid'] * anf_sgr if self.scenario[0] in [7, 8] else 0.
 
-    ### ECM ###
-    # BSS #
-    anf_bss_ECM = calculate_anf(investment_costs['intrest_rate'], investment_costs['battery_lifespan'])
-    E_invest_ECM['BSS_capex'] = self.component_parameter['BSS_energy'].sum()*1000 * investment_costs['battery_ECM'] * anf_bss_ECM if self.scenario[2] in [4, 5] else 0.
+    ### CBSS ###
+    anf_bss_CBSS = calculate_anf(investment_costs['intrest_rate'], investment_costs['battery_lifespan'])
+    E_invest_CBSS['BSS_capex'] = self.component_parameter['BSS_energy'].sum()*1000 * investment_costs['battery_CBSS'] * anf_bss_CBSS if self.scenario[2] in [4, 5] else 0.
 
+    ### ECM ###
     # Grid #
     anf_grid_ECM = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
     costs_lines, costs_trafo = self.get_grid_reinforcment_costs(include_grid_reinforce)
@@ -878,6 +879,7 @@ class MainEconomics():
 
     E_invest_HH.round(2).to_csv(self.economics_folder + '01_invest_per_HH_in_Euro.csv', header=True, index = True)
     E_invest_ECM.round(2).to_csv(self.economics_folder + '01_invest_ECM_in_Euro.csv', header=True, index = True)
+    E_invest_CBSS.round(2).to_csv(self.economics_folder + '01_invest_CBSS_in_Euro.csv', header=True, index = True)
 
 
   def get_grid_reinforcment_costs(self, include_grid_reinforce):
@@ -902,9 +904,11 @@ class MainEconomics():
   def determine_operational_expanses(self):
     E_invest_HH = pd.read_csv(self.economics_folder + '01_invest_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
     E_invest_ECM = pd.read_csv(self.economics_folder + '01_invest_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_invest_CBSS = pd.read_csv(self.economics_folder + '01_invest_CBSS_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
     E_opex_HH = pd.DataFrame(index=self.component_parameter.index)
     E_opex_ECM = pd.DataFrame(index=[0])
+    E_opex_CBSS = pd.DataFrame(index=[0])
 
     percent = parameter_economics.operating_costs['percent']
 
@@ -921,16 +925,17 @@ class MainEconomics():
     # smart consumers #
     E_opex_HH['SG_opex'] = E_invest_HH['SG_capex'] * percent
 
-    ### ECM ###
-    # BSS #
-    E_opex_ECM['BSS_opex'] = E_invest_ECM['BSS_capex'] * percent
+    ### CBSS ###
+    E_opex_CBSS['BSS_opex'] = E_invest_CBSS['BSS_capex'] * percent
 
+    ### ECM ###
     # Grid #
     E_opex_ECM['Grid_Lines_opex'] = E_invest_ECM['Grid_Lines_capex'] * percent
     E_opex_ECM['Grid_Trafo_opex'] = E_invest_ECM['Grid_Trafo_capex'] * percent
 
     E_opex_HH.round(2).to_csv(self.economics_folder + '02_opex_per_HH_in_Euro.csv', header=True, index = True)
     E_opex_ECM.round(2).to_csv(self.economics_folder + '02_opex_EMC_in_Euro.csv', header=True, index = True)
+    E_opex_CBSS.round(2).to_csv(self.economics_folder + '02_opex_CBSS_in_Euro.csv', header=True, index = True)
 
 
   ########################################
@@ -1106,10 +1111,19 @@ class MainEconomics():
       'flex_self' : 0,
       'curtailed_load' : 0,
       'curtailed_pv' : 0,
-      'bss_LV_costs' : 0,
+      #'bss_LV_costs' : 0,
     }
+
     EC_reven = {
       'grid_charges' : 0,
+      #'bss_LV_reven' : 0,
+    }
+
+    ECBSS_costs = {
+       'bss_LV_costs' : 0,
+    }
+
+    ECBSS_reven = {
       'bss_LV_reven' : 0,
     }
 
@@ -1223,8 +1237,8 @@ class MainEconomics():
     '''
 
     # For ECM, only with community storage
-    EC_costs['bss_LV_costs'] = (Ec_LV_ECM * p_t).sum().values
-    EC_reven['bss_LV_reven'] = (Eg_LV_ECM * p_t).sum().values
+    ECBSS_costs['bss_LV_costs'] = (Ec_LV_ECM * p_t).sum().values
+    ECBSS_reven['bss_LV_reven'] = (Eg_LV_ECM * p_t).sum().values
 
     # Put all together in a DataFrame and save it
     E_costs = pd.DataFrame(index=E.index)
@@ -1250,6 +1264,10 @@ class MainEconomics():
     EC_costs.round(3).to_csv(self.economics_folder + '03_Costs_ECM_in_Euro.csv', header=True, index = True)
     EC_reven = pd.DataFrame(data=EC_reven, index=[0])
     EC_reven.round(3).to_csv(self.economics_folder + '03_Revenues_ECM_in_Euro.csv', header=True, index = True)
+    ECBSS_costs = pd.DataFrame(data=ECBSS_costs, index=[0])
+    ECBSS_costs.round(3).to_csv(self.economics_folder + '03_Costs_CBSS_in_Euro.csv', header=True, index = True)
+    ECBSS_reven = pd.DataFrame(data=ECBSS_reven, index=[0])
+    ECBSS_reven.round(3).to_csv(self.economics_folder + '03_Revenues_CBSS_in_Euro.csv', header=True, index = True)
 
 
   ########################################
@@ -1309,14 +1327,18 @@ class MainEconomics():
     plt.show()
 
   def write_to_conclusion_table(self):
-    capex_ECM = pd.read_csv(self.economics_folder + '01_invest_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
     capex_HH = pd.read_csv(self.economics_folder + '01_invest_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
-    opex_ECM = pd.read_csv(self.economics_folder + '02_opex_EMC_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    capex_ECM = pd.read_csv(self.economics_folder + '01_invest_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    capex_CBSS = pd.read_csv(self.economics_folder + '01_invest_CBSS_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
     opex_HH = pd.read_csv(self.economics_folder + '02_opex_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
-    E_costs_ECM = pd.read_csv(self.economics_folder + '03_Costs_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
-    E_reven_ECM = pd.read_csv(self.economics_folder + '03_Revenues_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    opex_ECM = pd.read_csv(self.economics_folder + '02_opex_EMC_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    opex_CBSS = pd.read_csv(self.economics_folder + '02_opex_CBSS_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
     E_costs_HH = pd.read_csv(self.economics_folder + '03_Costs_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
     E_reven_HH = pd.read_csv(self.economics_folder + '03_Revenues_per_HH_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_costs_ECM = pd.read_csv(self.economics_folder + '03_Costs_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_reven_ECM = pd.read_csv(self.economics_folder + '03_Revenues_ECM_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_costs_CBSS = pd.read_csv(self.economics_folder + '03_Costs_CBSS_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+    E_reven_CBSS = pd.read_csv(self.economics_folder + '03_Revenues_CBSS_in_Euro.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
 
     #print(self.scenario)
     C_HH = pd.DataFrame()
@@ -1331,10 +1353,17 @@ class MainEconomics():
     C_ECM['E_costs'] = -E_costs_ECM.sum(axis=1)
     C_ECM['E_reven'] = E_reven_ECM.sum(axis=1)
 
+    C_CBSS = pd.DataFrame()
+    C_CBSS = pd.concat([C_CBSS, -capex_CBSS], axis=1)
+    C_CBSS = pd.concat([C_CBSS, -opex_CBSS], axis=1)
+    C_CBSS['E_costs'] = -E_costs_CBSS.sum(axis=1)
+    C_CBSS['E_reven'] = E_reven_CBSS.sum(axis=1)
+
     #print(C_HH)
     #print(C_HH.sum(axis=1))
     #print(C_HH.sum(axis=1).sum())
     C_HH.round(3).to_csv(self.economics_folder + '10_conclusion_economics_HH.csv', header=True, index = True)
     C_ECM.round(3).to_csv(self.economics_folder + '10_conclusion_economics_ECM.csv', header=True, index = True)
+    C_CBSS.round(3).to_csv(self.economics_folder + '10_conclusion_economics_CBSS.csv', header=True, index = True)
 
     
