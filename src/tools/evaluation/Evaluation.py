@@ -87,6 +87,248 @@ def calculate_outputdata(eva, scenarios, grid, save_fig_dir=None):
   print(' summer   : ' + str(power_summer.sum().pv/power_summer.sum().load_sum))
   print(' winter   : ' + str(power_winter.sum().pv/power_winter.sum().load_sum))
 
+def plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
+  seasons = ['spring', 'summer', 'autumn', 'winter']
+  pvs = ['pv_small', 'pv_medium', 'pv_large']
+  tes = ['tes_small', 'tes_medium', 'tes_large']
+  
+  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
+  interp_pv = {'0' : 'pv_small', '3' : 'pv_medium', '1' : 'pv_large'}
+  interp_tes = {'6' : 'tes_small', '7' : 'tes_medium', '8' : 'tes_large'}
+
+  evaluation_criteria = 'SelfSufficiancy'
+  
+  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+
+  #############################
+  ### Define all SFHs names ###
+  sfh_name = ["SFH15", 	#A
+              "SFH45", 	#B
+              "SFH100" ] 	#C
+  ############################
+
+  for index in eva:
+    if 'A006' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_small', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'A306' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_medium', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'A106' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_large', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'A007' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_small', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'A307' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_medium', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'A107' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_large', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'A008' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_small', 'tes_large'] = eva[index][evaluation_criteria]
+    if 'A308' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_medium', 'tes_large'] = eva[index][evaluation_criteria]
+    if 'A108' in str(eva[index]['scenario']):
+      df_sfh15.at['pv_large', 'tes_large'] = eva[index][evaluation_criteria]
+    
+    if 'B006' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_small', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'B306' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_medium', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'B106' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_large', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'B007' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_small', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'B307' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_medium', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'B107' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_large', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'B008' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_small', 'tes_large'] = eva[index][evaluation_criteria]
+    if 'B308' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_medium', 'tes_large'] = eva[index][evaluation_criteria]
+    if 'B108' in str(eva[index]['scenario']):
+      df_sfh45.at['pv_large', 'tes_large'] = eva[index][evaluation_criteria]
+    
+    if 'C006' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_small', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'C306' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_medium', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'C106' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_large', 'tes_small'] = eva[index][evaluation_criteria]
+    if 'C007' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_small', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'C307' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_medium', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'C107' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_large', 'tes_medium'] = eva[index][evaluation_criteria]
+    if 'C008' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_small', 'tes_large'] = eva[index][evaluation_criteria]
+    if 'C308' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_medium', 'tes_large'] = eva[index][evaluation_criteria]
+    if 'C108' in str(eva[index]['scenario']):
+      df_sfh100.at['pv_large', 'tes_large'] = eva[index][evaluation_criteria]
+  
+  print(df_sfh15.round(2))  
+  print(df_sfh45.round(2))  
+  print(df_sfh100.round(2))  
+          
+  vmax = 100
+  vmin = 0
+  
+  if lan == 'EN':
+    x_ticklabels = tes
+  elif lan == 'DE':
+      x_ticklabels = tes
+
+
+  
+  fig, axes = plt.subplots(3, 1, figsize=(3.7, 4))
+  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[0])
+  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
+  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
+  axes[0].set_title('Self_Suff SFH15 in [%]')
+  axes[0].set(ylabel='sizing PV', xlabel='sizing TES')
+  axes[1].set_title('Self_Suff SFH45  in [%]')
+  axes[1].set(ylabel='sizing PV', xlabel='sizing TES')
+  axes[2].set_title('Self_Suff SFH100 in [%]')
+  axes[2].set(ylabel='sizing PV', xlabel='sizing TES')
+  fig.tight_layout()
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
+
+def plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
+  seasons = ['spring', 'summer', 'autumn', 'winter']
+  pvs = ['pv_small', 'pv_medium', 'pv_large']
+  tes = ['tes_small', 'tes_medium', 'tes_large']
+  
+  evaluation_criteria = 'curtailed_power'
+  
+  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+
+  #############################
+  ### Define all SFHs names ###
+  sfh_name = ["SFH15", 	#A
+              "SFH45", 	#B
+              "SFH100" ] 	#C
+  ############################
+
+  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
+  interp_pv = {'0' : 'pv_small', '3' : 'pv_medium', '1' : 'pv_large'}
+  interp_tes = {'6' : 'tes_small', '7' : 'tes_medium', '8' : 'tes_large'}
+  
+  for index_eva in eva:
+    for index_pv in interp_pv:
+      for index_tes in interp_tes:
+        if 'A' in eva[index_eva]['scenario']:
+          df_sfh15.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
+                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
+                        = eva[index_eva][evaluation_criteria]['load'].sum()
+        
+        if 'B' in eva[index_eva]['scenario']:
+          df_sfh45.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
+                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
+                        = eva[index_eva][evaluation_criteria]['load'].sum()
+        
+        if 'C' in eva[index_eva]['scenario']:
+          df_sfh100.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
+                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
+                        = eva[index_eva][evaluation_criteria]['load'].sum()
+  
+  print(df_sfh15.round(2))  
+  print(df_sfh45.round(2))  
+  print(df_sfh100.round(2))  
+          
+  vmax = 100
+  vmin = 0
+  
+  if lan == 'EN':
+    x_ticklabels = tes
+  elif lan == 'DE':
+      x_ticklabels = tes
+
+
+  
+  fig, axes = plt.subplots(3, 1, figsize=(3.7, 4))
+  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[0])
+  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
+  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
+  axes[0].set_title('Curtailed Load SFH15 in [MWh]')
+  axes[0].set(ylabel='sizing PV', xlabel='sizing TES')
+  axes[1].set_title('Curtailed Load  SFH45 in [MWh]')
+  axes[1].set(ylabel='sizing PV', xlabel='sizing TES')
+  axes[2].set_title('Curtailed Load  SFH100 in [MWh]')
+  axes[2].set(ylabel='sizing PV', xlabel='sizing TES')
+  fig.tight_layout()
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
+
+def plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
+  seasons = ['spring', 'summer', 'autumn', 'winter']
+  pvs = ['pv_small', 'pv_medium', 'pv_large']
+  tes = ['tes_small', 'tes_medium', 'tes_large']
+  
+  evaluation_criteria = 'tl'     #trafo_load
+  
+  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
+
+  #############################
+  ### Define all SFHs names ###
+  sfh_name = ["SFH15", 	#A
+              "SFH45", 	#B
+              "SFH100" ] 	#C
+  ############################
+
+  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
+  interp_pv = {'0' : 'pv_small', '3' : 'pv_medium', '1' : 'pv_large'}
+  interp_tes = {'6' : 'tes_small', '7' : 'tes_medium', '8' : 'tes_large'}
+  
+  for index_eva in eva:
+    for index_pv in interp_pv:
+      for index_tes in interp_tes:
+        if 'A' in eva[index_eva]['scenario']:
+          df_sfh15.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
+                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
+                        = eva[index_eva][evaluation_criteria]['0'].mean()
+        
+        if 'B' in eva[index_eva]['scenario']:
+          df_sfh45.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
+                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
+                        = eva[index_eva][evaluation_criteria]['0'].mean()
+        
+        if 'C' in eva[index_eva]['scenario']:
+          df_sfh100.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
+                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
+                        = eva[index_eva][evaluation_criteria]['0'].mean()
+  
+  vmax = 100
+  vmin = 0
+  
+  if lan == 'EN':
+    x_ticklabels = tes
+  elif lan == 'DE':
+      x_ticklabels = tes
+  
+  fig, axes = plt.subplots(3, 1, figsize=(3.7, 4))
+  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[0])
+  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
+  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
+  axes[0].set_title('Trafo_load SFH15 in [%]')
+  axes[0].set(ylabel='sizing PV', xlabel='sizing TES')
+  axes[1].set_title('Trafo_load SFH45 in [%]')
+  axes[1].set(ylabel='sizing PV', xlabel='sizing TES')
+  axes[2].set_title('Trafo_load SFH100 in [%]')
+  axes[2].set(ylabel='sizing PV', xlabel='sizing TES')
+  fig.tight_layout()
+  
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
+        
+
 ### Output plots ###
 def plot_generation_consumption_as_heat_map_overall_eva(power, save_fig_dir=None):
 
@@ -507,8 +749,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
   time2 = power_2.index
   time3 = power_3.index
 
-  day1 = 3
-  day2 = 3
+  day1 = 4
+  day2 = 5
   '''
   time_min_1 = time1[(day1-1)*24*60]
   time_max_1 = time1[(day2)*24*60-1]
@@ -1651,6 +1893,7 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
      plt.savefig(save_fig_dir + 'heatmap_subplot_pv_consumption_self_sufficiancy.png', bbox_inches='tight', dpi=dpi)
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
   
+
 
 def plot_heatmap_self_sufficiency_per_season(eva, scenario, net_name, save_fig_dir=None):
   seasons = ['spring', 'summer', 'autumn', 'winter']

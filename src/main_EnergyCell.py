@@ -116,7 +116,7 @@ time_scope_all_seasons = [
 '''
 
 #time_scope = time_scope
-#time_scope = time_scope_winter
+time_scope = time_scope_all_seasons
 ###########################################
 
 #######################
@@ -285,8 +285,9 @@ def run_single_simulation():
 def run_multiple_simulations(scenarios):
   start = time.perf_counter()
   i = 1
-  #for time_scope_i in [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring]:
-  for time_scope_i in [time_scope_winter]:
+  for time_scope_i in [time_scope_winter, time_scope_summer, \
+	time_scope_autumn, time_scope_spring]:
+  #for time_scope_i in [time_scope_winter]:
     for net_name_i in [8]:
       for scenario_i in scenarios:
         print(' ')
@@ -345,8 +346,8 @@ def run_output_data_conversion(scenarios):
                                  #net_names = [7, 8, 9, 10, 11],
                                  net_names = [8],
                                  scenarios = scenarios,#[[4,1,0,1,1,1,0]],
-                                 #time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
-                                 time_scopes = [time_scope_winter])
+                                 time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
+                                 #time_scopes = [time_scope_winter])
 
   print('Done')
 ####################################
@@ -390,51 +391,42 @@ def run_economics(scenarios):
 
 #######################
 scenarios = [
-        #[1,0,0,0,0,0,0],
-        #[2,0,0,1,1,0,0],
-        #[2,0,0,1,1,1,0],
-        #[3,1,0,0,0,0,0],
-        #[3,1,0,0,0,1,0],
-        #[4,1,0,1,1,0,1],
-        #[4,1,0,1,1,0,0],
-        #[4,1,0,1,1,1,0],
-        #[6,1,1,1,1,0,0],
-        #[6,1,1,1,1,1,0],
-        #[6,1,2,1,1,0,0],
-        #[6,1,2,1,1,1,0],
-        #[6,1,3,1,1,0,0],
-        #[6,1,3,1,1,1,0],
-        #[6,1,4,1,1,0,0],
-        #[6,1,4,1,1,1,0],
-        #[6,1,5,1,1,0,0],
-        #[6,1,5,1,1,1,0],
-        #[7,1,0,3,3,0,0],
-        #[7,1,0,3,3,1,0],
-        #[8,1,3,3,3,0,0],
-        #[8,1,3,3,3,1,0],
-        #[8,1,3,3,3,1,1],
-        #[8,1,4,3,3,1,0],
-        #[8,1,4,3,3,1,1],
-        #['A',1,0,3,1,1,0],
-        #['B',1,0,3,1,1,0],
-        #['A',1,0,6,1,1,0],
-        #['A',1,0,7,1,1,0],
-        #['A',1,0,8,1,1,0],
-        #['B',1,0,6,1,1,0],
-        #['B',1,0,7,1,1,0],
-        #['B',1,0,8,1,1,0],
-        #['C',1,0,6,1,1,0],
-        #['C',1,0,7,1,1,0],
-        ['C',0,0,8,1,1,0],
-        ['C',1,0,8,1,1,0],
-        ['C',3,0,8,1,1,0],
+        ##SFH15
+        ['A',0,0,6,0,1,0],
+        ['A',1,0,6,0,1,0],
+        ['A',3,0,6,0,1,0],
+        ['A',0,0,7,0,1,0],
+        ['A',1,0,7,0,1,0],
+        ['A',3,0,7,0,1,0],
+        ['A',0,0,8,0,1,0],
+        ['A',1,0,8,0,1,0],
+        ['A',3,0,8,0,1,0],
+        ##SFH45
+        ['B',0,0,6,0,1,0],
+        ['B',1,0,6,0,1,0],
+        ['B',3,0,6,0,1,0],
+        ['B',0,0,7,0,1,0],
+        ['B',1,0,7,0,1,0],
+        ['B',3,0,7,0,1,0],
+        ['B',0,0,8,0,1,0],
+        ['B',1,0,8,0,1,0],
+        ['B',3,0,8,0,1,0],
+        ##SFH100
+        ['C',0,0,6,0,1,0],
+        ['C',1,0,6,0,1,0],
+        ['C',3,0,6,0,1,0],
+        ['C',0,0,7,0,1,0],
+        ['C',1,0,7,0,1,0],
+        ['C',3,0,7,0,1,0],
+        ['C',0,0,8,0,1,0],
+        ['C',1,0,8,0,1,0],
+        ['C',3,0,8,0,1,0],
             ]
 
 
 #run_single_simulation()
-run_multiple_simulations(scenarios)
+#run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-#run_output_data_conversion(scenarios)
+run_output_data_conversion(scenarios)
 #run_economics(scenarios)
->>>>>>> b5b0ccaba383cba2f011ee7b1d5461adca3b28b3
 #######################
