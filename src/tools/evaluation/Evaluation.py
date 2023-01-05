@@ -33,7 +33,7 @@ fig_x, fig_y = 5., 2.
 image_format = 'png'
 dpi = 500
 
-lan = 'EN' # 'EN', 'DE'
+lan = 'DE' # 'EN', 'DE'
 
 if lan == 'DE':
   y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
@@ -342,7 +342,7 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
   tl_max = [tl_summer.T.max().T, tl_winter.T.max().T]
   power_sum = [power_summer, power_winter]
 
-  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 2, figsize=(8,10), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 2, figsize=(12,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]}) #(8,10)
   for i in [0, 1]:
     #res
     storage_sum = storage[i].sum(axis=1)
@@ -447,8 +447,8 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
         ax3[1].legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       ax2[0].set_xlabel('Uhrzeit')
       ax2[1].set_xlabel('Uhrzeit')
-      ax1[0].set_ylabel('Spannung\nin p.u.')
-      ax2[0].set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.')
+      ax1[0].set_ylabel('Spannung\nin p.u.\n')
+      ax2[0].set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
       ax3[0].set_ylabel('Leistung\nin MW')
     elif lan == 'EN':
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})

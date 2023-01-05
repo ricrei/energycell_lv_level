@@ -21,6 +21,24 @@ import tools.tools as tt
 import bz2
 import _pickle as cPickle
 
+lan = 'DE' # 'EN', 'DE'
+
+SMALL_SIZE = 8
+MEDIUM_SIZE = 10
+BIGGER_SIZE = 12
+
+plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+# Latex font
+mpl.rcParams['mathtext.fontset'] = 'stix'
+mpl.rcParams['font.family'] = 'STIXGeneral'
+
 #######################
 time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
                       'end_time'   : '2017-01-10 00:00:00+01:00',
@@ -77,11 +95,11 @@ scenarios = [
         [7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
         [8,1,3,3,3,1,0],
-        [8,1,3,3,3,1,1],
-        [8,1,4,3,3,1,0],
-        [8,1,4,3,3,1,1],
-        [9,1,3,3,3,1,0],
-        [9,1,3,3,3,1,1],
+        #[8,1,3,3,3,1,1],
+        #[8,1,4,3,3,1,0],
+        #[8,1,4,3,3,1,1],
+        #[9,1,3,3,3,1,0],
+        #[9,1,3,3,3,1,1],
                       ]
 #############################
 ### Define all gird names ###
@@ -110,6 +128,19 @@ scenario_names = {
   '6131110' : '6\nHBSS',
   '7103310' : '7\nFlexC',
   '8133310' : '8\nHBSS+\nFlexC',
+  '8133311' : '8\nHBSS+\nFlexC+\nGridRein',
+  '8143310' : '8\nCBSS+\nFlexC',
+  '8143311' : '8\nCBSS+\nFlexC+\nGridRein',
+  '9133310' : '9\nHBSS+\nFlexC',
+  '9133311' : '9\nHBSS+\nFlexC+\nGridRein',
+}
+
+scenario_names = {
+  '4101110' : '1. Referenz',
+  '4101101' : '2. Netzausbau',
+  '6131110' : '3. Heimspeicher',
+  '7103310' : '4. Smarte\nVerbraucher',
+  '8133310' : '5. Heimspeicher +\nsmarte Verbraucher',
   '8133311' : '8\nHBSS+\nFlexC+\nGridRein',
   '8143310' : '8\nCBSS+\nFlexC',
   '8143311' : '8\nCBSS+\nFlexC+\nGridRein',
@@ -251,9 +282,13 @@ def boxplot_diff_costs_reven_HH(eva, save_fig_dir=save_fig_dir):
   df_sns = rename_scenarios(df_sns.reset_index())
 
   #'''
-  fig1, ax1 = plt.subplots()
+  fig1, ax1 = plt.subplots(figsize=(5,5))
   sns.boxplot(data=df_sns, y='data_diff', x='scenario', orient='v')
-  ax1.set(xlabel='Scenario', ylabel='Difference of annualized costs in euro per year')
+  plt.xticks(rotation = 90) # Rotates X-Axis Ticks by 45-degrees
+  if lan == 'DE':
+    ax1.set(xlabel='Szenario', ylabel='Differenz der annualisierten Kosten/Erlöse\nzum Referenzszenario in Euro')
+  else:
+    ax1.set(xlabel='Scenario', ylabel='Difference of annualized costs in euro per year')
   ax1.set_title(' ')
   
   if save_fig_dir is not None:
@@ -1281,18 +1316,18 @@ def evaluate_bss_sizing(eva, cd):
 eva = load_scenario_data(scenarios)
 
 boxplot_diff_costs_reven_HH(eva)
-boxplot_diff_costs_reven_ECM(eva)
-boxplot_diff_costs_reven_CBSS(eva)
-bar_revenue_costs_HH(eva)
+#boxplot_diff_costs_reven_ECM(eva)
+#boxplot_diff_costs_reven_CBSS(eva)
+#bar_revenue_costs_HH(eva)
 #bar_revenue_costs_HH_each_HH(eva)
-bar_revenue_costs_ECM(eva)
-bar_revenue_costs_CBSS(eva)
+#bar_revenue_costs_ECM(eva)
+#bar_revenue_costs_CBSS(eva)
 
-cd = get_component_data(scenarios, time_scope_all_seasons)
+#cd = get_component_data(scenarios, time_scope_all_seasons)
 
-calculate_bss_capacity(cd, scenarios, grids=[7,8,9,10,11])
+#calculate_bss_capacity(cd, scenarios, grids=[7,8,9,10,11])
 
-plot_dot_anu_costs_over_component_data(eva, cd)
-plot_anu_costs_over_component_data(eva, cd)
-evaluate_bss_sizing(eva, cd)
+#plot_dot_anu_costs_over_component_data(eva, cd)
+#plot_anu_costs_over_component_data(eva, cd)
+#evaluate_bss_sizing(eva, cd)
 
