@@ -49,7 +49,6 @@ class EnergyCell():
 
         self.controls = self.scenario_interpreter(scenario)
         self.net_name = net_name
-        self.control_parameter = control_parameter
 
         self.time_scope = time_scope
         self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
@@ -59,6 +58,14 @@ class EnergyCell():
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
         self.grid = Grid(self.net_name, self.scenario, self.time_scope)
+
+        if (self.grid.category == 'rural') or (self.grid.category == 'suburban'):
+          control_parameter['NEP']['ev'] = control_parameter['NEP']['ev_rsu']
+        elif (self.grid.category == 'urban'):
+          control_parameter['NEP']['ev'] = control_parameter['NEP']['ev_urb']
+        else:
+          print('WARNING: Wrong selg.grid.category defined!')
+        self.control_parameter = control_parameter
 
         self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
         self.pv_creator = PVcreator(self.input_data_handler.inputfolder, self.control_parameter)

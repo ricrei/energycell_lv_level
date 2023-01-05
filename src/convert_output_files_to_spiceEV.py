@@ -61,7 +61,7 @@ def read_data(filename):
     return data
 
 for time in [time_scope_winter_15T, time_scope_summer_15T, time_scope_autumn_15T, time_scope_spring_15T]:
-  for scenario in [['C',1,1,1,0,0,0]]:
+  for scenario in [['A',1,0,1,0,0,0], ['B',1,0,1,0,0,0], ['C',1,0,1,0,0,0]]:
     for net_number in [7, 8, 9, 10, 11]:
 
       input_dir = os.path.join("./", "output-files/"+''.join(str(num) for num in scenario)+"/"+str(net_name[net_number])+"/"+time['start_time'][0:10]+"_"+time['end_time'][0:10]+"_"+time['t_freq']+"/")

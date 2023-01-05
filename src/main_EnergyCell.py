@@ -171,7 +171,7 @@ scenario = [
   1, # PV, 0-2
   0, # BSS, 0-5
   1, # HP, 0-5
-  4, # EV, 0-3
+  0, # EV, 0-3
   0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -233,7 +233,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 11
 ######################
 
 #############################
@@ -435,13 +435,13 @@ scenarios = [
         #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
-        #[A,1,1,1,0,0,0],
-        #[B,1,1,1,0,0,0],
-        [C,1,1,1,0,0,0],
+        [A,1,0,1,0,0,0],
+        [B,1,0,1,0,0,0],
+        [C,1,0,1,0,0,0],
                       ]
 
-run_single_simulation()
-#run_multiple_simulations(scenarios)
+#run_single_simulation()
+run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
 #run_economics(scenarios)
