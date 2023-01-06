@@ -1551,6 +1551,8 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
     ax[1].set(xlabel='Szenario', ylabel='')
     ax[0].set_title('Abgeregelte Last in %')
     ax[1].set_title('Abgeregelte PV Energie in %')
+    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=90) 
+    ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=90) 
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00d_subplot_heatmap_curtailed_power_load.png', bbox_inches='tight', dpi=dpi)
@@ -1626,6 +1628,9 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   ax[0].set_yticklabels(y_ticklabels)
   ax[1].set_xticklabels(x_ticklabels)
   ax[1].set_yticklabels(y_ticklabels)
+  ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=90) 
+  ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=90) 
+
   if lan == 'EN':
     ax[0].set(xlabel='Scenario', ylabel='Grid')
     ax[1].set(xlabel='Scenario', ylabel='')

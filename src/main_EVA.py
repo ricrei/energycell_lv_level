@@ -173,11 +173,11 @@ evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenar
 #scenarios = ['1000000', '2001110', '3100010', '4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310']
 #scenarios = ['4101110', '6111110', '6121110', '6131110', '6141110', '6151110']
 #scenarios = ['4101110', '6131110', '7103310', '8133310', '9133310']
-scenarios = ['4101110', '4101101', '6131110', '7103310', '8133310']
+scenarios = ['4101110', '6131110', '7103310', '8133310']
 eva = load_scenario_data(scenarios)
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], save_fig_dir=save_fig_dir+'0')
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '6111110', '6121110', '6131110', '6141110', '6151110'], x_ticklabels = ['Reference', 'd-HBSS', 'p-HBSS', 'pc-HBSS', 'pc-CBSS-LVBB', 'pc-CBSS-line'], save_fig_dir=save_fig_dir+'1')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '4101101', '6131110', '7103310', '8133310'], x_ticklabels = ['1. Referenz', '2. Netzausbau', '3. Heimspeicher', '4. Smarte\nVerbraucher', '5. Heimspeicher +\nsmarte Verbraucher'], save_fig_dir=save_fig_dir+'2')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['1. Referenz', '2. Heimspeicher', '3. Flexible\nVerbraucher', '4. Heimspeicher +\nflexible Verbraucher'], save_fig_dir=save_fig_dir+'2')
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['Reference', 'Home\nBSS', 'Smarte\nconsumers', 'BSS +\nsmarte Con.'], save_fig_dir=save_fig_dir+'3')
 #'''
 
@@ -192,7 +192,7 @@ evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['410
 #evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310', '9133310'], x_ticklabels = ['4', '6', '7', '8', '9'], n=n, save_fig_dir=save_fig_dir+'2')
 #evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310'], x_ticklabels = ['4', '5a', '5b', '5c HH', '5c CBSS-LV', '5c CBSS feeder', '6', '7'], n=n, save_fig_dir=save_fig_dir+'3')
 #evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['Reference', 'Home\nBSS', 'Smarte\nconsumers', 'BSS +\nsmarte Con.'], n=n, save_fig_dir=save_fig_dir+'4')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '4101101', '6131110', '7103310', '8133310'], x_ticklabels = ['1. Referenz', '2. Netzausbau', '3. Heimspeicher', '4. Smarte\nVerbraucher', '5. Heimspeicher +\nsmarte Verbraucher'], n=n, save_fig_dir=save_fig_dir+'4')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['1. Referenz', '2. Heimspeicher', '3. Flexible\nVerbraucher', '4. Heimspeicher +\nflexible Verbraucher'], n=n, save_fig_dir=save_fig_dir+'4')
 #'''
 
 # --- Curtailment: PV-Power and Load (Season - Grid) --- #
