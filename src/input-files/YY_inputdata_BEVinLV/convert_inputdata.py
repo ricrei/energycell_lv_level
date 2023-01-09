@@ -50,12 +50,13 @@ batcap_dict = {
   'mini'   : '060kWh',
 }
 
-directory = 'csv/'
+#directory = 'csv/'
+directory = 'neu/'
 
 for (root,dirs,files) in os.walk(directory, topdown=True):
   pass
 
-print(files)
+#print(files)
 
 for f in files:
   if 'rural_1' in f:
@@ -84,14 +85,23 @@ for f in files:
 
   if 'greedy' in f:
     charging_strategy = 'gre'
-  elif 'balanced' in f:
+  elif 'balanced.' in f:
     charging_strategy = 'bal'
   elif 'market' in f:
     charging_strategy = 'mar'
-  elif 'res' in f:
+  elif 'schedule' in f:
     charging_strategy = 'res'
   else:
     print('WARNING: NO charging strategy FOUND!')
+
+  if f[4] == 'A':
+    scenario = 'A'
+  elif f[4] == 'B':
+    scenario = 'B'
+  elif f[4] == 'C':
+    scenario = 'C'
+  else:
+    print('WARNING: NO scenario FOUND!')
 
   #sys.exit(0)
 
@@ -111,4 +121,4 @@ for f in files:
       #df[new_c] += i # test quatsch
       i += 1
 
-  compress_pickle('XX_inputdata_'+season+'/14_ev_load_'+str(region)+'_'+str(season)+'_'+str(charging_strategy)+'.pbz2', df)
+  compress_pickle('XX_inputdata_'+season+'/14_ev_load_'+str(scenario)+'_'+str(region)+'_'+str(season)+'_'+str(charging_strategy)+'.pbz2', df)

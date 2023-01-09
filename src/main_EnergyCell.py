@@ -136,7 +136,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope_autumn_15T
+time_scope = time_scope_winter_15T
 ###########################################
 
 #######################
@@ -169,10 +169,10 @@ C = 'C'
 scenario = [
   C, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
+  1, # BSS, 0-5
   1, # HP, 0-5
-  0, # EV, 0-3
-  0, # Curtailment, 0/1
+  4, # EV, 0-3
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -233,7 +233,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 11
+net_number = 10
 ######################
 
 #############################
@@ -246,7 +246,7 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = True, 		 	# default: False
+                    save_full_data = False, 		 	# default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = False) 	# default: False
 
@@ -435,9 +435,18 @@ scenarios = [
         #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
-        [A,1,0,1,0,0,0],
-        [B,1,0,1,0,0,0],
-        [C,1,0,1,0,0,0],
+        [A,1,1,1,4,1,0],
+        [B,1,1,1,4,1,0],
+        [C,1,1,1,4,1,0],
+        [A,1,1,1,5,1,0],
+        [B,1,1,1,5,1,0],
+        [C,1,1,1,5,1,0],
+        [A,1,1,1,6,1,0],
+        [B,1,1,1,6,1,0],
+        [C,1,1,1,6,1,0],
+        [A,1,1,1,7,1,0],
+        [B,1,1,1,7,1,0],
+        [C,1,1,1,7,1,0],
                       ]
 
 #run_single_simulation()

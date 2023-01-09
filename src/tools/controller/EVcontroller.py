@@ -47,9 +47,8 @@ class EVcontroller:
       else:
         charging_strategy = 'gre'
       if grid.scenario[0] in ['A','B','C']:
-        self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.category)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
+        self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.scenario[0])+'_'+str(grid.category)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
         self.ev_charging_demand = tt.decompress_pickle(self.ev_data_file)
-        self.ev_charging_demand *= control_parameter['NEP']['ev']
 
       ### initilize controller ###
       if (self.control != None):
@@ -144,6 +143,8 @@ class EV_P_control_ev_profile(EV_P_control):
   def pcontrol_direct_charge(self, grid, t, limit):
       ev = grid.net.load.loc[grid.ev_index]
       ev.p_mw = self.ev_charging_demand[ev.type].loc[t].values / 1000 * grid.net.load.ev_amount.loc[grid.ev_index]
+      #print(grid.net.load.ev_amount.loc[grid.ev_index])
+      #sys.exit(0)
 
       return ev
 

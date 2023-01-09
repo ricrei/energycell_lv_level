@@ -27,7 +27,8 @@ class EVcreator:
         charging_strategy = 'gre'
 
       if grid.scenario[0] in ['A','B','C']:
-        self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.category)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
+        self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.scenario[0])+'_'+str(grid.category)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
+        print(self.ev_data_file)
 
       else:
         if (grid.category == 'rural') or (grid.category == 'village'):
@@ -40,7 +41,7 @@ class EVcreator:
           raise ValueError('No valid grid.category defined. Not able to choose EV type.')
 
       self.ev = tt.decompress_pickle(self.ev_data_file)
-      self.ev['ev_000_000kWh_rural'] = 0
+      self.ev['ev_000_000kWh_xxxxx'] = 0
       self.ev_para = {'ev_types' : self.ev.columns}
 
       grid.net.load['ev_c_bat'] = np.nan
@@ -95,6 +96,7 @@ class EVcreator:
                          )
 
           share = n_ev / (n_ev + n_noev)
+          grid.net.load['ev_amount'].loc[index_ev] = 0
 
       grid.net.load['p_mw_flex'] = 0
 
