@@ -113,13 +113,15 @@ scenarios = ['A006010', 'A306010', 'A106010', 'A007010', 'A307010', 'A107010', '
 
 #eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106010n8winter'], eva2=eva['sC107010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_all_tes_3plots.png')
+#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA108010n8winter'], eva2=eva['sB108010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfhs_winter_large_tes_large_pv.png')
 
-eva = load_scenario_data(scenarios, grids=['n8'], seasons=['summer', 'winter', 'spring', 'autumn'])
+
+#eva = load_scenario_data(scenarios, grids=['n8'], seasons=['summer', 'winter', 'spring', 'autumn'])
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC108010n8winter'], eva2=eva['sC108010n8spring'], eva3=eva['sC108010n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_all_seas_large_tes_large_pv.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106010n8spring'], eva2=eva['sC107010n8spring'], eva3=eva['sC108010n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_spring_all_tes_large_pv.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC008010n8winter'], eva2=eva['sC308010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_large_tes_all_pv.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106010n8winter'], eva2=eva['sC107010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_all_tes_large_pv.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA108010n8winter'], eva2=eva['sB108010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfhs_winter_large_tes_large_pv.png')
+#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA108010n8winter'], eva2=eva['sB108010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfhs_winter_large_tes_large_pv.png')
 
 # --- Curtailment: Self-Sufficiancy and PV Consumption (Season - Grid) --- #
 scenario = scenarios
@@ -134,20 +136,20 @@ scenario = scenarios
 #evaluation.plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_curtailed_summer_tes_to_pv.png')
 #evaluation.plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir= save_fig_dir + 'heatmap_mean_trafo_summer_tes_to_pv.png')
 
-eva = load_scenario_data(scenario, seasons=['spring'])
-evaluation.plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_self_suff_spring_tes_to_pv.png')
-evaluation.plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_curtailed_load_spring_tes_to_pv.png')
-evaluation.plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir= save_fig_dir + 'heatmap_mean_trafo_load_spring_tes_to_pv.png')
-
+#eva = load_scenario_data(scenario, seasons=['spring'])
+#evaluation.plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_self_suff_spring_tes_to_pv.png')
+#evaluation.plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_curtailed_load_spring_tes_to_pv.png')
+#evaluation.plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir= save_fig_dir + 'heatmap_mean_trafo_load_spring_tes_to_pv.png')
 
 #eva = load_scenario_data(scenario, seasons=['spring', 'autumn'])
 #evaluation.plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_self_suff_spring_autumn_tes_to_pv.png')
 #evaluation.plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_curtailed_load_spring_autumn_tes_to_pv.png')
 #evaluation.plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir= save_fig_dir + 'heatmap_mean_trafo_load_spring_autumn_tes_to_pv.png')
 
-#eva = load_scenario_data(scenario, seasons=['spring', 'autumn', 'summer', 'winter'])
-#evaluation.plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_self_suff_all_seasons_tes_to_pv.png')
-#evaluation.plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_curtailed_all_seasons_tes_to_pv.png')
+eva = load_scenario_data(scenario, seasons=['spring', 'autumn', 'summer', 'winter'])
+evaluation.plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_self_suff_all_seasons_tes_to_pv.png')
+#evaluation.plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_curtailed_load_all_seasons_tes_to_pv.png')
+#evaluation.plot_heatmap_curtailed_pv_tes_to_pv(eva, scenario, net_name, save_fig_dir=save_fig_dir + 'heatmap_mean_curtailed_pv_all_seasons_tes_to_pv.png')
 #evaluation.plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir= save_fig_dir + 'heatmap_mean_trafo_load_all_seasons_tes_to_pv.png')
 
 

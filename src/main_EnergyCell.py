@@ -175,18 +175,19 @@ control_parameter = {
   'EV_linear_charge_limit' : 90,
   'EV_linear_charge_limit_summer' : 80,
   'HP_cos_phi' : 1,
-  'HP_t_sink' : 50,
+  'HP_t_sink' : 45,     #default sink-temprature
   'HP_t_ground_source' : 8,
+  'HP_max_p_kw': 0.012, # in MW
+  'HP_dp_SFH15_p_kw': 0.0032, # in MW thermal power design point
+  'HP_dp_SFH45_p_kw': 0.0059, # in MW thermal power design point
+  'HP_dp_SFH100_p_kw': 0.0114, # in MW thermal power design point
+  'HP_max_p_oversizing': 1.3, # in MW
   'HP_TES_max_capacity_def_mwh' : .0325,
-  'HP_TES_max_capacity_small_mwh' : .005,
-  'HP_TES_max_capacity_medium_mwh' : .015,
-  'HP_TES_max_capacity_large_mwh' : .0325,
   'HP_building_capacity_mwh' : .014,
   'HP_TES_start_soc' : .5, # 0-1
   'HP_TES_start_soc_winter' : 0.25, # 0-1
   'HP_TES_start_soc_summer' : 0.75, # 0-1
   'HP_TES_loss_per_s' : 0.04 / 86400,   #4% per day / 86400
-  'HP_max_p_kw': 0.012, # in MW
   'HP_upper_TES_reserve': 1., # default = 1
   'HP_lower_TES_reserve': 0., # default = 0 
   'HP_upper_TES_reserve_summer': .5, # default = 1
@@ -286,7 +287,7 @@ def run_multiple_simulations(scenarios):
   start = time.perf_counter()
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer, \
-	time_scope_autumn, time_scope_spring]:
+  	time_scope_autumn, time_scope_spring]:
   #for time_scope_i in [time_scope_winter]:
     for net_name_i in [8]:
       for scenario_i in scenarios:
@@ -297,7 +298,7 @@ def run_multiple_simulations(scenarios):
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
-                          save_full_data = False, # default: False
+                          save_full_data = True,  # default: False
                           verbose = False)        # default: False)
         e.run_pf_timeseries()
         #------------

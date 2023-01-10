@@ -59,6 +59,8 @@ class EvaluationAllCases():
           eva[index]['tl'] = self.read_data(output_dir+'res_trafo_load_percent.csv')
           trafo_p = self.read_data(output_dir+'trafo_active_power_MW.csv')
           losses = self.read_data(output_dir+'losses_active_power_MW.csv')
+          eva[index]['trafo_p'] = self.read_data(output_dir+'trafo_active_power_MW.csv')
+          eva[index]['losses'] = self.read_data(output_dir+'losses_active_power_MW.csv')
           eva[index]['curtailed_power'] = self.calculate_aggregated_curtailed_power(output_dir)
           eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= self.calculate_relevant_outputdata(eva[index]['power'], losses, trafo_p, eva[index]['curtailed_power'])
           eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])

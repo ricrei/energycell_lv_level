@@ -71,15 +71,11 @@ class HP_P_control:
         print('SFH100')
         self.t_sink = self.t_sink_sfh100
       else :
-        print('SFH_defaulz')
-        self.t_sink =  self.t_sink_sfh45
+        print('SFH_default')
+        self.t_sink =  self.control_parameter['HP_t_sink']
 
       #set static sink-temprature und calc delta_T
-      #self.t_sink = control_parameter['HP_t_sink']     ###buidling-side
       self.t_ground_source = control_parameter['HP_t_ground_source']
-      #self.delta_T_ground = self.t_sink[0] - self.t_ground_source
-      #self.COP_ground = 8.77 - 0.15 * self.delta_T_ground + 0.000734 * self.delta_T_ground**2
-
       self.timedelta_charging_delay = 0.125 # in % t_sunset - t
 
   def pcontrol(self):
