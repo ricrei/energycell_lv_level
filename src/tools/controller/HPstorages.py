@@ -83,6 +83,18 @@ class HPstorages():
           print(grid.scenario[0], grid.scenario[3])
           print(self.hp_stor_para['HP_max_p_kw'])
           print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
+          # tes_xlarge
+        elif (grid.scenario[3] == 9) : 
+          ## Sizing VDI 4645: hp_max_p_kw * 40l/kW_th * 3h EVU_Lock * 1.632Wh/(Kg*K) * 10K
+          self.hp_stor_para['hp_TES_max_capacity_mwh'] = \
+            self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing'] \
+              / 1000 * 60 * 3 * 1.632 * 10
+          ## add potable water storage 5kWh
+          self.hp_stor_para['hp_TES_max_capacity_mwh'] += 0.005
+          print('scenario:')
+          print(grid.scenario[0], grid.scenario[3])
+          print(self.hp_stor_para['HP_max_p_kw'])
+          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
         else :
           self.hp_stor_para['hp_TES_max_capacity_mwh'] = control_parameter['HP_TES_max_capacity_def_mwh']
 

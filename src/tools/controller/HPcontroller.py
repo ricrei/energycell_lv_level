@@ -27,6 +27,8 @@ class HPcontroller:
           self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
         elif self.control == 'sg_ready_large_tes':
           self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
+        elif self.control == 'sg_ready_xlarge_tes':
+          self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
       else:
         self.P_controller =  HP_P_control_no_hp(grid, control_parameter)
 

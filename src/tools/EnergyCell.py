@@ -204,7 +204,8 @@ class EnergyCell():
             'residual_load_driven', \
             'sg_ready_small_tes', \
             'sg_ready_medium_tes', \
-            'sg_ready_large_tes' ]
+            'sg_ready_large_tes',
+            'sg_ready_xlarge_tes']
       ev = [None, \
             'direct', \
             'household-oriented_feed-in_damping', \
