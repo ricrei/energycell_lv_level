@@ -80,7 +80,6 @@ scenarios = [
         #[3,1,0,0,0,0,0],
         #[3,1,0,0,0,1,0],
         [4,1,0,1,1,1,0],
-        [4,1,0,1,1,0,1],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
@@ -100,6 +99,7 @@ scenarios = [
         #[8,1,4,3,3,1,1],
         #[9,1,3,3,3,1,0],
         #[9,1,3,3,3,1,1],
+        [4,1,0,1,1,0,1],
                       ]
 #############################
 ### Define all gird names ###
@@ -137,10 +137,10 @@ scenario_names = {
 
 scenario_names = {
   '4101110' : '1. Referenz',
-  '4101101' : '2. Netzausbau',
-  '6131110' : '3. Heimspeicher',
-  '7103310' : '4. Smarte\nVerbraucher',
-  '8133310' : '5. Heimspeicher +\nsmarte Verbraucher',
+  '4101101' : '5. Netzausbau',
+  '6131110' : '2. Heimspeicher',
+  '7103310' : '3. Smarte\nVerbraucher',
+  '8133310' : '4. Heimspeicher +\nsmarte Verbraucher',
   '8133311' : '8\nHBSS+\nFlexC+\nGridRein',
   '8143310' : '8\nCBSS+\nFlexC',
   '8143311' : '8\nCBSS+\nFlexC+\nGridRein',
