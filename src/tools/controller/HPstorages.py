@@ -49,7 +49,7 @@ class HPstorages():
         # default
         else :
           self.hp_stor_para['HP_max_p_kw'] = control_parameter['HP_max_p_kw'], #0.012, # in MW
-          
+        
         ## choose size of tes due to hp scenario digit
         # tes_small
         if (grid.scenario[3] == 6) :

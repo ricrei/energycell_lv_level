@@ -89,7 +89,7 @@ def calculate_outputdata(eva, scenarios, grid, save_fig_dir=None):
 
 def plot_heatmap_self_consumption_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
   pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['TES_mikro', 'TES_mini', 'TES_normal', 'TES_maxi']
+  tes = ['TES_mikro', 'TES_normal', 'TES_maxi']
   
   interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
   interp_pv  = {'0' : pvs[0], \
@@ -97,8 +97,7 @@ def plot_heatmap_self_consumption_tes_to_pv(eva, scenario, net_name, save_fig_di
                 '1' : pvs[2]}
   interp_tes = {'6' : tes[0], \
                 '7' : tes[1], \
-                '8' : tes[2], 
-                '9' : tes[3]}
+                '8' : tes[2] }
   
   df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
   df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
@@ -169,11 +168,11 @@ def plot_heatmap_self_consumption_tes_to_pv(eva, scenario, net_name, save_fig_di
   sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
   sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
   axes[0].set_title('Eigenverbrauchsgrad SFH15 in %')
-  axes[0].set(ylabel='', xlabel='')
+  axes[0].set(ylabel='SFH15', xlabel='')
   axes[1].set_title('Eigenverbrauchsgrad SFH45  in %')
-  axes[1].set(ylabel='', xlabel='')
+  axes[1].set(ylabel='SFH45', xlabel='')
   axes[2].set_title('Eigenverbrauchsgrad SFH100 in %')
-  axes[2].set(ylabel='', xlabel='')
+  axes[2].set(ylabel='SFH100', xlabel='')
   fig.tight_layout()
   
   if save_fig_dir is not None:
@@ -181,7 +180,7 @@ def plot_heatmap_self_consumption_tes_to_pv(eva, scenario, net_name, save_fig_di
 
 def plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
   pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['TES_mikro', 'TES_mini', 'TES_normal', 'TES_maxi']
+  tes = ['TES_mikro', 'TES_normal', 'TES_maxi']
   
   interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
   interp_pv  = {'0' : pvs[0], \
@@ -189,8 +188,7 @@ def plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_di
                 '1' : pvs[2]}
   interp_tes = {'6' : tes[0], \
                 '7' : tes[1], \
-                '8' : tes[2], 
-                '9' : tes[3]}
+                '8' : tes[2] }
   
   df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
   df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
@@ -265,11 +263,11 @@ def plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_di
   sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
   sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
   axes[0].set_title('Autarkiegrad SFH15 in %')
-  axes[0].set(ylabel='', xlabel='')
+  axes[0].set(ylabel='SFH15', xlabel='')
   axes[1].set_title('Autarkiegrad SFH45  in %')
-  axes[1].set(ylabel='', xlabel='')
+  axes[1].set(ylabel='SFH45', xlabel='')
   axes[2].set_title('Autarkiegrad SFH100 in %')
-  axes[2].set(ylabel='', xlabel='')
+  axes[2].set(ylabel='SFH100', xlabel='')
   fig.tight_layout()
   
   if save_fig_dir is not None:
@@ -277,7 +275,7 @@ def plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_di
 
 def plot_heatmap_curtailed_pv_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
   pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['TES_mikro', 'TES_mini', 'TES_normal', 'TES_maxi']
+  tes = ['TES_mikro', 'TES_normal', 'TES_maxi']
   
   interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
   interp_pv  = {'0' : pvs[0], \
@@ -285,8 +283,7 @@ def plot_heatmap_curtailed_pv_tes_to_pv(eva, scenario, net_name, save_fig_dir=No
                 '1' : pvs[2]}
   interp_tes = {'6' : tes[0], \
                 '7' : tes[1], \
-                '8' : tes[2], 
-                '9' : tes[3]}
+                '8' : tes[2] }
         
   df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
   df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
@@ -344,11 +341,11 @@ def plot_heatmap_curtailed_pv_tes_to_pv(eva, scenario, net_name, save_fig_dir=No
   sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
   sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
   axes[0].set_title('Abgeregelte PV SFH15 in %')
-  axes[0].set(ylabel='', xlabel='')
+  axes[0].set(ylabel='SFH15', xlabel='')
   axes[1].set_title('Abgeregelte PV SFH45 in %')
-  axes[1].set(ylabel='', xlabel='')
+  axes[1].set(ylabel='SFH45', xlabel='')
   axes[2].set_title('Abgeregelte PV SFH100 in %')
-  axes[2].set(ylabel='', xlabel='')
+  axes[2].set(ylabel='SFH100', xlabel='')
   fig.tight_layout()
   
   if save_fig_dir is not None:
@@ -356,7 +353,7 @@ def plot_heatmap_curtailed_pv_tes_to_pv(eva, scenario, net_name, save_fig_dir=No
 
 def plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
   pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['TES_mikro', 'TES_mini', 'TES_normal', 'TES_maxi']
+  tes = ['TES_mikro', 'TES_mini', 'TES_normal']
   
   interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
   interp_pv  = {'0' : pvs[0], \
@@ -364,8 +361,7 @@ def plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=
                 '1' : pvs[2]}
   interp_tes = {'6' : tes[0], \
                 '7' : tes[1], \
-                '8' : tes[2], 
-                '9' : tes[3]}
+                '8' : tes[2] }
         
   df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
   df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
@@ -432,11 +428,11 @@ def plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=
   sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
   sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
   axes[0].set_title('Abgeregelte Last SFH15 in %')
-  axes[0].set(ylabel='', xlabel='')
+  axes[0].set(ylabel='SFH15', xlabel='')
   axes[1].set_title('Abgeregelte Last SFH45 in %')
-  axes[1].set(ylabel='', xlabel='')
+  axes[1].set(ylabel='SFH45', xlabel='')
   axes[2].set_title('Abgeregelte Last SFH100 in %')
-  axes[2].set(ylabel='', xlabel='')
+  axes[2].set(ylabel='SFH100', xlabel='')
   fig.tight_layout()
   
   if save_fig_dir is not None:
@@ -444,7 +440,7 @@ def plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=
 
 def plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
   pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['TES_mikro', 'TES_mini', 'TES_normal', 'TES_maxi']
+  tes = ['TES_mikro', 'TES_normal', 'TES_maxi']
   
   interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
   interp_pv  = {'0' : pvs[0], \
@@ -452,8 +448,7 @@ def plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir
                 '1' : pvs[2]}
   interp_tes = {'6' : tes[0], \
                 '7' : tes[1], \
-                '8' : tes[2], 
-                '9' : tes[3]}
+                '8' : tes[2] }
   
   evaluation_criteria = 'tl'     #trafo_load
   
@@ -509,11 +504,11 @@ def plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir
   sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1])
   sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2])
   axes[0].set_title('mittlere Trafo_Last SFH15 in %')
-  axes[0].set(ylabel='', xlabel='')
+  axes[0].set(ylabel='SFH15', xlabel='')
   axes[1].set_title('mittlere Trafo_Last SFH45 in %')
-  axes[1].set(ylabel='', xlabel='')
+  axes[1].set(ylabel='SFH45', xlabel='')
   axes[2].set_title('mittlere Trafo_Last SFH100 in %')
-  axes[2].set(ylabel='', xlabel='')
+  axes[2].set(ylabel='SFH100', xlabel='')
   fig.tight_layout()
   
   if save_fig_dir is not None:

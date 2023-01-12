@@ -106,14 +106,23 @@ for grid in ['n7','n8','n9','n10','n11']:
 
 # --- Power and Components loading --- #
 #scenarios = [C008010, 'C106010', 'C107010', 'C108010']
-
+'''
 scenarios = ['A006010', 'A306010', 'A106010', 'A007010', 'A307010', 'A107010', \
              'A008010', 'A308010', 'A108010', 'A009010', 'A309010', 'A109010', \
              'B006010', 'B306010', 'B106010', 'B007010', 'B307010', 'B107010', \
              'B008010', 'B308010', 'B108010', 'B009010', 'B309010', 'B109010', \
              'C006010', 'C306010', 'C106010', 'C007010', 'C307010', 'C107010', \
              'C008010', 'C308010', 'C108010', 'C009010', 'C309010', 'C109010']
+'''
 
+scenarios = ['A006010', 'A306010', 'A106010', 'A007010', 'A307010', 'A107010', \
+             'A008010', 'A308010', 'A108010', \
+             'B006010', 'B306010', 'B106010', 'B007010', 'B307010', 'B107010', \
+             'B008010', 'B308010', 'B108010', \
+             'C006010', 'C306010', 'C106010', 'C007010', 'C307010', 'C107010', \
+             'C008010', 'C308010', 'C108010' ]
+
+  
 #eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC107010n8winter'], eva2=eva['sC108010n8winter'], eva3=eva['sC109010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_all_tes_3plots.png')
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sB106010n8winter'], eva2=eva['sB107010n8winter'], eva3=eva['sB108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh45_winter_all_tes_3plots.png')
