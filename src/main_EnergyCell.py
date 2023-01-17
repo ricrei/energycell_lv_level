@@ -171,7 +171,7 @@ scenario = [
   1, # PV, 0-2
   1, # BSS, 0-5
   1, # HP, 0-5
-  4, # EV, 0-3
+  0, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -233,7 +233,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 10
+net_number = 8
 ######################
 
 #############################
@@ -251,7 +251,7 @@ def run_single_simulation():
                     grid_reinforce_dev_mode = False) 	# default: False
 
   # Run powerflow
-  e.run_pf_timeseries()
+  #e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -312,15 +312,21 @@ def run_multiple_simulations(scenarios):
         print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
         i += 1
+        if scenario_i[0] in [A, B, C]:
+          control_parameter['NEP'] = parameter_BEVinLV.NEP[scenario_i[0]]
+        else:
+          control_parameter['NEP'] = parameter_BEVinLV.NEP['X']
         e = ec.EnergyCell(net_name = net_name[net_name_i],
-                          scenario = scenario_i,
-                          control_parameter = control_parameter,
-                          time_scope = time_scope_i,
-                          save_full_data = False, # default: False
-                          verbose = True)        # default: False)
+                    scenario = scenario_i,
+                    control_parameter = control_parameter,
+                    time_scope = time_scope_i,
+                    save_full_data = False, 		 	# default: False
+                    verbose = False,       		 		# default: False
+                    grid_reinforce_dev_mode = False) 	# default: False
         e.run_pf_timeseries()
         #------------
         #e.initiate_evaluation()
+        #e.eva.plot_residualload(add_curtail=True, add_losses=False)
         #e.eva.calculate_relevant_outputdata()
         #e.eva.calculate_net_problems()
         #-------------
@@ -363,10 +369,14 @@ def run_multiple_simulations_multiprocessing(scenarios):
 ### Run Conversion csv -> pickle ###
 def run_output_data_conversion(scenarios):
 
+  time_scope = [time_scope_winter, time_scope_autumn, time_scope_spring, time_scope_summer]
+  if scenarios[0][0] in ['A','B','C']:
+    time_scope = [time_scope_winter_15T, time_scope_summer_15T, time_scope_autumn_15T, time_scope_spring_15T]
+
   evaluation_all = EvaAllCases.EvaluationAllCases(
                                  net_names = [7, 8, 9, 10, 11],
                                  scenarios = scenarios,#[[4,1,0,1,1,1,0]],
-                                 time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
+                                 time_scopes = time_scope)
 
   print('Done')
 ####################################
@@ -435,6 +445,9 @@ scenarios = [
         #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
+        [A,1,1,1,0,1,0],
+        [B,1,1,1,0,1,0],
+        [C,1,1,1,0,1,0],
         [A,1,1,1,4,1,0],
         [B,1,1,1,4,1,0],
         [C,1,1,1,4,1,0],
@@ -450,8 +463,8 @@ scenarios = [
                       ]
 
 #run_single_simulation()
-run_multiple_simulations(scenarios)
+#run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-#run_output_data_conversion(scenarios)
+run_output_data_conversion(scenarios)
 #run_economics(scenarios)
 #######################

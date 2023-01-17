@@ -28,7 +28,7 @@ class EVcreator:
 
       if grid.scenario[0] in ['A','B','C']:
         self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.scenario[0])+'_'+str(grid.category)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
-        print(self.ev_data_file)
+        #print(self.ev_data_file)
 
       else:
         if (grid.category == 'rural') or (grid.category == 'village'):

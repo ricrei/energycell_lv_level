@@ -507,16 +507,19 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
   time2 = power_2.index
   time3 = power_3.index
 
-  day1 = 3
-  day2 = 3
-  time_min_1 = time1[(day1-1)*24*60]
-  time_max_1 = time1[(day2)*24*60-1]
+  day1 = 1
+  day2 = 6
 
-  time_min_2 = time2[(day1-1)*24*60]
-  time_max_2 = time2[(day2)*24*60-1]
+  nts = 4 # number timesteps per hour
 
-  time_min_3 = time3[(day1-1)*24*60]
-  time_max_3 = time3[(day2)*24*60-1]
+  time_min_1 = time1[(day1-1)*24*nts]
+  time_max_1 = time1[(day2)*24*nts-1]
+
+  time_min_2 = time2[(day1-1)*24*nts]
+  time_max_2 = time2[(day2)*24*nts-1]
+
+  time_min_3 = time3[(day1-1)*24*nts]
+  time_max_3 = time3[(day2)*24*nts-1]
 
   time_min = [time_min_1, time_min_2, time_min_3]
   time_max = [time_max_1, time_max_2, time_max_3]
@@ -655,8 +658,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
     y_max += max([abs(y_min), abs(y_max)])*.1
     y_min -= max([abs(y_min), abs(y_max)])*.1
 
-    y_max = 1.2
-    y_min = -1.2
+    #y_max = 1.2
+    #y_min = -1.2
 
     ax0[0].set_xlim(time_min_1, time_max_1)
     ax0[1].set_xlim(time_min_2, time_max_2)
@@ -764,19 +767,22 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   time3 = power_3.index
   time4 = power_4.index
 
-  day1 = 3
-  day2 = 3
-  time_min_1 = time1[(day1-1)*24*60]
-  time_max_1 = time1[(day2)*24*60-1]
+  day1 = 1
+  day2 = 6
 
-  time_min_2 = time2[(day1-1)*24*60]
-  time_max_2 = time2[(day2)*24*60-1]
+  nts = 4 # number timesteps per hour
 
-  time_min_3 = time3[(day1-1)*24*60]
-  time_max_3 = time3[(day2)*24*60-1]
+  time_min_1 = time1[(day1-1)*24*nts]
+  time_max_1 = time1[(day2)*24*nts-1]
 
-  time_min_4 = time4[(day1-1)*24*60]
-  time_max_4 = time4[(day2)*24*60-1]
+  time_min_2 = time2[(day1-1)*24*nts]
+  time_max_2 = time2[(day2)*24*nts-1]
+
+  time_min_3 = time3[(day1-1)*24*nts]
+  time_max_3 = time3[(day2)*24*nts-1]
+
+  time_min_4 = time4[(day1-1)*24*nts]
+  time_max_4 = time4[(day2)*24*nts-1]
 
   time_min = [time_min_1, time_min_2, time_min_3, time_min_4]
   time_max = [time_max_1, time_max_2, time_max_3, time_max_4]
@@ -1423,7 +1429,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
 def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
   #minutes_per_week = 7*24*60
-  minutes_per_hour = 60
+  minutes_per_hour = 4
 
   pv_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
   load_power = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
@@ -1436,11 +1442,14 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   curtailed_power_load = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
 
   for index in eva:
+    #print(eva[index]['scenario'])
     if eva[index]['scenario'] in columns_scenarios:
+      print(index)
       curtailed_power_pv[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].pv.sum() / minutes_per_hour
       curtailed_power_load[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['curtailed_power'].load.sum() / minutes_per_hour
       pv_power[eva[index]['scenario']].loc[eva[index]['net_name']] += eva[index]['power'].pv.sum() / minutes_per_hour
       load_power[eva[index]['scenario']].loc[eva[index]['net_name']] += (eva[index]['power'].load.sum() + eva[index]['power'].hp.sum() + eva[index]['power'].ev.sum()) / minutes_per_hour
+      print(curtailed_power_pv)
 
   curtailed_power_pv_per_cent = curtailed_power_pv/(pv_power+curtailed_power_pv)*100
   curtailed_power_load_per_cent = curtailed_power_load/(load_power+curtailed_power_load)*100
