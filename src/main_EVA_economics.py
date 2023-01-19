@@ -279,6 +279,9 @@ def boxplot_diff_costs_reven_HH(eva, save_fig_dir=save_fig_dir):
       df_sns_helper['hh'] = eva[i]['total_HH'].index
       df_sns = pd.concat([df_sns, df_sns_helper])
 
+  df_sns = df_sns[df_sns.scenario != ref].copy()
+  #print(df_sns)
+
   df_sns = rename_scenarios(df_sns.reset_index())
 
   #'''
@@ -1313,9 +1316,54 @@ def evaluate_bss_sizing(eva, cd):
     plt.savefig(save_fig_dir + '03b_BSS_sizing_annuiCosts_grid'+str(g)+'_scenario'+str(plot_scenario)+'.png', bbox_inches='tight', dpi=dpi)
 
 
+def create_pie_chart(eva, scenario='8133310', grids=[7,8,9,10,11]):
+  folder = None
+  def add_list_items(l1, l2):
+    l = len(l1)
+    for i in range(l):
+      l1[i] += l2[i]
+    return l1
+
+  # Seaborn Colors
+  bright = sns.color_palette("bright", 10)
+  dark = sns.color_palette("dark", 10)
+  colors = ['red', dark[3], 'blue', dark[0], 'green', 'yellow']
+
+  data_con = [0,0,0,0,0,0]
+  data_gen = [0,0,0,0,0,0]
+
+  for n in grids:
+      index = 's' + str(scenario) + 'n' + str(n)
+      economics_folder = os.path.join("./", "output-files/001_economics/"+str(scenario)+"/"+str(net_name[n])+"/")
+
+      E = pd.read_csv(economics_folder + 'energy_share_MWh.csv', delimiter = ',', low_memory=False).drop('Unnamed: 0', axis=1)
+
+      #define data
+      data_con = add_list_items(data_con, [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])
+
+      #define data
+      data_gen = add_list_items(data_gen, [(E['Eg_self'].sum() - E['Eg_self_flex'].sum()), E['Eg_self_flex'].sum(), (E['Eg_LV'].sum() - E['Eg_LV_flex'].sum()), E['Eg_LV_flex'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])
+
+  labels_con = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
+  labels_gen = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid feed-in', 'curtailed PV']
+  print(sum(data_con))
+  print(sum(data_gen))
+  #create pie chart
+  plt.pie(data_con, labels = labels_con, colors = colors, autopct='%.0f%%')
+  plt.show()
+  #'''
+
+  #create pie chart
+  plt.pie(data_gen, labels = labels_gen, colors = colors, autopct='%.0f%%')
+  plt.show()
+  #'''
+
+
 eva = load_scenario_data(scenarios)
 
-boxplot_diff_costs_reven_HH(eva)
+create_pie_chart(eva)
+
+#boxplot_diff_costs_reven_HH(eva)
 #boxplot_diff_costs_reven_ECM(eva)
 #boxplot_diff_costs_reven_CBSS(eva)
 #bar_revenue_costs_HH(eva)
