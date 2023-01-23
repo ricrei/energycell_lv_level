@@ -110,7 +110,7 @@ evaluation.plot_grid_issus_over_time_subplot(eva1=eva['s4101110n8winter'], eva2=
 evaluation.plot_grid_issus_over_time(eva['s4101110n8summer'], save_fig_dir=save_fig_dir+ 'n8_summer_plot_grid_issus_over_time_subplot_n8_winter_full.png')
 '''
 # --- Power and Components loading --- #
-'''
+#'''
 #scenarios = ['4101110', '6111110', '6121110', '6131110']
 #scenarios = ['1000000', '4101110', '6131110', '8133310']
 scenarios = ['C111010', 'C111410', 'C111510', 'C111610', 'C111710', 'B111410','A111410']
@@ -120,7 +120,8 @@ eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
 
 evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA111410n8winter'], eva2=eva['sB111410n8winter'], eva3=eva['sC111410n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sABC_noBEV_winter_3plots.png')
 evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8winter'], eva2=eva['sC111510n8winter'], eva3=eva['sC111610n8winter'], eva4=eva['sC111710n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_winter_4plots.png')
-'''
+#'''
+
 
 # --- SOCs --- #
 '''

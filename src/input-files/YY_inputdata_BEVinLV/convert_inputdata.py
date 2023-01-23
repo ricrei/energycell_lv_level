@@ -40,8 +40,13 @@ def decompress_pickle(file):
 
 def read_data(filename):
     data = pd.read_csv(filename, delimiter = ',', low_memory=False)
-    data['timestamp'] = decompress_pickle('XX_inputdata_'+season+'/10_time_short.pbz2')# pd.to_datetime(data['time'], utc=True)
+    ts = decompress_pickle('XX_inputdata_'+season+'/10_time_short.pbz2')# pd.to_datetime(data['time'], utc=True)
+    if len(data.index) == 672:
+      data = data.append(data.loc[671], ignore_index=True)
+      data.timestep = data.index
+    data['timestamp'] = ts
     data = data.set_index('timestamp')
+    #sys.exit(0)
     return data
 
 batcap_dict = {
