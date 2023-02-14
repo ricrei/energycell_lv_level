@@ -64,6 +64,12 @@ class EvaluationAllCases():
           eva[index]['curtailed_power'] = self.calculate_aggregated_curtailed_power(output_dir)
           eva[index]['SelfSufficiancy'], eva[index]['PVConsumption']= self.calculate_relevant_outputdata(eva[index]['power'], losses, trafo_p, eva[index]['curtailed_power'])
           eva[index]['v_under'], eva[index]['v_over'], eva[index]['v_events'], eva[index]['ll_over'], eva[index]['l_events'], eva[index]['tl_over'], eva[index]['t_events'] = self.calculate_net_problems_overall_eva(eva[index]['v'], eva[index]['ll'], eva[index]['tl'])
+          eva[index]['hp_cop'] = self.read_data(output_dir+'hp_cop.csv')
+          eva[index]['hp_demand_th'] = self.read_data(output_dir+'hp_demand_th.csv')
+          eva[index]['hp_hp_th'] = self.read_data(output_dir+'hp_hp_th.csv')
+          eva[index]['hp_soc'] = self.read_data(output_dir+'hp_soc.csv')
+          eva[index]['hp_tes_losses_th'] = self.read_data(output_dir+'hp_tes_losses_th.csv')
+          eva[index]['hp_tes_th'] = self.read_data(output_dir+'hp_tes_th.csv')
           eva[index]['storage_power'] = self.read_data(output_dir+'storage_active_power_MW.csv')
           eva[index]['soc_bss'] = self.read_data(output_dir+'storage_state_of_charge_percent.csv')
 

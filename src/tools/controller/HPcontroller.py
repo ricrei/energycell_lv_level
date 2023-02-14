@@ -56,7 +56,7 @@ class HP_P_control:
 
       ## Lists of weightet sink_temperatures per month
       self.t_sink_sfh15 = [39, 40, 44, 44, 53, 60, 60, 60, 60, 50, 42, 40]
-      self.t_sink_sfh45 = [41, 39, 36, 38, 44, 60, 60, 60, 45, 41, 35, 39]
+      self.t_sink_sfh45 = [38, 36, 37, 38, 43, 60, 60, 60, 45, 40, 36, 36]
       self.t_sink_sfh100 = [48, 46, 44, 41, 38, 52, 52, 52, 39, 40, 45, 45]
 
       #morningstart = dt.datetime(1970, 1, 1, 10, 45, 00)
@@ -294,7 +294,7 @@ class HP_P_control_grid_fid(HP_P_control):
       
       #### day
       #if (time > sunrise and time < sunset):
-        
+      
       if(p_res > 0):
           ### calculate free capacitiy exclusive trafo_charge_backup_capacity
           # calculate available capacity and set distribution_factor to distribute 
@@ -414,7 +414,7 @@ class HP_P_control_grid_fid(HP_P_control):
         p_mw_trafo_ch = p_total_hp * hp_distribution_factor * hps.hp_cop
         #set hp_soc_change by p_mw_trafo_ch
         hp_soc_change = p_mw_trafo_ch * (self.intervall_in_seconds / 3600)
-                
+
       if(grid.s_trafo_power < s_res):
         ### tes emergency discharge
         hp_available_capacity = hps.hp_soc_mwh.copy()
