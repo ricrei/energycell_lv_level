@@ -63,17 +63,20 @@ for (root,dirs,files) in os.walk(directory, topdown=True):
 
 #print(files)
 
+k = 1
 for f in files:
+  print(str(k) + ' ' + str(f))
+  k = k + 1
   if 'rural_1' in f:
-    region = 'rural'
+    region = 'rural1'
   elif 'rural_2' in f:
-    region = 'rural'
+    region = 'rural2'
   elif 'rural_3' in f:
-    region = 'rural'
+    region = 'rural3'
   elif 'suburb_4' in f:
-    region = 'suburban'
+    region = 'suburban4'
   elif 'suburb_5' in f:
-    region = 'suburban'
+    region = 'suburban5'
   else:
     print('WARNING: NO region FOUND!')
 
@@ -111,7 +114,7 @@ for f in files:
   #sys.exit(0)
 
   df = read_data(directory + f)
-
+  
   i = 1
   for c in df.columns:
     if 'bev' not in c:
@@ -127,3 +130,4 @@ for f in files:
       i += 1
 
   compress_pickle('XX_inputdata_'+season+'/14_ev_load_'+str(scenario)+'_'+str(region)+'_'+str(season)+'_'+str(charging_strategy)+'.pbz2', df)
+  

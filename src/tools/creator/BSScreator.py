@@ -48,7 +48,6 @@ class BSScreator:
   ###########################################
   def create_bss_at_each_bus(self, grid): 
       # create bss at each bus 
-
       for index in grid.component_buses.index:
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
@@ -57,7 +56,6 @@ class BSScreator:
                             name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
                             type = 'bss', \
                             max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv)
-      
       grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
       grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC
       grid.net.storage['efficiency_storage'] = self.efficiency_storage

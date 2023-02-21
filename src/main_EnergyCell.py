@@ -167,11 +167,11 @@ A = 'A'
 B = 'B'
 C = 'C'
 scenario = [
-  C, # scenario number, 1-8
+  A, # scenario number, 1-8
   1, # PV, 0-2
-  1, # BSS, 0-5
+  3, # BSS, 0-5
   1, # HP, 0-5
-  0, # EV, 0-3
+  4, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -189,7 +189,7 @@ control_parameter = {
   'BSS_start_soc_percent'        : 50,
   'BSS_sizing_factor_power_to_capacity' : .75,
   'BSS_sizing_factor_bss_to_pv' : .75,
-  'BSS_soc_reserve_percent_winter' : 20,
+  'BSS_soc_reserve_percent_winter' : 0,
   'EV_usable_c_bat' : 100,
   'EV_start_soc' : 100,
   'EV_charging_power' : .011,     # in MW
@@ -233,7 +233,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 8
+net_number = 10
 ######################
 
 #############################
@@ -246,21 +246,22 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = False, 		 	# default: False
+                    save_full_data = True, 		 	# default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = False) 	# default: False
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
+  #e.eva.plot_ev_active_power()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
@@ -448,18 +449,18 @@ scenarios = [
         #[A,1,1,1,0,1,0],
         #[B,1,1,1,0,1,0],
         #[C,1,1,1,0,1,0],
-        [A,1,1,1,4,1,0],
-        [B,1,1,1,4,1,0],
-        [C,1,1,1,4,1,0],
-        [A,1,1,1,5,1,0],
-        [B,1,1,1,5,1,0],
-        [C,1,1,1,5,1,0],
-        [A,1,1,1,6,1,0],
-        [B,1,1,1,6,1,0],
-        [C,1,1,1,6,1,0],
-        [A,1,1,1,7,1,0],
-        [B,1,1,1,7,1,0],
-        [C,1,1,1,7,1,0],
+        [A,1,3,1,4,1,0],
+        [B,1,3,1,4,1,0],
+        [C,1,3,1,4,1,0],
+        [A,1,3,1,5,1,0],
+        [B,1,3,1,5,1,0],
+        [C,1,3,1,5,1,0],
+        [A,1,3,1,6,1,0],
+        [B,1,3,1,6,1,0],
+        [C,1,3,1,6,1,0],
+        [A,1,3,1,7,1,0],
+        [B,1,3,1,7,1,0],
+        [C,1,3,1,7,1,0],
                       ]
 
 #run_single_simulation()

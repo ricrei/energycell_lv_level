@@ -149,6 +149,7 @@ class BSS_control:
       soc : pandas.Series
           state of charge [%]
       """
+
       soc = (e_mwh / grid.net.storage.max_e_mwh) * 100 # [%]
 
       return soc
@@ -393,8 +394,12 @@ class BSS_P_control_grid_fid(BSS_control):
       '''
 
       get_e_mwh[get_e_mwh<0]= 0
-      distribution_factor_dch = get_e_mwh / get_e_mwh.sum()
-      distribution_factor_dch = distribution_factor_dch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0 
+      #print(get_e_mwh)
+      if get_e_mwh.sum() > 0:
+        distribution_factor_dch = get_e_mwh / get_e_mwh.sum()
+        distribution_factor_dch = distribution_factor_dch.fillna(0) # befüllt alle inf, -inf bzw NaN mit 0 
+      else:
+        distribution_factor_dch = get_e_mwh*0
 
       if p_mw_bss_total >= 0: 
           p_mw_bss = (p_mw_bss_total * distribution_factor_ch) 
@@ -406,7 +411,7 @@ class BSS_P_control_grid_fid(BSS_control):
       p_mw_bss = self.direct_charge(grid, p_mw_bss)
       
       #LINEAR CHARGING AND DISCHARGING:
-      p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.timedelta_early_discharge, self.soc_reserve_percent)
+      #p_mw_bss = self.linear_charge(grid, t, p_mw_bss, get_e_mwh, free_capacity, self.timedelta_charging_delay, self.timedelta_charging_delay_winter, self.timedelta_early_discharge, self.soc_reserve_percent)
        
       # Limitation by maximum power:     
       p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]

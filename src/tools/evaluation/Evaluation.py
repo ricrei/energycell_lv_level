@@ -33,7 +33,7 @@ fig_x, fig_y = 5., 2.
 image_format = 'png'
 dpi = 500
 
-lan = 'DE' # 'EN', 'DE'
+lan = 'EN' # 'EN', 'DE'
 
 if lan == 'DE':
   y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
@@ -767,8 +767,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   time3 = power_3.index
   time4 = power_4.index
 
-  day1 = 1
-  day2 = 6
+  day1 = 2
+  day2 = 2
 
   nts = 4 # number timesteps per hour
 
@@ -1177,17 +1177,17 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   minutes_per_hour = 60
   without_v = True
 
-  seasons = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  seasons = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
 
-  vu_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
-  vo_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
-  ll_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
-  tl_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  vu_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
+  vo_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
+  ll_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
+  tl_mean = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
 
-  vu_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(1)
-  vo_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
-  ll_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
-  tl_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)
+  vu_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
+  vo_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
+  ll_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
+  tl_peak = pd.DataFrame(index=[net_name[7:12]], columns=columns_scenarios).fillna(0)*0
 
   for index in eva:
     if eva[index]['scenario'] in columns_scenarios:
@@ -1209,7 +1209,7 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   ll_mean = ll_mean/seasons
   tl_mean = tl_mean/seasons
 
-  #'''
+  '''
   print(vu_mean)
   print(vo_mean)
   print(ll_mean)
@@ -1218,7 +1218,7 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   print(vo_peak)
   print(ll_peak)
   print(tl_peak)
-  #'''
+  '''
 
   vmax = 1.04
   vmin = .97
@@ -1371,7 +1371,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
     ax.set_title('Abgeregelte PV Energie in %')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + '00b_' + str(scenario[0]) + '_heatmap_curtailed_power_pv_per_cent_season.png', bbox_inches='tight', dpi=dpi)
+     plt.savefig(save_fig_dir + 'xxb_' + str(scenario[0]) + '_heatmap_curtailed_power_pv_per_cent_season.png', bbox_inches='tight', dpi=dpi)
      #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_pv_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
   
   #"YlOrBr"
@@ -1388,9 +1388,9 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
     ax.set_title('Abgeregelte Last in %')
 
   if save_fig_dir is not None:
-     plt.savefig(save_fig_dir + '00b_' + str(scenario[0]) + '_heatmap_curtailed_power_load_per_cent_season.png', bbox_inches='tight', dpi=dpi)
+     plt.savefig(save_fig_dir + 'xxb_' + str(scenario[0]) + '_heatmap_curtailed_power_load_per_cent_season.png', bbox_inches='tight', dpi=dpi)
      #plt.savefig(save_fig_dir + '00b_heatmap_curtailed_power_load_per_cent_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
-
+  '''
   plt.figure()
   ax = sns.heatmap(curtailed_power_pv, vmax = vmax_season, vmin = vmin, cmap="rocket_r", annot=True, square=True)#, fmt=".0f")
   ax.set_xticklabels(x_ticklabels)
@@ -1424,7 +1424,7 @@ def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_di
      #plt.savefig(save_fig_dir + '00c_heatmap_curtailed_power_load_' + str(eva[index]['time_scope_name']) + '.png', bbox_inches='tight')
 
   #plt.show()
-
+  '''
 
 def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
@@ -2227,16 +2227,67 @@ def state_of_charge(eva, net_name, n, save_fig_dir=None):
     plt.show()
    '''
 
+def plot_load_curve(eva, scenario, seasons, season=None, save_fig_dir=None):
+  def ldc(df):
+    df['interval'] = .25
+    df = df.sort_values(by=['0'], ascending = False)
+    df['duration'] = df['interval'].cumsum()
+    df['percentage'] = df['duration']*100/how
+    return df
 
+  if season == None:
+    how = 5*4*(7*24 + .25) #hours_of_the_week
+  else:
+    how = 5*(7*24 + .25) #hours_of_the_week
 
+  df4 = pd.DataFrame()
+  df5 = pd.DataFrame()
+  df6 = pd.DataFrame()
+  df7 = pd.DataFrame()
 
+  for index in eva:
+   if (eva[index]['time_scope_name'] == season) or (season == None):
+    power_res = eva[index]['power']['load'] + eva[index]['power']['hp'] + eva[index]['power']['ev'] - eva[index]['power']['pv']
+    tl = eva[index]['tl']
+    tl[tl>100] = 100
+    tl[power_res < 0] = -tl[power_res < 0]
+    if eva[index]['scenario'] == 'C131410':
+      df4 = pd.concat([df4, tl])
+    elif eva[index]['scenario'] == 'C131510':
+      df5 = pd.concat([df5, tl])
+    elif eva[index]['scenario'] == 'C131610':
+      df6 = pd.concat([df6, tl])
+    elif eva[index]['scenario'] == 'C131710':
+      df7 = pd.concat([df7, tl])
 
+  df4 = ldc(df4)
+  df5 = ldc(df5)
+  df6 = ldc(df6)
+  df7 = ldc(df7)
 
+  #sys.exit(0)
 
-
-
-
-
+  # Plot the load_duration curve (Load vs Percentage of time)
+  plt.figure(figsize=(14, 6)) 
+  p = sns.lineplot(x = "percentage", y = "0", data = df4)
+  p = sns.lineplot(x = "percentage", y = "0", data = df5)
+  p = sns.lineplot(x = "percentage", y = "0", data = df6)
+  p = sns.lineplot(x = "percentage", y = "0", data = df7)
+  plt.ylim(-101, 101)
+  plt.xlim(0, 100)
+  if season == None:
+    p.set_title("Load-Duration Curve (all seasons)")
+  else:
+    p.set_title("Load-Duration Curve ("+str(season)+")")
+  p.set_xlabel("Time in %")
+  p.set_ylabel("Transformerloading in %")
+  plt.legend(['greedy', 'balanced', 'market', 'res'])
+  plt.grid()
+  if season == None:
+    plt.savefig(save_fig_dir+'load_duration_curve_'+'4weeks'+'.png', bbox_inches='tight', dpi=dpi)
+  else:
+    plt.savefig(save_fig_dir+'load_duration_curve_'+str(season)+'.png', bbox_inches='tight', dpi=dpi)
+  #plt.show()
 
 
 

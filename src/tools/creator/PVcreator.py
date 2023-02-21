@@ -116,8 +116,7 @@ class PVcreator:
     grid.net.sgen['installed_power'] = 0
     index = 0
     for pv_type in grid.net.sgen.type:
-      grid.net.sgen['installed_power'].loc[index] = int(df_power_by_orientation['power_per_orientation'][str(pv_type) == df_power_by_orientation['orientation']].values)
+      grid.net.sgen['installed_power'].loc[index] = float(df_power_by_orientation['power_per_orientation'][str(pv_type) == df_power_by_orientation['orientation']].values)
       index += 1
     grid.total_installed_pv_power = grid.net.sgen['installed_power'].sum()
-
     return grid

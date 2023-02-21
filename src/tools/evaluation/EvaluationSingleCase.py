@@ -402,6 +402,17 @@ class EvaluationSingleCase():
     plt.grid(True)
     plt.show()
 
+  def plot_ev_active_power(self):
+    fig, ax = plt.subplots()
+    plot_curve = self.load_p['0'] * 0
+    for i in self.grid.ev_index:
+      plot_curve += self.load_p[str(i)]
+      ax.plot(plot_curve)
+    plt.xlabel('Time')
+    plt.ylabel('Load active power in MW')
+    plt.grid(True)
+    plt.show()
+
   def plot_pv_active_power(self):
     fig, ax = plt.subplots()
     line = ax.plot(self.pv_p)

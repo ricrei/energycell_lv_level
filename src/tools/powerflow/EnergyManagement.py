@@ -19,7 +19,7 @@ class EnergyManagement:
     elif (self.scenario[0] in [7, 8]):
       self.energy_manager = EnergyManagementAdvanced()
     elif (self.scenario[0] in ['A','B','C']):
-      self.energy_manager = EnergyManagementStorage()
+      self.energy_manager = EnergyManagementABC()
     else:
       raise ValueError('No appropriate scenario to choose EnergyManagement.')
 
@@ -170,6 +170,67 @@ class EnergyManagementStorage(EnergyManagementParent):
     grid.net.storage                 = bss_controller.get_active_power_linear_charge(grid, t)
     # trafo overload
     grid.net.storage                 = bss_controller.get_active_power_trafo_charge(grid, t)
+
+    #get final q_mvar of hp
+    #grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
+
+    grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
+
+    grid = curtail_controller.curtail(grid, t)
+
+    return grid.net
+
+### EnergeManagement ABC ###
+class EnergyManagementABC(EnergyManagementParent):
+  def __init__(self):
+    super().__init__()
+
+  def control_components(self,
+                         input_dict,
+                         grid,
+                         pv_controller,
+                         hp_controller,
+                         ev_controller,
+                         bss_controller,
+                         curtail_controller,
+                         t):
+    '''
+    Set the sequence in which the components are loaded. This is done in a basic manner. PV, HP and EV are driven in a simple way. The BSS act like its specified mode in bss_controller.
+    Only used in scenario 6 to 8.
+
+    Parameters
+    ----------
+    input_dict: TYPE dict
+    grid : TYPE network
+    pv_controller : TYPE pv_controller
+    hp_controller : TYPE hp_controller
+    ev_controller : TYPE ev_controller
+    bss_controller : TYPE bss_controller
+    curtail_controller : TYPE curtail_controller
+
+    Returns
+    -------
+    grid.net : pandapower network
+    '''
+
+    grid = grid.reset_all_power_values()
+
+    # PV
+    grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
+    grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
+
+    # HH-Load
+    grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
+    grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
+
+    # direct
+    grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
+    grid.net.load.loc[grid.hp_index] = hp_controller.get_active_power_direct_charge(grid, input_dict['hp'].loc[t], t)
+    grid.net.storage                 = bss_controller.get_active_power_direct_charge(grid, t)
+    # linear
+    grid.net.storage                 = bss_controller.get_active_power_linear_charge(grid, t)
+    # trafo overload
+    #grid.net.storage                 = bss_controller.get_active_power_trafo_charge(grid, t)
 
     #get final q_mvar of hp
     #grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
