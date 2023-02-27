@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -9,6 +10,7 @@ class HPcontroller:
       self.control = control
       self.cos_phi = control_parameter['HP_cos_phi']#1#.95
       self.tan_phi = np.tan(np.arccos(self.cos_phi))
+      self.heat_demand_factor = control_parameter['NEP']['heat']
       
       if (self.control != None):
         if self.control == 'direct':
@@ -28,7 +30,9 @@ class HPcontroller:
       return self.P_controller.pcontrol(grid, d, t)
 
   def get_active_power_direct_charge(self, grid, d, t):
-      return self.P_controller.pcontrol_direct_charge(grid, d, t)
+      p = self.P_controller.pcontrol_direct_charge(grid, d, t)
+      p.p_mw = p.p_mw * self.heat_demand_factor
+      return p
 
   def get_active_power_linear_charge(self, grid, d, t):
       return self.P_controller.pcontrol_linear_charge(grid, d, t)

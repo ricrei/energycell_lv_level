@@ -21,9 +21,9 @@ print('\33[1;31m... You are running BEVinLVgrids ...\33[0m')
 
 ##########################################
 ### Define timescope and timestepwidth ###
-time_scope = { 'start_time' : '2017-10-20 00:00:00+02:00',
+time_scope = { 'start_time' : '2017-10-26 00:00:00+02:00',
                       'end_time'   : '2017-10-27 00:00:00+02:00',
-                      't_freq'     : '15T'
+                      't_freq'     : '1H'
                     }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -167,7 +167,7 @@ A = 'A'
 B = 'B'
 C = 'C'
 scenario = [
-  A, # scenario number, 1-8
+  C, # scenario number, 1-8
   1, # PV, 0-2
   3, # BSS, 0-5
   1, # HP, 0-5
@@ -233,7 +233,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 10
+net_number = 7
 ######################
 
 #############################
@@ -259,7 +259,7 @@ def run_single_simulation():
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_ev_active_power()
   #e.eva.plot_generation_consumption_as_heat_map()
@@ -463,9 +463,9 @@ scenarios = [
         [C,1,3,1,7,1,0],
                       ]
 
-#run_single_simulation()
-run_multiple_simulations(scenarios)
+run_single_simulation()
+#run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-run_output_data_conversion(scenarios)
+#run_output_data_conversion(scenarios)
 #run_economics(scenarios)
 #######################

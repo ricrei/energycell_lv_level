@@ -2,8 +2,9 @@ import tools.tools as tt
 
 class HHLcreator:
 
-  def __init__(self, inputfolder):
+  def __init__(self, inputfolder, control_parameter):
         self.inputfolder = inputfolder
+        self.control_parameter = control_parameter['NEP']['hh']
         self.load_p_data_file = self.inputfolder + '11_p0_short.pbz2'
         self.load_q_data_file = self.inputfolder + '11_q0_short.pbz2'
 
@@ -26,7 +27,7 @@ class HHLcreator:
         p0 = tt.decompress_pickle(self.load_p_data_file)
         q0 = tt.decompress_pickle(self.load_q_data_file)
         for i in range(0,74):
-            df['load_'+str(i)+'_p'] = p0["p"+str(i)]/1000	# normalized to MW
-            df['load_'+str(i)+'_q'] = q0["q"+str(i)]/1000	# normalized to MW
+            df['load_'+str(i)+'_p'] = p0["p"+str(i)]*self.control_parameter/1000	# normalized to MW
+            df['load_'+str(i)+'_q'] = q0["q"+str(i)]*self.control_parameter/1000	# normalized to MW
 
         return df

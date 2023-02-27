@@ -67,7 +67,7 @@ class EnergyCell():
           print('WARNING: Wrong selg.grid.category defined!')
         self.control_parameter = control_parameter
 
-        self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
+        self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.pv_creator = PVcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
@@ -214,24 +214,25 @@ class EnergyCell():
       except:
         raise ValueError('Scenario number not defined: ' + str(scenario))
 
-      # PhD-scenarios
-      phd_scenarios = [
-        [1,0,0,0,0,0,0],
-        [2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
-        [3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
-        [4,1,0,1,1,0,0], [4,1,0,1,1,1,0], [4,1,0,1,1,0,1],
-        [6,1,1,1,1,0,0], [6,1,1,1,1,1,0], [6,1,1,1,1,0,1],
-        [6,1,2,1,1,0,0], [6,1,2,1,1,1,0], [6,1,2,1,1,0,1],
-        [6,1,3,1,1,0,0], [6,1,3,1,1,1,0], [6,1,3,1,1,0,1],
-        [6,1,4,1,1,0,0], [6,1,4,1,1,1,0], [6,1,4,1,1,0,1],
-        [6,1,5,1,1,0,0], [6,1,5,1,1,1,0], [6,1,5,1,1,0,1],
-        [7,1,0,2,2,0,0], [7,1,0,2,2,1,0], [7,1,0,2,2,0,1],
-        [7,1,0,3,3,0,0], [7,1,0,3,3,1,0], [7,1,0,3,3,0,1],
-        [8,1,3,3,3,0,0], [8,1,3,3,3,1,0], [8,1,3,3,3,0,1], [8,1,3,3,3,1,1], [8,1,5,3,3,1,0],
-                      ]
+      if scenario[0] not in ['A', 'B', 'C']:
+        # PhD-scenarios
+        phd_scenarios = [
+          [1,0,0,0,0,0,0],
+          [2,0,0,1,1,0,0], [2,0,0,1,1,1,0],
+          [3,1,0,0,0,0,0], [3,1,0,0,0,1,0],
+          [4,1,0,1,1,0,0], [4,1,0,1,1,1,0], [4,1,0,1,1,0,1],
+          [6,1,1,1,1,0,0], [6,1,1,1,1,1,0], [6,1,1,1,1,0,1],
+          [6,1,2,1,1,0,0], [6,1,2,1,1,1,0], [6,1,2,1,1,0,1],
+          [6,1,3,1,1,0,0], [6,1,3,1,1,1,0], [6,1,3,1,1,0,1],
+          [6,1,4,1,1,0,0], [6,1,4,1,1,1,0], [6,1,4,1,1,0,1],
+          [6,1,5,1,1,0,0], [6,1,5,1,1,1,0], [6,1,5,1,1,0,1],
+          [7,1,0,2,2,0,0], [7,1,0,2,2,1,0], [7,1,0,2,2,0,1],
+          [7,1,0,3,3,0,0], [7,1,0,3,3,1,0], [7,1,0,3,3,0,1],
+          [8,1,3,3,3,0,0], [8,1,3,3,3,1,0], [8,1,3,3,3,0,1], [8,1,3,3,3,1,1], [8,1,5,3,3,1,0],
+                        ]
 
-      if self.scenario not in phd_scenarios:
-        print('WARNING: Scenario '+str(self.scenario)+' is not part of phd_scenarios')
+        if self.scenario not in phd_scenarios:
+          print('WARNING: Scenario '+str(self.scenario)+' is not part of phd_scenarios')
 
       return controls
 
