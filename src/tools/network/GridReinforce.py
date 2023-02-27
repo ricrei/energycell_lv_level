@@ -270,6 +270,7 @@ class GridReinforce:
       elif self.net_name == "kerber_suburb_2": return None
       elif self.net_name == "simbench_rural_1": return None
       elif self.net_name == "simbench_rural_2":
+        #'''
         # Strang 1
         self.connect_buses(bus_to_trafo=74, former_bus=None, line_type='NAYY 4x240SE 0.6/1kV')
         self.disconnect_buses(22, 68)
@@ -282,6 +283,7 @@ class GridReinforce:
         self.connect_buses(bus_to_trafo=20, former_bus=13, line_type='NAYY 4x185SE 0.6/1kV')
         self.connect_buses(bus_to_trafo=82, former_bus=0, line_type='NAYY 4x185SE 0.6/1kV')
         self.connect_buses(bus_to_trafo=41, former_bus=36, line_type='NAYY 4x185SE 0.6/1kV')
+        #'''
         return None
       elif self.net_name == "simbench_rural_3":
         # Strang 1
