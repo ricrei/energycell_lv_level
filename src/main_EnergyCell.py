@@ -21,22 +21,12 @@ import concurrent.futures
 ## T ~ minutes
 ## H ~ hours
 
-time_scope = { 'start_time' : '2017-12-01 00:00:00+01:00',
-               'end_time'   : '2017-12-31 00:00:00+01:00',
+time_scope = { 'start_time' : '2017-01-05 00:00:00+01:00',
+               'end_time'   : '2017-01-07 00:00:00+01:00',
                't_freq'     : '15T',
              }
 
 '''
-time_scope = { 'start_time' : '2017-01-08 00:00:00+01:00',
-               'end_time'   : '2017-01-08 02:00:00+01:00',
-               't_freq'     : '1H'
-             }
-'''
-time_scope = { 'start_time' : '2017-03-05 00:00:00+01:00',
-               'end_time'   : '2017-03-12 00:00:00+01:00',
-               't_freq'     : '15T'
-             }
-
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2017-12-31 23:59:00+01:00',
                     't_freq'     : '1T'
@@ -46,7 +36,7 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+00:00',
                     'end_time'   : '2017-06-30 23:59:00+00:00',
                     't_freq'     : '1T'
                   }
-
+'''
 # timescopes to examine
 
 time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
@@ -116,7 +106,8 @@ time_scope_all_seasons = [
 '''
 
 #time_scope = time_scope
-time_scope = time_scope_all_seasons
+time_scope = time_scope_spring
+#time_scope = time_scope_all_seasons
 ###########################################
 
 #######################
@@ -133,10 +124,9 @@ time_scope = time_scope_all_seasons
 ## 4: Grid-oriented feed-in damping Community BSS at LV-Busbar,
 ## 5: Grid-oriented feed-in damping Community BSS in feeder
 # Fourth number: HP
-## 0: no HP, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
-## 4: evu-lock (EnWG §14a),
-## 5: residual-load-driven
-## 6: small TES, 7: medium TES, 8: large TES, 9: xlarge TES
+## 0: no HP, 1: direct
+## Resiload  + 2: noBC_TES1, 3: noBC_TES2, 4: BC_TES1, 5: BC_TES2
+## LinCh_FID + 6: noBC_TES1, 7: noBC_TES2, 8: BC_TES1, 9: BC_TES2
 # Fifth number: EV
 ## 0: no EV, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
 # Sixth number: Curtailment
@@ -144,11 +134,11 @@ time_scope = time_scope_all_seasons
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  'A', # scenario number, 1-8
+  'C', # scenario number, 1-8
   1, # PV, 0-2
   0, # BSS, 0-5
-  6, # HP, 0-5
-  1, # EV, 0-3
+  9, # HP, 0-5
+  0, # EV, 0-3
   1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
@@ -177,21 +167,21 @@ control_parameter = {
   'HP_cos_phi' : 1,
   'HP_t_sink' : 45,     #default sink-temprature
   'HP_t_ground_source' : 8,
-  'HP_max_p_kw': 0.012, # in MW
+  'HP_max_p_kw': 0.0148, # in MW
   'HP_dp_SFH15_p_kw': 0.0032, # in MW thermal power design point
   'HP_dp_SFH45_p_kw': 0.0059, # in MW thermal power design point
   'HP_dp_SFH100_p_kw': 0.0114, # in MW thermal power design point
   'HP_max_p_oversizing': 1.3, # in MW
-  'HP_TES_max_capacity_def_mwh' : .0325,
+  'HP_TES_max_capacity_def_mwh' : .0325, #any kind of default
   'HP_building_capacity_mwh' : .014,
   'HP_TES_start_soc' : .5, # 0-1
   'HP_TES_start_soc_winter' : 0.25, # 0-1
   'HP_TES_start_soc_summer' : 0.75, # 0-1
   'HP_TES_loss_per_s' : 0.04 / 86400,   #4% per day / 86400
   'HP_upper_TES_reserve': 1., # default = 1
-  'HP_lower_TES_reserve': 0., # default = 0 
+  'HP_lower_TES_reserve': 0.05, # default = 0 
   'HP_upper_TES_reserve_summer': .5, # default = 1
-  'HP_lower_TES_reserve_winter': .1, # default = 0
+  'HP_lower_TES_reserve_winter': .35, # default = 0
 }
 ############################
 
@@ -213,7 +203,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 13
+net_number = 8
 ######################
 
 #############################
@@ -234,15 +224,15 @@ def run_single_simulation():
   e.run_pf_timeseries()
 
   # Initialize Evaluation
-  #e.initiate_evaluation()
+  e.initiate_evaluation()
 
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   ##calc values for pauls issues
-  #e.eva.calc_hp_values()
+  e.eva.calc_hp_values()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
@@ -252,14 +242,14 @@ def run_single_simulation():
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_hp_soc()
   #e.eva.plot_hp_cop()
-  #e.eva.plot_hp_active_power()
-  #e.eva.plot_hp_eva_th()
+  e.eva.plot_hp_active_power()
+  e.eva.plot_hp_eva_th()
   #e.eva.plot_bss_active_power()
   #e.eva.plot_soc()
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_curtailed_power()
-  #e.eva.plot_flex_power()
+  e.eva.plot_flex_power()
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
@@ -280,7 +270,6 @@ def run_single_simulation():
   #e.bss_sizing.bss_sizing_fft()
 #############################
 
-
 ###############################
 ### Run Multiple Simulation ###
 def run_multiple_simulations(scenarios):
@@ -288,7 +277,7 @@ def run_multiple_simulations(scenarios):
   i = 1
   for time_scope_i in [time_scope_winter, time_scope_summer, \
   	time_scope_autumn, time_scope_spring]:
-  #for time_scope_i in [time_scope_winter]:
+  #for time_scope_i in [time_scope_spring]:
     for net_name_i in [8]:
       for scenario_i in scenarios:
         print(' ')
@@ -338,7 +327,6 @@ def run_multiple_simulations_multiprocessing(scenarios):
 
 #######################################################
 
-
 ####################################
 ### Run Conversion csv -> pickle ###
 def run_output_data_conversion(scenarios):
@@ -348,7 +336,7 @@ def run_output_data_conversion(scenarios):
                                  net_names = [8],
                                  scenarios = scenarios,#[[4,1,0,1,1,1,0]],
                                  time_scopes = [time_scope_winter, time_scope_summer, time_scope_autumn, time_scope_spring])
-                                 #time_scopes = [time_scope_winter])
+                                 #time_scopes = [time_scope_spring])
 
   print('Done')
 ####################################
@@ -393,50 +381,85 @@ def run_economics(scenarios):
 #######################
 scenarios = [
         ##SFH15
+        ['A',0,0,2,0,1,0],
+        ['A',1,0,2,0,1,0],
+        ['A',3,0,2,0,1,0],
+        ['A',0,0,3,0,1,0],
+        ['A',1,0,3,0,1,0],
+        ['A',3,0,3,0,1,0],
+        ['A',0,0,4,0,1,0],
+        ['A',1,0,4,0,1,0],
+        ['A',3,0,4,0,1,0],
+        ['A',0,0,5,0,1,0],
+        ['A',1,0,5,0,1,0],
+        ['A',3,0,5,0,1,0],      
         ['A',0,0,6,0,1,0],
         ['A',1,0,6,0,1,0],
-        #['A',3,0,6,0,1,0],
-        #['A',0,0,7,0,1,0],
-        #['A',1,0,7,0,1,0],
-        #['A',3,0,7,0,1,0],
-        #['A',0,0,8,0,1,0],
-        #['A',1,0,8,0,1,0],
-        #['A',3,0,8,0,1,0],
-        #['A',0,0,9,0,1,0],
-        #['A',1,0,9,0,1,0],
-        #['A',3,0,9,0,1,0],
+        ['A',3,0,6,0,1,0],
+        ['A',0,0,7,0,1,0],
+        ['A',1,0,7,0,1,0],
+        ['A',3,0,7,0,1,0],
+        ['A',0,0,8,0,1,0],
+        ['A',1,0,8,0,1,0],
+        ['A',3,0,8,0,1,0],
+        ['A',0,0,9,0,1,0],
+        ['A',1,0,9,0,1,0],
+        ['A',3,0,9,0,1,0],
         ##SFH45
-        #['B',0,0,6,0,1,0],
-        #['B',1,0,6,0,1,0],
-        #['B',3,0,6,0,1,0],
-        #['B',0,0,7,0,1,0],
-        #['B',1,0,7,0,1,0],
-        #['B',3,0,7,0,1,0],
-        #['B',0,0,8,0,1,0],
-        #['B',1,0,8,0,1,0],
-        #['B',3,0,8,0,1,0],
-        #['B',0,0,9,0,1,0],
-        #['B',1,0,9,0,1,0],
-        #['B',3,0,9,0,1,0],
+        ['B',0,0,2,0,1,0],
+        ['B',1,0,2,0,1,0],
+        ['B',3,0,2,0,1,0],
+        ['B',0,0,3,0,1,0],
+        ['B',1,0,3,0,1,0],
+        ['B',3,0,3,0,1,0],
+        ['B',0,0,4,0,1,0],
+        ['B',1,0,4,0,1,0],
+        ['B',3,0,4,0,1,0],
+        ['B',0,0,5,0,1,0],
+        ['B',1,0,5,0,1,0],
+        ['B',3,0,5,0,1,0],        
+        ['B',0,0,6,0,1,0],
+        ['B',1,0,6,0,1,0],
+        ['B',3,0,6,0,1,0],
+        ['B',0,0,7,0,1,0],
+        ['B',1,0,7,0,1,0],
+        ['B',3,0,7,0,1,0],
+        ['B',0,0,8,0,1,0],
+        ['B',1,0,8,0,1,0],
+        ['B',3,0,8,0,1,0],
+        ['B',0,0,9,0,1,0],
+        ['B',1,0,9,0,1,0],
+        ['B',3,0,9,0,1,0],
         ##SFH100
-        #['C',0,0,6,0,1,0],
-        #['C',1,0,6,0,1,0],
-        #['C',3,0,6,0,1,0],
-        #['C',0,0,7,0,1,0],
-        #['C',1,0,7,0,1,0],
-        #['C',3,0,7,0,1,0],
-        #['C',0,0,8,0,1,0],
-        #['C',1,0,8,0,1,0],
-        #['C',3,0,8,0,1,0],
-        #['C',0,0,9,0,1,0],
-        #['C',1,0,9,0,1,0],
-        #['C',3,0,9,0,1,0],
+        ['C',0,0,2,0,1,0],
+        ['C',1,0,2,0,1,0],
+        ['C',3,0,2,0,1,0],
+        ['C',0,0,3,0,1,0],
+        ['C',1,0,3,0,1,0],
+        ['C',3,0,3,0,1,0],
+        ['C',0,0,4,0,1,0],
+        ['C',1,0,4,0,1,0],
+        ['C',3,0,4,0,1,0],
+        ['C',0,0,5,0,1,0],
+        ['C',1,0,5,0,1,0],
+        ['C',3,0,5,0,1,0],
+        ['C',0,0,6,0,1,0],
+        ['C',1,0,6,0,1,0],
+        ['C',3,0,6,0,1,0],
+        ['C',0,0,7,0,1,0],
+        ['C',1,0,7,0,1,0],
+        ['C',3,0,7,0,1,0],
+        ['C',0,0,8,0,1,0],
+        ['C',1,0,8,0,1,0],
+        ['C',3,0,8,0,1,0],
+        ['C',0,0,9,0,1,0],
+        ['C',1,0,9,0,1,0],
+        ['C',3,0,9,0,1,0],
             ]
 
-
-#run_single_simulation()
-run_multiple_simulations(scenarios)
+run_single_simulation()
+#run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-run_output_data_conversion(scenarios)
+#run_output_data_conversion(scenarios)
 #run_economics(scenarios)
 #######################

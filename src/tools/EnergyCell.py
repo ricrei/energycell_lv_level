@@ -198,14 +198,14 @@ class EnergyCell():
              'grid-oriented_feed-in_damping_feeder']
       hp = [None, \
             'direct', \
-            'household-oriented_feed-in_damping', \
-            'grid-oriented_feed-in_damping', \
-            'evu_lock', \
-            'residual_load_driven', \
-            'sg_ready_small_tes', \
-            'sg_ready_medium_tes', \
-            'sg_ready_large_tes',
-            'sg_ready_xlarge_tes']
+            'resiload_noBC_TES1', \
+            'resiload_noBC_TES2', \
+            'resiload_BC_TES1', \
+            'resiload_BC_TES2', \
+            'linch_fid_noBC_TES1', \
+            'linch_fid_noBC_TES2', \
+            'linch_fid_BC_TES1',
+            'linch_fid_BC_TES2']
       ev = [None, \
             'direct', \
             'household-oriented_feed-in_damping', \

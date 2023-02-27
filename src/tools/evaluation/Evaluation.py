@@ -419,9 +419,9 @@ def plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=
       x_ticklabels = tes
 
   fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[2], cbar=False, linewidth=.5)
+  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[0], cbar=False, linewidth=.5)
+  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[1], cbar=False, linewidth=.5)
+  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[2], cbar=False, linewidth=.5)
   axes[0].set_title('Abgeregelte Last SFH15 in %')
   axes[0].set(ylabel='SFH15', xlabel='')
   axes[1].set_title('Abgeregelte Last SFH45 in %')
@@ -936,8 +936,8 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
   time1 = power_1.index
   time2 = power_2.index
 
-  day1 = 1
-  day2 = 1
+  day1 = 6
+  day2 = 6
   
   time_min_1 = time1[(day1-1)*24*4]
   time_max_1 = time1[(day2)*24*4-1]
@@ -1008,7 +1008,7 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
 
   hp_soc_all = [hp_soc_1.T.sum(), hp_soc_2.T.sum()]
 
-  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 2, figsize=(8,7), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 2, figsize=(7,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
   for i in [0, 1]:
     #res
     storage_sum = storage[i].sum(axis=1)
@@ -1090,8 +1090,8 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
     #l3 = ax2[i].plot(tl_max[i]/100, 'g')[0]
     #l4 = ax2[i].plot(ll_max[i]/100, 'b')[0]
     
-    scale_max_tes = [99*0.019, 99*(0.014 + 0.027)]
-    scale_max_tes = [99*0.005, 99*(0.014 + 0.027)]
+    #scale_max_tes = [99*0.005, 99*(0.014 + 0.021)]
+    scale_max_tes = [99*(0.014 + 0.021), 99*(0.014 + 0.021)]
     l3 = ax2[i].plot(hp_soc_all[i]/scale_max_tes[i] * 100, 'r')[0]
     l_limit2 = ax2[i].plot(line_lt[i], '--k', lw=.5)[0]
     
@@ -1100,21 +1100,25 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
     l6 = ax3[i].plot(-line_lt[i]*trafo_s_n, '--k', lw=.5)[0]
 
     
-    ax1[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
-    ax1[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
-    ax2[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
-    ax2[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
-    ax3[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
-    ax3[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax1[i].set_xticks([k for k in power_sum[i].index if (k.hour == 12) & (k.minute == 0)])
+    ax1[i].set_xticklabels(['12:00']*7)
+
+    #ax1[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
 
     ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15)) # voltage band
     ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(-2, 110))    # line and trafo loading
     ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-.3, .3))   # Res_load
 
     if lan == 'DE':
+      ax0[0].set_title('residuallastgesteuert')
       ax0[1].set_title('präventiv-kurativ')
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
-      ax2[1].legend(handles=[l3, l_limit2], labels=['Ladezustand', 'Grenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax2[0].legend(handles=[l3, l_limit2], labels=['Ladezustand', 'Grenze'] ,loc="upper left", shadow=True, prop={'size': 7.5})
       if trafo_s_n == 0:
         ax3[1].legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       else:
@@ -2843,7 +2847,6 @@ def plot_bar_curtailed_power(eva, scenario, seasons, save_fig_dir=None):
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir+'curtailed_Load_power_allseasons'+str(scenario)+'.png', bbox_inches='tight', dpi=dpi)
-
 
 
 def plot_bar_chart_percent(eva, scenarios, seasons, save_fig_dir=None):

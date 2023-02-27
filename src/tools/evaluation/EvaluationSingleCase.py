@@ -285,11 +285,11 @@ class EvaluationSingleCase():
     print(' ')
     ##
     #bus = str(self.hp_demand_th.columns[2])
-    self.hp_hp_th = self.shorted_data(self.hp_hp_th, '1H')
+    self.hp_hp_th = self.shorted_data(self.hp_hp_th, '15T')
     print('HP- thermal Consumption: %s MWh' % self.hp_hp_th.sum().round(2))    
     
     temp = tt.get_amb_temp(self.time_scope)
-    temp = self.shorted_data(temp, '1H')
+    temp = self.shorted_data(temp, '15T')
     
     print('Mean_Value of Temp: %s MWh' % temp.mean().round(2))
     

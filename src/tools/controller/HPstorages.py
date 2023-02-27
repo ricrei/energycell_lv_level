@@ -50,98 +50,52 @@ class HPstorages():
         else :
           self.hp_stor_para['HP_max_p_kw'] = control_parameter['HP_max_p_kw'], #0.012, # in MW
         
-        '''
-        ## choose size of tes due to hp scenario digit
-        # tes_small
-        if (grid.scenario[3] == 6) :
-          ## Sizing VDI4645 minimum, no heating water storage, only potable water storage
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] = 0.005  
-          print('scenario:')
-          print(grid.scenario[0], grid.scenario[3])
-          print(self.hp_stor_para['HP_max_p_kw'])
-          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
-        # tes_medium
-        elif (grid.scenario[3] == 7) :
-          ## Sizing VDI 4645: hp_dp_p_kw  * 20l/kW_th * 1.632Wh/(Kg*K) * 10K
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] = \
-            self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing'] \
-              / 1000 * 20 * 1.632 * 10 
-          ## add potable water storage 5kWh
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] += 0.005
-          print('scenario:')
-          print(grid.scenario[0], grid.scenario[3])
-          print(self.hp_stor_para['HP_max_p_kw'])
-          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
-        # tes_large
-        elif (grid.scenario[3] == 8) : 
-          ## Sizing VDI 4645: hp_max_p_kw * 40l/kW_th * 3h EVU_Lock * 1.632Wh/(Kg*K) * 10K
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] = \
-            self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing'] \
-              / 1000 * 40 * 3 * 1.632 * 10
-          ## add potable water storage 5kWh
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] += 0.005
-          print('scenario:')
-          print(grid.scenario[0], grid.scenario[3])
-          print(self.hp_stor_para['HP_max_p_kw'])
-          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
-          # tes_xlarge
-        elif (grid.scenario[3] == 9) : 
-          ## Sizing VDI 4645: hp_max_p_kw * 40l/kW_th * 3h EVU_Lock * 1.632Wh/(Kg*K) * 10K
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] = \
-            self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing'] \
-              / 1000 * 60 * 3 * 1.632 * 10
-          ## add potable water storage 5kWh
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] += 0.005
-          print('scenario:')
-          print(grid.scenario[0], grid.scenario[3])
-          print(self.hp_stor_para['HP_max_p_kw'])
-          print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
-        else :
-          self.hp_stor_para['hp_TES_max_capacity_mwh'] = control_parameter['HP_TES_max_capacity_def_mwh']
-        '''
         
         ## choose size of tes due to hp scenario digit
         # tes_small
-        if (grid.scenario[3] == 6) :
+        if (grid.scenario[3] == 6 or grid.scenario[3] == 2) :
           ## Sizing VDI4645 minimum, no heating water storage, only potable water storage
           self.hp_stor_para['hp_TES_max_capacity_mwh'] = 0.005
         # tes_medium
-        elif (grid.scenario[3] == 7) :
+        elif (grid.scenario[3] == 7 or grid.scenario[3] == 3) :
           ## Sizing VDI 4645: hp_max_p_kw * 40l/kW_th * 3h EVU_Lock * 1.632Wh/(Kg*K) * 10K
           self.hp_stor_para['hp_TES_max_capacity_mwh'] = \
-            self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing'] \
-              / 1000 * 40 * 3 * 1.632 * 10
+            ((self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing']) \
+              * 40 * 3 * 1.163 * 10) / 1000
           ## add potable water storage 5kWh
           self.hp_stor_para['hp_TES_max_capacity_mwh'] += 0.005
         # tes_large
-        elif (grid.scenario[3] == 8) : 
+        elif (grid.scenario[3] == 8 or grid.scenario[3] == 4) : 
           ## Sizing VDI4645 minimum, no heating water storage, only potable water storage
           self.hp_stor_para['hp_TES_max_capacity_mwh'] = 0.005  
           # tes_xlarge
-        elif (grid.scenario[3] == 9) : 
+        elif (grid.scenario[3] == 9 or grid.scenario[3] == 5) : 
           ## Sizing VDI 4645: hp_max_p_kw * 40l/kW_th * 3h EVU_Lock * 1.632Wh/(Kg*K) * 10K
           self.hp_stor_para['hp_TES_max_capacity_mwh'] = \
-            self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing'] \
-              / 1000 * 40 * 3 * 1.632 * 10
+            ((self.hp_stor_para['HP_max_p_kw'] / control_parameter['HP_max_p_oversizing']) \
+              * 40 * 3 * 1.163 * 10) / 1000
           ## add potable water storage 5kWh
           self.hp_stor_para['hp_TES_max_capacity_mwh'] += 0.005
-
         else :
           self.hp_stor_para['hp_TES_max_capacity_mwh'] = control_parameter['HP_TES_max_capacity_def_mwh']
         
-        ## varies upper_tes_reserve depending on seasons
+        ## set upper_tes_reserve depending on seasons
         if 'name' in grid.time_scope.keys():
+          #use building_capacity in heat_period
           if grid.time_scope['name'] in ['winter', 'spring', 'autumn']:
             self.hp_stor_para['hp_building_capacity_mwh'] = control_parameter['HP_building_capacity_mwh']#.014
+            #only in winter use the lower_tes_reserve
             if grid.time_scope['name'] in ['winter']:
               self.hp_stor_para['lower_tes_reserve'] = control_parameter['HP_lower_TES_reserve_winter'] #.1 # in 0-1
               self.hp_stor_para['hp_start_soc'] = control_parameter['HP_TES_start_soc_winter']#.25
           elif grid.time_scope['name'] == 'summer':
+            #reduce max_tes_capacity to hotwater storage
+            self.hp_stor_para['hp_TES_max_capacity_mwh'] += 0.005
             self.hp_stor_para['upper_tes_reserve'] = control_parameter['HP_upper_TES_reserve_summer'] #.5 # in 0-1
             self.hp_stor_para['hp_start_soc'] = control_parameter['HP_TES_start_soc_summer']#.75
 
         ## in szenario 8 and 9 add building_capacity
-        if (grid.scenario[3] == 9) or (grid.scenario[3] == 8) :
+        if (grid.scenario[3] == 9 or grid.scenario[3] == 8 or grid.scenario[3] == 4 or grid.scenario[3] == 5) :
           self.hp_stor_para['hp_max_capacity_mwh'] = \
               self.hp_stor_para['hp_building_capacity_mwh'] \
             + self.hp_stor_para['hp_TES_max_capacity_mwh']
@@ -156,10 +110,10 @@ class HPstorages():
         self.intervall_in_seconds = grid.time_scope['intervall_in_seconds']
 
         print('scenario:')
-        print(grid.scenario[0], grid.scenario[3])
-        print(self.hp_stor_para['HP_max_p_kw'])
-        print(self.hp_stor_para['hp_TES_max_capacity_mwh'])
-        print(self.hp_stor_para['hp_max_capacity_mwh'])
+        print('Setting:', grid.scenario[0], grid.scenario[3])
+        print('HP_max_p:', self.hp_stor_para['HP_max_p_kw'])
+        print('TES_max_capa:', self.hp_stor_para['hp_TES_max_capacity_mwh'])
+        print('BC+TES_capa:',self.hp_stor_para['hp_max_capacity_mwh'])
 
     def create_hp_storages(self, grid):
         '''
