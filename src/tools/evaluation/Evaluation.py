@@ -87,663 +87,6 @@ def calculate_outputdata(eva, scenarios, grid, save_fig_dir=None):
   print(' summer   : ' + str(power_summer.sum().pv/power_summer.sum().load_sum))
   print(' winter   : ' + str(power_winter.sum().pv/power_winter.sum().load_sum))
 
-def plot_heatmap_self_consumption_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-  
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  
-  #############################
-  ### Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45  ,  \
-             'SFH100' : df_sfh100 
-             }
-  ############################
-
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df in one dict
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      #if first iteration create dataframe
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        pd.DataFrame({'pv_gen' : eva[index_eva]['power']['pv'] , \
-                      'curt_pv' : eva[index_eva]['curtailed_power']['pv'] , \
-                      'trafo_p' : eva[index_eva]['trafo_p']['0'] })
-    else :
-      #else append the data to dataframe
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(pd.DataFrame({ \
-                      'pv_gen' : eva[index_eva]['power']['pv'] ,\
-                      'curt_pv' : eva[index_eva]['curtailed_power']['pv'] ,\
-                      'trafo_p' : eva[index_eva]['trafo_p']['0'] }) )
-
-  ## calculate and create tables for heatmap
-  for index_eva in eva:
-    ##calculate self_suff
-    sum_curt_pv = conclude_seasons[eva[index_eva]['scenario']]['curt_pv'].sum()
-    sum_pv_gen = conclude_seasons[eva[index_eva]['scenario']]['pv_gen'].sum()
-    resi_trafo = -1 * conclude_seasons[eva[index_eva]['scenario']]['trafo_p']
-    resi_trafo_pos = resi_trafo[resi_trafo > 0]
-    
-    if sum_pv_gen > 0 :
-      self_con = ((sum_pv_gen - resi_trafo_pos.sum() - sum_curt_pv) / (sum_pv_gen)) * 100
-    else : 
-      self_con = 0
-    if self_con < 0 :
-      self_con = 0
-    
-    ## fill table of correct building-type
-    # iterate through rows (index_pv) in final table
-    for index_pv in interp_pv:
-      # iterate through columns (index_tes) in final table
-      for index_tes in interp_tes:
-        df_sfhs[interp_sfh[eva[index_eva]['scenario'][0]]].at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                             , interp_tes[str(eva[index_eva]['scenario'][3])]] = self_con
-
-  vmax = 100
-  vmin = 0
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('Eigenverbrauchsgrad SFH15 in %')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('Eigenverbrauchsgrad SFH45  in %')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('Eigenverbrauchsgrad SFH100 in %')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-
-def plot_heatmap_self_sufficiency_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-  
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-
-  ## Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45 ,   \
-             'SFH100' : df_sfh100 
-             }
-  
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df in one dict
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      #if first iteration create dataframe
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        pd.DataFrame({'hh_load' : eva[index_eva]['power']['load'] ,\
-                      'hp_load' : eva[index_eva]['power']['hp'] ,\
-                      'ev_load' : eva[index_eva]['power']['ev'] , \
-                      'losses' : eva[index_eva]['losses']['trafo'] , \
-                      'trafo_p' : eva[index_eva]['trafo_p']['0'] })
-    else :
-      #else append the data to dataframe
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(pd.DataFrame({ \
-                      'hh_load' : eva[index_eva]['power']['load'] ,\
-                      'hp_load' : eva[index_eva]['power']['hp'] ,\
-                      'ev_load' : eva[index_eva]['power']['ev'] , \
-                      'losses' : eva[index_eva]['losses']['trafo'] , \
-                      'trafo_p' : eva[index_eva]['trafo_p']['0'] }) )
-
-  ## calculate and create tables for heatmap
-  for index_eva in eva:
-    ##calculate self_suff
-    sum_losses = conclude_seasons[eva[index_eva]['scenario']]['losses'].sum()
-    sum_load = conclude_seasons[eva[index_eva]['scenario']]['hh_load'].sum() \
-              + conclude_seasons[eva[index_eva]['scenario']]['hp_load'].sum() \
-              + conclude_seasons[eva[index_eva]['scenario']]['ev_load'].sum()
-    resi_trafo = -1 * conclude_seasons[eva[index_eva]['scenario']]['trafo_p']
-    resi_trafo_neg = resi_trafo[resi_trafo < 0]
-
-    self_suff = ((sum_load + sum_losses + resi_trafo_neg.sum()) / (sum_load + sum_losses)) * 100
-
-    ## fill table of correct building-type
-    # iterate through rows (index_pv) in final table
-    for index_pv in interp_pv:
-      # iterate through columns (index_tes) in final table
-      for index_tes in interp_tes:
-        #avoid slightly negative values due to inaccuracies
-        if self_suff > 0 : 
-          df_sfhs[interp_sfh[eva[index_eva]['scenario'][0]]].at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                             , interp_tes[str(eva[index_eva]['scenario'][3])]] = self_suff
-        else :
-          df_sfhs[interp_sfh[eva[index_eva]['scenario'][0]]].at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                             , interp_tes[str(eva[index_eva]['scenario'][3])]] = 0
-  vmax = 100
-  vmin = 0
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('Autarkiegrad SFH15 in %')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('Autarkiegrad SFH45  in %')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('Autarkiegrad SFH100 in %')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-
-def plot_heatmap_curtailed_pv_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-        
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-
-  ## Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45 ,   \
-             'SFH100' : df_sfh100 
-             }
-  
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df in one dict
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        pd.DataFrame({'load' : eva[index_eva]['curtailed_power']['load'] ,\
-                      'pv_curt' : eva[index_eva]['curtailed_power']['pv'] , \
-                      'pv_gen' : eva[index_eva]['power']['pv']  })
-    else :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(pd.DataFrame({ \
-                      'load' : eva[index_eva]['curtailed_power']['load'], \
-                      'pv_curt' : eva[index_eva]['curtailed_power']['pv'] , \
-                      'pv_gen' : eva[index_eva]['power']['pv'] }) )
- 
-  ## fill tables for heatmap
-  for index_eva in eva:
-    pv_gen_sum = conclude_seasons[eva[index_eva]['scenario']]['pv_gen'].sum()
-    pv_curt_sum = conclude_seasons[eva[index_eva]['scenario']]['pv_curt'].sum()
-    
-    if pv_gen_sum > 0 :
-      curtail_pv = pv_curt_sum / (pv_curt_sum + pv_gen_sum) * 100
-    else :
-      curtail_pv = 0
-    
-    ## fill table of correct building-type
-    # iterate through rows (index_pv) in final table
-    for index_pv in interp_pv:
-      # iterate through columns (index_tes) in final table
-      for index_tes in interp_tes:
-        df_sfhs[interp_sfh[eva[index_eva]['scenario'][0]]].at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                             , interp_tes[str(eva[index_eva]['scenario'][3])]] = curtail_pv
-  
-  vmax = 100
-  vmin = 0
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('Abgeregelte PV SFH15 in %')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('Abgeregelte PV SFH45 in %')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('Abgeregelte PV SFH100 in %')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-
-def plot_heatmap_curtailed_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-        
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-
-  ## Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45 ,   \
-             'SFH100' : df_sfh100 
-             }
-
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df in one dict
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      #if first iteration create dataframe
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        pd.DataFrame({'hh_load' : eva[index_eva]['power']['load'] ,\
-                      'hp_load' : eva[index_eva]['power']['hp'] ,\
-                      'ev_load' : eva[index_eva]['power']['ev'] , \
-                      'load_curt' : eva[index_eva]['curtailed_power']['load'] })
-    else :
-      #else append the data to dataframe
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(pd.DataFrame({ \
-                      'hh_load' : eva[index_eva]['power']['load'] ,\
-                      'hp_load' : eva[index_eva]['power']['hp'] ,\
-                      'ev_load' : eva[index_eva]['power']['ev'] , \
-                      'load_curt' : eva[index_eva]['curtailed_power']['load'] }) )
-
-  ## calculate and create tables for heatmap
-  for index_eva in eva:
-    ##calculate self_suff
-    sum_load = conclude_seasons[eva[index_eva]['scenario']]['hh_load'].sum() \
-              + conclude_seasons[eva[index_eva]['scenario']]['hp_load'].sum() \
-              + conclude_seasons[eva[index_eva]['scenario']]['ev_load'].sum()
-    load_curt_sum = conclude_seasons[eva[index_eva]['scenario']]['load_curt'].sum()
-    
-    curt_load = load_curt_sum / (sum_load + load_curt_sum) * 100
-    
-    ## fill table of correct building-type
-    # iterate through rows (index_pv) in final table
-    for index_pv in interp_pv:
-      # iterate through columns (index_tes) in final table
-      for index_tes in interp_tes:
-        #avoid slightly negative values due to inaccuracies
-        if curt_load > 0 : 
-          df_sfhs[interp_sfh[eva[index_eva]['scenario'][0]]].at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                             , interp_tes[str(eva[index_eva]['scenario'][3])]] = curt_load
-        else :
-          df_sfhs[interp_sfh[eva[index_eva]['scenario'][0]]].at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                             , interp_tes[str(eva[index_eva]['scenario'][3])]] = 0
-          
-  vmax = 100
-  vmin = 0
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('Abgeregelte Last SFH15 in %')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('Abgeregelte Last SFH45 in %')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('Abgeregelte Last SFH100 in %')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-
-def plot_heatmap_mean_trafo_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-  
-  evaluation_criteria = 'tl'     #trafo_load
-  
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-
-  ## Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45 ,   \
-             'SFH100' : df_sfh100 
-             }
-  
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        eva[index_eva][evaluation_criteria]['0']
-    else :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(eva[index_eva][evaluation_criteria]['0'])
-  
-  ## fill tables for heatmap
-  for index_eva in eva:
-    for index_pv in interp_pv:
-      for index_tes in interp_tes:
-        if 'A' in eva[index_eva]['scenario']:
-          df_sfh15.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].mean()
-        
-        if 'B' in eva[index_eva]['scenario']:
-          df_sfh45.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].mean()
-        
-        if 'C' in eva[index_eva]['scenario']:
-          df_sfh100.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].mean()
-  
-  vmax = 100
-  vmin = 0
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-  
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".0f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('mittlere Trafo_Last SFH15 in %')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('mittlere Trafo_Last SFH45 in %')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('mittlere Trafo_Last SFH100 in %')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-        
-def plot_heatmap_min_voltage_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-  
-  evaluation_criteria = 'v'     #trafo_load
-  
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-
-  ## Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45 ,   \
-             'SFH100' : df_sfh100 
-             }
-  
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        eva[index_eva][evaluation_criteria]['0']
-    else :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(eva[index_eva][evaluation_criteria]['0'])
-  
-  ## fill tables for heatmap
-  for index_eva in eva:
-    for index_pv in interp_pv:
-      for index_tes in interp_tes:
-        if 'A' in eva[index_eva]['scenario']:
-          df_sfh15.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].min()
-        
-        if 'B' in eva[index_eva]['scenario']:
-          df_sfh45.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].min()
-        
-        if 'C' in eva[index_eva]['scenario']:
-          df_sfh100.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].min()
-  
-  vmax = 1.1
-  vmin = 0.9
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-  
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('min Leitungsspannung SFH15 in p.u.')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('min Leitungsspannung SFH45 in p.u.')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('min Leitungsspannung SFH100 in p.u.')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-
-def plot_heatmap_max_voltage_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-  
-  evaluation_criteria = 'v'     #trafo_load
-  
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-
-  ## Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45 ,   \
-             'SFH100' : df_sfh100 
-             }
-  
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        eva[index_eva][evaluation_criteria]['0']
-    else :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(eva[index_eva][evaluation_criteria]['0'])
-  
-  ## fill tables for heatmap
-  for index_eva in eva:
-    for index_pv in interp_pv:
-      for index_tes in interp_tes:
-        if 'A' in eva[index_eva]['scenario']:
-          df_sfh15.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].max()
-        
-        if 'B' in eva[index_eva]['scenario']:
-          df_sfh45.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].max()
-        
-        if 'C' in eva[index_eva]['scenario']:
-          df_sfh100.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].max()
-  
-  vmax = 1.1
-  vmin = 0.9
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-  
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".2f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('max Leitungsspannung SFH15 in p.u.')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('max Leitungsspannung SFH45 in p.u.')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('max Leitungsspannung SFH100 in p.u.')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-
-def plot_heatmap_max_line_load_tes_to_pv(eva, scenario, net_name, save_fig_dir=None):
-  
-  pvs = ['PV_kein', 'PV_mittel', 'PV_groß']
-  tes = ['noBC+TES1', 'noBC+TES2', 'BC+TES1', 'BC+TES2']
-  
-  interp_sfh = {'A' : 'SFH15', 'B' : 'SFH45', 'C' : 'SFH100'}
-  interp_pv  = {'0' : pvs[0], \
-                '3' : pvs[1], \
-                '1' : pvs[2]}
-  interp_tes = {'6' : tes[0], \
-                '7' : tes[1], \
-                '8' : tes[2], \
-                '9' : tes[3]}
-  
-  evaluation_criteria = 'll'     #trafo_load
-  
-  df_sfh15 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh45 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-  df_sfh100 = pd.DataFrame(index=[pvs], columns=tes).fillna(0)
-
-  ## Define dict SFHs names ###
-  df_sfhs = {'SFH15'  : df_sfh15  ,  \
-             'SFH45'  : df_sfh45 ,   \
-             'SFH100' : df_sfh100 
-             }
-  
-  conclude_seasons = {}
-  ## conclude all relevant values of all seasons to one df
-  for index_eva in eva:
-    if eva[index_eva]['scenario'] not in conclude_seasons :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        eva[index_eva][evaluation_criteria]['0']
-    else :
-      conclude_seasons[eva[index_eva]['scenario']] = \
-        conclude_seasons[eva[index_eva]['scenario']].append(eva[index_eva][evaluation_criteria]['0'])
-  
-  ## fill tables for heatmap
-  for index_eva in eva:
-    for index_pv in interp_pv:
-      for index_tes in interp_tes:
-        if 'A' in eva[index_eva]['scenario']:
-          df_sfh15.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].max()
-        
-        if 'B' in eva[index_eva]['scenario']:
-          df_sfh45.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].max()
-        
-        if 'C' in eva[index_eva]['scenario']:
-          df_sfh100.at[interp_pv[str(eva[index_eva]['scenario'][1])] \
-                       , interp_tes[str(eva[index_eva]['scenario'][3])]] \
-                        = conclude_seasons[eva[index_eva]['scenario']].max()
-  
-  vmax = 100
-  vmin = 0
-  
-  if lan == 'EN':
-    x_ticklabels = tes
-  elif lan == 'DE':
-      x_ticklabels = tes
-  
-  fig, axes = plt.subplots(3, 1, figsize=(4.3, 4))
-  sns.heatmap(data=df_sfh15, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[0], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh45, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[1], cbar=False, linewidth=.5)
-  sns.heatmap(data=df_sfh100, vmax = vmax, vmin = vmin, cmap="rocket_r", annot=True, square=False, fmt=".1f", ax=axes[2], cbar=False, linewidth=.5)
-  axes[0].set_title('max. Leitungsbelastung SFH15 in %')
-  axes[0].set(ylabel='SFH15', xlabel='')
-  axes[1].set_title('max. Leitungsbelastung SFH45 in %')
-  axes[1].set(ylabel='SFH45', xlabel='')
-  axes[2].set_title('max. Leitungsbelastung SFH100 in %')
-  axes[2].set(ylabel='SFH100', xlabel='')
-  fig.tight_layout()
-  
-  if save_fig_dir is not None:
-     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi)
-
 ### Output plots ###
 def plot_generation_consumption_as_heat_map_overall_eva(power, save_fig_dir=None):
 
@@ -1087,9 +430,9 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
     ax1[i].plot(line_v_u[i], '--k', lw=.5)
     l2 = ax1[i].plot(v_max[i], 'y')[0]
     l_limit = ax1[i].plot(line_v_o[i], '--k', lw=.5)[0]
+    
     #l3 = ax2[i].plot(tl_max[i]/100, 'g')[0]
     #l4 = ax2[i].plot(ll_max[i]/100, 'b')[0]
-    
     #scale_max_tes = [99*0.005, 99*(0.014 + 0.021)]
     scale_max_tes = [99*(0.014 + 0.021), 99*(0.014 + 0.021)]
     l3 = ax2[i].plot(hp_soc_all[i]/scale_max_tes[i] * 100, 'r')[0]
@@ -1119,6 +462,7 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
       ax0[1].set_title('präventiv-kurativ')
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       ax2[0].legend(handles=[l3, l_limit2], labels=['Ladezustand', 'Grenze'] ,loc="upper left", shadow=True, prop={'size': 7.5})
+      #ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       if trafo_s_n == 0:
         ax3[1].legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       else:
@@ -1130,6 +474,7 @@ def plot_residualload_grid_issues_subplot_overall_eva(eva1, eva2, save_fig_dir=N
       ax3[0].set_ylabel('Leistung\nin MW')
     elif lan == 'EN':
       ax1[1].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      ax2[0].legend(handles=[l3, l_limit2], labels=['HP_SOC', 'Limit'] ,loc="upper left", shadow=True, prop={'size': 7.5})
       #ax2[1].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=True, prop={'size': 7.5})
       if trafo_s_n == 0:
         ax3[1].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=True, prop={'size': 7.5})
@@ -1410,7 +755,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1, eva2, eva3, 
 
 
 ### with 4 plots ###
-def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, eva4, save_fig_dir=None):
+def plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario, eva1, eva2, eva3, eva4, save_fig_dir=None):
   prop_cycle = plt.rcParams['axes.prop_cycle']
   c = prop_cycle.by_key()['color']
   font_size_legend = 9
@@ -1448,13 +793,19 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   curtailed_power_4 = eva4['curtailed_power']
   curtailed = [curtailed_power_1, curtailed_power_2, curtailed_power_3, curtailed_power_4]
 
+  #hp_soc
+  hp_soc_1 = eva1['hp_soc']
+  hp_soc_2 = eva2['hp_soc']
+  hp_soc_3 = eva3['hp_soc']
+  hp_soc_4 = eva4['hp_soc']
+
   time1 = power_1.index
   time2 = power_2.index
   time3 = power_3.index
   time4 = power_4.index
 
-  day1 = 4
-  day2 = 5
+  day1 = 1
+  day2 = 7
   time_min_1 = time1[(day1-1)*24*4]
   time_max_1 = time1[(day2)*24*4-1]
 
@@ -1466,19 +817,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
 
   time_min_4 = time4[(day1-1)*24*4]
   time_max_4 = time4[(day2)*24*4-1]
-  '''
-  time_min_1 = time1[(day1-1)*24*60]
-  time_max_1 = time1[(day2)*24*60-1]
-  
-  time_min_2 = time2[(day1-1)*24*60]
-  time_max_2 = time2[(day2)*24*60-1]
-  
-  time_min_3 = time3[(day1-1)*24*60]
-  time_max_3 = time3[(day2)*24*60-1]
-  
-  time_min_4 = time4[(day1-1)*24*60]
-  time_max_4 = time4[(day2)*24*60-1]
-  '''
+
   time_min = [time_min_1, time_min_2, time_min_3, time_min_4]
   time_max = [time_max_1, time_max_2, time_max_3, time_max_4]
 
@@ -1533,19 +872,19 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
 
   line_v_o_plot1 = power_plot1*0 + 1.1
   line_v_u_plot1 = power_plot1*0 + .9
-  line_lt_plot1 = power_plot1*0 + 1
+  line_lt_plot1 = power_plot1*0 + 100
 
   line_v_o_plot2 = power_plot2*0 + 1.1
   line_v_u_plot2 = power_plot2*0 + .9
-  line_lt_plot2 = power_plot2*0 + 1
+  line_lt_plot2 = power_plot2*0 + 100
 
   line_v_o_plot3 = power_plot3*0 + 1.1
   line_v_u_plot3 = power_plot3*0 + .9
-  line_lt_plot3 = power_plot3*0 + 1
+  line_lt_plot3 = power_plot3*0 + 100
 
   line_v_o_plot4 = power_plot4*0 + 1.1
   line_v_u_plot4 = power_plot4*0 + .9
-  line_lt_plot4 = power_plot4*0 + 1
+  line_lt_plot4 = power_plot4*0 + 100
 
   line_v_o = [line_v_o_plot1, line_v_o_plot2, line_v_o_plot3, line_v_o_plot4]
   line_v_u = [line_v_u_plot1, line_v_u_plot2, line_v_u_plot3, line_v_u_plot4]
@@ -1557,8 +896,10 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   tl_max = [tl_plot1.T.max().T, tl_plot2.T.max().T, tl_plot3.T.max().T, tl_plot4.T.max().T]
   power_sum = [power_plot1, power_plot2, power_plot3, power_plot4]
 
+  hp_soc_all = [hp_soc_1.T.sum(), hp_soc_2.T.sum(), hp_soc_3.T.sum(), hp_soc_4.T.sum()]
+
   # figsize=(10,10)
-  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 4, figsize=(12,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 4, figsize=(20,6), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
   for i in [0, 1, 2, 3]:
     #res
     storage_sum = storage[i].sum(axis=1)
@@ -1642,26 +983,51 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
     ax1[i].plot(line_v_u[i], '--k', lw=.5)
     l2 = ax1[i].plot(v_max[i], 'y')[0]
     l_limit = ax1[i].plot(line_v_o[i], '--k', lw=.5)[0]
-    l3 = ax2[i].plot(tl_max[i]/100, 'g')[0]
-    l4 = ax2[i].plot(ll_max[i]/100, 'b')[0]
+    
+    ##choose storagedimensions due to scenariotype ('A','B','C') (SFH15/45/100)
+    #if Scenario B SFH15
+    if SFHscenario is 'A':
+      scale_max_tes = [99*(0.005), 99*(0.0095), 99*(0.014 + 0.005), 99*(0.014 + 0.0095)]  
+    #if Scenario B SFH45
+    if SFHscenario is 'B':
+      scale_max_tes = [99*(0.005), 99*(0.013), 99*(0.014 + 0.005), 99*(0.014 + 0.013)]  
+    #if Scenario C SFH100
+    if SFHscenario is 'C':
+      scale_max_tes = [99*(0.005), 99*(0.021), 99*(0.014 + 0.005), 99*(0.014 + 0.021)]
+    '''
+    ###wrong storages the summer
+    ##choose storagedimensions due to scenariotype ('A','B','C') (SFH15/45/100)
+    #if Scenario B SFH15
+    if SFHscenario is 'A':
+      scale_max_tes = [99*(0.021 - 0.011), 99*(0.021 - 0.006), 99*(0.021 - 0.011), 99*(0.021 - 0.006)]  
+    #if Scenario B SFH45
+    if SFHscenario is 'B':
+      scale_max_tes = [99*(0.010), 99*(0.020), 99*(0.010), 99*(0.020)]  
+    #if Scenario C SFH100
+    if SFHscenario is 'C':
+      scale_max_tes = [99*(0.010), 99*(0.021 + 0.005), 99*(0.010), 99*(0.005  + 0.021)]
+    '''
+    l3 = ax2[i].plot(hp_soc_all[i]/scale_max_tes[i] * 100, 'r')[0]
     l_limit2 = ax2[i].plot(line_lt[i], '--k', lw=.5)[0]
     l5 = ax3[i].plot(power_sum[i], 'k')[0]
     ax3[i].plot(line_lt[i]*trafo_s_n, '--k', lw=.5)[0]
     l6 = ax3[i].plot(-line_lt[i]*trafo_s_n, '--k', lw=.5)[0]
-    ax1[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
-    ax1[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
-    ax2[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
-    ax2[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
-    ax3[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
-    ax3[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax3[i].set_xticks([k for k in power_sum[i].index if (k.hour == 12) & (k.minute == 0)])
+    ax3[i].set_xticklabels(['12:00']*7)
 
     ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15)) # voltage band
-    ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(0, 1.1))    # line and trafo loading
+    ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(-2, 110))    # line and trafo loading
     ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-.3, .3))   # Res_load
 
     if lan == 'DE':
+      ax0[0].set_title('noBC+TES1')
+      ax0[1].set_title('noBC+TES2')
+      ax0[2].set_title('BC+TES1')
+      ax0[3].set_title('BC+TES2')
       ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.225), bbox_transform=fig.transFigure)
-      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.111), bbox_transform=fig.transFigure)
+      ax2[0].legend(handles=[l3, l_limit2], labels=['Ladezustand', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.111), bbox_transform=fig.transFigure)
+      #ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.111), bbox_transform=fig.transFigure)
       if trafo_s_n == 0:
         ax3[3].legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
       else:
@@ -1675,7 +1041,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
       ax3[0].set_ylabel('Leistung\nin MW')
     elif lan == 'EN':
       ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.22), bbox_transform=fig.transFigure) #0.225
-      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.09), bbox_transform=fig.transFigure) #0.111
+      ax2[0].legend(handles=[l3, l_limit2], labels=['HP_SOC', 'Limit'] ,loc="upper left", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.09), bbox_transform=fig.transFigure)
+      #ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.09), bbox_transform=fig.transFigure) #0.111
       if trafo_s_n == 0:
         ax3[3].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
       else:

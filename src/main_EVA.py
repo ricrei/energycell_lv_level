@@ -120,41 +120,105 @@ scenarios = ['A002010', 'A302010', 'A102010', 'A003010', 'A303010', 'A103010', \
              'C006010', 'C306010', 'C106010', 'C007010', 'C307010', 'C107010', \
              'C008010', 'C308010', 'C108010', 'C009010', 'C309010', 'C109010']
 '''
-# --- Power and Components loading --- #
-scenarios = ['A006010', 'A306010', 'A106010', 'A007010', 'A307010', 'A107010', \
-             'A008010', 'A308010', 'A108010', 'A009010', 'A309010', 'A109010', \
-             'B006010', 'B306010', 'B106010', 'B007010', 'B307010', 'B107010', \
-             'B008010', 'B308010', 'B108010', 'B009010', 'B309010', 'B109010', \
-             'C006010', 'C306010', 'C106010', 'C007010', 'C307010', 'C107010', \
-             'C008010', 'C308010', 'C108010', 'C009010', 'C309010', 'C109010']
-'''
-  
-eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
-#plot_residualload_overall_eva(power, save_fig_dir=save_fig_dir+ 'res_grid_sfh100_plot1.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['sC108010n8spring'], eva2=eva['sC109010n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['sC105010n8winter'], eva2=eva['sC109010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['sC106010n8summer'], eva2=eva['sC109010n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100.png')
   
 #eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC107010n8winter'], eva2=eva['sC108010n8winter'], eva3=eva['sC109010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_all_tes_3plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC106010n8winter'], eva2=eva['sC107010n8winter'], eva3=eva['sC108010n8winter'], eva4=eva['sC109010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_all_tes_4plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sB106010n8winter'], eva2=eva['sB107010n8winter'], eva3=eva['sB108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh45_winter_all_tes_3plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106010n8winter'], eva2=eva['sC107010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_all_tes_3plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA108010n8winter'], eva2=eva['sB108010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfhs_winter_large_tes_large_pv.png')
+#plot_residualload_overall_eva(power, save_fig_dir=save_fig_dir+ 'res_grid_sfh100_plot1.png')
+#evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['sC108010n8spring'], eva2=eva['sC109010n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100.png')
+#evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['sC105010n8winter'], eva2=eva['sC109010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100.png')
+#evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['sC106010n8summer'], eva2=eva['sC109010n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100.png')
 
-#eva = load_scenario_data(scenarios, grids=['n8'], seasons=['summer', 'winter', 'spring', 'autumn'])
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC108010n8winter'], eva2=eva['sC108010n8spring'], eva3=eva['sC108010n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_all_seas_large_tes_large_pv.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106010n8spring'], eva2=eva['sC107010n8spring'], eva3=eva['sC108010n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_spring_all_tes_large_pv.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC008010n8winter'], eva2=eva['sC308010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_large_tes_all_pv.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106010n8winter'], eva2=eva['sC107010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfh100_winter_all_tes_large_pv.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA108010n8winter'], eva2=eva['sB108010n8winter'], eva3=eva['sC108010n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sfhs_winter_large_tes_large_pv.png')
+'''
+eva = load_scenario_data(scenarios, grids=['n8'], seasons=['spring'])
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA102010n8spring'], eva2=eva['sA103010n8spring'], eva3=eva['sA104010n8spring'], eva4=eva['sA105010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_spring_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA106010n8spring'], eva2=eva['sA107010n8spring'], eva3=eva['sA108010n8spring'], eva4=eva['sA109010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_spring_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB102010n8spring'], eva2=eva['sB103010n8spring'], eva3=eva['sB104010n8spring'], eva4=eva['sB105010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_spring_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB106010n8spring'], eva2=eva['sB107010n8spring'], eva3=eva['sB108010n8spring'], eva4=eva['sB109010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_spring_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC102010n8spring'], eva2=eva['sC103010n8spring'], eva3=eva['sC104010n8spring'], eva4=eva['sC105010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_spring_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC106010n8spring'], eva2=eva['sC107010n8spring'], eva3=eva['sC108010n8spring'], eva4=eva['sC109010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_spring_all_tes_pv_large.png')
 
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA106110n8winter'], eva2=eva['sA107110n8winter'], eva3=eva['sA108110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_winter_sfh15_all_tes_4plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sB106110n8winter'], eva2=eva['sB107110n8winter'], eva3=eva['sB108110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_winter_sfh45_all_tes_4plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC106110n8winter'], eva2=eva['sC107110n8winter'], eva3=eva['sC108110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_winter_sfh100_all_tes_4plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sC008110n8winter'], eva2=eva['sC308110n8winter'], eva3=eva['sC108110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_winter_sfh100_all_pv_4plots.png')
-#evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA008110n8winter'], eva2=eva['sA308110n8winter'], eva3=eva['sA108110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_winter_sfh15_all_pv_4plots.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA302010n8spring'], eva2=eva['sA303010n8spring'], eva3=eva['sA304010n8spring'], eva4=eva['sA305010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_spring_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA306010n8spring'], eva2=eva['sA307010n8spring'], eva3=eva['sA308010n8spring'], eva4=eva['sA309010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_spring_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB302010n8spring'], eva2=eva['sB303010n8spring'], eva3=eva['sB304010n8spring'], eva4=eva['sB305010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_spring_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB306010n8spring'], eva2=eva['sB307010n8spring'], eva3=eva['sB308010n8spring'], eva4=eva['sB309010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_spring_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC302010n8spring'], eva2=eva['sC303010n8spring'], eva3=eva['sC304010n8spring'], eva4=eva['sC305010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_spring_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC306010n8spring'], eva2=eva['sC307010n8spring'], eva3=eva['sC308010n8spring'], eva4=eva['sC309010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_spring_all_tes_pv_medium.png')
 
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA002010n8spring'], eva2=eva['sA003010n8spring'], eva3=eva['sA004010n8spring'], eva4=eva['sA005010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_spring_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA006010n8spring'], eva2=eva['sA007010n8spring'], eva3=eva['sA008010n8spring'], eva4=eva['sA009010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_spring_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB002010n8spring'], eva2=eva['sB003010n8spring'], eva3=eva['sB004010n8spring'], eva4=eva['sB005010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_spring_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB006010n8spring'], eva2=eva['sB007010n8spring'], eva3=eva['sB008010n8spring'], eva4=eva['sB009010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_spring_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC002010n8spring'], eva2=eva['sC003010n8spring'], eva3=eva['sC004010n8spring'], eva4=eva['sC005010n8spring'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_spring_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC006010n8spring'], eva2=eva['sC007010n8spring'], eva3=eva['sC008010n8spring'], eva4=eva['sC009010n8spring'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_spring_all_tes_pv_no.png')
+'''
+'''
+eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter'])
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA102010n8winter'], eva2=eva['sA103010n8winter'], eva3=eva['sA104010n8winter'], eva4=eva['sA105010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_winter_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA106010n8winter'], eva2=eva['sA107010n8winter'], eva3=eva['sA108010n8winter'], eva4=eva['sA109010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_winter_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB102010n8winter'], eva2=eva['sB103010n8winter'], eva3=eva['sB104010n8winter'], eva4=eva['sB105010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_winter_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB106010n8winter'], eva2=eva['sB107010n8winter'], eva3=eva['sB108010n8winter'], eva4=eva['sB109010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_winter_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC102010n8winter'], eva2=eva['sC103010n8winter'], eva3=eva['sC104010n8winter'], eva4=eva['sC105010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_winter_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC106010n8winter'], eva2=eva['sC107010n8winter'], eva3=eva['sC108010n8winter'], eva4=eva['sC109010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_winter_all_tes_pv_large.png')
+
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA302010n8winter'], eva2=eva['sA303010n8winter'], eva3=eva['sA304010n8winter'], eva4=eva['sA305010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_winter_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA306010n8winter'], eva2=eva['sA307010n8winter'], eva3=eva['sA308010n8winter'], eva4=eva['sA309010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_winter_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB302010n8winter'], eva2=eva['sB303010n8winter'], eva3=eva['sB304010n8winter'], eva4=eva['sB305010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_winter_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB306010n8winter'], eva2=eva['sB307010n8winter'], eva3=eva['sB308010n8winter'], eva4=eva['sB309010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_winter_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC302010n8winter'], eva2=eva['sC303010n8winter'], eva3=eva['sC304010n8winter'], eva4=eva['sC305010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_winter_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC306010n8winter'], eva2=eva['sC307010n8winter'], eva3=eva['sC308010n8winter'], eva4=eva['sC309010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_winter_all_tes_pv_medium.png')
+
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA002010n8winter'], eva2=eva['sA003010n8winter'], eva3=eva['sA004010n8winter'], eva4=eva['sA005010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_winter_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA006010n8winter'], eva2=eva['sA007010n8winter'], eva3=eva['sA008010n8winter'], eva4=eva['sA009010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_winter_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB002010n8winter'], eva2=eva['sB003010n8winter'], eva3=eva['sB004010n8winter'], eva4=eva['sB005010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_winter_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB006010n8winter'], eva2=eva['sB007010n8winter'], eva3=eva['sB008010n8winter'], eva4=eva['sB009010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_winter_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC002010n8winter'], eva2=eva['sC003010n8winter'], eva3=eva['sC004010n8winter'], eva4=eva['sC005010n8winter'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_winter_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC006010n8winter'], eva2=eva['sC007010n8winter'], eva3=eva['sC008010n8winter'], eva4=eva['sC009010n8winter'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_winter_all_tes_pv_no.png')
+'''
+'''
+eva = load_scenario_data(scenarios, grids=['n8'], seasons=['autumn'])
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA102010n8autumn'], eva2=eva['sA103010n8autumn'], eva3=eva['sA104010n8autumn'], eva4=eva['sA105010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_autumn_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA106010n8autumn'], eva2=eva['sA107010n8autumn'], eva3=eva['sA108010n8autumn'], eva4=eva['sA109010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_autumn_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB102010n8autumn'], eva2=eva['sB103010n8autumn'], eva3=eva['sB104010n8autumn'], eva4=eva['sB105010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_autumn_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB106010n8autumn'], eva2=eva['sB107010n8autumn'], eva3=eva['sB108010n8autumn'], eva4=eva['sB109010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_autumn_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC102010n8autumn'], eva2=eva['sC103010n8autumn'], eva3=eva['sC104010n8autumn'], eva4=eva['sC105010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_autumn_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC106010n8autumn'], eva2=eva['sC107010n8autumn'], eva3=eva['sC108010n8autumn'], eva4=eva['sC109010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_autumn_all_tes_pv_large.png')
+
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA302010n8autumn'], eva2=eva['sA303010n8autumn'], eva3=eva['sA304010n8autumn'], eva4=eva['sA305010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_autumn_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA306010n8autumn'], eva2=eva['sA307010n8autumn'], eva3=eva['sA308010n8autumn'], eva4=eva['sA309010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_autumn_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB302010n8autumn'], eva2=eva['sB303010n8autumn'], eva3=eva['sB304010n8autumn'], eva4=eva['sB305010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_autumn_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB306010n8autumn'], eva2=eva['sB307010n8autumn'], eva3=eva['sB308010n8autumn'], eva4=eva['sB309010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_autumn_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC302010n8autumn'], eva2=eva['sC303010n8autumn'], eva3=eva['sC304010n8autumn'], eva4=eva['sC305010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_autumn_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC306010n8autumn'], eva2=eva['sC307010n8autumn'], eva3=eva['sC308010n8autumn'], eva4=eva['sC309010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_autumn_all_tes_pv_medium.png')
+
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA002010n8autumn'], eva2=eva['sA003010n8autumn'], eva3=eva['sA004010n8autumn'], eva4=eva['sA005010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_autumn_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA006010n8autumn'], eva2=eva['sA007010n8autumn'], eva3=eva['sA008010n8autumn'], eva4=eva['sA009010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_autumn_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB002010n8autumn'], eva2=eva['sB003010n8autumn'], eva3=eva['sB004010n8autumn'], eva4=eva['sB005010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_autumn_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB006010n8autumn'], eva2=eva['sB007010n8autumn'], eva3=eva['sB008010n8autumn'], eva4=eva['sB009010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_autumn_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC002010n8autumn'], eva2=eva['sC003010n8autumn'], eva3=eva['sC004010n8autumn'], eva4=eva['sC005010n8autumn'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_autumn_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC006010n8autumn'], eva2=eva['sC007010n8autumn'], eva3=eva['sC008010n8autumn'], eva4=eva['sC009010n8autumn'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_autumn_all_tes_pv_no.png')
+'''
+'''
+eva = load_scenario_data(scenarios, grids=['n8'], seasons=['summer'])
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA102010n8summer'], eva2=eva['sA103010n8summer'], eva3=eva['sA104010n8summer'], eva4=eva['sA105010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_summer_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA106010n8summer'], eva2=eva['sA107010n8summer'], eva3=eva['sA108010n8summer'], eva4=eva['sA109010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_summer_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB102010n8summer'], eva2=eva['sB103010n8summer'], eva3=eva['sB104010n8summer'], eva4=eva['sB105010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_summer_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB106010n8summer'], eva2=eva['sB107010n8summer'], eva3=eva['sB108010n8summer'], eva4=eva['sB109010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_summer_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC102010n8summer'], eva2=eva['sC103010n8summer'], eva3=eva['sC104010n8summer'], eva4=eva['sC105010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_summer_all_tes_pv_large.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC106010n8summer'], eva2=eva['sC107010n8summer'], eva3=eva['sC108010n8summer'], eva4=eva['sC109010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_summer_all_tes_pv_large.png')
+
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA302010n8summer'], eva2=eva['sA303010n8summer'], eva3=eva['sA304010n8summer'], eva4=eva['sA305010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_summer_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA306010n8summer'], eva2=eva['sA307010n8summer'], eva3=eva['sA308010n8summer'], eva4=eva['sA309010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_summer_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB302010n8summer'], eva2=eva['sB303010n8summer'], eva3=eva['sB304010n8summer'], eva4=eva['sB305010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_summer_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB306010n8summer'], eva2=eva['sB307010n8summer'], eva3=eva['sB308010n8summer'], eva4=eva['sB309010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_summer_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC302010n8summer'], eva2=eva['sC303010n8summer'], eva3=eva['sC304010n8summer'], eva4=eva['sC305010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_summer_all_tes_pv_medium.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC306010n8summer'], eva2=eva['sC307010n8summer'], eva3=eva['sC308010n8summer'], eva4=eva['sC309010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_summer_all_tes_pv_medium.png')
+
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA002010n8summer'], eva2=eva['sA003010n8summer'], eva3=eva['sA004010n8summer'], eva4=eva['sA005010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh15_summer_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='A' ,eva1=eva['sA006010n8summer'], eva2=eva['sA007010n8summer'], eva3=eva['sA008010n8summer'], eva4=eva['sA009010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh15_summer_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB002010n8summer'], eva2=eva['sB003010n8summer'], eva3=eva['sB004010n8summer'], eva4=eva['sB005010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh45_summer_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='B' ,eva1=eva['sB006010n8summer'], eva2=eva['sB007010n8summer'], eva3=eva['sB008010n8summer'], eva4=eva['sB009010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh45_summer_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC002010n8summer'], eva2=eva['sC003010n8summer'], eva3=eva['sC004010n8summer'], eva4=eva['sC005010n8summer'], save_fig_dir=save_fig_dir+ 'ResiLoad_res_sfh100_summer_all_tes_pv_no.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(SFHscenario='C' ,eva1=eva['sC006010n8summer'], eva2=eva['sC007010n8summer'], eva3=eva['sC008010n8summer'], eva4=eva['sC009010n8summer'], save_fig_dir=save_fig_dir+ 'LinChFID_res_sfh100_summer_all_tes_pv_no.png')
+'''
 
 # --- Curtailment: Self-Sufficiancy and PV Consumption (Season - Grid) --- #
 scenario = scenarios

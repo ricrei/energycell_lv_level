@@ -240,8 +240,8 @@ def run_single_simulation():
   #e.eva.plot_grid_issus_over_time()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
-  #e.eva.plot_hp_soc()
-  #e.eva.plot_hp_cop()
+  e.eva.plot_hp_soc()
+  e.eva.plot_hp_cop()
   e.eva.plot_hp_active_power()
   e.eva.plot_hp_eva_th()
   #e.eva.plot_bss_active_power()
@@ -249,7 +249,7 @@ def run_single_simulation():
   #e.eva.plot_bss_e_mwh()
   #e.eva.plot_bss_p_mw()
   #e.eva.plot_curtailed_power()
-  e.eva.plot_flex_power()
+  #e.eva.plot_flex_power()
   #e.eva.plot_grid(time_sample='2017-01-06 12:00:00+01:00')#2017-01-06 12:00:00+02:00
   #e.eva.plot_grid_2() # Baustelle
 
