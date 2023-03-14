@@ -1,0 +1,7 @@
+
+1) delete every Xth driving pattern, depending on how much reduction in car ownership for that region is seen in the corresponding scenario
+2) In the remaining driving patterns:
+2.1) for every purpose:
+2.1.1) delete all driving and parking for this purpose from every Xth driving pattern, depending on the reduction of trips with mode private car (number of trips commuting with car against reference scenario)
+2.1.2) reduce distances (i.e. chargingdemand, consumption) for remaining driving patterns, depending on the reduction of average distance (pkm / #trips against reference)
+2.2) aggregate 6_home, if multiple rows under each other
