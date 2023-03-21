@@ -371,6 +371,27 @@ class EvaluationSingleCase():
     ax2.legend(handles=[l4, l3], labels=['line overload', 'trafo overload'])
     plt.show()
 
+  def plot_grid_issus_over_time_single_node(self):
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    node = '10'
+    line = '10'
+
+    v_node = v[node]
+    ll_line = ll[line]
+    tl = tl['0']
+
+    fig, (ax1, ax2) = plt.subplots(2)
+    fig.suptitle(' ')
+    l1 = ax1.plot(v_node, 'r')[0]
+    l3 = ax2.plot(tl, 'g')[0]
+    l4 = ax2.plot(ll_line, 'b')[0]
+    ax1.legend(handles=[l1], labels=['voltage'])
+    ax2.legend(handles=[l4, l3], labels=['line overload', 'trafo overload'])
+    plt.show()
+
   def plot_grid_issus_over_power(self):
     power = self.power
     power = power.load+power.hp+power.ev-power.pv

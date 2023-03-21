@@ -19,7 +19,7 @@ import concurrent.futures
 ### Define timescope and timestepwidth ###
 time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
                'end_time'   : '2017-05-31 00:00:00+01:00',
-               't_freq'     : '30T',
+               't_freq'     : '1T',
              }
 '''
 time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
@@ -33,8 +33,8 @@ time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                   }
 
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+00:00',
-                    'end_time'   : '2017-06-30 23:59:00+00:00',
-                    't_freq'     : '1T'
+                    'end_time'   : '2018-01-01 00:00:00+00:00',
+                    't_freq'     : '1D'
                   }
 
 # timescopes to examine
@@ -105,7 +105,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope_summer
+time_scope = time_scope_year
 ###########################################
 
 #######################
@@ -138,7 +138,7 @@ scenario = [
   1, # HP, 0-5
   1, # EV, 0-3
   0, # Curtailment, 0/1
-  1  # Grid reinforcement, 0/1
+  0  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -210,12 +210,12 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = False, 		 	# default: False
+                    save_full_data = True, 		 	    # default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = True) 	# default: False
 
   # Run powerflow
-  #e.run_pf_timeseries()
+  e.run_pf_timeseries()
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -229,6 +229,7 @@ def run_single_simulation():
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
+  #e.eva.plot_grid_issus_over_time_single_node()
   #e.eva.plot_pv_active_power()
   #e.eva.plot_pv_reactive_power()
   #e.eva.plot_hp_soc()
@@ -249,7 +250,7 @@ def run_single_simulation():
   #e.eva.plot_test()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
-  #e.eva.calculate_resi_week()
+  e.eva.calculate_resi_week()
 
   # Initialize BSS Sizing
   #e.initiate_BSS_sizing()
