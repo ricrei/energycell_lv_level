@@ -105,7 +105,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope_year
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -132,12 +132,12 @@ time_scope = time_scope_year
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
-  0, # Curtailment, 0/1
+  3, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -205,17 +205,27 @@ net_number = 8
 def run_single_simulation():
 
   # Initialize EnergyCell
-
+  '''
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = True, 		 	    # default: False
+                    save_full_data = False, 		 	    # default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = True) 	# default: False
 
   # Run powerflow
   e.run_pf_timeseries()
+  '''
+  # Plot Testing Environment
+  e = ec.EnergyCell_Plot(net_name = net_name[net_number],
+                         scenario = scenario,
+                         control_parameter = control_parameter,
+                         time_scope = time_scope,
+                         save_full_data = False, 		 	    # default: False
+                         verbose = True,        		 		# default: False
+                         grid_reinforce_dev_mode = False) 	    # default: False
+    
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -226,6 +236,7 @@ def run_single_simulation():
   #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
+  e.eva.plot_grid_parameter_as_heat_map()
   #e.eva.plot_colorbar_seaborn()
   #e.eva.plot_grid_issus_over_power()
   #e.eva.plot_grid_issus_over_time()
@@ -250,7 +261,7 @@ def run_single_simulation():
   #e.eva.plot_test()
 
   # calculate max, min and balanced residualload weeks. 2017-01-01_2018-01-01_1D/ only!
-  e.eva.calculate_resi_week()
+  #e.eva.calculate_resi_week()
 
   # Initialize BSS Sizing
   #e.initiate_BSS_sizing()

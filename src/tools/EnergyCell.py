@@ -247,4 +247,27 @@ class EnergyCell():
     def print_object_parameter(self, string):
         self.display.display_info(self.grid.net_name, self.grid.category, self.scenario, self.input_data_handler.dates, string)
 
+class EnergyCell_Plot():
+    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False, grid_reinforce_dev_mode = False):
+        print('THIS IS PLOT TESTING MODE FOR FASTER PLOTTING! SOME METHODS MIGHT NOT WORK PROPERLY! DO NOT USE FOR SIMULATION')
+        self.save_full_data = save_full_data
+        self.scenario = scenario
+        self.net_name = net_name
+        self.control_parameter = control_parameter
+
+        self.time_scope = time_scope
+        self.intervall_in_seconds = pd.to_timedelta(time_scope['t_freq']).total_seconds()
+        self.time_scope['intervall_in_seconds'] = self.intervall_in_seconds
+
+        self.grid = Grid(self.net_name, self.scenario, self.time_scope)
+
+        self.output_data_handler = OutputDataHandler(save_full_data, control_parameter=None, grid=None)
+        self.output_dir = self.output_data_handler.create_output_dir(
+                                         self.net_name,
+                                         self.scenario,
+                                         self.time_scope)
+
+    def initiate_evaluation(self):
+        self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope, self.save_full_data)
+
 

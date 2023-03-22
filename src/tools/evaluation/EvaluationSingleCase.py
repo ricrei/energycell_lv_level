@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
 
+import pytz
+
 # Handle date time conversions between pandas and matplotlib
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
@@ -210,6 +212,49 @@ class EvaluationSingleCase():
     ax = sns.heatmap(power_pivot.pv - power_pivot.load - power_pivot.hp - power_pivot.ev, center=0)
     ax.set_xlabel('Day').set_size(20)
     ax.set_ylabel('Hour').set_size(20)
+    plt.show()
+
+  def plot_grid_parameter_as_heat_map(self):
+ 
+    tl = self.tl
+    tl.index = tl.index.tz_convert("Europe/Berlin")
+
+    tl_pivot = tl.pivot_table(columns=tl.index.dayofyear, index=tl.index.hour + tl.index.minute/60)
+    tl_pivot_help = tl.pivot_table(columns=tl.index.date, index=tl.index.hour + tl.index.minute/60)
+    date = [i[1] for i in tl_pivot_help.columns]
+    date = [i.strftime('%d.%m.') for i in date]
+    time = [60*i for i in range(24)]
+    time_h = [i for i in range(24)]
+
+    plt.figure(figsize=(10,8))
+    ax = sns.heatmap(tl_pivot, center=0)
+    ax.set_xlabel('Day').set_size(20)
+    ax.set_ylabel('Hour').set_size(20)
+    ax.set_xticklabels(date)
+    ax.set_yticks(time)
+    ax.set_yticklabels(time_h)
+    #plt.show()
+
+
+    ll = self.ll.max(axis=1)
+    ll = pd.DataFrame(ll)
+    ll.index = ll.index.tz_convert("Europe/Berlin")
+
+    ll_pivot = ll.pivot_table(columns=ll.index.dayofyear, index=ll.index.hour + ll.index.minute/60)
+    ll_pivot_help = ll.pivot_table(columns=ll.index.date, index=ll.index.hour + ll.index.minute/60)
+    date = [i[1] for i in ll_pivot_help.columns]
+    date = [i.strftime('%d.%m.') for i in date]
+    time = [60*i for i in range(24)]
+    time_h = [i for i in range(24)]
+
+    plt.figure(figsize=(10,8))
+    ax = sns.heatmap(ll_pivot, center=0)
+    ax.set_xlabel('Day').set_size(20)
+    ax.set_ylabel('Hour').set_size(20)
+    ax.set_xticklabels(date)
+    ax.set_yticks(time)
+    ax.set_yticklabels(time_h)
+    plt.show()
 
   ### Output plots / Outputdata ###
   def plot_colorbar_seaborn(self):
