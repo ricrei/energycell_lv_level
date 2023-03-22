@@ -233,7 +233,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_one_load_branch", #13
             "test_net_n_load_branch"]  #14
 # define net number
-net_number = 7
+net_number = 8
 ######################
 
 #############################
@@ -246,7 +246,7 @@ def run_single_simulation():
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
-                    save_full_data = True, 		 	# default: False
+                    save_full_data = 0, 		 	# default: False
                     verbose = True,        		 		# default: False
                     grid_reinforce_dev_mode = False) 	# default: False
 
@@ -259,7 +259,7 @@ def run_single_simulation():
   e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_ev_active_power()
   #e.eva.plot_generation_consumption_as_heat_map()
@@ -446,21 +446,21 @@ scenarios = [
         #[8,1,3,3,3,1,1],
         #[8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
-        #[A,1,1,1,0,1,0],
-        #[B,1,1,1,0,1,0],
-        #[C,1,1,1,0,1,0],
-        [A,1,3,1,4,1,0],
-        [B,1,3,1,4,1,0],
-        [C,1,3,1,4,1,0],
-        [A,1,3,1,5,1,0],
-        [B,1,3,1,5,1,0],
-        [C,1,3,1,5,1,0],
-        [A,1,3,1,6,1,0],
-        [B,1,3,1,6,1,0],
-        [C,1,3,1,6,1,0],
-        [A,1,3,1,7,1,0],
-        [B,1,3,1,7,1,0],
-        [C,1,3,1,7,1,0],
+        [A,1,0,1,0,0,0],
+        [B,1,0,1,0,0,0],
+        [C,1,0,1,0,0,0],
+        #[A,1,3,1,4,1,0],
+        #[B,1,3,1,4,1,0],
+        #[C,1,3,1,4,1,0],
+        #[A,1,3,1,5,1,0],
+        #[B,1,3,1,5,1,0],
+        #[C,1,3,1,5,1,0],
+        #[A,1,3,1,6,1,0],
+        #[B,1,3,1,6,1,0],
+        #[C,1,3,1,6,1,0],
+        #[A,1,3,1,7,1,0],
+        #[B,1,3,1,7,1,0],
+        #[C,1,3,1,7,1,0],
                       ]
 
 run_single_simulation()

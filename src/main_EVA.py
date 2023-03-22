@@ -164,7 +164,7 @@ eva = load_scenario_data(scenarios)
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5', '6', '7'], save_fig_dir=save_fig_dir+'1_')
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['A111410', 'A111510', 'A111610', 'A111710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], save_fig_dir=save_fig_dir+'A45_')
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B111710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], save_fig_dir=save_fig_dir+'B45_')
-#evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C111710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], save_fig_dir=save_fig_dir+'C45_')
+evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C111710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], save_fig_dir=save_fig_dir+'C45_')
 '''
 
 # --- Curtailment: PV-Power and Load (Scenario - Grid) --- #
