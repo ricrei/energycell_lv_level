@@ -56,12 +56,11 @@ batcap_dict = {
 }
 
 #directory = 'csv/'
-directory = 'neu/'
+#directory = 'neu/'
+directory = 'neuHomeOnly/'
 
 for (root,dirs,files) in os.walk(directory, topdown=True):
   pass
-
-#print(files)
 
 k = 1
 for f in files:

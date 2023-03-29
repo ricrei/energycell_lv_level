@@ -110,20 +110,20 @@ evaluation.plot_grid_issus_over_time_subplot(eva1=eva['s4101110n8winter'], eva2=
 evaluation.plot_grid_issus_over_time(eva['s4101110n8summer'], save_fig_dir=save_fig_dir+ 'n8_summer_plot_grid_issus_over_time_subplot_n8_winter_full.png')
 '''
 # --- Power and Components loading --- #
-'''
+#'''
 #scenarios = ['4101110', '6111110', '6121110', '6131110']
 #scenarios = ['1000000', '4101110', '6131110', '8133310']
-scenarios = ['C111010', 'C111410', 'C111510', 'C111610', 'C131710']#, 'B111410','A111410'
+scenarios = ['C131010', 'C131410', 'C131510', 'C131610', 'C131710']#, 'B111410','A111410'
 eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter','summer','spring','autumn'])#'winter','summer','spring',
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8summer'], eva2=eva['s4101110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4101110n8summer_s4101110n8winter.png')
 
 
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA111410n8winter'], eva2=eva['sB111410n8winter'], eva3=eva['sC111410n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sABC_winter_3plots.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8winter'], eva2=eva['sC111510n8winter'], eva3=eva['sC111610n8winter'], eva4=eva['sC131710n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_winter_4plots_day2.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8summer'], eva2=eva['sC111510n8summer'], eva3=eva['sC111610n8summer'], eva4=eva['sC131710n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_summer_4plots_day2.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8spring'], eva2=eva['sC111510n8spring'], eva3=eva['sC111610n8spring'], eva4=eva['sC131710n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_spring_4plots_day2.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8autumn'], eva2=eva['sC111510n8autumn'], eva3=eva['sC111610n8autumn'], eva4=eva['sC131710n8autumn'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_autumn_4plots_day2.png')
-'''
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8winter'], eva2=eva['sC131510n8winter'], eva3=eva['sC131610n8winter'], eva4=eva['sC131710n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_winter_4plots_day2.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8summer'], eva2=eva['sC131510n8summer'], eva3=eva['sC131610n8summer'], eva4=eva['sC131710n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_summer_4plots_day2.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8spring'], eva2=eva['sC131510n8spring'], eva3=eva['sC131610n8spring'], eva4=eva['sC131710n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_spring_4plots_day2.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8autumn'], eva2=eva['sC131510n8autumn'], eva3=eva['sC131610n8autumn'], eva4=eva['sC131710n8autumn'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_autumn_4plots_day2.png')
+#'''
 
 
 # --- SOCs --- #
@@ -237,16 +237,16 @@ evaluation.plot_bar_chart_percent(eva, scenarios=scenarios, seasons = seasons, s
 #################################
 ########## Load curves ##########
 #################################
-#'''
+'''
 scenario = ['C131410','C131510','C131610','C131710']
 seasons = ['spring','summer','autumn','winter']
 eva = load_scenario_data(scenario, seasons=seasons)
-#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='spring', save_fig_dir=save_fig_dir)
-#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='summer', save_fig_dir=save_fig_dir)
-#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='autumn', save_fig_dir=save_fig_dir)
-#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='winter', save_fig_dir=save_fig_dir)
-evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season=None, save_fig_dir=save_fig_dir)
-#'''
+evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='spring', save_fig_dir=save_fig_dir)
+evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='summer', save_fig_dir=save_fig_dir)
+evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='autumn', save_fig_dir=save_fig_dir)
+evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='winter', save_fig_dir=save_fig_dir)
+#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season=None, save_fig_dir=save_fig_dir)
+'''
 
 
 #################################
