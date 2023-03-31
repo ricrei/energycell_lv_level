@@ -8,8 +8,10 @@ from pandapower.plotting.plotly import simple_plotly
 from pandapower.plotting.plotly import pf_res_plotly
 import pandapower.plotting as ppplt
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.dates as mdates
 import seaborn as sns
 
 import pytz
@@ -21,6 +23,26 @@ register_matplotlib_converters()
 import tools.tools as tt
 
 #import BSS_sizing_helper as BSS_sizing
+
+
+SMALL_SIZE = 8
+MEDIUM_SIZE = 10
+BIGGER_SIZE = 12
+
+plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+# Latex font
+mpl.rcParams['mathtext.fontset'] = 'stix'
+mpl.rcParams['font.family'] = 'STIXGeneral'
+
+fig_x, fig_y = 10., 4.
+
 
 class EvaluationSingleCase():
   
@@ -204,6 +226,99 @@ class EvaluationSingleCase():
 
     plt.show()
 
+  def plot_residualload_HH_only(self, add_curtail, add_losses):
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    c = prop_cycle.by_key()['color']
+
+    power = self.power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
+    #try:
+    losses = self.losses_p.sum(axis=1)*1000
+    #except:
+    #  losses = curtailed['curtail_pv']*0
+    '''
+    storage = -self.storage_p.sum(axis=1)*1000
+    storage_sum = storage.copy()
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = pd.Series(storage_charge[0])
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = pd.Series(storage_discharge[0])
+    '''
+    storage = -self.storage_p*1000
+    storage_sum = storage.sum(axis=1)
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+
+    ax.fill_between(power.index,              power.ev*0,            power.load, alpha=0.7, color=c[2])
+    #ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
+    #ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7, color=c[1])
+    #ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7, color=c[2])
+    #ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7, color=c[3])
+    #ax.fill_between(power.index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    #ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    if add_curtail:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
+      ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
+    if add_losses:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + losses, alpha=0.7, color=c[8])
+
+    #ax.plot(power.index, -storage_discharge-power.pv, lw=.6)
+    #ax.plot(power.index, storage_charge+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.load+power.ev, lw=.6)
+    #ax.plot(power.index, storage_charge+power.hp+power.load+power.ev, lw=.6)
+    #ax.plot(storage.index, storage_charge    , lw=.6)
+    #ax.plot(storage.index, -storage_discharge, lw=.6)
+    if add_losses:
+      ax.plot(power.index, storage_charge+power.hp+power.load+power.ev + losses, color=c[8], lw=.6)
+
+    #power = self.shorted_data(power, '1H')
+    #storage = self.shorted_data(storage, '1H')
+
+    if add_losses:
+      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5)
+    else:
+      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
+
+
+    l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+
+    ax.set_xlabel('Zeit')
+    ax.set_ylabel('Leistung in kW')
+
+    ax.set(xlim=(power.index[0], power.index[-1]), ylim=(0, 300))
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+
+    if not add_curtail and not add_losses:
+      patch_list = [
+         #mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic generation'),
+         #mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle load'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
+         #mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
+         #mpatches.Patch(color=c[4], alpha=0.7, label='Storage')
+         l_limit
+                 ]
+      plt.legend(handles=patch_list)
+
+    plt.savefig('img/xx_sc1_householdload.png', format='png', bbox_inches='tight', dpi=300)
+
+    #plt.show()
+
   def plot_generation_consumption_as_heat_map(self):
 
     power_pivot = self.power.pivot_table(columns=self.power.index.dayofyear, index=self.power.index.hour + self.power.index.minute/60)
@@ -213,6 +328,7 @@ class EvaluationSingleCase():
     ax.set_xlabel('Day').set_size(20)
     ax.set_ylabel('Hour').set_size(20)
     plt.show()
+
 
   def plot_grid_parameter_as_heat_map(self):
  
