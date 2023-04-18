@@ -110,20 +110,20 @@ evaluation.plot_grid_issus_over_time_subplot(eva1=eva['s4101110n8winter'], eva2=
 evaluation.plot_grid_issus_over_time(eva['s4101110n8summer'], save_fig_dir=save_fig_dir+ 'n8_summer_plot_grid_issus_over_time_subplot_n8_winter_full.png')
 '''
 # --- Power and Components loading --- #
-#'''
+'''
 #scenarios = ['4101110', '6111110', '6121110', '6131110']
 #scenarios = ['1000000', '4101110', '6131110', '8133310']
-scenarios = ['C131010', 'C131410', 'C131510', 'C131610', 'C131710']#, 'B111410','A111410'
+scenarios = ['C111010', 'C111410', 'C111510', 'C111610', 'C131710']#, 'B111410','A111410'
 eva = load_scenario_data(scenarios, grids=['n8'], seasons=['winter','summer','spring','autumn'])#'winter','summer','spring',
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva(eva1=eva['s4101110n8summer'], eva2=eva['s4101110n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4101110n8summer_s4101110n8winter.png')
 
 
 #evaluation.plot_residualload_grid_issues_subplot_overall_eva_3_plots(eva1=eva['sA111410n8winter'], eva2=eva['sB111410n8winter'], eva3=eva['sC111410n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_sABC_winter_3plots.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8winter'], eva2=eva['sC131510n8winter'], eva3=eva['sC131610n8winter'], eva4=eva['sC131710n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_winter_4plots_day2.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8summer'], eva2=eva['sC131510n8summer'], eva3=eva['sC131610n8summer'], eva4=eva['sC131710n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_summer_4plots_day2.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8spring'], eva2=eva['sC131510n8spring'], eva3=eva['sC131610n8spring'], eva4=eva['sC131710n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_spring_4plots_day2.png')
-evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC131410n8autumn'], eva2=eva['sC131510n8autumn'], eva3=eva['sC131610n8autumn'], eva4=eva['sC131710n8autumn'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_autumn_4plots_day2.png')
-#'''
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8winter'], eva2=eva['sC111510n8winter'], eva3=eva['sC111610n8winter'], eva4=eva['sC131710n8winter'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_winter_4plots.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8summer'], eva2=eva['sC111510n8summer'], eva3=eva['sC111610n8summer'], eva4=eva['sC131710n8summer'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_summer_4plots.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8spring'], eva2=eva['sC111510n8spring'], eva3=eva['sC111610n8spring'], eva4=eva['sC131710n8spring'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_spring_4plots.png')
+evaluation.plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1=eva['sC111410n8autumn'], eva2=eva['sC111510n8autumn'], eva3=eva['sC111610n8autumn'], eva4=eva['sC131710n8autumn'], save_fig_dir=save_fig_dir+ 'res_grid_s4567_C_autumn_4plots.png')
+'''
 
 
 # --- SOCs --- #
@@ -152,33 +152,33 @@ evaluation.plot_heatmap_grid_issus(eva, net_name, scenarios, x_ticklabels, n, sa
 '''
 
 # --- Componentloading mean, peak (Scenario - Grid) --- #
-'''
+#'''
 #scenarios = ['1000000', '2001110', '3100010', '4101110', '6131110', '7103310', '8133310']
 #scenarios = ['1000000', '2001110', '3100010', '4101110']
 #scenarios = ['4101110', '6111110', '6121110', '6131110', '6141110', '6151110']
 #scenarios = ['4101110', '6131110', '7103310', '8133310']
-scenarios = ['A111410', 'B111410','C111410', 'A111510', 'B111510','C111510', 'A111610', 'B111610','C111610', 'A111710', 'B111710','C111710']
+scenarios = ['A111410', 'B111410','C111410', 'A111510', 'B111510','C111510', 'A111610', 'B111610','C111610', 'A131710', 'B131710','C131710']
 eva = load_scenario_data(scenarios)
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['1', '2', '3', '4', '5', '6', '7'], save_fig_dir=save_fig_dir+'3_')
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['1000000', '2001110', '3100010', '4101110'], x_ticklabels = ['1', '2', '3', '4'], save_fig_dir=save_fig_dir+'2_')
 #evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['4', '5', '6', '7'], save_fig_dir=save_fig_dir+'1_')
-#evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['A111410', 'A111510', 'A111610', 'A111710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], save_fig_dir=save_fig_dir+'A45_')
-#evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B111710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], save_fig_dir=save_fig_dir+'B45_')
-evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C111710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], save_fig_dir=save_fig_dir+'C45_')
-'''
+#evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['A111410', 'A111510', 'A111610', 'A131710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], save_fig_dir=save_fig_dir+'A45_')
+#evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B131710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], save_fig_dir=save_fig_dir+'B45_')
+evaluation.plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C131710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], save_fig_dir=save_fig_dir+'C45_')
+#'''
 
 # --- Curtailment: PV-Power and Load (Scenario - Grid) --- #
 '''
 #scenarios = ['A111410', 'B111410','C111410', 'A111510', 'B111510','C111510', 'A111610', 'B111610','C111610', 'A111710', 'B111710','C111710']
-scenarios = ['A131410', 'B131410','C131410', 'A131510', 'B131510','C131510', 'A131610', 'B131610','C131610', 'A131710', 'B131710','C131710']
+scenarios = ['A111410', 'B111410','C111410', 'A111510', 'B111510','C111510', 'A111610', 'B111610','C111610', 'A131710', 'B131710','C131710']
 eva = load_scenario_data(scenarios)
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A131410', 'B131410','C131410'], x_ticklabels = ['2022_gre', '2037_gre', '2045_gre'], save_fig_dir=save_fig_dir+'4')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A131510', 'B131510','C131510'], x_ticklabels = ['2022_bal', '2037_bal', '2045_bal'], save_fig_dir=save_fig_dir+'5')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A131610', 'B131610','C131610'], x_ticklabels = ['2022_mar', '2037_mar', '2045_mar'], save_fig_dir=save_fig_dir+'6')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A111410', 'B111410','C111410'], x_ticklabels = ['2022_gre', '2037_gre', '2045_gre'], save_fig_dir=save_fig_dir+'4')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A111510', 'B111510','C111510'], x_ticklabels = ['2022_bal', '2037_bal', '2045_bal'], save_fig_dir=save_fig_dir+'5')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A111610', 'B111610','C111610'], x_ticklabels = ['2022_mar', '2037_mar', '2045_mar'], save_fig_dir=save_fig_dir+'6')
 evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A131710', 'B131710','C131710'], x_ticklabels = ['2022_sch', '2037_sch', '2045_sch'], save_fig_dir=save_fig_dir+'7')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A131410', 'A131510', 'A131610', 'A131710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], save_fig_dir=save_fig_dir+'A')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['B131410', 'B131510', 'B131610', 'B131710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], save_fig_dir=save_fig_dir+'B')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['C131410', 'C131510', 'C131610', 'C131710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], save_fig_dir=save_fig_dir+'C')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A111410', 'A111510', 'A111610', 'A131710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], save_fig_dir=save_fig_dir+'A')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B131710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], save_fig_dir=save_fig_dir+'B')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C131710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], save_fig_dir=save_fig_dir+'C')
 '''
 
 # --- Self-Sufficiancy and PV Consumption --- #
@@ -193,13 +193,13 @@ evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['C13
 #evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6111110', '6121110', '6131110', '6141110', '6151110', '7103310', '8133310'], x_ticklabels = ['4', '5a', '5b', '5c HH', '5c CBSS-LV', '5c CBSS feeder', '6', '7'], n=n, save_fig_dir=save_fig_dir+'3')
 #evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios=['4101110', '6131110', '7103310', '8133310'], x_ticklabels = ['Reference', 'Home\nBSS', 'Smarte\nconsumers', 'BSS +\nsmarte Con.'], n=n, save_fig_dir=save_fig_dir+'4')
 
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A131410', 'B131410','C131410'], x_ticklabels = ['2022_gre', '2037_gre', '2045_gre'], n=n, save_fig_dir=save_fig_dir+'4')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A131510', 'B131510','C131510'], x_ticklabels = ['2022_bal', '2037_bal', '2045_bal'], n=n, save_fig_dir=save_fig_dir+'5')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A131610', 'B131610','C131610'], x_ticklabels = ['2022_mar', '2037_mar', '2045_mar'], n=n, save_fig_dir=save_fig_dir+'6')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A111410', 'B111410','C111410'], x_ticklabels = ['2022_gre', '2037_gre', '2045_gre'], n=n, save_fig_dir=save_fig_dir+'4')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A111510', 'B111510','C111510'], x_ticklabels = ['2022_bal', '2037_bal', '2045_bal'], n=n, save_fig_dir=save_fig_dir+'5')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A111610', 'B111610','C111610'], x_ticklabels = ['2022_mar', '2037_mar', '2045_mar'], n=n, save_fig_dir=save_fig_dir+'6')
 evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A131710', 'B131710','C131710'], x_ticklabels = ['2022_sch', '2037_sch', '2045_sch'], n=n, save_fig_dir=save_fig_dir+'7')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A131410', 'A131510', 'A131610', 'A131710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], n=n, save_fig_dir=save_fig_dir+'A')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['B131410', 'B131510', 'B131610', 'B131710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], n=n, save_fig_dir=save_fig_dir+'B')
-evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['C131410', 'C131510', 'C131610', 'C131710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], n=n, save_fig_dir=save_fig_dir+'C')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['A111410', 'A111510', 'A111610', 'A131710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], n=n, save_fig_dir=save_fig_dir+'A')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B131710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], n=n, save_fig_dir=save_fig_dir+'B')
+evaluation.plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C131710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], n=n, save_fig_dir=save_fig_dir+'C')
 '''
 
 # --- Curtailment: PV-Power and Load (Season - Grid) --- #
@@ -238,7 +238,7 @@ evaluation.plot_bar_chart_percent(eva, scenarios=scenarios, seasons = seasons, s
 ########## Load curves ##########
 #################################
 '''
-scenario = ['C131410','C131510','C131610','C131710']
+scenario = ['C111410','C111510','C111610','C131710']
 seasons = ['spring','summer','autumn','winter']
 eva = load_scenario_data(scenario, seasons=seasons)
 evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='spring', save_fig_dir=save_fig_dir)

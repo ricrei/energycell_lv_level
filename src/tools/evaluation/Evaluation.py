@@ -767,8 +767,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   time3 = power_3.index
   time4 = power_4.index
 
-  day1 = 2
-  day2 = 2
+  day1 = 1
+  day2 = 7
 
   nts = 4 # number timesteps per hour
 
@@ -2251,11 +2251,11 @@ def plot_load_curve(eva, scenario, seasons, season=None, save_fig_dir=None):
     tl = eva[index]['tl']
     tl[tl>100] = 100
     tl[power_res < 0] = -tl[power_res < 0]
-    if eva[index]['scenario'] == 'C131410':
+    if eva[index]['scenario'] == 'C111410':
       df4 = pd.concat([df4, tl])
-    elif eva[index]['scenario'] == 'C131510':
+    elif eva[index]['scenario'] == 'C111510':
       df5 = pd.concat([df5, tl])
-    elif eva[index]['scenario'] == 'C131610':
+    elif eva[index]['scenario'] == 'C111610':
       df6 = pd.concat([df6, tl])
     elif eva[index]['scenario'] == 'C131710':
       df7 = pd.concat([df7, tl])

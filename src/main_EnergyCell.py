@@ -449,23 +449,23 @@ scenarios = [
         #[A,1,0,1,0,0,0],
         #[B,1,0,1,0,0,0],
         #[C,1,0,1,0,0,0],
-        [A,1,3,1,4,1,0],
-        [B,1,3,1,4,1,0],
-        [C,1,3,1,4,1,0],
-        [A,1,3,1,5,1,0],
-        [B,1,3,1,5,1,0],
-        [C,1,3,1,5,1,0],
-        [A,1,3,1,6,1,0],
-        [B,1,3,1,6,1,0],
-        [C,1,3,1,6,1,0],
+        [A,1,1,1,4,1,0],
+        [B,1,1,1,4,1,0],
+        [C,1,1,1,4,1,0],
+        [A,1,1,1,5,1,0],
+        [B,1,1,1,5,1,0],
+        [C,1,1,1,5,1,0],
+        [A,1,1,1,6,1,0],
+        [B,1,1,1,6,1,0],
+        [C,1,1,1,6,1,0],
         [A,1,3,1,7,1,0],
         [B,1,3,1,7,1,0],
         [C,1,3,1,7,1,0],
                       ]
 
-run_single_simulation()
+#run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
-#run_output_data_conversion(scenarios)
+run_output_data_conversion(scenarios)
 #run_economics(scenarios)
 #######################
