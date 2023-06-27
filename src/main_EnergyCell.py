@@ -132,12 +132,12 @@ time_scope = time_scope_winter
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  1, # scenario number, 1-8
-  0, # PV, 0-2
+  4, # scenario number, 1-8
+  1, # PV, 0-2
   0, # BSS, 0-5
-  0, # HP, 0-5
-  0, # EV, 0-3
-  0, # Curtailment, 0/1
+  1, # HP, 0-5
+  1, # EV, 0-3
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -347,12 +347,12 @@ def run_output_data_conversion(scenarios):
 ### Run Economics ###
 def run_economics(scenarios):
     for scenario_i in scenarios:
-      for net_name_i in [7, 8, 9, 10, 11]:
+      for net_name_i in [8]:#[7, 8, 9, 10, 11]:
         #print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(scenario_i) + ' ' + str(net_name[net_name_i]) + '\33[0m')
         e_eco = Economics.MainEconomics(scenario_i, net_name[net_name_i], time_scope_all_seasons)
-        #e_eco.calculate_relevant_outputdata()
-        #e_eco.energyflow()
+        e_eco.calculate_relevant_outputdata()
+        e_eco.energyflow()
 
         ### determine annuity of investmentcosts (01)
         e_eco.determine_annuity_investments(include_grid_reinforce = True)
@@ -401,19 +401,19 @@ scenarios = [
         #[6,1,5,1,1,0,0],
         #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
-        [7,1,0,3,3,1,0],
+        #[7,1,0,3,3,1,0],
         #[8,1,3,3,3,0,0],
         [8,1,3,3,3,1,0],
-        [8,1,3,3,3,1,1],
-        [8,1,4,3,3,1,0],
-        [8,1,4,3,3,1,1],
-        [9,1,3,3,3,1,0],
-        [9,1,3,3,3,1,1],
+        #[8,1,3,3,3,1,1],
+        #[8,1,4,3,3,1,0],
+        #[8,1,4,3,3,1,1],
+        #[9,1,3,3,3,1,0],
+        #[9,1,3,3,3,1,1],
                       ]
 
-run_single_simulation()
+#run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-#run_economics(scenarios)
+run_economics(scenarios)
 #######################
