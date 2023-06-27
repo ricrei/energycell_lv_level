@@ -1548,8 +1548,8 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   ax[1].set_xticklabels(x_ticklabels)
   ax[1].set_yticklabels(y_ticklabels)
   if lan == 'EN':
-    ax[0].set(xlabel='Scenario', ylabel='Grid')
-    ax[1].set(xlabel='Scenario', ylabel='')
+    ax[0].set(xlabel='Charging strategy', ylabel='Grid')
+    ax[1].set(xlabel='Charging strategy', ylabel='')
     ax[0].set_title('Curtailed load energy in %')
     ax[1].set_title('Curtailed PV energy in %')
   elif lan == 'DE':
@@ -2268,7 +2268,7 @@ def plot_load_curve(eva, scenario, seasons, season=None, save_fig_dir=None):
   #sys.exit(0)
 
   # Plot the load_duration curve (Load vs Percentage of time)
-  plt.figure(figsize=(14, 6)) 
+  fig = plt.figure(figsize=(14, 6)) 
   p = sns.lineplot(x = "percentage", y = "0", data = df4)
   p = sns.lineplot(x = "percentage", y = "0", data = df5)
   p = sns.lineplot(x = "percentage", y = "0", data = df6)
@@ -2283,15 +2283,60 @@ def plot_load_curve(eva, scenario, seasons, season=None, save_fig_dir=None):
   p.set_ylabel("Transformerloading in %")
   plt.legend(['greedy', 'balanced', 'market', 'res'])
   plt.grid()
+
+  ax_zoom_in1 = fig.add_axes([.6, .55, .15, .3])
+  p = sns.lineplot(x = "percentage", y = "0", data = df4)
+  p = sns.lineplot(x = "percentage", y = "0", data = df5)
+  p = sns.lineplot(x = "percentage", y = "0", data = df6)
+  p = sns.lineplot(x = "percentage", y = "0", data = df7)
+  plt.ylim(-101, 0)
+  plt.xlim(90, 100)
+  p.set_xlabel("")
+  p.set_ylabel("")
+  plt.grid()
+
+  ax_zoom_in2 = fig.add_axes([.15, .15, .15, .35])
+  p = sns.lineplot(x = "percentage", y = "0", data = df4)
+  p = sns.lineplot(x = "percentage", y = "0", data = df5)
+  p = sns.lineplot(x = "percentage", y = "0", data = df6)
+  p = sns.lineplot(x = "percentage", y = "0", data = df7)
+  plt.ylim(20, 101)
+  plt.xlim(0, 10)
+  p.set_xlabel("")
+  p.set_ylabel("")
+  plt.grid()
+
+
   if season == None:
     plt.savefig(save_fig_dir+'load_duration_curve_'+'4weeks'+'.png', bbox_inches='tight', dpi=dpi)
   else:
     plt.savefig(save_fig_dir+'load_duration_curve_'+str(season)+'.png', bbox_inches='tight', dpi=dpi)
   #plt.show()
+'''
+  # subplot
+  fig, ax = plt.subplots(1, 2, figsize=(14, 6))
+  for i in [0,1]:
+    p = sns.lineplot(ax=ax[i], x = "percentage", y = "0", data = df4)
+    p = sns.lineplot(ax=ax[i], x = "percentage", y = "0", data = df5)
+    p = sns.lineplot(ax=ax[i], x = "percentage", y = "0", data = df6)
+    p = sns.lineplot(ax=ax[i], x = "percentage", y = "0", data = df7)
+    ax[0].set(xlim=(0, 10), ylim=(-101, 101))
+    ax[1].set(xlim=(90, 100), ylim=(-101, 101))
+    if season == None:
+      ax[i].set_title("Load-Duration Curve (all seasons)")
+    else:
+      ax[i].set_title("Load-Duration Curve ("+str(season)+")")
+    ax[i].set_xlabel("Time in %")
+    ax[i].set_ylabel("Transformerloading in %")
+    ax[i].legend(['greedy', 'balanced', 'market', 'res'])
+    ax[i].grid()
 
-
-
-
+  if season == None:
+    plt.savefig(save_fig_dir+'load_duration_curve_'+'4weeks'+'_subplot.png', bbox_inches='tight', dpi=dpi)
+  else:
+    plt.savefig(save_fig_dir+'load_duration_curve_'+str(season)+'_subplot.png', bbox_inches='tight', dpi=dpi)
+  #plt.show()
+'''
 
 
 
