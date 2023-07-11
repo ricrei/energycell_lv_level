@@ -290,9 +290,9 @@ class EvaluationSingleCase():
     #storage = self.shorted_data(storage, '1H')
 
     if add_losses:
-      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5)
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5, label='Residuallast')[0]
     else:
-      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
 
 
     l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
@@ -311,9 +311,10 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
          #mpatches.Patch(color=c[3], alpha=0.7, label='Heat pump load'),
          #mpatches.Patch(color=c[4], alpha=0.7, label='Storage')
-         l_limit
+         l_limit,
+         res_load
                  ]
-      plt.legend(handles=patch_list)
+      plt.legend(handles=patch_list, loc='upper right')
 
     plt.savefig('img/xx_sc1.png', format='png', bbox_inches='tight', dpi=300)
 
@@ -386,9 +387,9 @@ class EvaluationSingleCase():
     #storage = self.shorted_data(storage, '1H')
 
     if add_losses:
-      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5)
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5, label='Residuallast')[0]
     else:
-      ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5)
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
 
 
     l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
@@ -408,13 +409,213 @@ class EvaluationSingleCase():
          mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
          mpatches.Patch(color=c[5], alpha=0.2, label='Abregelungsbedarf Last'),
          #mpatches.Patch(color=c[4], alpha=0.7, label='Storage')
-         l_limit
+         l_limit,
+         res_load
                  ]
       plt.legend(handles=patch_list, loc='upper right')
 
     plt.savefig('img/xx_sc2.png', format='png', bbox_inches='tight', dpi=300)
 
     plt.show()
+
+  def plot_residualload_scenario_3(self, add_curtail, add_losses):
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    c = prop_cycle.by_key()['color']
+
+    power = self.power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
+    #try:
+    losses = self.losses_p.sum(axis=1)*1000
+    #except:
+    #  losses = curtailed['curtail_pv']*0
+    '''
+    storage = -self.storage_p.sum(axis=1)*1000
+    storage_sum = storage.copy()
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = pd.Series(storage_charge[0])
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = pd.Series(storage_discharge[0])
+    '''
+    storage = -self.storage_p*1000
+    storage_sum = storage.sum(axis=1)
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+
+    ax.fill_between(power.index,            power.ev*0,                                    power.load, alpha=0.7, color=c[2])
+    #ax.fill_between(power.index,              power.ev,                       power.load + power.ev, alpha=0.7, color=c[2])
+    #ax.fill_between(power.index, power.load + power.ev,            power.load + power.ev + power.hp, alpha=0.7, color=c[3])
+    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
+    #ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7, color=c[1])
+    #ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7, color=c[2])
+    #ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7, color=c[3])
+    #ax.fill_between(power.index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    #ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    if add_curtail:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
+      ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
+    if add_losses:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + losses, alpha=0.7, color=c[8])
+
+    ax.plot(power.index, -storage_discharge-power.pv, lw=.6, color=c[0])
+    #ax.plot(power.index, power.ev, lw=.6, color=c[1])
+    ax.plot(power.index, power.load+power.ev, lw=.6, color=c[2])
+    #ax.plot(power.index, power.hp+power.load+power.ev, lw=.6, color=c[3])
+    #ax.plot(storage.index, storage_charge    , lw=.6)
+    #ax.plot(storage.index, -storage_discharge, lw=.6)
+    if add_losses:
+      ax.plot(power.index, storage_charge+power.hp+power.load+power.ev + losses, color=c[8], lw=.6)
+
+    #power = self.shorted_data(power, '1H')
+    #storage = self.shorted_data(storage, '1H')
+
+    if add_losses:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5, label='Residuallast')[0]
+    else:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
+
+
+    l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+    l_limit = ax.plot(power*0-250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+
+    ax.set_xlabel('Zeit')
+    ax.set_ylabel('Leistung in kW')
+
+    ax.set(xlim=(power.index[0], power.index[-1]), ylim=(-1300, 300))
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+
+    if add_curtail and not add_losses:
+      patch_list = [
+         #mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpen'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
+         #mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         #mpatches.Patch(color=c[5], alpha=0.2, label='Abregelungsbedarf Last'),
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[0], alpha=0.2, label='Abregelungsbedarf Photovoltaik'),
+         #mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         l_limit,
+         res_load
+                 ]
+      plt.legend(handles=patch_list, loc='lower right')
+
+    plt.savefig('img/xx_sc3.png', format='png', bbox_inches='tight', dpi=300)
+
+    plt.show()
+
+  def plot_residualload_scenario_4(self, add_curtail, add_losses):
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    c = prop_cycle.by_key()['color']
+
+    power = self.power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
+    #try:
+    losses = self.losses_p.sum(axis=1)*1000
+    #except:
+    #  losses = curtailed['curtail_pv']*0
+    '''
+    storage = -self.storage_p.sum(axis=1)*1000
+    storage_sum = storage.copy()
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = pd.Series(storage_charge[0])
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = pd.Series(storage_discharge[0])
+    '''
+    storage = -self.storage_p*1000
+    storage_sum = storage.sum(axis=1)
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+
+    ax.fill_between(power.index,            power.ev*0,                                    power.ev, alpha=0.7, color=c[1])
+    ax.fill_between(power.index,              power.ev,                       power.load + power.ev, alpha=0.7, color=c[2])
+    ax.fill_between(power.index, power.load + power.ev,            power.load + power.ev + power.hp, alpha=0.7, color=c[3])
+    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
+    #ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7, color=c[1])
+    #ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7, color=c[2])
+    #ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7, color=c[3])
+    #ax.fill_between(power.index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    #ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    if add_curtail:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
+      ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
+    if add_losses:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + losses, alpha=0.7, color=c[8])
+
+    ax.plot(power.index, -storage_discharge-power.pv, lw=.6, color=c[0])
+    ax.plot(power.index, power.ev, lw=.6, color=c[1])
+    ax.plot(power.index, power.load+power.ev, lw=.6, color=c[2])
+    ax.plot(power.index, power.hp+power.load+power.ev, lw=.6, color=c[3])
+    #ax.plot(storage.index, storage_charge    , lw=.6)
+    #ax.plot(storage.index, -storage_discharge, lw=.6)
+    if add_losses:
+      ax.plot(power.index, storage_charge+power.hp+power.load+power.ev + losses, color=c[8], lw=.6)
+
+    #power = self.shorted_data(power, '1H')
+    #storage = self.shorted_data(storage, '1H')
+
+    if add_losses:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5, label='Residuallast')[0]
+    else:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
+
+
+    l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+    l_limit = ax.plot(power*0-250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+
+    ax.set_xlabel('Zeit')
+    ax.set_ylabel('Leistung in kW')
+
+    ax.set(xlim=(power.index[0], power.index[-1]), ylim=(-1300, 400))
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+
+    if add_curtail and not add_losses:
+      patch_list = [
+         mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpen'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         mpatches.Patch(color=c[5], alpha=0.2, label='Abregelungsbedarf Last'),
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[0], alpha=0.2, label='Abregelungsbedarf Photovoltaik'),
+         #mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         l_limit,
+         res_load
+                 ]
+      plt.legend(handles=patch_list, loc='lower right')
+
+    plt.savefig('img/xx_sc4.png', format='png', bbox_inches='tight', dpi=300)
+
+    plt.show()
+
 
 
   def plot_generation_consumption_as_heat_map(self):

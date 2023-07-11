@@ -236,6 +236,8 @@ def run_single_simulation():
   #e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_1(add_curtail=False, add_losses=False)
   e.eva.plot_residualload_scenario_2(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload_scenario_3(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload_scenario_4(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_grid_parameter_as_heat_map()
