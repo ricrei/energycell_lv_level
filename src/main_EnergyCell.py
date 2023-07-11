@@ -132,8 +132,8 @@ time_scope = time_scope_winter
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
-  1, # PV, 0-2
+  2, # scenario number, 1-8
+  0, # PV, 0-2
   0, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
@@ -230,11 +230,12 @@ def run_single_simulation():
   # Initialize Evaluation
   e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
+  #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
   #e.eva.plot_residualload(add_curtail=True, add_losses=False)
-  e.eva.plot_residualload_HH_only(add_curtail=False, add_losses=False)
+  #e.eva.plot_residualload_scenario_1(add_curtail=False, add_losses=False)
+  e.eva.plot_residualload_scenario_2(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_grid_parameter_as_heat_map()
@@ -411,9 +412,9 @@ scenarios = [
         #[9,1,3,3,3,1,1],
                       ]
 
-#run_single_simulation()
+run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-run_economics(scenarios)
+#run_economics(scenarios)
 #######################
