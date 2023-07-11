@@ -2283,7 +2283,7 @@ def plot_load_curve(eva, scenario, seasons, season=None, save_fig_dir=None):
   p.set_ylabel("Transformerloading in %")
   plt.legend(['greedy', 'balanced', 'market', 'res'])
   plt.grid()
-
+  '''
   ax_zoom_in1 = fig.add_axes([.6, .55, .15, .3])
   p = sns.lineplot(x = "percentage", y = "0", data = df4)
   p = sns.lineplot(x = "percentage", y = "0", data = df5)
@@ -2305,7 +2305,7 @@ def plot_load_curve(eva, scenario, seasons, season=None, save_fig_dir=None):
   p.set_xlabel("")
   p.set_ylabel("")
   plt.grid()
-
+  '''
 
   if season == None:
     plt.savefig(save_fig_dir+'load_duration_curve_'+'4weeks'+'.png', bbox_inches='tight', dpi=dpi)

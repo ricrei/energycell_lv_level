@@ -182,9 +182,8 @@ evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A11
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['A111410', 'A111510', 'A111610', 'A131710'], x_ticklabels = ['2022_gre', '2022_bal', '2022_mar', '2022_sch'], save_fig_dir=save_fig_dir+'A')
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B131710'], x_ticklabels = ['2037_gre', '2037_bal', '2037_mar', '2037_sch'], save_fig_dir=save_fig_dir+'B')
 #evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C131710'], x_ticklabels = ['2045_gre', '2045_bal', '2045_mar', '2045_sch'], save_fig_dir=save_fig_dir+'C')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B131710'], x_ticklabels = ['greedy', 'balanced', 'marked', 'residual'], save_fig_dir=save_fig_dir+'300_B_2037_')
-evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C131710'], x_ticklabels = ['greedy', 'balanced', 'marked', 'residual'], save_fig_dir=save_fig_dir+'300_C_2045_')
-
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['B111410', 'B111510', 'B111610', 'B131710'], x_ticklabels = ['greedy', 'balanced', 'market', 'residual'], save_fig_dir=save_fig_dir+'300_B_2037_')
+evaluation.plot_heatmap_curtailed_power(eva, net_name, columns_scenarios = ['C111410', 'C111510', 'C111610', 'C131710'], x_ticklabels = ['greedy', 'balanced', 'market', 'residual'], save_fig_dir=save_fig_dir+'300_C_2045_')
 '''
 
 # --- Self-Sufficiancy and PV Consumption --- #
@@ -247,11 +246,11 @@ evaluation.plot_bar_chart_percent(eva, scenarios=scenarios, seasons = seasons, s
 scenario = ['C111410','C111510','C111610','C131710']
 seasons = ['spring','summer','autumn','winter']
 eva = load_scenario_data(scenario, seasons=seasons)
-evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='spring', save_fig_dir=save_fig_dir+'400_')
-evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='summer', save_fig_dir=save_fig_dir+'400_')
-evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='autumn', save_fig_dir=save_fig_dir+'400_')
-evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='winter', save_fig_dir=save_fig_dir+'400_')
-#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season=None, save_fig_dir=save_fig_dir+'400_')
+#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='spring', save_fig_dir=save_fig_dir+'400_')
+#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='summer', save_fig_dir=save_fig_dir+'400_')
+#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='autumn', save_fig_dir=save_fig_dir+'400_')
+#evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season='winter', save_fig_dir=save_fig_dir+'400_')
+evaluation.plot_load_curve(eva, scenario=scenario, seasons = seasons, season=None, save_fig_dir=save_fig_dir+'400_')
 #'''
 
 
