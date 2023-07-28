@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib as mpl
 import numpy as np
-import pandapower.plotting.plotly as ppply
+#import pandapower.plotting.plotly as ppply
 import seaborn as sns
 from datetime import datetime, timedelta
 
@@ -36,7 +36,7 @@ dpi = 500
 lan = 'DE' # 'EN', 'DE'
 
 if lan == 'DE':
-  y_ticklabels = ['Land- \nnetz 1', 'Land- \nnetz 2', 'Land- \nnetz 3', 'Vorstadt-\nnetz 1  ', 'Vorstadt-\nnetz 2  ']
+  y_ticklabels = ['Ländlich 1', 'Ländlich 2', 'Ländlich 3', 'Suburban 1  ', 'Suburban 2  ']
 elif lan == 'EN':
   #y_ticklabels = ['Grid  \nRural 1', 'Grid  \nRural 2', 'Grid  \nRural 3', 'Grid    \nSuburb 1', 'Grid    \nSuburb 2']
   y_ticklabels = ['Rural 1', 'Rural 2', 'Rural 3', 'Suburb 1', 'Suburb 2']
@@ -1206,7 +1206,7 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   ll_mean = ll_mean/seasons
   tl_mean = tl_mean/seasons
 
-  #'''
+  '''
   print(vu_mean)
   print(vo_mean)
   print(ll_mean)
@@ -1215,7 +1215,7 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   print(vo_peak)
   print(ll_peak)
   print(tl_peak)
-  #'''
+  '''
 
   vmax = 1.04
   vmin = .97
@@ -1256,16 +1256,26 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
     ax[1][0].set_title('Mean Lineloading in %')
     ax[1][1].set(xlabel='Scenario', ylabel='')
     ax[1][1].set_title('Mean Trafoloading in %')
+   elif lan == 'DE':
+    ax[0][0].set(xlabel='', ylabel='Netz')
+    ax[0][0].set_title('Mittlere Unterspannung in p.u.')
+    ax[0][1].set(xlabel='', ylabel='')
+    ax[0][1].set_title('Mittlere Überspannung in p.u.')
+    ax[1][0].set(xlabel='Scenario', ylabel='Grid')
+    ax[1][0].set_title('Mittlere Leitungsbelastung in %')
+    ax[1][1].set(xlabel='Scenario', ylabel='')
+    ax[1][1].set_title('Mittlere Transformatorbelastung in %')
   else:
    if lan == 'EN':
     ax[0].set(xlabel='Scenario', ylabel='Grid')
     ax[0].set_title('Mean Lineloading in %')
     ax[1].set(xlabel='Scenario', ylabel='')
     ax[1].set_title('Mean Trafoloading in %')
-
-
-  if lan == 'DE':
-    print('German x- and y-label not implemented')
+   if lan == 'DE':
+    ax[0].set(xlabel='Szenario', ylabel='Netz')
+    ax[0].set_title('Mittlere Leitungsbelastung in %')
+    ax[1].set(xlabel='Scenario', ylabel='')
+    ax[1].set_title('Mittlere Transformatorbelastung in %')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_subplot_component_loading_mean.png', bbox_inches='tight', dpi=dpi)
@@ -1291,9 +1301,16 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
     ax[1][0].set_title('Peak Lineloading in %')
     ax[1][1].set(xlabel='Scenario', ylabel='')
     ax[1][1].set_title('Peak Trafoloading in %')
-
   elif lan == 'DE':
-    print('German x- and y-label not implemented')
+    ax[0][0].set(xlabel='', ylabel='Netz')
+    ax[0][0].set_title('Peak Unterspannung in p.u.')
+    ax[0][1].set(xlabel='', ylabel='')
+    ax[0][1].set_title('Peak Überspannnung in p.u.')
+    ax[1][0].set(xlabel='Szenario', ylabel='Netz')
+    ax[1][0].set_title('Peak Leitungsbelastung in %')
+    ax[1][1].set(xlabel='Scenario', ylabel='')
+    ax[1][1].set_title('Peak Transformatorbelastung in %')
+
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_subplot_component_loading_peak.png', bbox_inches='tight', dpi=dpi)
@@ -1551,8 +1568,8 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
     ax[1].set(xlabel='Szenario', ylabel='')
     ax[0].set_title('Abgeregelte Last in %')
     ax[1].set_title('Abgeregelte PV Energie in %')
-    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=90) 
-    ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=90) 
+    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=0) 
+    ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=0) 
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00d_subplot_heatmap_curtailed_power_load.png', bbox_inches='tight', dpi=dpi)
@@ -1590,7 +1607,7 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   vmax = 100
   vmin = 0
   
-  cmap = sns.cubehelix_palette(start=2, rot=0, dark=.4, light=1, reverse=False, as_cmap=True)#"rocket_r"
+  cmap = sns.cubehelix_palette(start=2, rot=0, dark=.4, light=.97, reverse=False, as_cmap=True)#"rocket_r"
 
   plt.figure(figsize=(fig_x, fig_y))
   ax = sns.heatmap(df_self_sufficiency, vmax = vmax, vmin = vmin, cmap=cmap, annot=True, square=False)#, fmt=".0f")
@@ -1602,7 +1619,6 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   elif lan == 'DE':
     ax.set(xlabel='Szenario', ylabel='Netz')
     ax.set_title('Autarkiegrad in %')
-  #ax.set_title('Voltage Violation in Minutes per Week and Bus')
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_self_sufficiency.png', bbox_inches='tight', dpi=dpi)
@@ -1628,8 +1644,8 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   ax[0].set_yticklabels(y_ticklabels)
   ax[1].set_xticklabels(x_ticklabels)
   ax[1].set_yticklabels(y_ticklabels)
-  ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=90) 
-  ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=90) 
+  ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=0) 
+  ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=0) 
 
   if lan == 'EN':
     ax[0].set(xlabel='Scenario', ylabel='Grid')

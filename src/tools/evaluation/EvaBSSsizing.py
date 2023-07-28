@@ -1,3 +1,5 @@
+import sys
+import math
 import numpy as np 
 import pandas as pd
 from scipy.fft import fft, fftfreq
@@ -34,11 +36,11 @@ class EvaBSSsizing():
     self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
     self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
     self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
-    self.ev_soc = self.read_data(self.output_dir+'ev_soc.csv')
-    self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
+    #self.ev_soc = self.read_data(self.output_dir+'ev_soc.csv')
+    #self.v_pu_ext_grid = self.read_data(self.output_dir+'v_pu_ext_grid.csv')
     self.storage_p = self.read_data(self.output_dir+'storage_active_power_MW.csv')
     self.trafo_p = self.read_data(self.output_dir+'trafo_active_power_MW.csv')
-    self.trafo_q = self.read_data(self.output_dir+'trafo_reactive_power_MW.csv')
+    #self.trafo_q = self.read_data(self.output_dir+'trafo_reactive_power_MW.csv')
     self.losses_p = self.read_data(self.output_dir+'losses_active_power_MW.csv')
     #self.storage_soc = self.read_data(self.output_dir+'storage_state_of_charge_percent.csv') # in powerflow wird aktuell noch e_mwh an soc übergeben
     self.curtailed_power = self.read_data(self.output_dir+'curtailed_power_MW.csv')
@@ -422,7 +424,6 @@ class EvaBSSsizing():
 
   def bss_sizing_fft(self):
     # Sizing according to FFT-Analysis
-
     p_res = self.trafo_p
     sample_rate = 1/self.grid.time_scope['intervall_in_seconds'] # in Hz
     duration = len(p_res)*self.grid.time_scope['intervall_in_seconds'] # in seconds
@@ -433,21 +434,35 @@ class EvaBSSsizing():
     # sample spacing
     T = 1/sample_rate
 
-    y = p_res['0'].to_numpy()
+    # 42-Tages-Periode
+    #t42 = np.linspace(0,8760,8760)
+    #y42 = []
+    #for i in range(len(t42)):
+    #  y42.append(.5*math.cos(2*math.pi*t42[i]/100) + 1)
+    #  i += 1
+    #plt.plot(y42)
+    #plt.show()
+    #sys.exit(0)
+    # 42-Tages-Periode
+
+    y = p_res['0'].to_numpy()# * y42
 
     yf = fft(y)
     yf = 2/N*np.abs(yf[0:int(N)//2])
 
     xf = fftfreq(int(N), T)[:int(N)//2]*3600*24
 
-    '''
+    #'''
     fig, ax = plt.subplots()
     plt.semilogx(1/xf[1:], yf[1:]*1000, marker='o')
     ax.set_xlabel('Period T in days')
     ax.set_ylabel('Power in kW')
     plt.grid()
     plt.show()
-    '''
+    #'''
+
+    x_save = pd.DataFrame(1/xf[1:])
+    y_save = pd.DataFrame(yf[1:]*1000)
 
     p_res_f = pd.DataFrame(columns=['1/xf', 'yf'])
     p_res_f['1/xf'] = 1/xf[1:]
@@ -458,6 +473,9 @@ class EvaBSSsizing():
     p_bss = p_res_f.loc[p_bss_index].values
     T_period = 24 # h
     e_bss = p_bss*T_period/np.pi
+
+    x_save.round(6).to_csv(self.output_dir + 'x_fft.csv', mode='a', header=False, index = True)
+    y_save.round(6).to_csv(self.output_dir + 'y_fft.csv', mode='a', header=False, index = True)
 
     print('')
     print('Sizing according to Fourier Analysis:')

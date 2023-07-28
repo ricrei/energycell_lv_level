@@ -264,11 +264,11 @@ class EnergyCell():
             #d = self.df.loc[t]
 
             if (i >= timesteps/10) & (i <= timesteps*2/3):
-              p = .02
+              p = .008
             else:
-              p = 0.02
+              p = .008
 
-            if (i < timesteps/20):
+            if (i < timesteps/40):
               p = 0
 
             if (i > timesteps*2/3):
