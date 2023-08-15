@@ -994,6 +994,317 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi) 
 
+### with 4 plots PHD###
+def plot_residualload_grid_issues_subplot_overall_eva_4_plots_phd(eva1, eva2, eva3, eva4, save_fig_dir=None):
+  #prop_cycle = plt.rcParams['axes.prop_cycle']
+  #c = prop_cycle.by_key()['color']
+  c = sns.color_palette('colorblind')
+  font_size_legend = 10
+  framealpha_legend = 1
+  shadow_legend = True
+  x_pos_legend = .98 # default .9
+
+  SMALL_SIZE = 8
+  MEDIUM_SIZE = 12
+  BIGGER_SIZE = 12
+
+  plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
+  plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
+  plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+  plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+  plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+  plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
+  plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+  if eva1['net_name_i'] == 7:
+    trafo_s_n = 0.16
+  elif eva1['net_name_i'] == 8:
+    trafo_s_n = 0.25
+  elif eva1['net_name_i'] == 9:
+    trafo_s_n = 0.4
+  elif eva1['net_name_i'] == 10:
+    trafo_s_n = 0.4
+  elif eva1['net_name_i'] == 11:
+    trafo_s_n = 0.63
+  else:
+    trafo_s_n = 0
+
+  fac = 1000
+
+  # res load
+  power_1 = eva1['power']*fac
+  power_2 = eva2['power']*fac
+  power_3 = eva3['power']*fac
+  power_4 = eva4['power']*fac
+  power = [power_1, power_2, power_3, power_4]
+  storage_1 = -eva1['storage_power']*fac
+  storage_2 = -eva2['storage_power']*fac
+  storage_3 = -eva3['storage_power']*fac
+  storage_4 = -eva4['storage_power']*fac
+  storage = [storage_1, storage_2, storage_3, storage_4]
+  curtailed_power_1 = eva1['curtailed_power']*fac
+  curtailed_power_2 = eva2['curtailed_power']*fac
+  curtailed_power_3 = eva3['curtailed_power']*fac
+  curtailed_power_4 = eva4['curtailed_power']*fac
+  curtailed = [curtailed_power_1, curtailed_power_2, curtailed_power_3, curtailed_power_4]
+
+  time1 = power_1.index
+  time2 = power_2.index
+  time3 = power_3.index
+  time4 = power_4.index
+
+  day1 = 4
+  day2 = 4
+  time_min_1 = time1[(day1-1)*24*60]
+  time_max_1 = time1[(day2)*24*60-1]
+
+  time_min_2 = time2[(day1-1)*24*60]
+  time_max_2 = time2[(day2)*24*60-1]
+
+  time_min_3 = time3[(day1-1)*24*60]
+  time_max_3 = time3[(day2)*24*60-1]
+
+  time_min_4 = time4[(day1-1)*24*60]
+  time_max_4 = time4[(day2)*24*60-1]
+
+  time_min = [time_min_1, time_min_2, time_min_3, time_min_4]
+  time_max = [time_max_1, time_max_2, time_max_3, time_max_4]
+
+  y_max_pos = [0, 0, 0, 0]
+  y_max_neg = [0, 0, 0, 0]
+
+  for i in [0, 1, 2, 3]:
+    storage_sum = storage[i].sum(axis=1)
+    storage_charge = storage[i].copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage[i].copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+    if i == 0:
+      y_max_pos[i] = (power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load).loc[time_min_1:time_max_1].max()
+      y_max_neg[i] = (-storage_discharge - power[i].pv - curtailed[i].pv).loc[time_min_1:time_max_1].min()
+    else:
+      y_max_pos[i] = (power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load).loc[time_min_2:time_max_2].max()
+      y_max_neg[i] = (-storage_discharge - power[i].pv - curtailed[i].pv).loc[time_min_2:time_max_2].min()
+
+  # grid issues
+  power_plot1 = eva1['power']
+  storage_power_plot1 = eva1['storage_power']
+  power_plot1 = power_plot1.load+power_plot1.hp+power_plot1.ev-power_plot1.pv+storage_power_plot1.sum(axis=1)
+  v_plot1 = eva1['v']
+  if eva1['scenario'][0] == '1': v_plot1 = v_plot1.rolling(10).mean()
+  ll_plot1 = eva1['ll']
+  tl_plot1 = eva1['tl']
+
+  power_plot2 = eva2['power']
+  storage_power_plot2 = eva2['storage_power']
+  power_plot2 = power_plot2.load+power_plot2.hp+power_plot2.ev-power_plot2.pv+storage_power_plot2.sum(axis=1)
+  v_plot2 = eva2['v']
+  if eva2['scenario'][0] == '2': v_plot2 = v_plot2.rolling(10).mean()
+  ll_plot2 = eva2['ll']
+  tl_plot2 = eva2['tl']
+
+  power_plot3 = eva3['power']
+  storage_power_plot3 = eva3['storage_power']
+  power_plot3 = power_plot3.load+power_plot3.hp+power_plot3.ev-power_plot3.pv+storage_power_plot3.sum(axis=1)
+  v_plot3 = eva3['v']
+  ll_plot3 = eva3['ll']
+  tl_plot3 = eva3['tl']
+
+  power_plot4 = eva4['power']
+  storage_power_plot4 = eva4['storage_power']
+  power_plot4 = power_plot4.load+power_plot4.hp+power_plot4.ev-power_plot4.pv+storage_power_plot4.sum(axis=1)
+  v_plot4 = eva4['v']
+  ll_plot4 = eva4['ll']
+  tl_plot4 = eva4['tl']
+
+  line_v_o_plot1 = power_plot1*0 + 1.1
+  line_v_u_plot1 = power_plot1*0 + .9
+  line_lt_plot1 = power_plot1*0 + 1
+
+  line_v_o_plot2 = power_plot2*0 + 1.1
+  line_v_u_plot2 = power_plot2*0 + .9
+  line_lt_plot2 = power_plot2*0 + 1
+
+  line_v_o_plot3 = power_plot3*0 + 1.1
+  line_v_u_plot3 = power_plot3*0 + .9
+  line_lt_plot3 = power_plot3*0 + 1
+
+  line_v_o_plot4 = power_plot4*0 + 1.1
+  line_v_u_plot4 = power_plot4*0 + .9
+  line_lt_plot4 = power_plot4*0 + 1
+
+  line_v_o = [line_v_o_plot1, line_v_o_plot2, line_v_o_plot3, line_v_o_plot4]
+  line_v_u = [line_v_u_plot1, line_v_u_plot2, line_v_u_plot3, line_v_u_plot4]
+  line_lt = [line_lt_plot1, line_lt_plot2, line_lt_plot3, line_lt_plot4]
+
+  v_min = [v_plot1.T.min().T, v_plot2.T.min().T, v_plot3.T.min().T, v_plot4.T.min().T]
+  v_max = [v_plot1.T.max().T, v_plot2.T.max().T, v_plot3.T.max().T, v_plot4.T.max().T]
+  ll_max = [ll_plot1.T.max().T, ll_plot2.T.max().T, ll_plot3.T.max().T, ll_plot4.T.max().T]
+  tl_max = [tl_plot1.T.max().T, tl_plot2.T.max().T, tl_plot3.T.max().T, tl_plot4.T.max().T]
+  power_sum = [power_plot1, power_plot2, power_plot3, power_plot4]
+
+  # figsize=(10,10)
+  fig, (ax0, ax3, ax1, ax2) = plt.subplots(4, 4, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1, 1]})
+  for i in [0, 1, 2, 3]:
+    #res
+    storage_sum = storage[i].sum(axis=1)
+    storage_charge = storage[i].copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage[i].copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    ax0[i].fill_between(power[i].index,                     -storage_discharge,                     -storage_discharge - power[i].pv, alpha=0.7, color=c[0])
+    ax0[i].fill_between(power[i].index,                         storage_charge,                         power[i].ev + storage_charge, alpha=0.7, color=c[1])
+    ax0[i].fill_between(power[i].index,              power[i].ev + storage_charge,            power[i].load + power[i].ev + storage_charge, alpha=0.7, color=c[2])
+    ax0[i].fill_between(power[i].index, power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge, alpha=0.7, color=c[3])
+    ax0[i].fill_between(power[i].index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    ax0[i].fill_between(power[i].index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    # curtailed power
+    ax0[i].fill_between(power[i].index, power[i].hp + power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load, alpha=0.2, color=c[7])
+    ax0[i].fill_between(power[i].index,                     -storage_discharge - power[i].pv,                       -storage_discharge - power[i].pv - curtailed[i].pv, alpha=0.2, color=c[7])
+
+    ax0[i].plot(power[i].index, -storage_discharge-power[i].pv, lw=.6)
+    ax0[i].plot(power[i].index, storage_charge+power[i].ev, lw=.6)
+    ax0[i].plot(power[i].index, storage_charge+power[i].load+power[i].ev, lw=.6)
+    ax0[i].plot(power[i].index, storage_charge+power[i].hp+power[i].load+power[i].ev, lw=.6)
+    ax0[i].plot(storage[i].index, storage_charge    , lw=.6)
+    ax0[i].plot(storage[i].index, -storage_discharge, lw=.6)
+
+    res_load = ax0[i].plot(power[i].index, -power[i].pv+power[i].hp+power[i].load+power[i].ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
+
+    l_limit = ax0[i].plot(power[i].pv*0+250, '--k', lw=.5, label='Nennleistung\nTransformator')[0]
+    l_limit = ax0[i].plot(power[i].pv*0-250, '--k', lw=.5, label='Nennleistung\nTransformator')[0]
+
+    #res_line = ax0[i].plot(power[i].index, -(power[i].pv-power[i].hp-power[i].load-power[i].ev+storage_sum), color='black', lw=1, label='Residual load')
+
+    ax0[i].set_xticks([k for k in power[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax0[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax0[i].set(xlim=(power[i].index[0], power[i].index[-1]))
+    if lan == 'DE':
+      patch_list = [
+         mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpen'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         mpatches.Patch(color=c[5], alpha=0.2, label='Abregelungsbedarf\nLast'),
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[0], alpha=0.2, label='Abregelungsbedarf\nPhotovoltaik'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Batteriespeicher'),
+         #l_limit,
+         #res_load
+         ]
+
+    elif lan == 'EN':
+      patch_list = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaic'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-vehicle'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Household'),
+         mpatches.Patch(color=c[3], alpha=0.7, label='Heatpump'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         mpatches.Patch(color=c[7], alpha=0.2, label='Curtailment'),
+         res_line
+                 ]
+
+    ax0[3].legend(handles=patch_list, loc='lower right', shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.455), bbox_transform=fig.transFigure)
+
+    if lan == 'DE':
+      ax0[0].set_ylabel('Leistung in kW')
+    elif lan == 'EN':
+      ax0[0].set_ylabel('Power in kW')
+
+    y_max = max(y_max_pos)
+    y_min = min(y_max_neg)
+
+    y_max += max([abs(y_min), abs(y_max)])*.1
+    y_min -= max([abs(y_min), abs(y_max)])*.1
+
+    ax0[0].set_xlim(time_min_1, time_max_1)
+    ax0[1].set_xlim(time_min_2, time_max_2)
+    ax0[2].set_xlim(time_min_3, time_max_3)
+    ax0[3].set_xlim(time_min_4, time_max_4)
+
+    ax0[0].set_ylim(y_min, y_max)
+    ax0[1].set_ylim(y_min, y_max)
+    ax0[2].set_ylim(y_min, y_max)
+    ax0[3].set_ylim(y_min, y_max)
+
+    #grid
+    l1 = ax1[i].plot(v_min[i], 'r')[0]
+    ax1[i].plot(line_v_u[i], '--k', lw=.5)
+    l2 = ax1[i].plot(v_max[i], 'y')[0]
+    l_limit = ax1[i].plot(line_v_o[i], '--k', lw=.5)[0]
+    l3 = ax2[i].plot(tl_max[i]/100, 'g')[0]
+    l4 = ax2[i].plot(ll_max[i]/100, 'b')[0]
+    l_limit2 = ax2[i].plot(line_lt[i], '--k', lw=.5)[0]
+    l5 = ax3[i].plot(power_sum[i], 'k')[0]
+    ax3[i].plot(line_lt[i]*trafo_s_n, '--k', lw=.5)[0]
+    l6 = ax3[i].plot(-line_lt[i]*trafo_s_n, '--k', lw=.5)[0]
+    ax1[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax1[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax2[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax2[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    ax3[i].set_xticks([k for k in power_sum[i].index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    ax3[i].set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1[i].set(xlim=(time_min[i], time_max[i]), ylim=(.85, 1.15)) # voltage band
+    ax2[i].set(xlim=(time_min[i], time_max[i]), ylim=(0, 1.1))    # line and trafo loading
+    ax3[i].set(xlim=(time_min[i], time_max[i]), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.225), bbox_transform=fig.transFigure)
+      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Transformator', 'Grenze'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.111), bbox_transform=fig.transFigure)
+      if trafo_s_n == 0:
+        ax3[3].legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
+      else:
+        ax3[3].legend(handles=[l5, l6], labels=['Residuallast', 'Nennleistung\nTransformator'] ,loc="upper right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
+      ax2[0].set_xlabel('Uhrzeit')
+      ax2[1].set_xlabel('Uhrzeit')
+      ax2[2].set_xlabel('Uhrzeit')
+      ax2[3].set_xlabel('Uhrzeit')
+      ax1[0].set_ylabel('Spannung\nin p.u.')
+      ax2[0].set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.')
+      ax3[0].set_ylabel('Leistung\nin kW')
+    elif lan == 'EN':
+      ax1[3].legend(handles=[l2, l1, l_limit], labels=['Max Voltage', 'Min Voltage', 'Voltage Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.22), bbox_transform=fig.transFigure) #0.225
+      ax2[3].legend(handles=[l4, l3, l_limit2], labels=['Max\nLineloading', 'Trafoloading', 'Limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.09), bbox_transform=fig.transFigure) #0.111
+      if trafo_s_n == 0:
+        ax3[3].legend(handles=[l5], labels=['Residual load'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.45), bbox_transform=fig.transFigure)
+      else:
+        ax3[3].legend(handles=[l5, l6], labels=['Residual load', 'Trafo limit'] ,loc="lower right", shadow=shadow_legend, prop={'size': font_size_legend}, framealpha=framealpha_legend, bbox_to_anchor=(x_pos_legend, 0.34), bbox_transform=fig.transFigure)
+      ax2[0].set_xlabel('Time')
+      ax2[1].set_xlabel('Time')
+      ax2[2].set_xlabel('Time')
+      ax2[3].set_xlabel('Time')
+      ax1[0].set_ylabel('Voltage\nin p.u.')
+      #ax2[0].set_ylabel('Line- and Trafo-\nloading in p.u.')
+      ax2[0].set_ylabel('Line- and\nTrafoloading\nin p.u.')
+      ax3[0].set_ylabel('Power in kW')
+
+  ax0[0].set_title('Szenario '+eva1['scenario'][0])
+  if eva2['scenario'][0] < '6':
+    ax0[1].set_title('Szenario '+eva2['scenario'][0])
+  else:
+    ax0[1].set_title('Szenario '+str(int(eva2['scenario'][0])-1))
+
+  if eva3['scenario'][0] < '6':
+    ax0[2].set_title('Szenario '+eva3['scenario'][0])
+  else:
+    ax0[2].set_title('Szenario '+str(int(eva3['scenario'][0])-1))
+
+  if eva4['scenario'][0] < '6':
+    ax0[3].set_title('Szenario '+eva4['scenario'][0])
+  else:
+    ax0[3].set_title('Szenario '+str(int(eva4['scenario'][0])-1))
+
+  if save_fig_dir is not None:
+     plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi) 
 
 
 
@@ -1261,9 +1572,9 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
     ax[0][0].set_title('Mittlere Unterspannung in p.u.')
     ax[0][1].set(xlabel='', ylabel='')
     ax[0][1].set_title('Mittlere Überspannung in p.u.')
-    ax[1][0].set(xlabel='Scenario', ylabel='Grid')
+    ax[1][0].set(xlabel='Szenario', ylabel='Grid')
     ax[1][0].set_title('Mittlere Leitungsbelastung in %')
-    ax[1][1].set(xlabel='Scenario', ylabel='')
+    ax[1][1].set(xlabel='Szenario', ylabel='')
     ax[1][1].set_title('Mittlere Transformatorbelastung in %')
   else:
    if lan == 'EN':
@@ -1274,7 +1585,7 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
    if lan == 'DE':
     ax[0].set(xlabel='Szenario', ylabel='Netz')
     ax[0].set_title('Mittlere Leitungsbelastung in %')
-    ax[1].set(xlabel='Scenario', ylabel='')
+    ax[1].set(xlabel='Szenario', ylabel='')
     ax[1].set_title('Mittlere Transformatorbelastung in %')
 
   if save_fig_dir is not None:
@@ -1315,6 +1626,7 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + 'heatmap_subplot_component_loading_peak.png', bbox_inches='tight', dpi=dpi)
 
+  '''
   import matplotlib
   from scipy.stats import norm
 
@@ -1327,7 +1639,7 @@ def plot_heatmap_componentloading_mean_peak(eva, net_name, columns_scenarios, x_
   })
 
   plt.savefig('testheatmap.pgf', format='pgf')
-
+  '''
 
 def plot_heatmap_curtailed_power_per_season(eva, scenario, net_name, save_fig_dir=None):
   print('Create Heatmap plots curtailed power')
@@ -1568,8 +1880,8 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
     ax[1].set(xlabel='Szenario', ylabel='')
     ax[0].set_title('Abgeregelte Last in %')
     ax[1].set_title('Abgeregelte PV Energie in %')
-    ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=0) 
-    ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=0) 
+    ax[0].set_xticklabels(ax[0].get_xticklabels()) 
+    ax[1].set_xticklabels(ax[1].get_xticklabels()) 
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir + '00d_subplot_heatmap_curtailed_power_load.png', bbox_inches='tight', dpi=dpi)
@@ -1644,8 +1956,8 @@ def plot_heatmap_self_sufficiency(eva, net_name, columns_scenarios, x_ticklabels
   ax[0].set_yticklabels(y_ticklabels)
   ax[1].set_xticklabels(x_ticklabels)
   ax[1].set_yticklabels(y_ticklabels)
-  ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=0) 
-  ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=0) 
+  ax[0].set_xticklabels(ax[0].get_xticklabels()) 
+  ax[1].set_xticklabels(ax[1].get_xticklabels()) 
 
   if lan == 'EN':
     ax[0].set(xlabel='Scenario', ylabel='Grid')

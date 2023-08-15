@@ -26,7 +26,7 @@ import tools.tools as tt
 
 
 SMALL_SIZE = 8
-MEDIUM_SIZE = 10
+MEDIUM_SIZE = 12
 BIGGER_SIZE = 12
 
 plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
@@ -43,6 +43,10 @@ mpl.rcParams['font.family'] = 'STIXGeneral'
 
 fig_x, fig_y = 10., 4.
 
+# colormap
+c = sns.color_palette('colorblind')
+
+lan = 'DE'
 
 class EvaluationSingleCase():
   
@@ -100,8 +104,8 @@ class EvaluationSingleCase():
 
   ### Output plots / Inputdata ###
   def plot_residualload(self, add_curtail, add_losses):
-    prop_cycle = plt.rcParams['axes.prop_cycle']
-    c = prop_cycle.by_key()['color']
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
 
     power = self.power*1000
     curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
@@ -228,7 +232,8 @@ class EvaluationSingleCase():
 
   def plot_residualload_scenario_1(self, add_curtail, add_losses):
     prop_cycle = plt.rcParams['axes.prop_cycle']
-    c = prop_cycle.by_key()['color']
+    #c = prop_cycle.by_key()['color']
+    #c = sns.color_palette('colorblind')
 
     power = self.power*1000
     curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
@@ -262,7 +267,9 @@ class EvaluationSingleCase():
     storage_discharge[storage_discharge < 0] = 0
     storage_discharge = storage_discharge.sum(axis=1)
 
-    fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #### NEU ###
+    fig, (ax, ax1, ax2) = plt.subplots(3, 1, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1]})
 
     ax.fill_between(power.index,              power.ev*0,            power.load, alpha=0.7, color=c[2])
     #ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
@@ -297,7 +304,7 @@ class EvaluationSingleCase():
 
     l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
 
-    ax.set_xlabel('Zeit')
+    #ax.set_xlabel('Zeit')
     ax.set_ylabel('Leistung in kW')
 
     ax.set(xlim=(power.index[0], power.index[-1]), ylim=(0, 300))
@@ -314,7 +321,62 @@ class EvaluationSingleCase():
          l_limit,
          res_load
                  ]
-      plt.legend(handles=patch_list, loc='upper right')
+      ax.legend(handles=patch_list, loc='upper right')
+
+    ### NEU ###
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    line_v_o = self.tl*0 + 1.1
+    line_v_u = self.tl*0 + .9
+    line_lt = self.tl*0 + 1
+
+    v_min = v.T.min().T
+    v_max = v.T.max().T
+    ll_max = ll.T.max().T
+    tl_max = tl.T.max().T
+
+    v_min = v_min.rolling(10).mean()
+
+    #grid
+    l1 = ax1.plot(v_min, color=c[3])[0]
+    ax1.plot(line_v_u, '--k', lw=.5)
+    l2 = ax1.plot(v_max, color=c[8])[0]
+    l_limit = ax1.plot(line_v_o, '--k', lw=.5)[0]
+    l3 = ax2.plot(tl_max/100, color=c[2])[0]
+    l4 = ax2.plot(ll_max/100, color=c[0])[0]
+    l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
+    #l5 = ax3.plot(power_sum, 'k')[0]
+    #ax3.plot(line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #l6 = ax3.plot(-line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #ax1.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1.set(ylim=(.87, 1.13)) # voltage band
+    ax2.set(ylim=(0, 1.1))    # line and trafo loading
+    #ax3.set(xlim=(time_min, time_max), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1.legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      ax2.legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      #if trafo_s_n == 0:
+      #  ax3.legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #else:
+      #  ax3.legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #ax2.set_xlabel('Zeit')
+      ax2.set_xlabel('Zeit')
+      ax1.set_ylabel('Spannung\nin p.u.\n')
+      ax2.set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
+      #ax3.set_ylabel('Leistung\nin MW')
+
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    ax.set_xlabel('')
+    ###
 
     plt.savefig('img/xx_sc1.png', format='png', bbox_inches='tight', dpi=300)
 
@@ -322,8 +384,8 @@ class EvaluationSingleCase():
 
 
   def plot_residualload_scenario_2(self, add_curtail, add_losses):
-    prop_cycle = plt.rcParams['axes.prop_cycle']
-    c = prop_cycle.by_key()['color']
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
 
     power = self.power*1000
     curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
@@ -357,7 +419,9 @@ class EvaluationSingleCase():
     storage_discharge[storage_discharge < 0] = 0
     storage_discharge = storage_discharge.sum(axis=1)
 
-    fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #### NEU ###
+    fig, (ax, ax1, ax2) = plt.subplots(3, 1, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1]})
 
     ax.fill_between(power.index,            power.ev*0,                                    power.ev, alpha=0.7, color=c[1])
     ax.fill_between(power.index,              power.ev,                       power.load + power.ev, alpha=0.7, color=c[2])
@@ -412,15 +476,70 @@ class EvaluationSingleCase():
          l_limit,
          res_load
                  ]
-      plt.legend(handles=patch_list, loc='upper right')
+      ax.legend(handles=patch_list, loc='upper right')
+
+    ### NEU ###
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    line_v_o = self.tl*0 + 1.1
+    line_v_u = self.tl*0 + .9
+    line_lt = self.tl*0 + 1
+
+    v_min = v.T.min().T
+    v_max = v.T.max().T
+    ll_max = ll.T.max().T
+    tl_max = tl.T.max().T
+
+    v_min = v_min.rolling(10).mean()
+
+    #grid
+    l1 = ax1.plot(v_min, color=c[3])[0]
+    ax1.plot(line_v_u, '--k', lw=.5)
+    l2 = ax1.plot(v_max, color=c[8])[0]
+    l_limit = ax1.plot(line_v_o, '--k', lw=.5)[0]
+    l3 = ax2.plot(tl_max/100, color=c[2])[0]
+    l4 = ax2.plot(ll_max/100, color=c[0])[0]
+    l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
+    #l5 = ax3.plot(power_sum, 'k')[0]
+    #ax3.plot(line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #l6 = ax3.plot(-line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #ax1.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1.set(ylim=(.87, 1.13)) # voltage band
+    ax2.set(ylim=(0, 1.1))    # line and trafo loading
+    #ax3.set(xlim=(time_min, time_max), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1.legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      ax2.legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      #if trafo_s_n == 0:
+      #  ax3.legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #else:
+      #  ax3.legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #ax2.set_xlabel('Zeit')
+      ax2.set_xlabel('Zeit')
+      ax1.set_ylabel('Spannung\nin p.u.\n')
+      ax2.set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
+      #ax3.set_ylabel('Leistung\nin MW')
+
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    ax.set_xlabel('')
+    ###
 
     plt.savefig('img/xx_sc2.png', format='png', bbox_inches='tight', dpi=300)
 
-    plt.show()
+    #plt.show()
 
   def plot_residualload_scenario_3(self, add_curtail, add_losses):
-    prop_cycle = plt.rcParams['axes.prop_cycle']
-    c = prop_cycle.by_key()['color']
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
 
     power = self.power*1000
     curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
@@ -454,7 +573,9 @@ class EvaluationSingleCase():
     storage_discharge[storage_discharge < 0] = 0
     storage_discharge = storage_discharge.sum(axis=1)
 
-    fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #### NEU ###
+    fig, (ax, ax1, ax2) = plt.subplots(3, 1, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1]})
 
     ax.fill_between(power.index,            power.ev*0,                                    power.load, alpha=0.7, color=c[2])
     #ax.fill_between(power.index,              power.ev,                       power.load + power.ev, alpha=0.7, color=c[2])
@@ -511,15 +632,68 @@ class EvaluationSingleCase():
          l_limit,
          res_load
                  ]
-      plt.legend(handles=patch_list, loc='lower right')
+      ax.legend(handles=patch_list, loc='lower right')
+
+    ### NEU ###
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    line_v_o = self.tl*0 + 1.1
+    line_v_u = self.tl*0 + .9
+    line_lt = self.tl*0 + 1
+
+    v_min = v.T.min().T
+    v_max = v.T.max().T
+    ll_max = ll.T.max().T
+    tl_max = tl.T.max().T
+
+    #grid
+    l1 = ax1.plot(v_min, color=c[3])[0]
+    ax1.plot(line_v_u, '--k', lw=.5)
+    l2 = ax1.plot(v_max, color=c[8])[0]
+    l_limit = ax1.plot(line_v_o, '--k', lw=.5)[0]
+    l3 = ax2.plot(tl_max/100, color=c[2])[0]
+    l4 = ax2.plot(ll_max/100, color=c[0])[0]
+    l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
+    #l5 = ax3.plot(power_sum, 'k')[0]
+    #ax3.plot(line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #l6 = ax3.plot(-line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #ax1.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1.set(ylim=(.87, 1.13)) # voltage band
+    ax2.set(ylim=(0, 1.1))    # line and trafo loading
+    #ax3.set(xlim=(time_min, time_max), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1.legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      ax2.legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      #if trafo_s_n == 0:
+      #  ax3.legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #else:
+      #  ax3.legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #ax2.set_xlabel('Zeit')
+      ax2.set_xlabel('Zeit')
+      ax1.set_ylabel('Spannung\nin p.u.\n')
+      ax2.set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
+      #ax3.set_ylabel('Leistung\nin MW')
+
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    ax.set_xlabel('')
+    ###
 
     plt.savefig('img/xx_sc3.png', format='png', bbox_inches='tight', dpi=300)
 
-    plt.show()
+    #plt.show()
 
   def plot_residualload_scenario_4(self, add_curtail, add_losses):
-    prop_cycle = plt.rcParams['axes.prop_cycle']
-    c = prop_cycle.by_key()['color']
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
 
     power = self.power*1000
     curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
@@ -553,7 +727,9 @@ class EvaluationSingleCase():
     storage_discharge[storage_discharge < 0] = 0
     storage_discharge = storage_discharge.sum(axis=1)
 
-    fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #### NEU ###
+    fig, (ax, ax1, ax2) = plt.subplots(3, 1, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1]})
 
     ax.fill_between(power.index,            power.ev*0,                                    power.ev, alpha=0.7, color=c[1])
     ax.fill_between(power.index,              power.ev,                       power.load + power.ev, alpha=0.7, color=c[2])
@@ -610,12 +786,539 @@ class EvaluationSingleCase():
          l_limit,
          res_load
                  ]
-      plt.legend(handles=patch_list, loc='lower right')
+      ax.legend(handles=patch_list, loc='lower right')
+
+    ### NEU ###
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    line_v_o = self.tl*0 + 1.1
+    line_v_u = self.tl*0 + .9
+    line_lt = self.tl*0 + 1
+
+    v_min = v.T.min().T
+    v_max = v.T.max().T
+    ll_max = ll.T.max().T
+    tl_max = tl.T.max().T
+
+    #grid
+    l1 = ax1.plot(v_min, color=c[3])[0]
+    ax1.plot(line_v_u, '--k', lw=.5)
+    l2 = ax1.plot(v_max, color=c[8])[0]
+    l_limit = ax1.plot(line_v_o, '--k', lw=.5)[0]
+    l3 = ax2.plot(tl_max/100, color=c[2])[0]
+    l4 = ax2.plot(ll_max/100, color=c[0])[0]
+    l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
+    #l5 = ax3.plot(power_sum, 'k')[0]
+    #ax3.plot(line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #l6 = ax3.plot(-line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #ax1.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1.set(ylim=(.87, 1.13)) # voltage band
+    ax2.set(ylim=(0, 1.1))    # line and trafo loading
+    #ax3.set(xlim=(time_min, time_max), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1.legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      ax2.legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      #if trafo_s_n == 0:
+      #  ax3.legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #else:
+      #  ax3.legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #ax2.set_xlabel('Zeit')
+      ax2.set_xlabel('Zeit')
+      ax1.set_ylabel('Spannung\nin p.u.\n')
+      ax2.set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
+      #ax3.set_ylabel('Leistung\nin MW')
+
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    ax.set_xlabel('')
+    ###
 
     plt.savefig('img/xx_sc4.png', format='png', bbox_inches='tight', dpi=300)
 
-    plt.show()
+    #plt.show()
 
+  def plot_residualload_scenario_6(self, add_curtail, add_losses):
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
+
+    power = self.power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
+    #try:
+    losses = self.losses_p.sum(axis=1)*1000
+    #except:
+    #  losses = curtailed['curtail_pv']*0
+    '''
+    storage = -self.storage_p.sum(axis=1)*1000
+    storage_sum = storage.copy()
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = pd.Series(storage_charge[0])
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = pd.Series(storage_discharge[0])
+    '''
+    storage = -self.storage_p*1000
+    storage_sum = storage.sum(axis=1)
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    #fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #### NEU ###
+    fig, (ax, ax1, ax2) = plt.subplots(3, 1, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1]})
+
+
+    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
+    ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7, color=c[1])
+    ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7, color=c[2])
+    ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7, color=c[3])
+    ax.fill_between(power.index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    if add_curtail:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
+      ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
+    if add_losses:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + losses, alpha=0.7, color=c[8])
+
+    ax.plot(power.index, -storage_discharge-power.pv, lw=.6)
+    ax.plot(power.index, storage_charge+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.load+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.hp+power.load+power.ev, lw=.6)
+    ax.plot(storage.index, storage_charge    , lw=.6)
+    ax.plot(storage.index, -storage_discharge, lw=.6)
+    if add_losses:
+      ax.plot(power.index, storage_charge+power.hp+power.load+power.ev + losses, color=c[8], lw=.6)
+
+    #power = self.shorted_data(power, '1H')
+    #storage = self.shorted_data(storage, '1H')
+
+    if add_losses:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5, label='Residuallast')[0]
+    else:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
+
+    l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+    l_limit = ax.plot(power*0-250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+
+    ax.set_xlabel('Zeit')
+    ax.set_ylabel('Leistung in kW')
+
+    ax.set(xlim=(power.index[0], power.index[-1]), ylim=(-1250, 1050))
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+
+    if add_curtail and not add_losses:
+      patch_list1 = [
+         mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpen'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         mpatches.Patch(color=c[5], alpha=0.2, label='Abregelungsbedarf Last             ')
+         ]
+      patch_list2 = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[0], alpha=0.2, label='Abregelungsbedarf Photovoltaik'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Batteriespeicher'),
+         l_limit,
+         res_load
+         ]
+
+      first_legend = ax.legend(handles=patch_list2, loc='lower right')
+
+      # Add the legend manually to the current Axes.
+      ax.add_artist(first_legend)
+
+      ax.legend(handles=patch_list1, loc='upper right')
+
+    ### NEU ###
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    line_v_o = self.tl*0 + 1.1
+    line_v_u = self.tl*0 + .9
+    line_lt = self.tl*0 + 1
+
+    v_min = v.T.min().T
+    v_max = v.T.max().T
+    ll_max = ll.T.max().T
+    tl_max = tl.T.max().T
+
+    #grid
+    l1 = ax1.plot(v_min, color=c[3])[0]
+    ax1.plot(line_v_u, '--k', lw=.5)
+    l2 = ax1.plot(v_max, color=c[8])[0]
+    l_limit = ax1.plot(line_v_o, '--k', lw=.5)[0]
+    l3 = ax2.plot(tl_max/100, color=c[2])[0]
+    l4 = ax2.plot(ll_max/100, color=c[0])[0]
+    l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
+    #l5 = ax3.plot(power_sum, 'k')[0]
+    #ax3.plot(line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #l6 = ax3.plot(-line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #ax1.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1.set(ylim=(.87, 1.13)) # voltage band
+    ax2.set(ylim=(0, 1.1))    # line and trafo loading
+    #ax3.set(xlim=(time_min, time_max), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1.legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      ax2.legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      #if trafo_s_n == 0:
+      #  ax3.legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #else:
+      #  ax3.legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #ax2.set_xlabel('Zeit')
+      ax2.set_xlabel('Zeit')
+      ax1.set_ylabel('Spannung\nin p.u.\n')
+      ax2.set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
+      #ax3.set_ylabel('Leistung\nin MW')
+
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    ax.set_xlabel('')
+    ###
+
+    plt.savefig('img/xx_sc6.png', format='png', bbox_inches='tight', dpi=300)
+
+    #plt.show()
+
+  def plot_residualload_scenario_7(self, add_curtail, add_losses):
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
+
+    power = self.power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
+    #try:
+    losses = self.losses_p.sum(axis=1)*1000
+    #except:
+    #  losses = curtailed['curtail_pv']*0
+    '''
+    storage = -self.storage_p.sum(axis=1)*1000
+    storage_sum = storage.copy()
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = pd.Series(storage_charge[0])
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = pd.Series(storage_discharge[0])
+    '''
+    storage = -self.storage_p*1000
+    storage_sum = storage.sum(axis=1)
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    #fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #### NEU ###
+    fig, (ax, ax1, ax2) = plt.subplots(3, 1, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1]})
+
+    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
+    ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7, color=c[1])
+    ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7, color=c[2])
+    ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7, color=c[3])
+    ax.fill_between(power.index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    if add_curtail:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
+      ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
+    if add_losses:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + losses, alpha=0.7, color=c[8])
+
+    ax.plot(power.index, -storage_discharge-power.pv, lw=.6)
+    ax.plot(power.index, storage_charge+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.load+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.hp+power.load+power.ev, lw=.6)
+    ax.plot(storage.index, storage_charge    , lw=.6)
+    ax.plot(storage.index, -storage_discharge, lw=.6)
+    if add_losses:
+      ax.plot(power.index, storage_charge+power.hp+power.load+power.ev + losses, color=c[8], lw=.6)
+
+    #power = self.shorted_data(power, '1H')
+    #storage = self.shorted_data(storage, '1H')
+
+    if add_losses:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5, label='Residuallast')[0]
+    else:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
+
+    l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+    l_limit = ax.plot(power*0-250, '--k', lw=.5, label='Nennleistung Transformator      ')[0]
+
+    ax.set_xlabel('Zeit')
+    ax.set_ylabel('Leistung in kW')
+
+    ax.set(xlim=(power.index[0], power.index[-1]), ylim=(-1230, 680))
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+
+    if add_curtail and not add_losses:
+      patch_list1 = [
+         mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpen'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         mpatches.Patch(color=c[5], alpha=0.2, label='Abregelungsbedarf Last'),
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[0], alpha=0.2, label='Abregelungsbedarf Photovoltaik')
+         #mpatches.Patch(color=c[4], alpha=0.7, label='Storage'),
+         ]
+      patch_list2 = [
+         l_limit,
+         res_load
+         ]
+
+      first_legend = ax.legend(handles=patch_list1, loc='lower right')
+
+      # Add the legend manually to the current Axes.
+      ax.add_artist(first_legend)
+
+      ax.legend(handles=patch_list2, loc='upper right')
+
+    ### NEU ###
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    line_v_o = self.tl*0 + 1.1
+    line_v_u = self.tl*0 + .9
+    line_lt = self.tl*0 + 1
+
+    v_min = v.T.min().T
+    v_max = v.T.max().T
+    ll_max = ll.T.max().T
+    tl_max = tl.T.max().T
+
+    #grid
+    l1 = ax1.plot(v_min, color=c[3])[0]
+    ax1.plot(line_v_u, '--k', lw=.5)
+    l2 = ax1.plot(v_max, color=c[8])[0]
+    l_limit = ax1.plot(line_v_o, '--k', lw=.5)[0]
+    l3 = ax2.plot(tl_max/100, color=c[2])[0]
+    l4 = ax2.plot(ll_max/100, color=c[0])[0]
+    l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
+    #l5 = ax3.plot(power_sum, 'k')[0]
+    #ax3.plot(line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #l6 = ax3.plot(-line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #ax1.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1.set(ylim=(.87, 1.13)) # voltage band
+    ax2.set(ylim=(0, 1.1))    # line and trafo loading
+    #ax3.set(xlim=(time_min, time_max), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1.legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      ax2.legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      #if trafo_s_n == 0:
+      #  ax3.legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #else:
+      #  ax3.legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #ax2.set_xlabel('Zeit')
+      ax2.set_xlabel('Zeit')
+      ax1.set_ylabel('Spannung\nin p.u.\n')
+      ax2.set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
+      #ax3.set_ylabel('Leistung\nin MW')
+
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    ax.set_xlabel('')
+    ###
+
+    plt.savefig('img/xx_sc7.png', format='png', bbox_inches='tight', dpi=300)
+
+    #plt.show()
+
+  def plot_residualload_scenario_8(self, add_curtail, add_losses):
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
+
+    power = self.power*1000
+    curtailed_pv = self.curtailed_power_pv.sum(axis=1)*1000
+    curtailed_load = self.curtailed_power_load.sum(axis=1)*1000
+    curtailed = pd.DataFrame()
+    curtailed['curtail_pv'] = curtailed_pv
+    curtailed['curtail_load'] = curtailed_load
+    #try:
+    losses = self.losses_p.sum(axis=1)*1000
+    #except:
+    #  losses = curtailed['curtail_pv']*0
+    '''
+    storage = -self.storage_p.sum(axis=1)*1000
+    storage_sum = storage.copy()
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = pd.Series(storage_charge[0])
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = pd.Series(storage_discharge[0])
+    '''
+    storage = -self.storage_p*1000
+    storage_sum = storage.sum(axis=1)
+    storage_charge = storage.copy()
+    storage_charge[storage_charge > 0] = 0
+    storage_charge = -storage_charge
+    storage_charge = storage_charge.sum(axis=1)
+
+    storage_discharge = storage.copy()
+    storage_discharge[storage_discharge < 0] = 0
+    storage_discharge = storage_discharge.sum(axis=1)
+
+    #fig, ax = plt.subplots(figsize=(fig_x, fig_y))
+    #### NEU ###
+    fig, (ax, ax1, ax2) = plt.subplots(3, 1, figsize=(12,8), sharey = 'row', sharex = 'col', gridspec_kw={'wspace': .05, 'hspace': .05, 'height_ratios': [4, 1, 1]})
+
+    ax.fill_between(power.index,                     -storage_discharge,                     -storage_discharge - power.pv, alpha=0.7, color=c[0])
+    ax.fill_between(power.index,                         storage_charge,                         power.ev + storage_charge, alpha=0.7, color=c[1])
+    ax.fill_between(power.index,              power.ev + storage_charge,            power.load + power.ev + storage_charge, alpha=0.7, color=c[2])
+    ax.fill_between(power.index, power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge, alpha=0.7, color=c[3])
+    ax.fill_between(power.index, 0 , storage_charge     , alpha=0.7, color=c[4])
+    ax.fill_between(power.index, 0 , -storage_discharge , alpha=0.7, color=c[4])
+    if add_curtail:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + curtailed.curtail_load, alpha=0.2, color=c[5])
+      ax.fill_between(power.index,                     -storage_discharge - power.pv,                       -storage_discharge - power.pv - curtailed.curtail_pv, alpha=0.2, color=c[0])
+    if add_losses:
+      ax.fill_between(power.index, power.hp + power.load + power.ev + storage_charge, power.hp + power.load + power.ev + storage_charge + losses, alpha=0.7, color=c[8])
+
+    ax.plot(power.index, -storage_discharge-power.pv, lw=.6)
+    ax.plot(power.index, storage_charge+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.load+power.ev, lw=.6)
+    ax.plot(power.index, storage_charge+power.hp+power.load+power.ev, lw=.6)
+    ax.plot(storage.index, storage_charge    , lw=.6)
+    ax.plot(storage.index, -storage_discharge, lw=.6)
+    if add_losses:
+      ax.plot(power.index, storage_charge+power.hp+power.load+power.ev + losses, color=c[8], lw=.6)
+
+    #power = self.shorted_data(power, '1H')
+    #storage = self.shorted_data(storage, '1H')
+
+    if add_losses:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum+losses, color='black', lw=.5, label='Residuallast')[0]
+    else:
+      res_load = ax.plot(power.index, -power.pv+power.hp+power.load+power.ev-storage_sum, color='black', lw=.5, label='Residuallast')[0]
+
+    l_limit = ax.plot(power*0+250, '--k', lw=.5, label='Nennleistung Transformator')[0]
+    l_limit = ax.plot(power*0-250, '--k', lw=.5, label='Nennleistung Transformator      ')[0]
+
+    ax.set_xlabel('Zeit')
+    ax.set_ylabel('Leistung in kW')
+
+    ax.set(xlim=(power.index[0], power.index[-1]), ylim=(-1230, 1100))
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+
+    if add_curtail and not add_losses:
+      patch_list1 = [
+         mpatches.Patch(color=c[3], alpha=0.7, label='Wärmepumpen'),
+         mpatches.Patch(color=c[2], alpha=0.7, label='Haushaltslast'),
+         mpatches.Patch(color=c[1], alpha=0.7, label='E-Auto'),
+         mpatches.Patch(color=c[5], alpha=0.2, label='Abregelungsbedarf Last             ')
+         ]
+      patch_list2 = [
+         mpatches.Patch(color=c[0], alpha=0.7, label='Photovoltaik'),
+         mpatches.Patch(color=c[0], alpha=0.2, label='Abregelungsbedarf Photovoltaik'),
+         mpatches.Patch(color=c[4], alpha=0.7, label='Batteriespeicher'),
+         l_limit,
+         res_load
+         ]
+
+      first_legend = ax.legend(handles=patch_list2, loc='lower right')
+
+      # Add the legend manually to the current Axes.
+      ax.add_artist(first_legend)
+
+      ax.legend(handles=patch_list1, loc='upper right')
+
+    ### NEU ###
+    v = self.v
+    ll = self.ll
+    tl = self.tl
+
+    line_v_o = self.tl*0 + 1.1
+    line_v_u = self.tl*0 + .9
+    line_lt = self.tl*0 + 1
+
+    v_min = v.T.min().T
+    v_max = v.T.max().T
+    ll_max = ll.T.max().T
+    tl_max = tl.T.max().T
+
+    #grid
+    l1 = ax1.plot(v_min, color=c[3])[0]
+    ax1.plot(line_v_u, '--k', lw=.5)
+    l2 = ax1.plot(v_max, color=c[8])[0]
+    l_limit = ax1.plot(line_v_o, '--k', lw=.5)[0]
+    l3 = ax2.plot(tl_max/100, color=c[2])[0]
+    l4 = ax2.plot(ll_max/100, color=c[0])[0]
+    l_limit2 = ax2.plot(line_lt, '--k', lw=.5)[0]
+    #l5 = ax3.plot(power_sum, 'k')[0]
+    #ax3.plot(line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #l6 = ax3.plot(-line_lt*trafo_s_n, '--k', lw=.5)[0]
+    #ax1.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax1.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax2.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax2.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+    #ax3.set_xticks([k for k in power_sum.index if ((k.hour == 0) or (k.hour == 6) or (k.hour == 12) or (k.hour == 18)) & (k.minute == 0)])
+    #ax3.set_xticklabels(['00:00', '06:00', '12:00', '18:00']*7 + ['00:00'])
+
+    ax1.set(ylim=(.87, 1.13)) # voltage band
+    ax2.set(ylim=(0, 1.1))    # line and trafo loading
+    #ax3.set(xlim=(time_min, time_max), ylim=(-.3, .3))   # Res_load
+
+    if lan == 'DE':
+      ax1.legend(handles=[l2, l1, l_limit], labels=['Max', 'Min', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      ax2.legend(handles=[l4, l3, l_limit2], labels=['Leitung', 'Trafo', 'Grenze'] ,loc="lower right", shadow=True)#, prop={'size': 7.5}
+      #if trafo_s_n == 0:
+      #  ax3.legend(handles=[l5], labels=['Residuallast'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #else:
+      #  ax3.legend(handles=[l5, l6], labels=['Residuallast', 'Trafogrenze'] ,loc="lower right", shadow=True, prop={'size': 7.5})
+      #ax2.set_xlabel('Zeit')
+      ax2.set_xlabel('Zeit')
+      ax1.set_ylabel('Spannung\nin p.u.\n')
+      ax2.set_ylabel('Leitungs-\nund Trafo-\nbelastung in p.u.\n')
+      #ax3.set_ylabel('Leistung\nin MW')
+
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    ax.set_xlabel('')
+    ###
+
+    plt.savefig('img/xx_sc8.png', format='png', bbox_inches='tight', dpi=300)
+
+    #plt.show()
 
 
   def plot_generation_consumption_as_heat_map(self):
@@ -1005,8 +1708,8 @@ class EvaluationSingleCase():
     plt.show()
 
   def plot_hp_eva_th(self):
-    prop_cycle = plt.rcParams['axes.prop_cycle']
-    c = prop_cycle.by_key()['color']
+    #prop_cycle = plt.rcParams['axes.prop_cycle']
+    #c = prop_cycle.by_key()['color']
 
     bus = str(self.hp_demand_th.columns[2])
     result = self.hp_hp_th - self.hp_demand_th - self.hp_tes_th - self.hp_tes_losses_th

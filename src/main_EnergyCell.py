@@ -21,12 +21,12 @@ time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
                'end_time'   : '2017-05-31 00:00:00+01:00',
                't_freq'     : '1T',
              }
-'''
-time_scope = { 'start_time' : '2017-05-25 00:00:00+02:00',
-               'end_time'   : '2017-05-28 00:00:00+02:00',
-               't_freq'     : '30T'
+#'''
+time_scope = { 'start_time' : '2017-01-04 00:00:00+01:00',
+               'end_time'   : '2017-01-05 00:00:00+01:00',
+               't_freq'     : '10T'
              }
-'''
+#'''
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2017-12-31 23:59:00+01:00',
                     't_freq'     : '1T'
@@ -110,7 +110,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope_year
+time_scope = time_scope_winter
 ###########################################
 
 #######################
@@ -137,12 +137,12 @@ time_scope = time_scope_year
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
+  8, # scenario number, 1-8
   1, # PV, 0-2
-  0, # BSS, 0-5
-  1, # HP, 0-5
-  1, # EV, 0-3
-  0, # Curtailment, 0/1
+  3, # BSS, 0-5
+  3, # HP, 0-5
+  3, # EV, 0-3
+  1, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
 #######################
@@ -210,7 +210,7 @@ net_number = 8
 def run_single_simulation():
 
   # Initialize EnergyCell
-  #'''
+  '''
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
@@ -230,7 +230,7 @@ def run_single_simulation():
                          save_full_data = False, 		 	    # default: False
                          verbose = True,        		 		# default: False
                          grid_reinforce_dev_mode = False) 	    # default: False
-  '''
+  #'''
 
   # Initialize Evaluation
   e.initiate_evaluation()
@@ -243,6 +243,9 @@ def run_single_simulation():
   #e.eva.plot_residualload_scenario_2(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_3(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_4(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload_scenario_6(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload_scenario_7(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload_scenario_8(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_grid_parameter_as_heat_map()
@@ -273,13 +276,13 @@ def run_single_simulation():
   #e.eva.calculate_resi_week()
 
   # Initialize BSS Sizing
-  e.initiate_BSS_sizing()
+  #e.initiate_BSS_sizing()
   #e.bss_sizing.calculate_storage_sizing()
   #e.bss_sizing.bss_sizing_trafo()
   #e.bss_sizing.bss_sizing_line()
   #e.bss_sizing.bss_sizing_voltage()
   #e.bss_sizing.bss_sizing_pv()
-  e.bss_sizing.bss_sizing_fft()
+  #e.bss_sizing.bss_sizing_fft()
 #############################
 
 
@@ -300,10 +303,10 @@ def run_multiple_simulations(scenarios):
                           time_scope = time_scope_i,
                           save_full_data = False, # default: False
                           verbose = False)        # default: False)
-        #e.run_pf_timeseries()
+        e.run_pf_timeseries()
         #------------
-        e.initiate_evaluation()
-        e.eva.calculate_relevant_outputdata()
+        #e.initiate_evaluation()
+        #e.eva.calculate_relevant_outputdata()
         #e.eva.calculate_net_problems()
         #-------------
 
@@ -397,7 +400,7 @@ scenarios = [
         #[3,1,0,0,0,1,0],
         #[4,1,0,1,1,0,1],
         #[4,1,0,1,1,0,0],
-        [4,1,0,1,1,1,0],
+        #[4,1,0,1,1,1,0],
         #[6,1,1,1,1,0,0],
         #[6,1,1,1,1,1,0],
         #[6,1,2,1,1,0,0],
@@ -409,7 +412,11 @@ scenarios = [
         #[6,1,5,1,1,0,0],
         #[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
+        #[7,1,0,5,2,1,0],
+        #[7,1,0,2,2,1,0],
         #[7,1,0,3,3,1,0],
+        [8,1,1,5,2,1,0], # evtl. nochmal simulieren, weil sachen überschieben wurden
+        [8,1,2,2,2,1,0], # evtl. nochmal simulieren, weil sachen überschieben wurden
         #[8,1,3,3,3,0,0],
         #[8,1,3,3,3,1,0],
         #[8,1,3,3,3,1,1],
