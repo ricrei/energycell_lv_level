@@ -767,8 +767,8 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
   time3 = power_3.index
   time4 = power_4.index
 
-  day1 = 1
-  day2 = 7
+  day1 = 2
+  day2 = 2
 
   nts = 4 # number timesteps per hour
 
@@ -993,6 +993,11 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots(eva1, eva2, eva3, 
       #ax2[0].set_ylabel('Line- and Trafo-\nloading in p.u.')
       ax2[0].set_ylabel('Line- and\nTrafoloading\nin p.u.')
       ax3[0].set_ylabel('Power in MW')
+      ax0[0].set_title('uncontrolled')
+      ax0[1].set_title('balanced')
+      ax0[2].set_title('market')
+      ax0[3].set_title('residual')
+      
 
   if save_fig_dir is not None:
      plt.savefig(save_fig_dir, bbox_inches='tight', dpi=dpi) 
