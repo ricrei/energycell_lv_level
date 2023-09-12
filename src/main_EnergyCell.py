@@ -110,7 +110,7 @@ time_scope_all_seasons = [
                       time_scope_winter
                       ]
 '''
-time_scope = time_scope_winter
+time_scope = time_scope_spring
 ###########################################
 
 #######################
@@ -238,14 +238,14 @@ def run_single_simulation():
   #e.eva.calculate_relevant_outputdata()
   #e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_1(add_curtail=False, add_losses=False)
   #e.eva.plot_residualload_scenario_2(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_3(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_4(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_6(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_7(add_curtail=True, add_losses=False)
-  e.eva.plot_residualload_scenario_8(add_curtail=True, add_losses=False)
+  #e.eva.plot_residualload_scenario_8(add_curtail=True, add_losses=False)
   #e.eva.plot_ev_soc()
   #e.eva.plot_generation_consumption_as_heat_map()
   #e.eva.plot_grid_parameter_as_heat_map()
@@ -358,22 +358,22 @@ def run_output_data_conversion(scenarios):
 ### Run Economics ###
 def run_economics(scenarios):
     for scenario_i in scenarios:
-      for net_name_i in [8]:#[7, 8, 9, 10, 11]:
+      for net_name_i in [7, 8, 9, 10, 11]:
         #print(' ')
         print('\33[32m' + 'Durchlauf: ' + str(scenario_i) + ' ' + str(net_name[net_name_i]) + '\33[0m')
         e_eco = Economics.MainEconomics(scenario_i, net_name[net_name_i], time_scope_all_seasons)
         e_eco.calculate_relevant_outputdata()
-        e_eco.energyflow()
+        #e_eco.energyflow()
 
         ### determine annuity of investmentcosts (01)
-        e_eco.determine_annuity_investments(include_grid_reinforce = True)
+        e_eco.determine_annuity_investments(include_grid_reinforce = False)
 
         ### determine operational expanses (02)
         e_eco.determine_operational_expanses()
 
         ### determine Costs and Revenues of Energyflows (03)
         e_eco.determine_local_energy_trading_price()
-        e_eco.determine_grid_charges()
+        e_eco.determine_grid_charges(include_grid_reinforce = False)
         e_eco.determine_energy_costs_revenues()
 
         # concate (01) - (03) in one table
@@ -415,20 +415,20 @@ scenarios = [
         #[7,1,0,5,2,1,0],
         #[7,1,0,2,2,1,0],
         #[7,1,0,3,3,1,0],
-        [8,1,1,5,2,1,0], # evtl. nochmal simulieren, weil sachen überschieben wurden
-        [8,1,2,2,2,1,0], # evtl. nochmal simulieren, weil sachen überschieben wurden
+        #[8,1,1,5,2,1,0], # evtl. nochmal simulieren, weil sachen überschieben wurden
+        #[8,1,2,2,2,1,0], # evtl. nochmal simulieren, weil sachen überschieben wurden
         #[8,1,3,3,3,0,0],
-        #[8,1,3,3,3,1,0],
+        [8,1,3,3,3,1,0],
         #[8,1,3,3,3,1,1],
-        #[8,1,4,3,3,1,0],
+        [8,1,4,3,3,1,0],
         #[8,1,4,3,3,1,1],
         #[9,1,3,3,3,1,0],
         #[9,1,3,3,3,1,1],
                       ]
 
-run_single_simulation()
+#run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
-#run_economics(scenarios)
+run_economics(scenarios)
 #######################

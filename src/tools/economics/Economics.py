@@ -252,8 +252,8 @@ class MainEconomics():
 
     Eg_LV_flex[Eg_LV_flex < 0] = 0
 
-    Ec_LV -= Ec_LV_flex
-    Eg_LV -= Eg_LV_flex
+    #Ec_LV -= Ec_LV_flex
+    #Eg_LV -= Eg_LV_flex
 
     E = pd.DataFrame(index=Ec_self.columns)
 
@@ -410,8 +410,8 @@ class MainEconomics():
     plt.show()
     '''
 
-    #print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
-    #print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
+    print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
+    print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
 
     #define Seaborn color palette to use
     #colors = sns.color_palette('pastel')[0:5]
@@ -477,6 +477,11 @@ class MainEconomics():
 
     flex_bss =  self.bss_p_flex.fillna(0)
     flex_load = self.load_p_flex.fillna(0)
+
+    #print(flex_bss)
+    #print(flex_bss.sum())
+    #print(flex_load)
+    #print(flex_load.sum().sum())
 
     # residual load per HH
     dE_HH = load - pv
@@ -561,26 +566,17 @@ class MainEconomics():
     #Ec_self -= Ec_self_flex
     #Eg_self -= Eg_self_flex
 
-    '''
+    #'''
     # BSS Flexibility
-    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)] += flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss <= dE_HH)]
-    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)] += dE_HH[(dE_HH >= 0) & (flex_bss > 0) & (pv > load) & (flex_bss > dE_HH)]
+    Ec_LV_flex[(flex_bss > 0)] += flex_bss[(flex_bss > 0)]
 
-    Ec_LV_flex[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)] += flex_bss[(dE_HH >= 0) & (flex_bss > 0) & (pv <= load)]
+    Eg_LV_flex[(flex_bss < 0)] += -flex_bss[(flex_bss < 0)]
 
-    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)] += -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss <= dE_HH)]
-    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)] += -dE_HH[(dE_HH < 0) & (flex_bss < 0) & (pv <= load) & (flex_bss > dE_HH)]
+    #Eg_LV_flex[Eg_LV_flex < 0] = 0
+    #'''
 
-    Eg_LV_flex[(dE_HH < 0) & (flex_bss < 0) & (pv > load)] += -flex_bss[(dE_HH < 0) & (flex_bss < 0) & (pv > load)]
-
-    Ec_self_flex[(flex_bss > 0)] += flex_bss[(flex_bss > 0)] - Ec_LV_flex[(flex_bss > 0)]
-    Eg_self_flex[(flex_bss < 0)] += -flex_bss[(flex_bss < 0)] - Eg_LV_flex[(flex_bss < 0)]
-
-    Eg_LV_flex[Eg_LV_flex < 0] = 0
-    '''
-
-    Ec_LV -= Ec_LV_flex
-    Eg_LV -= Eg_LV_flex
+    #Ec_LV -= Ec_LV_flex
+    #Eg_LV -= Eg_LV_flex
 
     E = pd.DataFrame(index=Ec_self.columns)
 
@@ -614,10 +610,11 @@ class MainEconomics():
       #for i in [str(i) for i in range(10,20)]:#Ec_LV.columns:#
       #for i in Ec_LV.columns:#
       fig, ax = plt.subplots()
-      ax.plot(bss_pos)
-      ax.plot(bss_neg)
-      ax.plot(Ec_LV.sum(axis=1))
-      ax.plot(-Eg_LV.sum(axis=1))
+      ax.plot(flex_bss)
+      #ax.plot(bss_pos)
+      #ax.plot(bss_neg)
+      #ax.plot(Ec_LV.sum(axis=1))
+      #ax.plot(-Eg_LV.sum(axis=1))
         #ax.plot(dE_HH[i], label='dE_HH')
         #'''
         #ax.plot((Ec_self[i] + Ec_LV[i] + Ec_MV[i] + Ec_LV_flex[i] + Ec_self_flex[i]), label='Ec_self_flex')
@@ -744,12 +741,12 @@ class MainEconomics():
     plt.show()
     '''
 
-    #print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
-    #print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
+    print('Generation (4 weeks): ' + str(sum([E['Eg_self'].sum(), E['Eg_LV'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()])/60) + ' MWh')
+    print('Load (4 weeks): ' + str(sum([E['Ec_self'].sum(), E['Ec_LV'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()])/60) + ' MWh')
 
     #define Seaborn color palette to use
     #colors = sns.color_palette('pastel')[0:5]
-    '''
+    #'''
     #define data
     data = [(E['Ec_self'].sum() - E['Ec_self_flex'].sum()), E['Ec_self_flex'].sum(), (E['Ec_LV'].sum() - E['Ec_LV_flex'].sum()), E['Ec_LV_flex'].sum(), E['Ec_MV'].sum(), E['Ecur_load'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid obtained', 'curtailed Load']
@@ -761,11 +758,18 @@ class MainEconomics():
     #define data
     data = [(E['Eg_self'].sum() - E['Eg_self_flex'].sum()), E['Eg_self_flex'].sum(), (E['Eg_LV'].sum() - E['Eg_LV_flex'].sum()), E['Eg_LV_flex'].sum(), E['Eg_MV'].sum(), E['Ecur_pv'].sum()]
     labels = ['self-consumed', 'self-consumed (flex)', 'P2P', 'P2P (flex)', 'MV-grid feed-in', 'curtailed PV']
-
+    #'''
+    i = 0
+    for d in data:
+      if d < 0:
+        data[i] = 0
+      i += 1
+    #'''
+    #print(data)
     #create pie chart
     plt.pie(data, labels = labels, colors = colors, autopct='%.0f%%')
     plt.show()
-    '''
+    #'''
     E = E / 60 # MW -> MWh
     E = E * self.projection_full_year
 
@@ -987,18 +991,19 @@ class MainEconomics():
     d_total = d.sum(axis=1)
 
     r = s_total / d_total
-    r[r>1.] = 1.
+    #r[r>1.] = 1.
 
     p_fit = parameter_economics.energycosts_income['C_market_fit']
     p_u = parameter_economics.energycosts_income['C_market_obtain']
 
-    p_t = r*0
+    p_t = r.copy()*0
     p_t[r<1.] = r[r<1.]*p_fit + (1 - r[r<1.])*p_u
     p_t[r>=1.] = p_fit
 
     '''
     fig, ax = plt.subplots()
     ax.plot(p_t)
+    #ax.plot(r)
     #ax.plot(l.sum(axis=1))
     #ax.plot(-g.sum(axis=1))
     ax.set_xlabel('Time')
@@ -1008,7 +1013,7 @@ class MainEconomics():
     '''
     p_t.round(3).to_csv(self.economics_folder + 'trading_price_LV_euro_per_MWh.csv', header=True, index = True)
 
-  def determine_grid_charges(self):
+  def determine_grid_charges(self, include_grid_reinforce):
     investment_costs = parameter_economics.investment_costs
     energycosts_income = parameter_economics.energycosts_income
 
@@ -1029,7 +1034,7 @@ class MainEconomics():
     Eg_self_flex = E['Eg_self_flex'].sum()
 
     # grid charges derived from GRID REINFORCEMENT
-    line_costs, trafo_costs = self.get_grid_reinforcment_costs(include_grid_reinforce = True)
+    line_costs, trafo_costs = self.get_grid_reinforcment_costs(include_grid_reinforce)
     anf_grid = calculate_anf(investment_costs['intrest_rate'], investment_costs['grid_lifespan'])
     trafo_costs *= anf_grid * (1 + parameter_economics.operating_costs['percent'])
     line_costs  *= anf_grid * (1 + parameter_economics.operating_costs['percent'])
