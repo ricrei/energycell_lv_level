@@ -1553,8 +1553,10 @@ def plot_heatmap_curtailed_power(eva, net_name, columns_scenarios, x_ticklabels,
   ax[1].set_xticklabels(x_ticklabels)
   ax[1].set_yticklabels(y_ticklabels)
   if lan == 'EN':
-    ax[0].set(xlabel='Charging strategy', ylabel='Grid')
-    ax[1].set(xlabel='Charging strategy', ylabel='')
+    #ax[0].set(xlabel='Charging strategy', ylabel='Grid')
+    #ax[1].set(xlabel='Charging strategy', ylabel='')
+    ax[0].set(xlabel='Scenario', ylabel='Grid')
+    ax[1].set(xlabel='Scenario', ylabel='')
     ax[0].set_title('Curtailed load energy in %')
     ax[1].set_title('Curtailed PV energy in %')
   elif lan == 'DE':
