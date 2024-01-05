@@ -1425,7 +1425,7 @@ class EvaluationSingleCase():
       PVConsumption = (sum_total_pv - Res_pos.sum() - curtail_p.curtail_pv.sum()*f)*100/sum_total_pv
     else:
       PVConsumption = sum_total_pv*0.0
-      
+    #'''
     print(' ')
     print('PV-Generation: %s MWh' % sum_pv.round(2))
     print('HP-Consumption: %s MWh' % sum_hp.round(2))
@@ -1441,6 +1441,8 @@ class EvaluationSingleCase():
     print('Self-sufficiancy: %s %%' % ((SelfSufficiancy).round(2)))
     print('PV consumption rate: %s %%' % ((PVConsumption).round(2)))
     print(' ')
+    #'''
+    #print('Total Losses (lines+trafo): %s MWh' % losses.round(2))
 
   def calculate_net_problems(self):
 
@@ -1795,7 +1797,7 @@ class EvaluationSingleCase():
 
 
   def plot_grid_2(self):
-    time_sample = pd.to_datetime('2017-05-26 14:00:00+02:00')
+    time_sample = pd.to_datetime('2017-06-01 12:00:00+02:00')
     colors = sns.color_palette()
 
     def run_pp(timestep):
@@ -1824,6 +1826,9 @@ class EvaluationSingleCase():
     ppplt.draw_collections([bc, lc, tc, bc_over, lc_over])
     plt.show()
 
+
+  def plot_grid_3(self):
+    ppplt.simple_plotly(self.grid.net,  figsize=3.0)
 
   def plot_flex_power(self):
     fig, ax = plt.subplots()

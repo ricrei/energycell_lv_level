@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import pandapower.plotting.plotly as ppply
 import seaborn as sns
 from datetime import datetime, timedelta
@@ -698,7 +699,7 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
 
   Ec_cur_load_bar    = mpatches.Patch(color=bright[7], label='Abregelung PV')
   #Eg_cur_pv_flex_bar = mpatches.Patch(color=bright[6], label='curtailed pv')
-  Eg_MV_bar          = mpatches.Patch(color=bright[0], label='Einspeisung Mittelspannung')
+  Eg_MV_bar          = mpatches.Patch(color=bright[0], label='Verkauf Mittelspannung')
   Eg_LV_bar          = mpatches.Patch(color=bright[8], label='Verkauf Niederspannung')
   Ec_LV_flex_bar     = mpatches.Patch(color=bright[6], label='Flexibilität')
   #Eg_LV_flex_bar     = mpatches.Patch(color=bright[2], label='LV flex gen')
@@ -706,11 +707,19 @@ def bar_revenue_costs_HH(eva, save_fig_dir=save_fig_dir):
   #Eg_self_flex_bar   = mpatches.Patch(color=bright[0], label='self flex gen')
   handle_reven       = [Eg_LV_bar, Eg_MV_bar, Ec_LV_flex_bar, Ec_cur_load_bar]
 
+  df_barplot3 = pd.DataFrame()
+  df_barplot3['scenario'] = df_barplot2['scenario']
+  df_barplot3['total'] = df_barplot1['SG_opex'] + df_barplot2['Ec_cur_load_reven']
+
+  stotal = sns.lineplot(x=df_barplot3['scenario'], y='total', data=df_barplot3, marker='D', markerfacecolor=rocket[1], linestyle="none")
+
+  handle_total       = [mlines.Line2D([], [], color=rocket[1], marker='D', linestyle='None', markersize=5, label='resultierende\nGesamtkosten')]
+
   # plt
-  plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right" , bbox_to_anchor=(1.45, 0.22))
+  plt.legend(handles = handle_reven[::-1] + handle_costs + handle_total, loc="lower right" , bbox_to_anchor=(1.45, 0.22))
   ax8.set_title('Haushalte')
   plt.xlabel('Szenario')
-  plt.ylabel('Kosten und Erlöse in tausend Euro pro Jahr')
+  plt.ylabel('Kosten (negativ) und Erlöse (positiv) in tausend Euro pro Jahr')
   plt.grid(True)
   ax8.set_axisbelow(True)
   #plt.show()
@@ -943,7 +952,7 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
   # plt
   plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right" , bbox_to_anchor=(1.4, 0.22))
   plt.xlabel('Szenario')
-  plt.ylabel('Kosten und Erlöse in tausend Euro pro Jahr')
+  plt.ylabel('Kosten (negativ) und Erlöse (positiv) in tausend Euro pro Jahr')
   #plt.show()
 
   if save_fig_dir is not None:
@@ -1008,7 +1017,7 @@ def bar_revenue_costs_ECM(eva, save_fig_dir=save_fig_dir):
   # plt
   plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right", bbox_to_anchor=(1.6, 0.22))
   plt.xlabel('Szenario')
-  plt.ylabel('Kosten und Erlöse in tausend Euro pro Jahr')
+  plt.ylabel('Kosten (negativ) und Erlöse (positiv) in tausend Euro pro Jahr')
   plt.grid(True)
   ax8.set_axisbelow(True)
   #plt.show()
@@ -1176,7 +1185,7 @@ def bar_revenue_costs_CBSS(eva, save_fig_dir=save_fig_dir):
   # plt
   plt.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right", bbox_to_anchor=(3, 0.22))
   plt.xlabel('Szenario')
-  plt.ylabel('Kosten und Erlöse in tausend Euro pro Jahr')
+  plt.ylabel('Kosten (negativ) und Erlöse (positiv) in tausend Euro pro Jahr')
   plt.grid(True)
   ax8.set_axisbelow(True)
   #plt.show()
@@ -1233,9 +1242,9 @@ def bar_revenue_costs_ECM_CBSS(eva, save_fig_dir=save_fig_dir):
 
   #s16 = sns.barplot(x = df_barplot1['scenario'], y = column[-1], data = df_barplot1, color = dark[7])
   #s15 = sns.barplot(x = df_barplot1['scenario'], y = column[-2], data = df_barplot1, color = dark[6])
-  s14 = sns.barplot(ax=axECM, x = df_barplot1['scenario'], y = column[7], data = df_barplot1, color = dark[5])
+  s14 = sns.barplot(ax=axECM, x = df_barplot1['scenario'], y = column[7], data = df_barplot1, color = rocket[4])#5
   #s13 = sns.barplot(x = df_barplot1['scenario'], y = column[-4], data = df_barplot1, color = dark[4])
-  s12 = sns.barplot(ax=axECM, x = df_barplot1['scenario'], y = column[5], data = df_barplot1, color = dark[3])
+  s12 = sns.barplot(ax=axECM, x = df_barplot1['scenario'], y = column[5], data = df_barplot1, color = rocket[5])#3
   #s11 = sns.barplot(x = df_barplot1['scenario'], y = column[-6], data = df_barplot1, color = dark[2])
   s10 = sns.barplot(ax=axECM, x = df_barplot1['scenario'], y = column[3], data = df_barplot1, color = dark[1])
   #s9  = sns.barplot(x = df_barplot1['scenario'], y = column[-8], data = df_barplot1, color = dark[0])
@@ -1245,9 +1254,9 @@ def bar_revenue_costs_ECM_CBSS(eva, save_fig_dir=save_fig_dir):
 
   #BSS_opex_bar    = mpatches.Patch(color=dark[7], label='CBSS')
   #BSS_capex_bar   = mpatches.Patch(color=dark[6], label=column[-2])
-  Lines_opex_bar  = mpatches.Patch(color=dark[5], label='Leitungsverstärkung\n(CAPEX + OPEX)')
+  Lines_opex_bar  = mpatches.Patch(color=rocket[4], label='Leitungsverstärkung\n(CAPEX + OPEX)')
   #Lines_capex_bar = mpatches.Patch(color=dark[4], label=column[-4])
-  Trafo_opex_bar  = mpatches.Patch(color=dark[3], label='Transformatorverstärkung\n(CAPEX + OPEX)')
+  Trafo_opex_bar  = mpatches.Patch(color=rocket[5], label='Transformatorverstärkung\n(CAPEX + OPEX)')
   #Trafo_capex_bar = mpatches.Patch(color=dark[2], label=column[-6])
   flex_self_bar   = mpatches.Patch(color=dark[1], label='Flexibilität')
   #flex_LV_bar     = mpatches.Patch(color=dark[0], label=column[-8])
@@ -1274,10 +1283,10 @@ def bar_revenue_costs_ECM_CBSS(eva, save_fig_dir=save_fig_dir):
   handle_reven       = [grid_charges_bar]
 
   # plt
-  axECM.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right", bbox_to_anchor=(1.9, 0.28))
+  axECM.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right", bbox_to_anchor=(1.9, 0.38))
   axECM.set_title('Netzbetreiber:in')
   axECM.set_xlabel('Szenario')
-  axECM.set_ylabel('Kosten und Erlöse in tausend Euro pro Jahr')
+  axECM.set_ylabel('Kosten (negativ) und Erlöse (positiv) in tausend Euro pro Jahr')
   axECM.grid(True)
   axECM.set_axisbelow(True)
   #plt.show()
@@ -1365,12 +1374,21 @@ def bar_revenue_costs_ECM_CBSS(eva, save_fig_dir=save_fig_dir):
   bss_LV_reven_bar   = mpatches.Patch(color=bright[0], label='Verkauf Niederspannung')
   handle_reven       = [bss_LV_reven_bar]
 
+  df_barplot3 = pd.DataFrame()
+  df_barplot3['scenario'] = df_barplot2['scenario']
+  df_barplot3['total'] = df_barplot1['BSS_opex'] + df_barplot2['bss_LV_reven']
+
+  stotal = sns.lineplot(x=df_barplot3['scenario'], y='total', data=df_barplot3, marker='D', markerfacecolor=rocket[1], linestyle="none")
+
+  handle_total       = [mlines.Line2D([], [], color=rocket[1], marker='D', linestyle='None', markersize=5, label='resultierende\nGesamtkosten')]
+
   # plt
-  axCBSS.legend(handles = handle_reven[::-1] + handle_costs, loc="lower right", bbox_to_anchor=(4.835, 0))
+  axCBSS.legend(handles = handle_reven[::-1] + handle_costs + handle_total, loc="lower right", bbox_to_anchor=(4.835, 0))
   axCBSS.set_title('Communityspeicher-\nbetreiber:in')
   axCBSS.set_xlabel('')
-  #axCBSS.set_ylabel('Kosten und Erlöse in tausend Euro pro Jahr')
+  #axCBSS.set_ylabel('Kosten (negativ) und Erlöse (positiv) in tausend Euro pro Jahr')
   axCBSS.set_ylabel('')
+  axCBSS.set(ylim=(-320, 320))
   axCBSS.grid(True)
   axCBSS.set_axisbelow(True)
 
@@ -1583,14 +1601,14 @@ eva = load_scenario_data(scenarios)
 
 #create_pie_chart(eva)
 
-boxplot_diff_costs_reven_HH(eva)
+#boxplot_diff_costs_reven_HH(eva)
 #boxplot_diff_costs_reven_ECM(eva)
 #boxplot_diff_costs_reven_CBSS(eva)
-#bar_revenue_costs_HH(eva)
+#bar_revenue_costs_HH(eva) # <---- Für Diss
 #bar_revenue_costs_HH_each_HH(eva)
 #bar_revenue_costs_ECM(eva)
 #bar_revenue_costs_CBSS(eva)
-#bar_revenue_costs_ECM_CBSS(eva)
+bar_revenue_costs_ECM_CBSS(eva)  # <---- Für Diss
 
 #cd = get_component_data(scenarios, time_scope_all_seasons)
 

@@ -124,12 +124,13 @@ class BSScreator:
       # create community bss at one or more buses        
       if self.net_name == "simbench_rural_1":
           selected_buses = [4]#[int(grid.net.trafo.lv_bus.sum())] # The end of the longest feeder
-          hh_per_line = [4]
+          hh_per_line = [5]
           #print('No scenario for CBSS in power line implemented')# wird nicht ausgegeben
           #raise ValueError('No scenario for CBSS in power line implemented' )
       elif self.net_name == "simbench_rural_2":
           selected_buses = [9,19,46,75]
-          hh_per_line = [48,45,141,63] 
+          #hh_per_line = [48,45,141,63] Falsche Zuordnung
+          hh_per_line = [63,48,45,141]
       elif self.net_name == "simbench_rural_3":
           selected_buses = [74,93,95,108,111]
           hh_per_line = [66,30,63,84,72]
