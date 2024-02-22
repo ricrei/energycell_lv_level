@@ -262,7 +262,8 @@ class EvaluationSingleCase():
       PVConsumption = (sum_total_pv - Res_pos.sum() - curtail_p.curtail_pv.sum()*f)*100/sum_total_pv
     else:
       PVConsumption = sum_total_pv*0.0
-      
+
+    #'''      
     print(' ')
     print('PV-Generation: %s MWh' % sum_pv.round(2))
     print('HP-Consumption: %s MWh' % sum_hp.round(2))
@@ -278,6 +279,14 @@ class EvaluationSingleCase():
     print('Self-sufficiancy: %s %%' % ((SelfSufficiancy).round(2)))
     print('PV consumption rate: %s %%' % ((PVConsumption).round(2)))
     print(' ')
+    #'''
+
+    #df['PVenergy'].iloc[0] = sum_pv.round(2)
+    #df['HHenergy'].iloc[0] = sum_load.round(2)
+    #df['WPenergy'].iloc[0] = sum_hp.round(2)
+    #df['EVenergy'].iloc[0] = sum_ev.round(2)
+
+    return sum_pv.round(2), sum_load.round(2),sum_hp.round(2), sum_ev.round(2)
 
   def calculate_net_problems(self):
 
@@ -403,6 +412,13 @@ class EvaluationSingleCase():
     plt.show()
 
   def plot_ev_active_power(self):
+    print(self.power['ev'].sum())
+    fig = plt.figure(figsize=(14, 6)) 
+    plt.plot(self.power['ev'])
+    #plt.legend(['-20%', '-10%', '0%', '+10%','+20%'])
+    plt.grid()
+    plt.show()
+    '''
     fig, ax = plt.subplots()
     plot_curve = self.load_p['0'] * 0
     for i in self.grid.ev_index:
@@ -412,6 +428,7 @@ class EvaluationSingleCase():
     plt.ylabel('Load active power in MW')
     plt.grid(True)
     plt.show()
+    '''
 
   def plot_pv_active_power(self):
     fig, ax = plt.subplots()
@@ -500,6 +517,9 @@ class EvaluationSingleCase():
     ax.set_ylabel('State of charge in %')
     #plt.legend(grid.component_buses.index)
     plt.show()
+
+  def plot_ev_at_chrgingstation(self):
+    pass
 
   def plot_bss_p_mw(self):
     bss_p = self.storage_p

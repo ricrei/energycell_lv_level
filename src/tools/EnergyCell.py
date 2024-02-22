@@ -214,7 +214,7 @@ class EnergyCell():
       except:
         raise ValueError('Scenario number not defined: ' + str(scenario))
 
-      if scenario[0] not in ['A', 'B', 'C']:
+      if scenario[0] not in ['A','B','C','D','E','F','G']:
         # PhD-scenarios
         phd_scenarios = [
           [1,0,0,0,0,0,0],

@@ -39,6 +39,8 @@ class EvaluationAllCases():
     df_eva_t = pd.DataFrame(columns=['time', 'trafoloading', 'scenario', 'timescope', 'gridID', 'trafoID'])
     df_helper_t = pd.DataFrame(columns=['time', 'trafoloading', 'scenario', 'timescope', 'gridID', 'trafoID'])
 
+    print(scenarios)
+
     print('Load Output Data')
     for scenario_i in scenarios:
       for time_scope_i in time_scopes:
@@ -54,6 +56,7 @@ class EvaluationAllCases():
           eva[index]['net_name_i'] = net_name_i
           eva[index]['time_scope_name'] = time_scope_i['name']
           eva[index]['power'] = self.read_data(output_dir+'power_total_MW.csv')
+          print(eva[index]['power']['ev'].sum())
           eva[index]['v'] = self.read_data(output_dir+'res_bus_vm_pu.csv')
           eva[index]['ll'] = self.read_data(output_dir+'res_line_load_percent.csv')
           eva[index]['tl'] = self.read_data(output_dir+'res_trafo_load_percent.csv')
@@ -66,6 +69,16 @@ class EvaluationAllCases():
           eva[index]['soc_bss'] = self.read_data(output_dir+'storage_state_of_charge_percent.csv')
 
           tt.compress_pickle(output_df_dir + str(index)+'.pbz2', eva[index])
+          if index == 'sD111410n8winter':
+            print(eva['sD111410n8winter']['power']['ev'].sum())
+          if index == 'sE111410n8winter':
+            print(eva['sE111410n8winter']['power']['ev'].sum())
+          if index == 'sC111410n8winter':
+            print(eva['sC111410n8winter']['power']['ev'].sum())
+          if index == 'sF111410n8winter':
+            print(eva['sF111410n8winter']['power']['ev'].sum())
+          if index == 'sG111410n8winter':
+            print(eva['sG111410n8winter']['power']['ev'].sum())
 
   ### Helper Methods ###
   def convert_scenario(self, scenario_i):

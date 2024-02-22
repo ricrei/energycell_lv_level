@@ -65,7 +65,7 @@ class InputDataHandler():
 
         
       if self.season != None:
-          if self.scenario[0] in ['A','B','C']:
+          if self.scenario[0] in ['A','B','C','D','E','F','G']:
             self.inputfolder += 'YY_inputdata_BEVinLV/'
           if self.season == 'summer':
             self.inputfolder = self.inputfolder + 'XX_inputdata_summer/'

@@ -26,9 +26,13 @@ class EVcreator:
       else:
         charging_strategy = 'gre'
 
-      if grid.scenario[0] in ['A','B','C']:
-        self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.scenario[0])+'_'+str(grid.category_num)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
-        #print(self.ev_data_file)
+      if grid.scenario[0] in ['A','B','C','D','E','F','G']:
+        if grid.scenario[0] in ['D','E','F','G']:
+          self.ev_data_file = self.inputfolder + '14_ev_load_'+str('C')+'_'+str(grid.category_num)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
+          self.ev_charging_demand = tt.decompress_pickle(self.ev_data_file)
+        else:
+          self.ev_data_file = self.inputfolder + '14_ev_load_'+str(grid.scenario[0])+'_'+str(grid.category_num)+'_'+grid.time_scope['name']+'_'+charging_strategy+'.pbz2'
+          self.ev_charging_demand = tt.decompress_pickle(self.ev_data_file)
 
       else:
         if (grid.category == 'rural') or (grid.category == 'village'):
@@ -49,7 +53,7 @@ class EVcreator:
       grid.net.load['ev_parking'] = np.nan
       grid.net.load['ev_amount'] = 0
 
-      if grid.scenario[0] in ['A','B','C']:
+      if grid.scenario[0] in ['A','B','C','D','E','F','G']:
         x = round(len(self.ev.columns) / len(grid.component_buses.index))
       else:
         x = 1
@@ -99,6 +103,13 @@ class EVcreator:
           grid.net.load['ev_amount'].loc[index_ev] = 0
 
       grid.net.load['p_mw_flex'] = 0
+
+      #'''
+      print(n_noev)
+      print(n_ev)
+      print(n_ev_double)
+      print(grid.net.load.ev_amount.sum())
+      #'''
 
       return grid
 
