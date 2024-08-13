@@ -137,13 +137,13 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  8, # scenario number, 1-8
+  4, # scenario number, 1-8
   1, # PV, 0-2
-  5, # BSS, 0-5
+  0, # BSS, 0-5
   1, # HP, 0-5
   1, # EV, 0-3
-  1, # Curtailment, 0/1
-  0  # Grid reinforcement, 0/1
+  0, # Curtailment, 0/1
+  1  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -210,7 +210,7 @@ net_number = 8
 def run_single_simulation():
 
   # Initialize EnergyCell
-  #'''
+  '''
   e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
@@ -220,8 +220,8 @@ def run_single_simulation():
                     grid_reinforce_dev_mode = True) 	# default: False
 
   # Run powerflow
-  #e.run_pf_timeseries()
-  '''
+  e.run_pf_timeseries()
+  #'''
   # Plot Testing Environment
   e = ec.EnergyCell_Plot(net_name = net_name[net_number],
                          scenario = scenario,
@@ -230,7 +230,7 @@ def run_single_simulation():
                          save_full_data = False, 		 	    # default: False
                          verbose = True,        		 		# default: False
                          grid_reinforce_dev_mode = False) 	    # default: False
-  '''
+  #'''
 
   # Initialize Evaluation
   #e.initiate_evaluation()
@@ -427,7 +427,7 @@ scenarios = [
         #[9,1,3,3,3,1,1],
                       ]
 
-#run_single_simulation()
+run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)

@@ -1169,7 +1169,7 @@ def plot_residualload_grid_issues_subplot_overall_eva_4_plots_phd(eva1, eva2, ev
     ax0[i].fill_between(power[i].index, 0 , -storage_discharge , alpha=0.7, color=c[4])
     # curtailed power
     ax0[i].fill_between(power[i].index, power[i].hp + power[i].load + power[i].ev + storage_charge, power[i].hp + power[i].load + power[i].ev + storage_charge + curtailed[i].load, alpha=0.2, color=c[7])
-    ax0[i].fill_between(power[i].index,                     -storage_discharge - power[i].pv,                       -storage_discharge - power[i].pv - curtailed[i].pv, alpha=0.2, color=c[7])
+    ax0[i].fill_between(power[i].index,                     -storage_discharge - power[i].pv,                       -storage_discharge - power[i].pv - curtailed[i].pv, alpha=0.2, color=c[0])
 
     ax0[i].plot(power[i].index, -storage_discharge-power[i].pv, lw=.6)
     ax0[i].plot(power[i].index, storage_charge+power[i].ev, lw=.6)
