@@ -12,7 +12,7 @@ import tools.tools as tt
 
 class Grid:
 
-  def __init__(self, net_name, scenario, time_scope):
+  def __init__(self, net_name, scenario, time_scope, control_parameter, grid_analysis):
     '''
     Init method to initialize and modify a pandapower network. 
 
@@ -26,11 +26,17 @@ class Grid:
 
     self.time_scope = time_scope
     self.scenario = scenario
+    self.grid_analysis = grid_analysis
+    self.ec_size = control_parameter['EC_size']
 
     #self.is_community_storage = True if self.scenario[2] in [3, 4] else False
-    self.net_name = net_name
-    self.create_net()
-    pp.runpp(self.net, algorithm='nr')  # Has to be executed to get initial net.res_bus for Q(U)-control
+    if grid_analysis == True:
+        self.net_name = net_name
+        self.create_net()
+        pp.runpp(self.net, algorithm='nr')  # Has to be executed to get initial net.res_bus for Q(U)-control
+    else:
+        self.category = control_parameter['EC_demografic_category']
+        self.create_energycell_structure()
 
     self.curtailed_pv_power = 0
     self.curtailed_load_power = 0
@@ -118,6 +124,24 @@ class Grid:
 
         # Run diagnostic if there are problems regarding powerflow
         #pp.diagnostic(self.net, report_style='detailed', warnings_only=False)
+
+  def create_energycell_structure(self):
+      '''
+      An empty 'network' is created for simulations without a power grid.
+      '''
+      self.net = pp.create_empty_network() # Tabea ???
+
+      self.net['trafo']['p_mw'] = "" # so richtig und wird das gebraucht??? wird hier dann überhaupt die kummulierte Leistung eingespeichert?
+      self.p_trafo_power = self.net.trafo.p_mw.sum() # wird das gebraucht?
+
+      # add new row for each bus/household
+      for x in range(self.ec_size):
+          self.net.load.loc[x] = ''
+          self.net.bus.loc[x] = ''
+          self.net.load.bus.loc[x] = x
+
+      # needed to create HHL, HP, EV and BSS at each bus
+      self.component_buses = self.net.load.bus
 
   def get_component_index(self):
         '''

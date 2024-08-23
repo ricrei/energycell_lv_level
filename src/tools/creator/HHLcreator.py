@@ -1,11 +1,14 @@
 import tools.tools as tt
+import pandas as pd
 
 class HHLcreator:
 
-  def __init__(self, inputfolder):
+  def __init__(self, inputfolder, control_parameter, grid_analysis):
         self.inputfolder = inputfolder
         self.load_p_data_file = self.inputfolder + '11_p0_short.pbz2'
-        self.load_q_data_file = self.inputfolder + '11_q0_short.pbz2'
+        if grid_analysis == True:
+            self.load_q_data_file = self.inputfolder + '11_q0_short.pbz2'
+        self.ec_size = control_parameter['EC_size']
 
   ###########################################
   ### Create Loads at each bus for all HP ###

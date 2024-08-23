@@ -32,7 +32,8 @@ class PowerFlow:
                                         curtail_controller,
                                         energy_manager,
                                         output_data_handler,
-                                        display):
+                                        display,
+                                        grid_analysis):
 
       self.input_dict = self.create_input_dict(df, grid)
 
@@ -59,16 +60,18 @@ class PowerFlow:
                                                           ev_controller=ev_controller,
                                                           bss_controller=bss_controller,
                                                           curtail_controller=curtail_controller,
-                                                          t=t)
+                                                          t=t,
+                                                          grid_analysis=grid_analysis)
 
-              try:
-                pp.runpp(grid.net, algorithm='nr', init='results')
-              except:
-                try:
-                  pp.runpp(grid.net, algorithm='nr', max_iteration=30, tolerance_mva=1e-6)
-                except:
-                  print(tt.textred('Power Flow nr did not converge at ' + str(t)))
-                  self.logger.error('Power Flow nr did not converge at ' + str(t))
+              if grid_analysis==True:
+                  try:
+                    pp.runpp(grid.net, algorithm='nr', init='results')
+                  except:
+                    try:
+                      pp.runpp(grid.net, algorithm='nr', max_iteration=30, tolerance_mva=1e-6)
+                    except:
+                      print(tt.textred('Power Flow nr did not converge at ' + str(t)))
+                      self.logger.error('Power Flow nr did not converge at ' + str(t))
 
               # write result into DataFrame
               output_data_handler.write_output_into_dataframe(grid, t)

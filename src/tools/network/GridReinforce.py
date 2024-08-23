@@ -140,9 +140,11 @@ class GridReinforce:
       hv_bus = int(self.grid.net.trafo.hv_bus.values)
       transformer_types = self.get_transformer_type()
       if transformer_types != None:
+        # check if transformer needs to be replaced
         if self.keep_trafo == False:
           self.grid.net.trafo.drop(0, inplace=True)
         for trafo_type in transformer_types:
+          # add new transformers
           pp.create_transformer(self.grid.net, hv_bus, lv_bus, trafo_type)
       else:
         if self.dev_mode == True: print('No transformer changed')

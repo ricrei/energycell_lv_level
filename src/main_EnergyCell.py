@@ -23,8 +23,8 @@ time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
              }
 #'''
 time_scope = { 'start_time' : '2017-06-01 06:00:00+02:00',
-               'end_time'   : '2017-06-01 14:00:00+02:00',
-               't_freq'     : '30T'
+               'end_time'   : '2017-06-02 14:00:00+02:00',
+               't_freq'     : '10T'
              }
 #'''
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
@@ -143,7 +143,7 @@ scenario = [
   1, # HP, 0-5
   1, # EV, 0-3
   0, # Curtailment, 0/1
-  1  # Grid reinforcement, 0/1
+  0  # Grid reinforcement, 0/1
 ]
 #######################
 
@@ -181,6 +181,8 @@ control_parameter = {
   'HP_lower_TES_reserve': 0., # default = 0 
   'HP_upper_TES_reserve_summer': .5, # default = 1
   'HP_lower_TES_reserve_winter': .1, # default = 0
+  'EC_size': 10,
+  'EC_demografic_category': 'rural', #rual/ suburban/urban    #umbenennen?
 }
 ############################
 
@@ -210,35 +212,52 @@ net_number = 8
 def run_single_simulation():
 
   # Initialize EnergyCell
-  '''
-  e = ec.EnergyCell(net_name = net_name[net_number],
+
+  # vor Umstrukturierung:
+  '''e = ec.EnergyCell(net_name = net_name[net_number],
                     scenario = scenario,
                     control_parameter = control_parameter,
                     time_scope = time_scope,
                     save_full_data = True, 		 	    # default: False
                     verbose = True,        		 		# default: False
-                    grid_reinforce_dev_mode = True) 	# default: False
+                    grid_reinforce_dev_mode = False) 	# default: False'''
+
+  # nach Umstrukturierung:
+  e = ec.EnergyCell(net_name=net_name[net_number],
+                    scenario=scenario,
+                    control_parameter=control_parameter,
+                    time_scope=time_scope,
+                    save_full_data=True,  # default: False
+                    verbose=True,  # default: False
+                    grid_reinforce_dev_mode=False, # default: False
+                    grid_analysis=False)
+
+  #ToDo: net_name: Weitere Option für Szenarien ohne Netz ergänzen
 
   # Run powerflow
-  e.run_pf_timeseries()
-  #'''
-  # Plot Testing Environment
+  #e.run_pf_timeseries()
+  # Run energy balance
+  #e.run_eb_timeseries(grid_analysis=True) # default: True
+  #
+
+  '''# Plot Testing Environment
   e = ec.EnergyCell_Plot(net_name = net_name[net_number],
                          scenario = scenario,
                          control_parameter = control_parameter,
                          time_scope = time_scope,
                          save_full_data = False, 		 	    # default: False
                          verbose = True,        		 		# default: False
-                         grid_reinforce_dev_mode = False) 	    # default: False
-  #'''
+                         grid_reinforce_dev_mode = False) 	    # default: False'''
 
-  # Initialize Evaluation
-  #e.initiate_evaluation()
+  # Initialize Evaluation # geht nicht, wenn kein Powerflow
+  '''e.initiate_evaluation()
 
-  #e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  e.eva.calculate_relevant_outputdata()
+  e.eva.calculate_net_problems()
 
-  #e.eva.plot_residualload(add_curtail=True, add_losses=False)
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)'''
+
+  return e
   #e.eva.plot_residualload_scenario_1(add_curtail=False, add_losses=False)
   #e.eva.plot_residualload_scenario_2(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_3(add_curtail=True, add_losses=False)
@@ -427,7 +446,7 @@ scenarios = [
         #[9,1,3,3,3,1,1],
                       ]
 
-run_single_simulation()
+e=run_single_simulation()
 #run_multiple_simulations(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)

@@ -159,7 +159,10 @@ class Progress():
       self.verbose_mode = VerboseOFF()
 
   def display_info(self, net_name, category, scenario, dates, string):
-    self.verbose_mode.display_info(net_name, category, scenario, dates, string)
+      self.verbose_mode.display_info(net_name, category, scenario, dates, string)
+
+  def display_info_no_grid(self, category, scenario, dates, string):
+      self.verbose_mode.display_info_no_grid(category, scenario, dates, string)
 
   def display_time_info(self, end, start, string):
     self.verbose_mode.display_time_info(end, start, string)
@@ -176,8 +179,13 @@ class VerboseON():
 
   def display_info(self , net_name, category, scenario, dates, string):
     if string == 'Start: ':
-      print(text1('Grid: ') + str(net_name) + ', ' + str(category) + text1('   Scenario: ') + str(scenario))
-      print(text1('Daterange: ') + str(dates))
+        print(text1('Grid: ') + str(net_name) + ', ' + str(category) + text1('   Scenario: ') + str(scenario))
+        print(text1('Daterange: ') + str(dates))
+
+  def display_info_no_grid(self, category, scenario, dates, string):
+    if string == 'Start: ':
+        print(text1('Energy cell: ') + str(category) + text1('   Scenario: ') + str(scenario))
+        print(text1('Daterange: ') + str(dates))
 
   def display_time_info(self, end, start, string):
     print(text1('Processing time ' + string + ': ') + '%s seconds' % (str(round(end - start, 1))))

@@ -29,7 +29,8 @@ class EnergyManagement:
                          ev_controller,
                          bss_controller,
                          curtail_controller,
-                         t):
+                         t,
+                         grid_analysis):
     ''' Call from energy_manager control_components. Retrun grid.net : TYPE pandapower network. '''
     grid.net = self.energy_manager.control_components(
                          input_dict,
@@ -39,7 +40,8 @@ class EnergyManagement:
                          ev_controller,
                          bss_controller,
                          curtail_controller,
-                         t)
+                         t,
+                         grid_analysis)
     return grid.net
 
 
@@ -56,7 +58,8 @@ class EnergyManagementParent:
                          ev_controller,
                          bss_controller,
                          curtail_controller,
-                         t):
+                         t,
+                         pf):
 
     return grid.net
 
@@ -73,7 +76,8 @@ class EnergyManagementBasic(EnergyManagementParent):
                          ev_controller,
                          bss_controller,
                          curtail_controller,
-                         t):
+                         t,
+                         pf):
     '''
     Set the sequence in which the components are loaded. This is done in a basic manner. PV, HP and EV are driven in a simple way. The BSS act like its specified mode in bss_controller.
     Only used in scenario 1 to 6.
@@ -97,11 +101,13 @@ class EnergyManagementBasic(EnergyManagementParent):
 
     # PV
     grid.net.sgen['p_mw'] = pv_controller.get_active_power(grid, input_dict['pv'].loc[t])
-    grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
+    if pf==True:
+      grid.net.sgen['q_mvar'] = pv_controller.get_reactive_power(grid)
 
     # HH-Load
     grid.net.load.loc[grid.load_index, 'p_mw'] = input_dict['load_p'].loc[t].values
-    grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
+    if pf == True:
+      grid.net.load.loc[grid.load_index, 'q_mvar'] = input_dict['load_q'].loc[t].values
 
     # direct
     grid.net.load.loc[grid.ev_index] = ev_controller.get_active_power_direct_charge(grid, t)
@@ -109,8 +115,8 @@ class EnergyManagementBasic(EnergyManagementParent):
 
     #get final q_mvar of hp
     #grid.net.load.loc[grid.hp_index, 'q_mvar'] = hp_controller.get_reactive_power(grid, input_dict['hp'].loc[t], t)
-
-    grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
+    if pf == True:
+      grid.net.ext_grid.vm_pu = grid.get_vm_pu_ext_grid(grid)
 
     grid = curtail_controller.curtail(grid, t)
 

@@ -7,9 +7,10 @@ from tools.controller.BSScontroller import BSScontroller
 
 class BSScreator:
 
-  def __init__(self, grid, control_parameter):
+  def __init__(self, grid, control_parameter, grid_analysis):
         self.bss_para = {}
-        self.net_name = grid.net_name
+        if grid_analysis == True:
+            self.net_name = grid.net_name
         self.efficiency_AC2Bat = control_parameter['BSS_efficiency_AC2Bat']#0.953
         self.efficiency_Bat2AC = control_parameter['BSS_efficiency_Bat2AC']#0.955
         self.efficiency_storage = control_parameter['BSS_efficiency_storage']#0.959

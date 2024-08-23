@@ -42,7 +42,7 @@ from tools.evaluation.EvaBSSsizing import EvaBSSsizing
 
 class EnergyCell():
 
-    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False, grid_reinforce_dev_mode = False):
+    def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False, grid_reinforce_dev_mode = False, grid_analysis = True):
         self.run_time('start')
 
         self.save_full_data = save_full_data
@@ -58,13 +58,13 @@ class EnergyCell():
         self.input_data_handler = InputDataHandler(self.time_scope)
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
-        self.grid = Grid(self.net_name, self.scenario, self.time_scope)
+        self.grid = Grid(self.net_name, self.scenario, self.time_scope, self.control_parameter, grid_analysis)
 
-        self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder)
+        self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder, self.control_parameter, grid_analysis)
         self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
         self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
-        self.bss_creator = BSScreator(self.grid, self.control_parameter)
+        self.bss_creator = BSScreator(self.grid, self.control_parameter, grid_analysis)
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
@@ -74,34 +74,46 @@ class EnergyCell():
 
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
-        self.grid.get_load_sgen_index_per_feeder()
 
-        self.pv_controller = PVcontroller(grid=self.grid, control=self.controls['pv'], cos_phi=self.control_parameter['PV_cos_phi'])
-        self.ev_controller = EVcontroller(grid=self.grid, control=self.controls['ev'], inputfolder=self.input_data_handler.inputfolder, control_parameter=self.control_parameter)
-        self.hp_controller = HPcontroller(grid=self.grid, control=self.controls['hp'], control_parameter=self.control_parameter)
-        self.bss_controller = BSScontroller(grid=self.grid, control=self.controls['bss'], control_parameter=self.control_parameter)
+        if grid_analysis == True:
+            self.grid.get_load_sgen_index_per_feeder()
 
-        self.curtail_controller = Curtailcontroller(grid = self.grid, set_curtailment = self.controls['curtailment'])
+        self.pv_controller = PVcontroller(grid=self.grid, control=self.controls['pv'],
+                                          cos_phi=self.control_parameter['PV_cos_phi'])
+        self.ev_controller = EVcontroller(grid=self.grid, control=self.controls['ev'],
+                                          inputfolder=self.input_data_handler.inputfolder,
+                                          control_parameter=self.control_parameter)
+        self.hp_controller = HPcontroller(grid=self.grid, control=self.controls['hp'],
+                                          control_parameter=self.control_parameter)
+        self.bss_controller = BSScontroller(grid=self.grid, control=self.controls['bss'],
+                                            control_parameter=self.control_parameter)
 
-        self.output_data_handler = OutputDataHandler(save_full_data, self.control_parameter, self.grid)
-        self.output_dir = self.output_data_handler.create_output_dir(
-                                         self.net_name,
-                                         self.scenario,
-                                         self.time_scope)
+        self.curtail_controller = Curtailcontroller(grid=self.grid,
+                                                    set_curtailment=self.controls['curtailment'])
+
+        self.output_data_handler = OutputDataHandler(save_full_data, self.control_parameter,
+                                                     self.grid)
+
+        self.output_dir = self.output_data_handler.create_output_dir(self.net_name,
+                                                                     self.scenario,
+                                                                     self.time_scope)
 
         self.pf = PowerFlow(self.output_dir)
+
         self.energy_manager = EnergyManagement(self.scenario)
 
         self.grid_reinforce_dev_mode = grid_reinforce_dev_mode
         self.grid_reinforcement(exit=False)
 
+        #if grid_analysis == True:
         self.output_data_handler.create_output_dataframes(self.grid)
 
         # Save net to pickle
         #pp.to_pickle(self.grid.net, 'networks/'+self.net_name+'.p')
 
         self.display = tt.Progress(verbose)
-        self.print_object_parameter('Start: ')
+
+        self.print_object_parameter('Start: ', grid_analysis)
 
         self.run_time('end', 'init ec')
 
@@ -143,6 +155,28 @@ class EnergyCell():
                                                   display=self.display)
         
         self.print_object_parameter('End  : ')
+        self.run_time('end', 'run pf')
+
+    def run_eb_timeseries(self,grid_analysis=True): # neu Tabea, eb = energy balance
+
+        self.run_time('start')
+
+        self.load_timeseries()
+
+        # run powerflow
+        self.pf.run_power_flow_through_timeseries(df=self.df,
+                                                  grid=self.grid,
+                                                  pv_controller=self.pv_controller,
+                                                  hp_controller=self.hp_controller,
+                                                  ev_controller=self.ev_controller,
+                                                  bss_controller=self.bss_controller,
+                                                  curtail_controller=self.curtail_controller,
+                                                  energy_manager=self.energy_manager,
+                                                  output_data_handler=self.output_data_handler,
+                                                  display=self.display,
+                                                  grid_analysis=grid_analysis)
+
+        self.print_object_parameter('End  : ', grid_analysis)
         self.run_time('end', 'run pf')
 
     ##################################
@@ -246,8 +280,11 @@ class EnergyCell():
     ##############################################
     ### print object parameter in command line ###
     ##############################################
-    def print_object_parameter(self, string):
-        self.display.display_info(self.grid.net_name, self.grid.category, self.scenario, self.input_data_handler.dates, string)
+    def print_object_parameter(self, string, grid_analysis):
+        if grid_analysis == True:
+            self.display.display_info(self.grid.net_name, self.grid.category, self.scenario, self.input_data_handler.dates, string)
+        else:
+            self.display.display_info_no_grid(self.grid.category, self.scenario, self.input_data_handler.dates, string)
 
 class EnergyCell_Plot():
     def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False, grid_reinforce_dev_mode = False):
