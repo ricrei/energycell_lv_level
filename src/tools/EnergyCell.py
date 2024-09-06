@@ -46,6 +46,7 @@ class EnergyCell():
         self.run_time('start')
 
         self.save_full_data = save_full_data
+        self.grid_analysis = grid_analysis
 
         self.controls = self.scenario_interpreter(scenario)
         self.net_name = net_name
@@ -58,13 +59,13 @@ class EnergyCell():
         self.input_data_handler = InputDataHandler(self.time_scope)
         self.input_data_handler.adjust_input_dataset(self.time_scope)
 
-        self.grid = Grid(self.net_name, self.scenario, self.time_scope, self.control_parameter, grid_analysis)
+        self.grid = Grid(self.net_name, self.scenario, self.time_scope, self.control_parameter, self.grid_analysis)
 
-        self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder, self.control_parameter, grid_analysis)
+        self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder, self.control_parameter, self.grid_analysis)
         self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
         self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
-        self.bss_creator = BSScreator(self.grid, self.control_parameter, grid_analysis)
+        self.bss_creator = BSScreator(self.grid, self.control_parameter, self.grid_analysis)
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
         self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
@@ -75,7 +76,7 @@ class EnergyCell():
         self.grid.get_component_index()
         self.grid.get_label_of_each_component()
 
-        if grid_analysis == True:
+        if self.grid_analysis == True:
             self.grid.get_load_sgen_index_per_feeder()
 
         self.pv_controller = PVcontroller(grid=self.grid, control=self.controls['pv'],
@@ -105,7 +106,6 @@ class EnergyCell():
         self.grid_reinforce_dev_mode = grid_reinforce_dev_mode
         self.grid_reinforcement(exit=False)
 
-        #if grid_analysis == True:
         self.output_data_handler.create_output_dataframes(self.grid)
 
         # Save net to pickle
@@ -113,7 +113,7 @@ class EnergyCell():
 
         self.display = tt.Progress(verbose)
 
-        self.print_object_parameter('Start: ', grid_analysis)
+        self.print_object_parameter('Start: ', self.grid_analysis)
 
         self.run_time('end', 'init ec')
 

@@ -205,7 +205,7 @@ net_name = ["kerber_rural_1", #0
             "test_net_n_load_branch",  #14
             None]  #15
 # define net number
-net_number = 8
+net_number = 15
 ######################
 
 #############################
@@ -231,12 +231,12 @@ def run_single_simulation():
                     save_full_data=True,  # default: False
                     verbose=True,  # default: False
                     grid_reinforce_dev_mode=False, # default: False
-                    grid_analysis=True)
+                    grid_analysis=False)
 
   # Run powerflow
   #e.run_pf_timeseries()
   # Run energy balance
-  e.run_eb_timeseries(grid_analysis=True) # default: True
+  #e.run_eb_timeseries(grid_analysis=True) # default: True
   #
 
   '''# Plot Testing Environment
@@ -321,7 +321,8 @@ def run_multiple_simulations(scenarios):
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
                           save_full_data = False, # default: False
-                          verbose = False)        # default: False)
+                          verbose = False,        # default: False)
+                          grid_analysis = True)
         #e.run_pf_timeseries()
         #------------
         e.initiate_evaluation()
@@ -341,7 +342,8 @@ def run_mp_on_ec(time_scope_i, net_name_i, scenario_i, control_parameter):
                           scenario = scenario_i,
                           control_parameter = control_parameter,
                           time_scope = time_scope_i,
-                          save_full_data = False)
+                          save_full_data = False,
+                          grid_analysis=True)
         e.run_pf_timeseries()
 
 def run_multiple_simulations_multiprocessing(scenarios):
