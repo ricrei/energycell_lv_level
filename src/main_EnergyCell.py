@@ -182,7 +182,7 @@ control_parameter = {
   'HP_upper_TES_reserve_summer': .5, # default = 1
   'HP_lower_TES_reserve_winter': .1, # default = 0
   'EC_size': 10,
-  'EC_demografic_category': 'rural', #rual/ suburban/urban    #umbenennen?
+  'EC_demografic_category': 'rural', #rural/suburban/urban, only relevant for simulations without power flow analysis    #umbenennen?
 }
 ############################
 
@@ -202,7 +202,8 @@ net_name = ["kerber_rural_1", #0
             "simbench_suburb_5", #11
             "simbench_urban_6",  #12
             "test_net_one_load_branch", #13
-            "test_net_n_load_branch"]  #14
+            "test_net_n_load_branch",  #14
+            None]  #15
 # define net number
 net_number = 8
 ######################
@@ -230,14 +231,12 @@ def run_single_simulation():
                     save_full_data=True,  # default: False
                     verbose=True,  # default: False
                     grid_reinforce_dev_mode=False, # default: False
-                    grid_analysis=False)
-
-  #ToDo: net_name: Weitere Option für Szenarien ohne Netz ergänzen
+                    grid_analysis=True)
 
   # Run powerflow
   #e.run_pf_timeseries()
   # Run energy balance
-  #e.run_eb_timeseries(grid_analysis=True) # default: True
+  e.run_eb_timeseries(grid_analysis=True) # default: True
   #
 
   '''# Plot Testing Environment

@@ -30,12 +30,15 @@ class Grid:
     self.ec_size = control_parameter['EC_size']
 
     #self.is_community_storage = True if self.scenario[2] in [3, 4] else False
+    self.net_name = net_name
     if grid_analysis == True:
-        self.net_name = net_name
+        #self.net_name = net_name
         self.create_net()
         pp.runpp(self.net, algorithm='nr')  # Has to be executed to get initial net.res_bus for Q(U)-control
     else:
         self.category = control_parameter['EC_demografic_category']
+        if self.category not in ['rural','suburban','urban']:
+            raise NameError('Hint: Selected category not valid. Please check EC_demografic_category')
         self.create_energycell_structure()
 
     self.curtailed_pv_power = 0

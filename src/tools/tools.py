@@ -158,11 +158,12 @@ class Progress():
     else:
       self.verbose_mode = VerboseOFF()
 
-  def display_info(self, net_name, category, scenario, dates, string):
-      self.verbose_mode.display_info(net_name, category, scenario, dates, string)
+  def display_info(self, net_name, category, scenario, dates, string, ec_size=None):
+      print('net name: ' + str(net_name))
+      self.verbose_mode.display_info(net_name, category, scenario, dates, string, ec_size)
 
-  def display_info_no_grid(self, category, scenario, dates, string):
-      self.verbose_mode.display_info_no_grid(category, scenario, dates, string)
+  #def display_info_no_grid(self, category, scenario, dates, string):
+      #self.verbose_mode.display_info_no_grid(category, scenario, dates, string)
 
   def display_time_info(self, end, start, string):
     self.verbose_mode.display_time_info(end, start, string)
@@ -177,15 +178,14 @@ class VerboseON():
   def __init__(self):
     self.start = time.time()
 
-  def display_info(self , net_name, category, scenario, dates, string):
+  def display_info(self , net_name, category, scenario, dates, string, ec_size=None):
     if string == 'Start: ':
-        print(text1('Grid: ') + str(net_name) + ', ' + str(category) + text1('   Scenario: ') + str(scenario))
-        print(text1('Daterange: ') + str(dates))
-
-  def display_info_no_grid(self, category, scenario, dates, string):
-    if string == 'Start: ':
-        print(text1('Energy cell: ') + str(category) + text1('   Scenario: ') + str(scenario))
-        print(text1('Daterange: ') + str(dates))
+        if ec_size == None:
+            print(text1('Grid: ') + str(net_name) + ', ' + str(category) + text1('   Scenario: ') + str(scenario))
+            print(text1('Daterange: ') + str(dates))
+        else:
+            print(text1('Energy cell: ') + str(category) + text1('   Number of households: ') + str(ec_size) + text1('   Scenario: ') + str(scenario))
+            print(text1('Daterange: ') + str(dates))
 
   def display_time_info(self, end, start, string):
     print(text1('Processing time ' + string + ': ') + '%s seconds' % (str(round(end - start, 1))))
@@ -204,7 +204,7 @@ class VerboseOFF():
   def __init__(self):
     pass
 
-  def display_info(self, net_name, category, scenario, dates, string):
+  def display_info(self, net_name, category, scenario, dates, string, ec_size=None):
     print(text1(string) + str(scenario) + ', ' + str(dates) + ', ' + str(net_name))
 
   def display_time_info(self, end, start, string):

@@ -282,9 +282,12 @@ class EnergyCell():
     ##############################################
     def print_object_parameter(self, string, grid_analysis):
         if grid_analysis == True:
-            self.display.display_info(self.grid.net_name, self.grid.category, self.scenario, self.input_data_handler.dates, string)
+            self.display.display_info(self.grid.net_name, self.grid.category, self.scenario,
+                                  self.input_data_handler.dates, string)
         else:
-            self.display.display_info_no_grid(self.grid.category, self.scenario, self.input_data_handler.dates, string)
+            self.display.display_info(self.grid.net_name, self.grid.category, self.scenario,
+                                      self.input_data_handler.dates, string,
+                                      self.control_parameter['EC_size'])
 
 class EnergyCell_Plot():
     def __init__(self, net_name, scenario, control_parameter, time_scope, save_full_data = False, verbose = False, grid_reinforce_dev_mode = False):
