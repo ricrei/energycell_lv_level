@@ -134,6 +134,9 @@ class Grid:
       '''
       self.net = pp.create_empty_network() # Tabea ???
 
+      #pp.create_transformer(self.net, hv_bus=9, lv_bus=10, std_type=['0.25 MVA 20/0.4 kV']) ###NEU!!!
+      #self.net['trafo']['lv_bus'].loc[0]=100
+
       self.net['trafo']['p_mw'] = "" # so richtig und wird das gebraucht??? wird hier dann überhaupt die kummulierte Leistung eingespeichert?
       self.p_trafo_power = self.net.trafo.p_mw.sum() # wird das gebraucht?
 
@@ -142,6 +145,16 @@ class Grid:
           self.net.load.loc[x] = ''
           self.net.bus.loc[x] = ''
           self.net.load.bus.loc[x] = x
+
+      # add new row for transformer #NEU
+      n_busses = len(self.net.bus)
+      self.net.trafo.loc[0] = ''
+      self.net.trafo.lv_bus.loc[0] = n_busses
+      self.net.bus.loc[n_busses] = ''
+      self.net.trafo.hv_bus.loc[0] = n_busses + 1
+
+      #pp.create_transformer(self.net, hv_bus=11, lv_bus=10,std_type=['0.25 MVA 20/0.4 kV'])  ###NEU!!!
+
 
       # needed to create HHL, HP, EV and BSS at each bus
       self.component_buses = self.net.load.bus

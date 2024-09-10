@@ -31,6 +31,10 @@ class BSScreator:
         # safe storage place in stored csv
         if grid.scenario[0] in [1 ,2, 3, 4, 5, 7]:
           self.soc_percent = np.nan
+        if (grid_analysis == False) and (grid.scenario[2] == 5):
+            raise ValueError('Hint: Selected scenario not valid. BSSs cannot be connected to a '
+                             'feeder if simulations are conducted without power flow calculations '
+                             'and no power grid is available')
 
   #########################################
   ### Mastermethod: choose bss position ###
