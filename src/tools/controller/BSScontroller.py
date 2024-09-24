@@ -7,7 +7,7 @@ import pytz
 
 class BSScontroller:
 
-  def __init__(self, grid, control, control_parameter):      
+  def __init__(self, grid, control, control_parameter, grid_analysis):
       #Choice of temporal parameters and reserved soc for linear charge:
       self.timedelta_charging_delay = 0.125#2 #[h] Sommer 12 %
       self.timedelta_charging_delay_winter = 0.125#1 #[h] Versuch: %
@@ -51,6 +51,10 @@ class BSScontroller:
         elif (self.control == 'grid-oriented_feed-in_damping_HH') or \
              (self.control == 'grid-oriented_feed-in_damping_LVbus') or \
              (self.control == 'grid-oriented_feed-in_damping_feeder'):
+          if (grid_analysis == False):
+              raise ValueError('Hint: Selected scenario not valid. BSSs cannot be operated with '
+                               'strategy "Grid-oriented feed-in damping" (BSS option 3-5) if no '
+                               'grid is available.')
           self.P_controller = BSS_P_control_grid_fid(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \

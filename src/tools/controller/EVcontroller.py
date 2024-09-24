@@ -5,7 +5,7 @@ import tools.tools as tt
 
 class EVcontroller:
 
-  def __init__(self, grid, control='direct', inputfolder=None, control_parameter=None):
+  def __init__(self, grid, grid_analysis, control='direct', inputfolder=None, control_parameter=None):
       self.inputfolder = inputfolder
       self.control = control
       ### define ev parameter ###
@@ -41,6 +41,10 @@ class EVcontroller:
         elif self.control == 'household-oriented_feed-in_damping':
           self.P_controller = EV_P_control_hh_fid(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
         elif self.control == 'grid-oriented_feed-in_damping':
+          if (grid_analysis == False):
+              raise ValueError('Hint: Selected scenario not valid. EVs cannot be operated with '
+                               'strategy "Grid-oriented feed-in damping" (EV option 3) if no '
+                               'grid is available.')
           self.P_controller = EV_P_control_grid_fid(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)
       else:
         self.P_controller = EV_P_control_no_ev(grid, self.ev_parameter, self.ev_charging_demand, self.ev_parking_time)

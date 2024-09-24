@@ -21,12 +21,14 @@ time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
                'end_time'   : '2017-05-31 00:00:00+01:00',
                't_freq'     : '1T',
              }
-#'''
+'''time_scope = { 'start_time' : '2017-01-02 00:00:00+01:00',
+               'end_time'   : '2017-01-03 00:00:00+01:00',
+               't_freq'     : '10T',
+             }'''
 time_scope = { 'start_time' : '2017-06-01 06:00:00+02:00',
                'end_time'   : '2017-06-02 14:00:00+02:00',
                't_freq'     : '10T'
              }
-#'''
 time_scope_year = { 'start_time' : '2017-01-01 00:00:00+01:00',
                     'end_time'   : '2017-12-31 23:59:00+01:00',
                     't_freq'     : '1T'
@@ -137,14 +139,15 @@ time_scope = time_scope
 # Seventh number: Grid Reinforcement
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
-  4, # scenario number, 1-8
-  1, # PV, 0-2
-  0, # BSS, 0-5
+  6, # scenario number, 1-8 #4#6
+  2, # PV, 0-2
+  1, # BSS, 0-5 #0
   1, # HP, 0-5
   1, # EV, 0-3
   0, # Curtailment, 0/1
   0  # Grid reinforcement, 0/1
 ]
+#ToDo: scenario = [8,2,0,1,1,0,0] does not converge. Why?
 #######################
 
 ###########################
@@ -233,10 +236,8 @@ def run_single_simulation():
                     grid_reinforce_dev_mode=False, # default: False
                     grid_analysis=False)
 
-  # Run powerflow
-  #e.run_pf_timeseries()
-  # Run energy balance
-  #e.run_eb_timeseries(grid_analysis=True) # default: True
+  # Run powerflow or energy balance calculations
+  e.run_pf_timeseries(grid_analysis=False) # default: True
   #
 
   '''# Plot Testing Environment
@@ -249,12 +250,12 @@ def run_single_simulation():
                          grid_reinforce_dev_mode = False) 	    # default: False'''
 
   # Initialize Evaluation # geht nicht, wenn kein Powerflow
-  '''e.initiate_evaluation()
+  e.initiate_evaluation()
 
   e.eva.calculate_relevant_outputdata()
-  e.eva.calculate_net_problems()
+  #e.eva.calculate_net_problems()
 
-  e.eva.plot_residualload(add_curtail=True, add_losses=False)'''
+  e.eva.plot_residualload(add_curtail=True, add_losses=False)
 
   return e
   #e.eva.plot_residualload_scenario_1(add_curtail=False, add_losses=False)
@@ -323,7 +324,7 @@ def run_multiple_simulations(scenarios):
                           save_full_data = False, # default: False
                           verbose = False,        # default: False)
                           grid_analysis = True)
-        #e.run_pf_timeseries()
+        e.run_pf_timeseries()
         #------------
         e.initiate_evaluation()
         e.eva.calculate_relevant_outputdata()
@@ -333,6 +334,35 @@ def run_multiple_simulations(scenarios):
   finish = time.perf_counter()
 
   print(f'Finished in {round(finish-start, 2)} s')
+
+
+def run_multiple_simulations_no_grid(scenarios):
+  start = time.perf_counter()
+  i = 1
+  for time_scope_i in [time_scope]:
+      for scenario_i in scenarios:
+        print(' ')
+        print('\33[32m' + 'Durchlauf: ' + str(i) + '\33[0m')
+        i += 1
+        e = ec.EnergyCell(net_name = net_name[15],
+                          scenario = scenario_i,
+                          control_parameter = control_parameter,
+                          time_scope = time_scope_i,
+                          save_full_data = False, # default: False
+                          verbose = False,        # default: False)
+                          grid_analysis = False)
+        #e.run_pf_timeseries()
+        e.run_pf_timeseries(grid_analysis=False)
+        #------------
+        e.initiate_evaluation()
+        e.eva.calculate_relevant_outputdata()
+        #e.eva.calculate_net_problems()
+        #-------------
+
+  finish = time.perf_counter()
+
+  print(f'Finished in {round(finish-start, 2)} s')
+
 ###############################
 
 #######################################################
@@ -431,7 +461,7 @@ scenarios = [
         #[6,1,4,1,1,0,0],
         #[6,1,4,1,1,1,0],
         #[6,1,5,1,1,0,0],
-        [6,1,5,1,1,1,0],
+        ##[6,1,5,1,1,1,0],
         #[7,1,0,3,3,0,0],
         #[7,1,0,5,2,1,0],
         #[7,1,0,2,2,1,0],
@@ -446,9 +476,15 @@ scenarios = [
         #[9,1,3,3,3,1,0],
         #[9,1,3,3,3,1,1],
                       ]
+scenarios = [
+    [8,2,0,2,2,0,0],
+    [8,2,1,2,2,0,0],
+    [8,2,2,2,2,0,0],
+]
 
-e=run_single_simulation()
-#run_multiple_simulations(scenarios)
+#e=run_single_simulation()
+run_multiple_simulations(scenarios)
+#run_multiple_simulations_no_grid(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
 #run_economics(scenarios)

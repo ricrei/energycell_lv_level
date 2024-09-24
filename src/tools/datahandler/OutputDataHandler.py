@@ -115,10 +115,14 @@ class OutputDataHandler():
           self.trafo_reactive_power.index.name = 'timestamp'
 
 
-  def write_output_into_dataframe(self, grid, t):
-        self.vm_pu.loc[t] = grid.net.res_bus.vm_pu
-        self.li_lo.loc[t] = grid.net.res_line.loading_percent
-        self.tr_lo.loc[t] = grid.net.res_trafo.loading_percent
+  def write_output_into_dataframe(self, grid, t, grid_analysis):
+        if grid_analysis == True:
+            self.vm_pu.loc[t] = grid.net.res_bus.vm_pu
+            self.li_lo.loc[t] = grid.net.res_line.loading_percent
+            self.tr_lo.loc[t] = grid.net.res_trafo.loading_percent
+            self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
+            self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
+            self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
         self.power.loc[t] = [grid.net.load.p_mw[grid.load_index].sum(),
                              grid.net.sgen.p_mw.sum(),
                              grid.net.load.p_mw[grid.hp_index].sum(),
@@ -136,9 +140,6 @@ class OutputDataHandler():
         self.load_active_power_flex.loc[t] = (grid.net.load.p_mw_flex[grid.hp_index].set_axis(grid.load_index, axis='index', inplace=False) + \
                                              grid.net.load.p_mw_flex[grid.ev_index].set_axis(grid.load_index, axis='index', inplace=False))
         self.bss_active_power_flex.loc[t] = grid.net.storage['p_mw_flex']
-        self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
-        self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
-        self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
         if self.save_full_data == True:
           self.storage_energy_content.loc[t] = grid.net.storage['e_mwh']
           self.ev_soc.loc[t] = grid.net.load.ev_soc.loc[grid.ev_index]

@@ -17,7 +17,10 @@ import tools.tools as tt
 
 class GridReinforce:
 
-  def __init__(self, grid, output_dir_worst_case, output_dir, use_data_of_scenario, control_parameter, dev_mode):
+  def __init__(self, grid, output_dir_worst_case, output_dir, use_data_of_scenario, control_parameter, dev_mode, grid_analysis):
+    if (grid_analysis == False):
+      raise ValueError('Hint: Selected scenario not valid. Grid reinforcement cannot be carried '
+                       'out if no grid is available.')
     self.grid = grid
     self.net_name = self.grid.net_name
     self.output_dir = output_dir

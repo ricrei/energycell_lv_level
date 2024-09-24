@@ -5,11 +5,14 @@ import sys
 
 class Curtailcontroller:
 
-  def __init__(self, grid, set_curtailment):
+  def __init__(self, grid, set_curtailment, grid_analysis):
     self.set_curtail = set_curtailment
 
     if self.set_curtail == True:
       self.curtailment = Curtailment(grid)
+      if (grid_analysis == False):
+          raise ValueError('Hint: Selected scenario not valid. Curtailment cannot be conducted if '
+                           'no grid is available.')
     elif self.set_curtail == False:
       self.curtailment = NO_Curtailment()
     else:

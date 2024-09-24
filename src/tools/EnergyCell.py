@@ -80,17 +80,22 @@ class EnergyCell():
             self.grid.get_load_sgen_index_per_feeder()
 
         self.pv_controller = PVcontroller(grid=self.grid, control=self.controls['pv'],
-                                          cos_phi=self.control_parameter['PV_cos_phi'])
-        self.ev_controller = EVcontroller(grid=self.grid, control=self.controls['ev'],
+                                          cos_phi=self.control_parameter['PV_cos_phi'],
+                                          grid_analysis=self.grid_analysis)
+        self.ev_controller = EVcontroller(grid=self.grid, grid_analysis=self.grid_analysis,
+                                          control=self.controls['ev'],
                                           inputfolder=self.input_data_handler.inputfolder,
                                           control_parameter=self.control_parameter)
         self.hp_controller = HPcontroller(grid=self.grid, control=self.controls['hp'],
-                                          control_parameter=self.control_parameter)
+                                          control_parameter=self.control_parameter,
+                                          grid_analysis=self.grid_analysis)
         self.bss_controller = BSScontroller(grid=self.grid, control=self.controls['bss'],
-                                            control_parameter=self.control_parameter)
+                                            control_parameter=self.control_parameter,
+                                            grid_analysis=self.grid_analysis)
 
         self.curtail_controller = Curtailcontroller(grid=self.grid,
-                                                    set_curtailment=self.controls['curtailment'])
+                                                    set_curtailment=self.controls['curtailment'],
+                                                    grid_analysis=self.grid_analysis)
 
         self.output_data_handler = OutputDataHandler(save_full_data, self.control_parameter,
                                                      self.grid)
@@ -128,7 +133,7 @@ class EnergyCell():
         self.df = self.input_data_handler.create_empty_df(self.time_scope)
 
         # load all profiles and store them into df
-        self.df = self.hhl_creator.load_hhl_profiles(self.df)
+        self.df = self.hhl_creator.load_hhl_profiles(self.df, self.grid_analysis)
         self.df = self.pv_creator.load_pv_profiles(self.df, self.grid.category)
         self.df = self.hp_creator.load_hp_profiles(self.df)
         self.df = self.ev_creator.load_ev_profiles(self.df)
@@ -136,28 +141,7 @@ class EnergyCell():
     #########################################
     ### load timeseries and run powerflow ###
     #########################################
-    def run_pf_timeseries(self):
-
-        self.run_time('start')
-        
-        self.load_timeseries()
-
-        # run powerflow
-        self.pf.run_power_flow_through_timeseries(df=self.df,
-                                                  grid=self.grid,
-                                                  pv_controller=self.pv_controller,
-                                                  hp_controller=self.hp_controller,
-                                                  ev_controller=self.ev_controller,
-                                                  bss_controller=self.bss_controller,
-                                                  curtail_controller=self.curtail_controller,
-                                                  energy_manager=self.energy_manager,
-                                                  output_data_handler=self.output_data_handler,
-                                                  display=self.display)
-        
-        self.print_object_parameter('End  : ')
-        self.run_time('end', 'run pf')
-
-    def run_eb_timeseries(self,grid_analysis=True): # neu Tabea, eb = energy balance
+    def run_pf_timeseries(self,grid_analysis=True): # neu Tabea, eb = energy balance
 
         self.run_time('start')
 
@@ -174,9 +158,9 @@ class EnergyCell():
                                                   energy_manager=self.energy_manager,
                                                   output_data_handler=self.output_data_handler,
                                                   display=self.display,
-                                                  grid_analysis=grid_analysis)
+                                                  grid_analysis=self.grid_analysis)
 
-        self.print_object_parameter('End  : ', grid_analysis)
+        self.print_object_parameter('End  : ', self.grid_analysis)
         self.run_time('end', 'run pf')
 
     ##################################
@@ -198,7 +182,8 @@ class EnergyCell():
                                        self.output_dir,
                                        use_data_of_scenario,
                                        self.control_parameter,
-                                       self.grid_reinforce_dev_mode)
+                                       self.grid_reinforce_dev_mode,
+                                       grid_analysis=self.grid_analysis)
           self.grid = self.grid_reinforce.reinforce_transformer(self.grid)
           self.grid = self.grid_reinforce.reinforce_lines(self.grid)
           if self.grid_reinforce_dev_mode == True:

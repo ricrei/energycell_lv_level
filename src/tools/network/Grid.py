@@ -27,7 +27,8 @@ class Grid:
     self.time_scope = time_scope
     self.scenario = scenario
     self.grid_analysis = grid_analysis
-    self.ec_size = control_parameter['EC_size']
+    if grid_analysis == False:
+        self.ec_size = control_parameter['EC_size']
 
     #self.is_community_storage = True if self.scenario[2] in [3, 4] else False
     self.net_name = net_name

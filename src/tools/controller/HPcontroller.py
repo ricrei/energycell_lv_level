@@ -5,7 +5,7 @@ from tools.controller.HPstorages import HPstorages
 
 class HPcontroller:
 
-  def __init__(self, grid, control, control_parameter):
+  def __init__(self, grid, control, control_parameter, grid_analysis):
       self.control = control
       self.cos_phi = control_parameter['HP_cos_phi']#1#.95
       self.tan_phi = np.tan(np.arccos(self.cos_phi))
@@ -16,6 +16,10 @@ class HPcontroller:
         elif self.control == 'household-oriented_feed-in_damping':
           self.P_controller = HP_P_control_hh_fid(grid, control_parameter)
         elif self.control == 'grid-oriented_feed-in_damping':
+          if (grid_analysis == False):
+              raise ValueError('Hint: Selected scenario not valid. HPs cannot be operated with '
+                               'strategy "Grid-oriented feed-in damping" (HP option 3) if no '
+                               'grid is available.')
           self.P_controller = HP_P_control_grid_fid(grid, control_parameter)
         elif self.control == 'evu_lock':
           self.P_controller = HP_P_control_evu_lock(grid, control_parameter)

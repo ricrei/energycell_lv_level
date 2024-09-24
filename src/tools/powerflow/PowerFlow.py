@@ -35,7 +35,7 @@ class PowerFlow:
                                         display,
                                         grid_analysis):
 
-      self.input_dict = self.create_input_dict(df, grid)
+      self.input_dict = self.create_input_dict(df, grid, grid_analysis)
 
       output_data_handler.write_dataframe_to_csv(mode='w', header=True, grid=grid)
 
@@ -74,7 +74,7 @@ class PowerFlow:
                       self.logger.error('Power Flow nr did not converge at ' + str(t))
 
               # write result into DataFrame
-              output_data_handler.write_output_into_dataframe(grid, t)
+              output_data_handler.write_output_into_dataframe(grid, t, grid_analysis)
 
               i += 1
           # write results dataframe into csv
@@ -96,10 +96,11 @@ class PowerFlow:
   ###############################
   ### create input dictionary ###
   ###############################
-  def create_input_dict(self, df, grid):
+  def create_input_dict(self, df, grid, grid_analysis):
         input_dict = {}
         input_dict['load_p'] = df[grid.label_load_p]
-        input_dict['load_q'] = df[grid.label_load_q]
+        if grid_analysis == True:
+            input_dict['load_q'] = df[grid.label_load_q]
         input_dict['pv'] = df[grid.label_pv_p]
         input_dict['hp'] = df[grid.label_hp_p]
         #input_dict['ev'] = df[grid.label_ev]

@@ -3,7 +3,7 @@ import pandas as pd
 
 class PVcontroller:
 
-  def __init__(self, grid, control, cos_phi):
+  def __init__(self, grid, control, cos_phi, grid_analysis):
       self.control = control
       self.pv_para = {'cos_phi' : cos_phi,
                       'U1' : .93, 'U2' : .97, 'U3' : 1.03, 'U4' : 1.07}
@@ -12,8 +12,20 @@ class PVcontroller:
       if (self.control != None):
         self.P_controller = PV_P_controlFEEDINALL(self.pv_para)
         if self.control == 'qu':
+          if (grid_analysis == False):
+              raise ValueError('Hint: Selected scenario not valid. PV systems cannot be operated '
+                               'with Q(U)-control (PV option 1) if no grid is available.')
           self.Q_controller = PV_Q_controlQU(grid, self.pv_para)
         elif self.control == 'cos_phi':
+          if (grid_analysis == False):
+              print('Control with fix cos(phi) only possible with cos(phi)=1, since reactive power '
+                    'is not taken into account in scenarios without a power grid.')
+              if self.pv_para['cos_phi'] != 1:
+                  cos_phi_input = self.pv_para['cos_phi']
+                  self.pv_para['cos_phi'] = 1
+                  print('Value from parameter PV_cos_phi is changed from '+ str(cos_phi_input) + ' to ' + str (self.pv_para['cos_phi']) + '.' )
+                  print('However, reactive power is not calculated (c.f. EnergyManagement).')
+                  self.pv_para['tan_phi'] = np.tan(np.arccos(self.pv_para['cos_phi']))
           self.Q_controller = PV_Q_controlCOSPHI(self.pv_para)
       else:
         self.P_controller = PV_P_control_no_pv(self.pv_para)
@@ -67,7 +79,7 @@ class PV_Q_controlCOSPHI(PV_Q_control):
       super().__init__(pv_para)
 
   def qcontrol(self, grid):
-      #PVQcontrol.qcontrol(self)
+      #PVQcontrol.qcontrol
       grid = self.control_cos_phi(grid)
       return grid.net.sgen['q_mvar']
 
