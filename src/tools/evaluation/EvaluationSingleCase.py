@@ -1425,6 +1425,21 @@ class EvaluationSingleCase():
       PVConsumption = (sum_total_pv - Res_pos.sum() - curtail_p.curtail_pv.sum()*f)*100/sum_total_pv
     else:
       PVConsumption = sum_total_pv*0.0
+
+    # res_dict_energy only needed for tests
+    res_dict_energy = {
+      'pv_gen': sum_pv.round(2),
+      'hp_con': sum_hp.round(2),
+      'ev_con': sum_ev.round(2),
+      'load_con': sum_load.round(2),
+      'ttl_con': sum_total_load.round(2),
+      'ttl_losses': losses.round(2),
+      'pv_curt': sum_curtailed_pv.round(2),
+      'load_curt': sum_curtailed_load.round(2),
+      'ratio_gen_con': ((sum_pv / sum_total_load * 100).round(1)),
+      'self_suff': ((SelfSufficiancy).round(2)),
+      'pv_con_rate': ((PVConsumption).round(2)),
+    }
     #'''
     print(' ')
     print('PV-Generation: %s MWh' % sum_pv.round(2))
@@ -1443,6 +1458,9 @@ class EvaluationSingleCase():
     print(' ')
     #'''
     #print('Total Losses (lines+trafo): %s MWh' % losses.round(2))
+
+    #return of res_dict_energy only needed for tests
+    return res_dict_energy
 
   def calculate_net_problems(self):
 
@@ -1479,10 +1497,21 @@ class EvaluationSingleCase():
     tl[tl > 0] = 1
     tl = tl.sum()
 
+    # res_dict_net_problems only needed for tests
+    res_dict_net_problems = {
+      'over_voltage_events': (v_over / (n_buses * n_timesteps) * 100).round(3),
+      'under_voltage_events': (v_under / (n_buses * n_timesteps) * 100).round(3),
+      'line_overloading_events': (ll / (n_lines * n_timesteps) * 100).round(3),
+      'trafo_overloading_events': (tl / (n_timesteps) * 100).round(3),
+    }
+
     print('Over voltage events     : %s %%' % (v_over/(n_buses*n_timesteps)*100).round(3))
     print('Under voltage events    : %s %%' % (v_under/(n_buses*n_timesteps)*100).round(3))
     print('Line overloading events : %s %%' % (ll/(n_lines*n_timesteps)*100).round(3))
     print('Trafo overloading events: %s %%' % (tl/(n_timesteps)*100).round(3))
+
+    # return of res_dict_net_problems only needed for tests
+    return res_dict_net_problems
 
   ### calculate residualload to determine max, min and balanced residualload week ###
   def calculate_resi_week(self):

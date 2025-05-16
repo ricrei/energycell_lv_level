@@ -209,6 +209,8 @@ net_name = ["kerber_rural_1", #0
             None]  #15
 # define net number
 net_number = 15
+# decide if grid_analysis should be conducted:
+grid_analysis = False
 ######################
 
 #############################
@@ -234,10 +236,13 @@ def run_single_simulation():
                     save_full_data=True,  # default: False
                     verbose=True,  # default: False
                     grid_reinforce_dev_mode=False, # default: False
-                    grid_analysis=False)
+                    grid_analysis=grid_analysis)
+
+  '''# create pickle file for dict e.grid.net (only needed for creating tests)
+  pp.to_pickle(e.grid.net, 'networks/' + net_name[net_number] + '_' + str(scenario) + '.p')'''
 
   # Run powerflow or energy balance calculations
-  e.run_pf_timeseries(grid_analysis=False) # default: True
+  e.run_pf_timeseries(grid_analysis=grid_analysis) # default: True
   #
 
   '''# Plot Testing Environment
@@ -252,12 +257,27 @@ def run_single_simulation():
   # Initialize Evaluation # geht nicht, wenn kein Powerflow
   e.initiate_evaluation()
 
-  e.eva.calculate_relevant_outputdata()
-  #e.eva.calculate_net_problems()
+  res_dict_energy = e.eva.calculate_relevant_outputdata() #dict is needed for tests
+  if grid_analysis == True:
+    print(grid_analysis)
+    res_dict_net_problems = e.eva.calculate_net_problems() #dict is needed for tests
+  else:
+    res_dict_net_problems = None
+
+  '''
+  # create pickle files of result dictonaries (only needed for creating tests)
+  tt.compress_pickle(
+        'networks/' + net_name[net_number] + '_' + str(scenario) + '_res_dict_energy.pbz2',
+        res_dict_energy)
+  tt.compress_pickle(
+      'networks/' + net_name[net_number] + '_' + str(scenario) + '_res_dict_network.pbz2',
+      res_dict_net_problems)
+  '''
 
   e.eva.plot_residualload(add_curtail=True, add_losses=False)
 
-  return e
+  # return of e, res_dict_energy and res_dict_net_problems needed for conducting tests
+  return (e, res_dict_energy, res_dict_net_problems)
   #e.eva.plot_residualload_scenario_1(add_curtail=False, add_losses=False)
   #e.eva.plot_residualload_scenario_2(add_curtail=True, add_losses=False)
   #e.eva.plot_residualload_scenario_3(add_curtail=True, add_losses=False)
@@ -482,8 +502,8 @@ scenarios = [
     [8,2,2,2,2,0,0],
 ]
 
-#e=run_single_simulation()
-run_multiple_simulations(scenarios)
+e, res_dict_energy, res_dict_net_problems=run_single_simulation()
+#run_multiple_simulations(scenarios)
 #run_multiple_simulations_no_grid(scenarios)
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
