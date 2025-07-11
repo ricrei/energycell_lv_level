@@ -94,6 +94,8 @@ class OutputDataHandler():
         self.load_reactive_power.index.name = 'timestamp'
         self.v_pu_ext_grid = pd.DataFrame(columns=['v_pu'])
         self.v_pu_ext_grid.index.name  = 'timestamp'
+        self.residual_load_no_grid = pd.DataFrame(columns=['residual load'])
+        self.residual_load_no_grid.index.name = 'timestamp'
         if self.save_full_data == True:
           self.storage_energy_content = pd.DataFrame(columns=grid.net.storage.index)
           self.storage_energy_content.index.name = 'timestamp'
@@ -123,6 +125,8 @@ class OutputDataHandler():
             self.pv_reactive_power.loc[t] = grid.net.sgen['q_mvar']
             self.load_reactive_power.loc[t] = grid.net.load['q_mvar']
             self.v_pu_ext_grid.loc[t] = grid.net.ext_grid.vm_pu.values
+        else:
+            self.residual_load_no_grid.loc[t] = grid.net.load.p_mw.sum() - grid.net.sgen.p_mw.sum() + grid.net.storage['p_mw'].sum()
         self.power.loc[t] = [grid.net.load.p_mw[grid.load_index].sum(),
                              grid.net.sgen.p_mw.sum(),
                              grid.net.load.p_mw[grid.hp_index].sum(),
@@ -184,6 +188,8 @@ class OutputDataHandler():
                                                   mode=mode, header=header, index = True)
         self.v_pu_ext_grid.round(3).to_csv(self.output_dir + 'v_pu_ext_grid.csv',
                                                   mode=mode, header=header, index = True)
+        self.residual_load_no_grid.round(3).to_csv(self.output_dir + 'residual_load_no_grid.csv',
+                                           mode=mode, header=header, index=True) #neu
         if self.save_full_data == True:
           self.storage_energy_content.round(6).to_csv(self.output_dir + 'storage_energy_content_MWh.csv',
                                                   mode=mode, header=header, index = True)

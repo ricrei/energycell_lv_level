@@ -195,7 +195,7 @@ class EnergyCell():
     ### initiate evaluation object for a single case ###
     ####################################################
     def initiate_evaluation(self):
-        self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope, self.save_full_data)
+        self.eva = EvaluationSingleCase(self.grid, self.output_dir, self.net_name, self.scenario[0], self.time_scope, self.save_full_data, self.grid_analysis)
 
     ####################################################
     ### initiate evaluation object for a single case ###

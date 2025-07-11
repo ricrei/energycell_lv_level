@@ -50,7 +50,7 @@ lan = 'DE'
 
 class EvaluationSingleCase():
   
-  def __init__(self, grid, output_dir, net_name, scenario, time_scope, save_full_data): 
+  def __init__(self, grid, output_dir, net_name, scenario, time_scope, save_full_data, grid_analysis):
     self.grid = grid
     self.output_dir = output_dir
     self.net_name = net_name
@@ -74,6 +74,8 @@ class EvaluationSingleCase():
     self.load_p = self.read_data(self.output_dir+'load_active_power_MW.csv')
     self.bss_p_flex = self.read_data(self.output_dir+'bss_active_power_flex_MW.csv')
     self.load_p_flex = self.read_data(self.output_dir+'load_active_power_flex_MW.csv')
+    if grid_analysis == False:
+      self.res_load_no_grid = self.read_data(self.output_dir+'residual_load_no_grid.csv')
     if save_full_data == True:
       self.pv_q = self.read_data(self.output_dir+'pv_reactive_power_MW.csv')
       self.load_q = self.read_data(self.output_dir+'load_reactive_power_MW.csv')
@@ -1385,11 +1387,13 @@ class EvaluationSingleCase():
     ax.set_ylabel('Household').set_size(10)
 
   ### calculate and print relevant parameters ###
-  def calculate_relevant_outputdata(self):
+  def calculate_relevant_outputdata(self, grid_analysis):
 
     power = self.power
-    losses = self.losses_p
-    trafo_p = self.trafo_p
+    losses = self.losses_p #only used if grid_analysis == True
+    trafo_p = self.trafo_p #only used if grid_analysis == True
+    if grid_analysis == False:
+      res_load_no_grid = self.res_load_no_grid
     curtail_pv = self.curtailed_power_pv.sum(axis=1)
     curtail_load = self.curtailed_power_load.sum(axis=1)
     curtail_p = pd.DataFrame()
@@ -1398,8 +1402,10 @@ class EvaluationSingleCase():
 
     if self.time_scope['t_freq'] != None:#'1D':
       power = self.shorted_data(power, '1H')
-      losses = self.shorted_data(losses, '1H')
-      trafo_p = self.shorted_data(trafo_p, '1H')
+      losses = self.shorted_data(losses, '1H') #only used if grid_analysis == True
+      trafo_p = self.shorted_data(trafo_p, '1H') #only used if grid_analysis == True
+      if grid_analysis == False:
+        res_load_no_grid = self.shorted_data(res_load_no_grid, '1H')
       curtail_p = self.shorted_data(curtail_p, '1H')
       f = 1
     else:
@@ -1407,7 +1413,7 @@ class EvaluationSingleCase():
 
     sum_curtailed_pv = curtail_p.curtail_pv.sum()*f
     sum_curtailed_load = curtail_p.curtail_load.sum()*f
-    losses = losses.sum().sum()
+    losses = losses.sum().sum() #only used if grid_analysis == True
     sum_pv = power.pv.sum()*f
     sum_total_pv = power.pv.sum()*f + curtail_p.curtail_pv.sum()*f
     sum_hp = power.hp.sum()*f
@@ -1415,7 +1421,10 @@ class EvaluationSingleCase():
     sum_load = power.load.sum()*f
     sum_total_load = sum_hp + sum_load + sum_ev
 
-    Res = -1*trafo_p.values
+    if grid_analysis == True:
+      Res = -1*trafo_p.values
+    else:
+      Res = -1 * res_load_no_grid.values
     
     Res_pos = Res[Res > 0]
     Res_neg = Res[Res < 0]

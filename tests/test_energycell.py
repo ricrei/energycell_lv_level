@@ -51,7 +51,7 @@ control_parameter = {
   'HP_lower_TES_reserve': 0., # default = 0
   'HP_upper_TES_reserve_summer': .5, # default = 1
   'HP_lower_TES_reserve_winter': .1, # default = 0
-  'EC_size': 10,
+  'EC_size': 99,
   'EC_demografic_category': 'rural', #rural/suburban/urban, only relevant for simulations without power flow analysis
 }
 
@@ -69,7 +69,8 @@ net_name = ["kerber_rural_1", #0
             "simbench_suburb_5", #11
             "simbench_urban_6",  #12
             "test_net_one_load_branch", #13
-            "test_net_n_load_branch"]  #14
+            "test_net_n_load_branch",  #14
+            None]  #15
 
 test_scenarios = [
    [1,0,0,0,0,0,0], # conventional
@@ -105,6 +106,15 @@ test_scenarios = [
     [9,1,3,3,3,1,1],
 ]
 
+test_scenarios_no_curt = [
+   [1,0,0,0,0,0,0], # conventional
+    [2,0,0,1,1,0,0], # full-electrified
+    [3,2,0,0,0,0,0], # PV, fix cos(phi)
+    [4,2,0,1,1,0,0], # full-electrified and maximum pv-expansion
+    [6,2,1,1,1,0,0], # battery storage systems, full-electrified and maximum pv-expansion
+    [6,2,2,1,1,0,0],
+]
+
 
 def check_pandapower_network(net_number,scenario,control_parameter,time_scope,network_file):
     # create df with pandapower network for example scenario:
@@ -134,7 +144,7 @@ def check_pandapower_network(net_number,scenario,control_parameter,time_scope,ne
             pd.testing.assert_frame_equal(e_data[element], example_data[element])
     return e
 
-def evaluate_results_pf(ecell, energy_results_file, network_results_file):
+def evaluate_results_pf(ecell, energy_results_file, network_results_file, grid_analysis):
 
     # Run powerflow
     ecell.run_pf_timeseries()
@@ -142,7 +152,7 @@ def evaluate_results_pf(ecell, energy_results_file, network_results_file):
     ecell.initiate_evaluation()
 
     # test if energy results are correct
-    res_dict_energy = ecell.eva.calculate_relevant_outputdata()
+    res_dict_energy = ecell.eva.calculate_relevant_outputdata(grid_analysis)
     # get energy results dictionary from pickle file:
     example_energy_results = tt.decompress_pickle(energy_results_file)
     assert res_dict_energy == example_energy_results
@@ -172,10 +182,11 @@ def test_calculate_relevant_outputdata_pf_1000000(energy_results_file="examples/
                       time_scope=time_scope,
                       save_full_data=True,  # default: False
                       verbose=True,  # default: False
-                      grid_reinforce_dev_mode=False)  # default: False
+                      grid_reinforce_dev_mode=False,
+                      grid_analysis=True)  # default: False
 
     evaluate_results_pf(ecell=e, energy_results_file=energy_results_file,
-                        network_results_file=network_results_file)
+                        network_results_file=network_results_file, grid_analysis=True)
 
 def test_scenarios(scenarios=test_scenarios, net_number=8, control_parameter=control_parameter,
                    time_scope=time_scope):
@@ -195,7 +206,55 @@ def test_scenarios(scenarios=test_scenarios, net_number=8, control_parameter=con
 
         # test evaluation results:
         evaluate_results_pf(ecell=e, energy_results_file=energy_results_file,
-                            network_results_file=network_results_file)
+                            network_results_file=network_results_file, grid_analysis=True)
 
+def test_scenarios_community():
+    # test for comparison of results with and without powerflow
+    # only for scenarios without curtailment since curtailment can only be applied on scenarios with grid
+
+    control_parameter['PV_cos_phi'] = 1
+
+    for scenario in test_scenarios_no_curt:
+        # create df with pandapower network for example scenario:
+        e_pf = ec.EnergyCell(net_name=net_name[8],
+                          scenario=scenario,
+                          control_parameter=control_parameter,
+                          time_scope=time_scope,
+                          save_full_data=True,  # default: False
+                          verbose=True,  # default: False
+                          grid_reinforce_dev_mode=False,
+                          grid_analysis=True)  # default: False
+
+        # create df with pandapower network for example scenario:
+        e_no_pf = ec.EnergyCell(net_name=net_name[15],
+                          scenario=scenario,
+                          control_parameter=control_parameter,
+                          time_scope=time_scope,
+                          save_full_data=True,  # default: False
+                          verbose=True,  # default: False
+                          grid_reinforce_dev_mode=False,
+                          grid_analysis=False)  # default: False
+
+        # Run powerflow or energy balance calculations:
+        e_pf.run_pf_timeseries()
+        e_no_pf.run_pf_timeseries()
+        # Initialize Evaluation
+        e_pf.initiate_evaluation()
+        e_no_pf.initiate_evaluation()
+
+        # get result dictionaries:
+        res_dict_energy_pf = e_pf.eva.calculate_relevant_outputdata(grid_analysis=True)
+        res_dict_energy_no_pf = e_no_pf.eva.calculate_relevant_outputdata(grid_analysis=False)
+
+        # test if energy results are correct:
+        assert res_dict_energy_no_pf['pv_gen'] == res_dict_energy_pf['pv_gen']
+        assert res_dict_energy_no_pf['hp_con'] == res_dict_energy_pf['hp_con']
+        assert res_dict_energy_no_pf['ev_con'] == res_dict_energy_pf['ev_con']
+        assert res_dict_energy_no_pf['load_con'] == res_dict_energy_pf['load_con']
+        assert res_dict_energy_no_pf['ttl_con'] == res_dict_energy_pf['ttl_con']
+        assert res_dict_energy_no_pf['ttl_losses'] < res_dict_energy_pf['ttl_losses']
+        assert res_dict_energy_no_pf['ratio_gen_con'] == res_dict_energy_pf['ratio_gen_con']
+        #assert res_dict_energy_no_pf['self_suff'] > res_dict_energy_pf['self_suff'] # stimmt so nicht, ToDo: Wie kann hierfür ein Test geschrieben werden?
+        #assert res_dict_energy_no_pf['pv_con_rate'] <= res_dict_energy_pf['pv_con_rate'] # stimmt so nicht, ToDo: Wie kann hierfür ein Test geschrieben werden?
 
 
