@@ -186,7 +186,7 @@ control_parameter = {
   'HP_lower_TES_reserve': 0., # default = 0 
   'HP_upper_TES_reserve_summer': .5, # default = 1
   'HP_lower_TES_reserve_winter': .1, # default = 0
-  'EC_size': 99
+  'EC_size': 99,
   'EC_demografic_category': 'rural', #rural/suburban/urban, only relevant for simulations without power flow analysis    #umbenennen?
 }
 ############################

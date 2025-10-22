@@ -16,8 +16,8 @@ class PVcreator:
                         'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10}
-    self.pv_para_shared = {'orientation' : [180], #examplary parameters for single community PV plant
-                        'installed_power_scaling' : [1],
+    self.pv_para_shared = {'orientation' : [90], #examplary parameters for single community PV plant
+                        'installed_power_scaling' : [2],
                         'power' : 2000}
     #TODO: power urban has to be verified
 
@@ -50,7 +50,7 @@ class PVcreator:
       # create PV sgen at LVBB
       pp.create_sgen(grid.net, grid.net.trafo.lv_bus[0], 0.0,
                      name='pv_' + str(grid.net.trafo.lv_bus.sum()),
-                     type='pv_180') #Todo: type ändern
+                     type='pv_' + str(self.pv_para_shared['orientation'][0]))
       grid = self.total_installed_pv_power = self.get_installed_power_within_the_grid(grid, pv_control)
 
       return grid
@@ -138,14 +138,17 @@ class PVcreator:
   ### get total installed power within the grid ###
   #################################################
   def get_installed_power_within_the_grid(self, grid, pv_control):
+    if pv_control in [None, 'qu', 'cos_phi']:
+        pv_paras = self.pv_para
+        power_per_side = pv_paras['power_' + str(grid.category)]
+    elif pv_control in ['qu_LVbus', 'cos_phi_LVbus']:
+        pv_paras = self.pv_para_shared
+        power_per_side = pv_paras['power']
     df_power_by_orientation = pd.DataFrame(columns=['orientation', 'installed_power_scaling'], index=range(0,len(self.pv_para['orientation'])))
     df_power_by_orientation.orientation = ['pv_'+str(self.pv_para['orientation'][i]) for i in range(len(self.pv_para['orientation']))]
     df_power_by_orientation['installed_power_scaling'] = self.pv_para['installed_power_scaling']
-    if pv_control in [None, 'qu', 'cos_phi']:
-        df_power_by_orientation['power_per_orientation'] = df_power_by_orientation['installed_power_scaling']*self.pv_para['power_'+str(grid.category)]
-    elif pv_control in ['qu_LVbus', 'cos_phi_LVbus']:
-        df_power_by_orientation['power_per_orientation'] = df_power_by_orientation['installed_power_scaling'] * self.pv_para_shared['power'] # nur hierfür steht pv_control in Methoden
-        #ToDO: Vielleicht doch lieber pv_power_shared in pv para aufnehmen und keine Variable pv_control?
+    df_power_by_orientation['power_per_orientation'] = df_power_by_orientation['installed_power_scaling'] * power_per_side
+
     grid.total_installed_pv_power = 0
     grid.net.sgen['installed_power'] = 0
     index = 0
