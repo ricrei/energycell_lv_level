@@ -123,11 +123,13 @@ time_scope = time_scope
 ## 6: battery storage systems, 7: smart consumers, 8: battery storage systems and smart consumers
 ## 9: battery storage systems and smart consumers (adapted BSS sizing)
 # Second number: PV
-## 0: no PV, 1: Q(U), 2: fix cos(phi)
+## 0: no PV, 1: Q(U), 2: fix cos(phi), 3: Q(U) Community PV at LV-Busbar,
+## 4: fix cos(phi) Community PV at LV-Busbar
 # Third number: BSS
 ## 0: no BSS, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
 ## 4: Grid-oriented feed-in damping Community BSS at LV-Busbar,
-## 5: Grid-oriented feed-in damping Community BSS in feeder
+## 5: Grid-oriented feed-in damping Community BSS in feeder,
+## 6: direct Community BSS at LV-Busbar
 # Fourth number: HP
 ## 0: no HP, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
 ## 4: evu-lock (EnWG §14a),
@@ -140,8 +142,8 @@ time_scope = time_scope
 ## 0: No Grid Reinforcement, 1: Grid Reinforcement
 scenario = [
   6, # scenario number, 1-8 #4#6
-  2, # PV, 0-2
-  1, # BSS, 0-5 #0
+  2, # PV, 0-4
+  1, # BSS, 0-6 #0
   1, # HP, 0-5
   1, # EV, 0-3
   0, # Curtailment, 0/1
@@ -184,7 +186,7 @@ control_parameter = {
   'HP_lower_TES_reserve': 0., # default = 0 
   'HP_upper_TES_reserve_summer': .5, # default = 1
   'HP_lower_TES_reserve_winter': .1, # default = 0
-  'EC_size': 10,
+  'EC_size': 99
   'EC_demografic_category': 'rural', #rural/suburban/urban, only relevant for simulations without power flow analysis    #umbenennen?
 }
 ############################
@@ -257,7 +259,7 @@ def run_single_simulation():
   # Initialize Evaluation # geht nicht, wenn kein Powerflow
   e.initiate_evaluation()
 
-  res_dict_energy = e.eva.calculate_relevant_outputdata() #dict is needed for tests
+  res_dict_energy = e.eva.calculate_relevant_outputdata(grid_analysis=grid_analysis) #dict is needed for tests
   if grid_analysis == True:
     print(grid_analysis)
     res_dict_net_problems = e.eva.calculate_net_problems() #dict is needed for tests

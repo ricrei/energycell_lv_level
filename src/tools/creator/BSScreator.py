@@ -41,7 +41,7 @@ class BSScreator:
   def create_bss(self, grid, bss_control):
         if bss_control in [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH']:
           grid = self.create_bss_at_each_bus(grid)
-        elif bss_control == 'grid-oriented_feed-in_damping_LVbus':
+        elif bss_control in ['grid-oriented_feed-in_damping_LVbus','direct_LVbus']:
           grid = self.create_bss_at_lvbb(grid)
         elif bss_control == 'grid-oriented_feed-in_damping_feeder':
           grid = self.create_bss_at_selected_buses(grid)
@@ -81,14 +81,20 @@ class BSScreator:
 
       else:
         # create bss at each bus
+        if grid.scenario[1] in [3, 4]:
+            raise ValueError('Selected scenario not valid. The option for home BSSs is not implemented for scenarios with community PV at LV-bus.')
+
         for index in grid.component_buses.index:
+          max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.sizing_factor_bss_to_pv
+          max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv
+
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
-                            max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.sizing_factor_bss_to_pv, \
+                            max_e_mwh = max_e_mwh, \
                             soc_percent = self.soc_percent , \
                             name = 'bss_'+str(grid.net.load.loc[index, "bus"]), \
                             type = 'bss', \
-                            max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv)
+                            max_p_mw = max_p_mw)
       
       grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat # für jetzt  
       grid.net.storage['efficiency_Bat2AC'] = self.efficiency_Bat2AC

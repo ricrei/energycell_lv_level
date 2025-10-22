@@ -64,6 +64,16 @@ class BSScontroller:
                                                  self.efficiency_charge, \
                                                  self.efficiency_discharge, \
                                                  self.soc_reserve_percent)
+        if self.control == 'direct_LVbus':
+          self.P_controller = BSS_control_direct_cbss(grid, \
+                                                 self.intervall_in_seconds, \
+                                                 self.busses_num, \
+                                                 self.timedelta_charging_delay, \
+                                                 self.timedelta_charging_delay_winter, \
+                                                 self.timedelta_early_discharge, \
+                                                 self.efficiency_charge, \
+                                                 self.efficiency_discharge, \
+                                                 self.soc_reserve_percent)
         elif self.control == ' ':
           raise ValueError('BSS control is not implemented.')
         elif self.control == ' ':
@@ -82,6 +92,7 @@ class BSScontroller:
 
   def get_active_power_trafo_charge(self, grid, t):
       return self.P_controller.pcontrol_trafo_charge(grid, t) #
+
   
   def get_e_mwh(self, grid):
       return self.P_controller.e_mwh_start
@@ -270,7 +281,7 @@ class BSS_control_no_bss(BSS_control):
   def __init__(self, grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent):
       super().__init__(grid, intervall_in_seconds, busses_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
 
-### DIRECT ###
+### DIRECT HBSS ###
 class BSS_control_direct(BSS_control): #simple
   def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent): 
       super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay, timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge, efficiency_discharge, soc_reserve_percent)
@@ -291,8 +302,8 @@ class BSS_control_direct(BSS_control): #simple
       bss = grid.net.storage
       
       # Residual load at each household and resulting charging/discharging power:
-      residual_load_per_bus = self.residual_load_per_bus(grid)
-      p_mw_bss = -residual_load_per_bus      
+      residual_load_per_bus = self.residual_load_per_bus(grid) # different for CBSS
+      p_mw_bss = -residual_load_per_bus
      
       # Current parameters of BSS:  
       get_soc = bss.soc_percent #self.state_of_charge(grid) # state of charge [%]
@@ -527,6 +538,61 @@ class BSS_P_control_grid_fid(BSS_control):
       bss.p_mw_flex = p_mw_bss - p_mw_bss_before
       grid.net.storage = bss
       #grid.net.storage.e_mwh = get_e_mwh
+
+      return grid.net.storage
+
+### DIRECT CBSS ###
+class BSS_control_direct_cbss(BSS_control):  # simple
+  def __init__(self, grid, intervall_in_seconds, bss_num, timedelta_charging_delay,
+               timedelta_charging_delay_winter, timedelta_early_discharge, efficiency_charge,
+               efficiency_discharge, soc_reserve_percent):
+      super().__init__(grid, intervall_in_seconds, bss_num, timedelta_charging_delay,
+                       timedelta_charging_delay_winter, timedelta_early_discharge,
+                       efficiency_charge, efficiency_discharge, soc_reserve_percent)
+
+  def pcontrol_direct_charge(self, grid, t):
+      '''
+      Calculation of the change of residual laod caused by the BSS at each bus
+      Parameters
+      ----------
+      grid : TYPE
+          network
+      Returns
+      -------
+      p_mw_bss : numpy.ndarray
+          power change at bus due to BSS [MW]
+      '''
+
+      bss = grid.net.storage
+
+      # Residual load at each household and resulting charging/discharging power:
+      s_res, p_res = grid.get_residualload_s_sum() # different for HBSS
+      p_mw_bss = pd.Series(- p_res)
+
+
+      # Current parameters of BSS:  
+      get_soc = bss.soc_percent  # self.state_of_charge(grid) # state of charge [%]
+      get_e_mwh = bss.e_mwh  # self.e_mwh_start # energy content [MWh]
+
+      # Write parameters of bss into dataframe:
+      bss.e_mwh = get_e_mwh
+      bss.soc_percent = get_soc
+
+      # DIRECT CHARGE:        
+      p_mw_bss = self.direct_charge(grid, p_mw_bss)
+
+      # Limitation by maximum power: 
+      p_mw_bss[bss.max_p_mw < p_mw_bss] = bss.max_p_mw[bss.max_p_mw < p_mw_bss]
+      p_mw_bss[-bss.max_p_mw > p_mw_bss] = - bss.max_p_mw[-bss.max_p_mw > p_mw_bss]
+
+      # Write parameters of bss into dataframe:
+      bss.e_mwh = self.calculate_stored_energy(grid, p_mw_bss)
+      bss.soc_percent = self.calculate_soc(grid, bss.e_mwh)
+      bss.p_mw = p_mw_bss
+      grid.net.storage = bss
+
+      # New energy content of BSS:
+      # grid = self.stored_energy(grid, p_mw_bss)
 
       return grid.net.storage
 

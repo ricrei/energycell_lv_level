@@ -11,12 +11,12 @@ class PVcontroller:
 
       if (self.control != None):
         self.P_controller = PV_P_controlFEEDINALL(self.pv_para)
-        if self.control == 'qu':
+        if self.control in ['qu','qu_LVbus']: #neu Tabea
           if (grid_analysis == False):
               raise ValueError('Hint: Selected scenario not valid. PV systems cannot be operated '
                                'with Q(U)-control (PV option 1) if no grid is available.')
           self.Q_controller = PV_Q_controlQU(grid, self.pv_para)
-        elif self.control == 'cos_phi':
+        elif self.control in ['cos_phi','cos_phi_LVbus']:  # neu Tabea
           if (grid_analysis == False):
               print('Control with fix cos(phi) only possible with cos(phi)=1, since reactive power '
                     'is not taken into account in scenarios without a power grid.')

@@ -134,7 +134,7 @@ class EV_P_control_direct(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
-      self.limit_direct = 100
+      self.limit_direct = 100 # SOC up to which the EV is charged using the "direct" strategy
       self.limit_p_res = 0.
       self.limit_trafo = 0.
 
@@ -143,8 +143,8 @@ class EV_P_control_hh_fid(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
-      self.limit_direct = self.ev_parameter['direct_charge_limit']
-      self.limit_p_res = 100
+      self.limit_direct = self.ev_parameter['direct_charge_limit'] # SOC up to which the EV is charged using the "direct" strategy
+      self.limit_p_res = 100 # SOC up to which the EV can be charged using excess PV energy
       self.limit_trafo = 0.
 
   def pcontrol_p_res_charge(self, grid, t, limit):
@@ -185,9 +185,9 @@ class EV_P_control_grid_fid(EV_P_control):
 
   def __init__(self, grid, ev_parameter, charging_demand, parking_time):
       super().__init__(grid, ev_parameter, charging_demand, parking_time)
-      self.limit_direct = self.ev_parameter['direct_charge_limit']
-      self.limit_p_res = self.ev_parameter['linear_charge_limit']
-      self.limit_trafo = 100
+      self.limit_direct = self.ev_parameter['direct_charge_limit'] # SOC up to which the EV can be charged using excess PV energy
+      self.limit_p_res = self.ev_parameter['linear_charge_limit'] # SOC up to which the EV can be charged using excess PV energy
+      self.limit_trafo = 100 # SOC up to which the EV can be charged to relieve the transformer
 
   def pcontrol_p_res_charge(self, grid, t, limit):
       s_res, p_res = grid.get_residualload_s_sum()

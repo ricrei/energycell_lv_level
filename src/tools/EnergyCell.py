@@ -68,7 +68,7 @@ class EnergyCell():
         self.bss_creator = BSScreator(self.grid, self.control_parameter, self.grid_analysis)
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
-        self.grid = self.pv_creator.create_pv_sgen_at_each_bus(self.grid)
+        self.grid = self.pv_creator.create_pv_sgen(self.grid, self.controls['pv'])
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss(self.grid, self.controls['bss'])
@@ -134,7 +134,7 @@ class EnergyCell():
 
         # load all profiles and store them into df
         self.df = self.hhl_creator.load_hhl_profiles(self.df, self.grid_analysis)
-        self.df = self.pv_creator.load_pv_profiles(self.df, self.grid.category)
+        self.df = self.pv_creator.load_pv_profiles(self.df, self.grid.category, self.controls['pv'])
         self.df = self.hp_creator.load_hp_profiles(self.df)
         self.df = self.ev_creator.load_ev_profiles(self.df)
 
@@ -208,8 +208,8 @@ class EnergyCell():
     #####################################################
     def scenario_interpreter(self, scenario):
       self.scenario = scenario
-      pv = [None, 'qu', 'cos_phi']
-      bss = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH', 'grid-oriented_feed-in_damping_LVbus', 'grid-oriented_feed-in_damping_feeder']
+      pv = [None, 'qu', 'cos_phi', 'qu_LVbus', 'cos_phi_LVbus']
+      bss = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH', 'grid-oriented_feed-in_damping_LVbus', 'grid-oriented_feed-in_damping_feeder', 'direct_LVbus']
       hp = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'evu_lock', 'residual_load_driven']
       ev = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
       curtailment = [False, True]
