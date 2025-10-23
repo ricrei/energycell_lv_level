@@ -6,9 +6,10 @@ import tools.tools as tt
 
 class PVcreator:
 
-  def __init__(self, inputfolder):
+  def __init__(self, inputfolder, grid, control_parameter):
     self.inputfolder = inputfolder
     self.pv_data_file = self.inputfolder + '12_pv_short.pbz2'
+    self.grid = grid
 
     # installed PV-power per roof-top side in kW, rural:18kW, village:16.7kW, suburban:11.6kW
     # rate: frequency of occurrence of pv-orientation
@@ -16,42 +17,43 @@ class PVcreator:
                         'rate' : pd.DataFrame([10.8, 4.8, 4.4, 4, 4, 4.4, 5.2, 6.3, 6.3, 10.8, 4.9, 4.7, 4.3, 4, 4.3, 5, 5.9, 5.9]),
                         'installed_power_scaling' : [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2], #[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         'power_rural' : 18, 'power_village' : 16.7, 'power_suburban' : 11.6, 'power_urban': 10}
-    self.pv_para_shared = {'orientation' : [90], #examplary parameters for single community PV plant
-                        'installed_power_scaling' : [2],
-                        'power' : 2000}
+    if grid.scenario[1] in [3, 4]:
+        self.pv_para_shared = {'orientation': [control_parameter['PV_shared_orientation']],
+                               'installed_power_scaling': [control_parameter['PV_shared_installed_power_scaling']],
+                               'power': control_parameter['PV_shared_nominal_power']}
     #TODO: power urban has to be verified
 
     #########################################
     ### Mastermethod: choose pv position ###
     #########################################
-  def create_pv_sgen(self, grid, pv_control):
-    if pv_control in [None, 'qu', 'cos_phi']:
-        grid = self.create_pv_sgen_at_each_bus(grid, pv_control)
-    elif pv_control in ['qu_LVbus', 'cos_phi_LVbus']:
-        grid = self.create_pv_sgen_at_lvbb(grid, pv_control)
+  def create_pv_sgen(self, grid):
+    if self.grid.scenario[1] in [3, 4]:  # Community PV
+        grid = self.create_pv_sgen_at_lvbb(grid)
+    else:
+        grid = self.create_pv_sgen_at_each_bus(grid)
 
     return grid
 
   ############################################################
   ### Create sGen and Loads at each bus for all PV, HP, EV ###
   ############################################################
-  def create_pv_sgen_at_each_bus(self, grid, pv_control):
+  def create_pv_sgen_at_each_bus(self, grid):
         # create sgen per load and set all values to zero
         # asign pv-orientation to every sgen
         grid = self.set_pv_distribution(grid)
-        grid = self.total_installed_pv_power = self.get_installed_power_within_the_grid(grid, pv_control)
+        grid = self.total_installed_pv_power = self.get_installed_power_within_the_grid(grid)
         return grid
 
   ###########################
   ### Create sGen at LVBB ###
   ###########################
-  def create_pv_sgen_at_lvbb(self, grid, pv_control):
+  def create_pv_sgen_at_lvbb(self, grid):
       # create sgen at lvbb and set all values to zero
       # create PV sgen at LVBB
       pp.create_sgen(grid.net, grid.net.trafo.lv_bus[0], 0.0,
                      name='pv_' + str(grid.net.trafo.lv_bus.sum()),
                      type='pv_' + str(self.pv_para_shared['orientation'][0]))
-      grid = self.total_installed_pv_power = self.get_installed_power_within_the_grid(grid, pv_control)
+      grid = self.total_installed_pv_power = self.get_installed_power_within_the_grid(grid)
 
       return grid
 
@@ -117,15 +119,15 @@ class PVcreator:
   ##########################################
   ### load genearation and load profiles ###
   ##########################################
-  def load_pv_profiles(self, df, category, pv_control):
+  def load_pv_profiles(self, df):
         ### load pv profiles ###
         pv = tt.decompress_pickle(self.pv_data_file)
 
         # Define maximum installed pv-power per (roof-top) side (in kW)
-        if pv_control in [None, 'qu', 'cos_phi']:
-            pv_power_installed = self.pv_para['power_'+str(category)]
-        elif pv_control in ['qu_LVbus', 'cos_phi_LVbus']:
+        if self.grid.scenario[1] in [3, 4]:  # Community PV
             pv_power_installed = self.pv_para_shared['power']
+        else:  # home PV
+            pv_power_installed = self.pv_para['power_'+str(self.grid.category)]
         for i in range(0,len(self.pv_para['orientation'])):
               # calculate installed power per household and normalize timeseries to MW
               pv_dc_power = pv[self.pv_para['orientation'][i]]*pv_power_installed*self.pv_para['installed_power_scaling'][i]/1000
@@ -137,16 +139,16 @@ class PVcreator:
   #################################################
   ### get total installed power within the grid ###
   #################################################
-  def get_installed_power_within_the_grid(self, grid, pv_control):
-    if pv_control in [None, 'qu', 'cos_phi']:
-        pv_paras = self.pv_para
-        power_per_side = pv_paras['power_' + str(grid.category)]
-    elif pv_control in ['qu_LVbus', 'cos_phi_LVbus']:
+  def get_installed_power_within_the_grid(self, grid):
+    if self.grid.scenario[1] in [3, 4]: # Community PV
         pv_paras = self.pv_para_shared
         power_per_side = pv_paras['power']
-    df_power_by_orientation = pd.DataFrame(columns=['orientation', 'installed_power_scaling'], index=range(0,len(self.pv_para['orientation'])))
-    df_power_by_orientation.orientation = ['pv_'+str(self.pv_para['orientation'][i]) for i in range(len(self.pv_para['orientation']))]
-    df_power_by_orientation['installed_power_scaling'] = self.pv_para['installed_power_scaling']
+    else: # home PV
+        pv_paras = self.pv_para
+        power_per_side = pv_paras['power_' + str(grid.category)]
+    df_power_by_orientation = pd.DataFrame(columns=['orientation', 'installed_power_scaling'],index=range(0, len(pv_paras['orientation'])))
+    df_power_by_orientation.orientation = ['pv_' + str(pv_paras['orientation'][i]) for i in range(len(pv_paras['orientation']))]
+    df_power_by_orientation['installed_power_scaling'] = pv_paras['installed_power_scaling']
     df_power_by_orientation['power_per_orientation'] = df_power_by_orientation['installed_power_scaling'] * power_per_side
 
     grid.total_installed_pv_power = 0

@@ -62,13 +62,13 @@ class EnergyCell():
         self.grid = Grid(self.net_name, self.scenario, self.time_scope, self.control_parameter, self.grid_analysis)
 
         self.hhl_creator = HHLcreator(self.input_data_handler.inputfolder, self.control_parameter, self.grid_analysis)
-        self.pv_creator = PVcreator(self.input_data_handler.inputfolder)
+        self.pv_creator = PVcreator(self.input_data_handler.inputfolder, self.grid, self.control_parameter)
         self.hp_creator = HPcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.ev_creator = EVcreator(self.input_data_handler.inputfolder, self.control_parameter)
         self.bss_creator = BSScreator(self.grid, self.control_parameter, self.grid_analysis)
 
         self.grid = self.hhl_creator.create_hh_load_at_each_bus(self.grid)
-        self.grid = self.pv_creator.create_pv_sgen(self.grid, self.controls['pv'])
+        self.grid = self.pv_creator.create_pv_sgen(self.grid)
         self.grid = self.hp_creator.create_hp_load_at_each_bus(self.grid)
         self.grid = self.ev_creator.create_ev_load_at_each_bus(self.grid)
         self.grid = self.bss_creator.create_bss(self.grid, self.controls['bss'])
@@ -134,7 +134,7 @@ class EnergyCell():
 
         # load all profiles and store them into df
         self.df = self.hhl_creator.load_hhl_profiles(self.df, self.grid_analysis)
-        self.df = self.pv_creator.load_pv_profiles(self.df, self.grid.category, self.controls['pv'])
+        self.df = self.pv_creator.load_pv_profiles(self.df)
         self.df = self.hp_creator.load_hp_profiles(self.df)
         self.df = self.ev_creator.load_ev_profiles(self.df)
 

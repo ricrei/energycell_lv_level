@@ -156,6 +156,9 @@ scenario = [
 ### Controller parameter ###
 control_parameter = {
   'PV_cos_phi' : .9,
+  'PV_shared_nominal_power' : 1000, # only relevant for pv options 3 and 4 (shared PV at LVBB)
+  'PV_shared_orientation' : 180, # only relevant for pv options 3 and 4 (shared PV at LVBB)
+  'PV_shared_installed_power_scaling' : 1, # only relevant for pv options 3 and 4 (shared PV at LVBB); 1: south orientation (one side), 2: east-west-orientation (two sides))
   'BSS_efficiency_AC2Bat' : 0.953,
   'BSS_efficiency_Bat2AC' : 0.955,
   'BSS_efficiency_storage' : 0.959,
