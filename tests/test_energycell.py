@@ -11,6 +11,7 @@ from src.tools import EnergyCell
 #from spice_ev.generate import generate_schedule
 import tools.EnergyCell as ec
 import tools.tools as tt
+from tools.evaluation.EvaluationSingleCase import EvaluationSingleCase
 import pandapower as pp
 import pandas as pd # nur für jetzt
 

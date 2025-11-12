@@ -209,7 +209,12 @@ class EnergyCell():
     def scenario_interpreter(self, scenario):
       self.scenario = scenario
       pv = [None, 'qu', 'cos_phi', 'qu_LVbus', 'cos_phi_LVbus']
-      bss = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH', 'grid-oriented_feed-in_damping_LVbus', 'grid-oriented_feed-in_damping_feeder', 'direct_LVbus']
+      bss = [None, 'direct', 'household-oriented_feed-in_damping',
+             'grid-oriented_feed-in_damping_HH', 'grid-oriented_feed-in_damping_LVbus',
+             'grid-oriented_feed-in_damping_feeder', 'direct_LVbus',
+             'direct_independent_sizing', 'household-oriented_feed-in_damping_independent_sizing',
+             'grid-oriented_feed-in_damping_HH_independent_sizing', 'grid-oriented_feed-in_damping_LVbus_independent_sizing',
+             'grid-oriented_feed-in_damping_feeder_independent_sizing', 'direct_LVbus_independent_sizing']
       hp = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping', 'evu_lock', 'residual_load_driven']
       ev = [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping']
       curtailment = [False, True]

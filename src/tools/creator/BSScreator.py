@@ -11,6 +11,9 @@ class BSScreator:
         self.bss_para = {}
         if grid_analysis == True:
             self.net_name = grid.net_name
+        #'BSS_capacity'
+        if grid.scenario[2] in [7,8,9,10,11,12]: # scenarios with independent sizing
+            self.capacity = control_parameter['BSS_capacity']
         self.efficiency_AC2Bat = control_parameter['BSS_efficiency_AC2Bat']#0.953
         self.efficiency_Bat2AC = control_parameter['BSS_efficiency_Bat2AC']#0.955
         self.efficiency_storage = control_parameter['BSS_efficiency_storage']#0.959
@@ -39,11 +42,16 @@ class BSScreator:
   ### Mastermethod: choose bss position ###
   #########################################
   def create_bss(self, grid, bss_control):
-        if bss_control in [None, 'direct', 'household-oriented_feed-in_damping', 'grid-oriented_feed-in_damping_HH']:
+        if bss_control in [None, 'direct', 'household-oriented_feed-in_damping',
+                           'grid-oriented_feed-in_damping_HH', 'direct_independent_sizing',
+                           'household-oriented_feed-in_damping_independent_sizing',
+                           'grid-oriented_feed-in_damping_HH_independent_sizing']:
           grid = self.create_bss_at_each_bus(grid)
-        elif bss_control in ['grid-oriented_feed-in_damping_LVbus','direct_LVbus']:
+        elif bss_control in ['grid-oriented_feed-in_damping_LVbus','direct_LVbus',
+                             'grid-oriented_feed-in_damping_LVbus_independent_sizing',
+                             'direct_LVbus_independent_sizing']:
           grid = self.create_bss_at_lvbb(grid)
-        elif bss_control == 'grid-oriented_feed-in_damping_feeder':
+        elif bss_control in ['grid-oriented_feed-in_damping_feeder','grid-oriented_feed-in_damping_feeder_independent_sizing']:
           grid = self.create_bss_at_selected_buses(grid)
 
         return grid
@@ -85,8 +93,12 @@ class BSScreator:
             raise ValueError('Selected scenario not valid. The option for home BSSs is not implemented for scenarios with community PV at LV-bus.')
 
         for index in grid.component_buses.index:
-          max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.sizing_factor_bss_to_pv
-          max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv
+          if grid.scenario[2] in [0,1,2,3]: # scenarios with hbss and pv-dependent sizing approach
+            max_e_mwh = grid.net.sgen.installed_power.loc[index] * 10**(-3) * self.sizing_factor_bss_to_pv
+            max_p_mw = grid.net.sgen.installed_power.loc[index] * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv
+          else:  # scenarios with hbss and independent sizing
+            max_e_mwh = self.capacity  # [MWh]
+            max_p_mw = self.capacity * self.sizing_factor # [MW]
 
           pp.create_storage(grid.net, grid.net.load.loc[index, "bus"], \
                             p_mw = 0, \
@@ -109,8 +121,12 @@ class BSScreator:
 
   def create_bss_at_lvbb(self, grid): 
       # create  community bss at low voltage busbar
-      max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * self.sizing_factor_bss_to_pv# [MWh] 
-      max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv# [MW]
+      if grid.scenario[2] in [4, 6]: # scenarios with cbss at lvbb and pv-dependent sizing approach
+          max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * self.sizing_factor_bss_to_pv# [MWh]
+          max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * self.sizing_factor_bss_to_pv# [MW]
+      else: #scenarios with cbss at lvbb and independent sizing
+          max_e_mwh = self.capacity # [MWh]
+          max_p_mw = self.capacity * self.sizing_factor # [MW]
 
       pp.create_storage(grid.net, grid.net.trafo.lv_bus[0], \
                         p_mw = 0, \
@@ -152,7 +168,8 @@ class BSScreator:
           hh_per_line = [102,111]
       
       i = 0
-      for x in selected_buses:
+      if grid.scenario[2] == 5:  # scenarios with cbss in feeder and pv-dependent sizing approach
+        for x in selected_buses:
           max_e_mwh = grid.net.sgen.installed_power.sum() * 10**(-3) * hh_per_line[i]/sum(hh_per_line) * self.sizing_factor_bss_to_pv# später noch
           max_e_mwh = np.nan_to_num(max_e_mwh)
           max_p_mw = grid.net.sgen.installed_power.sum() * self.sizing_factor * 10**(-3) * hh_per_line[i]/sum(hh_per_line) * self.sizing_factor_bss_to_pv# [MW] # später anpassen
@@ -164,6 +181,20 @@ class BSScreator:
                             name='bss_'+str(x), \
                             type='bss', \
                             max_p_mw = max_p_mw)
+          i = i+1
+      else: # scenarios with cbss in feeder and independent sizing
+        for x in selected_buses:
+          max_e_mwh = self.capacity * hh_per_line[i]/sum(hh_per_line) # [MWh]
+          max_e_mwh = np.nan_to_num(max_e_mwh)
+          max_p_mw = self.capacity * hh_per_line[i]/sum(hh_per_line) * self.sizing_factor  # [MW]
+          max_p_mw = np.nan_to_num(max_p_mw)
+          pp.create_storage(grid.net, x, \
+                            p_mw=0, \
+                            max_e_mwh=max_e_mwh, \
+                            soc_percent=self.soc_percent, \
+                            name='bss_' + str(x), \
+                            type='bss', \
+                            max_p_mw=max_p_mw)
           i = i+1
             
       grid.net.storage['efficiency_AC2Bat'] = self.efficiency_AC2Bat 

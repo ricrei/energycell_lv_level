@@ -130,6 +130,11 @@ time_scope = time_scope
 ## 4: Grid-oriented feed-in damping Community BSS at LV-Busbar,
 ## 5: Grid-oriented feed-in damping Community BSS in feeder,
 ## 6: direct Community BSS at LV-Busbar
+## 7: direct (independent sizing), 8: Household-oriented feed-in damping (independent sizing),
+## 9: Grid-oriented feed-in damping (independent sizing)
+## 10: Grid-oriented feed-in damping Community BSS at LV-Busbar (independent sizing),
+## 11: Grid-oriented feed-in damping Community BSS in feeder (independent sizing),
+## 12: direct Community BSS at LV-Busbar (independent sizing)
 # Fourth number: HP
 ## 0: no HP, 1: direct, 2: Household-oriented feed-in damping, 3: Grid-oriented feed-in damping
 ## 4: evu-lock (EnWG §14a),
@@ -159,6 +164,7 @@ control_parameter = {
   'PV_shared_nominal_power' : 1000, # only relevant for pv options 3 and 4 (shared PV at LVBB)
   'PV_shared_orientation' : 180, # only relevant for pv options 3 and 4 (shared PV at LVBB)
   'PV_shared_installed_power_scaling' : 1, # only relevant for pv options 3 and 4 (shared PV at LVBB); 1: south orientation (one side), 2: east-west-orientation (two sides))
+  'BSS_capacity': 0.75, # [MWh] # only relevant for scenarios with independent BSS sizing
   'BSS_efficiency_AC2Bat' : 0.953,
   'BSS_efficiency_Bat2AC' : 0.955,
   'BSS_efficiency_storage' : 0.959,

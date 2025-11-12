@@ -27,7 +27,7 @@ class BSScontroller:
       self.control = control
 
       if (self.control != None):
-        if self.control == 'direct': 
+        if self.control in ['direct', 'direct_independent_sizing']:
           self.P_controller = BSS_control_direct(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
@@ -37,7 +37,7 @@ class BSScontroller:
                                                  self.efficiency_charge, \
                                                  self.efficiency_discharge, \
                                                  self.soc_reserve_percent)
-        elif self.control == 'household-oriented_feed-in_damping': 
+        elif self.control in ['household-oriented_feed-in_damping', 'household-oriented_feed-in_damping_independent_sizing']:
           self.P_controller = BSS_P_control_hh_fid(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
@@ -50,7 +50,10 @@ class BSScontroller:
               
         elif (self.control == 'grid-oriented_feed-in_damping_HH') or \
              (self.control == 'grid-oriented_feed-in_damping_LVbus') or \
-             (self.control == 'grid-oriented_feed-in_damping_feeder'):
+             (self.control == 'grid-oriented_feed-in_damping_feeder') or \
+             (self.control == 'grid-oriented_feed-in_damping_HH_independent_sizing') or \
+             (self.control == 'grid-oriented_feed-in_damping_LVbus_independent_sizing') or \
+             (self.control == 'grid-oriented_feed-in_damping_feeder_independent_sizing'):
           if (grid_analysis == False):
               raise ValueError('Hint: Selected scenario not valid. BSSs cannot be operated with '
                                'strategy "Grid-oriented feed-in damping" (BSS option 3-5) if no '
@@ -64,7 +67,7 @@ class BSScontroller:
                                                  self.efficiency_charge, \
                                                  self.efficiency_discharge, \
                                                  self.soc_reserve_percent)
-        if self.control == 'direct_LVbus':
+        if self.control in ['direct_LVbus','direct_LVbus_independent_sizing']:
           self.P_controller = BSS_control_direct_cbss(grid, \
                                                  self.intervall_in_seconds, \
                                                  self.busses_num, \
