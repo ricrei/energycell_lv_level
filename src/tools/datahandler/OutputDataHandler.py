@@ -51,7 +51,7 @@ class OutputDataHandler():
     is_ev  = 1 if self.scenario_frame[0] in [2,4,6,7,8,9] else 0
 
     # PV-P, BSS-P, BSS-E, HP-P, TES-E, EV-E,
-    df = pd.DataFrame(index=self.grid.component_buses)
+    df = pd.DataFrame(index=self.grid.component_buses.index)
     df['PV_power']   = is_pv  * self.grid.net.sgen.installed_power / 1000 # MW
     df['BSS_power']  = is_bss * self.grid.net.storage.max_p_mw
     df['BSS_energy'] = is_bss * self.grid.net.storage.max_e_mwh

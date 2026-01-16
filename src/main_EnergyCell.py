@@ -358,7 +358,7 @@ def run_multiple_simulations(scenarios):
         e.run_pf_timeseries()
         #------------
         e.initiate_evaluation()
-        e.eva.calculate_relevant_outputdata()
+        e.eva.calculate_relevant_outputdata(grid_analysis=True) #ToDo: Als Parameter in Fkt. übergeben
         #e.eva.calculate_net_problems()
         #-------------
 
@@ -514,8 +514,8 @@ scenarios = [
 ]
 
 e, res_dict_energy, res_dict_net_problems=run_single_simulation()
-#run_multiple_simulations(scenarios)
-#run_multiple_simulations_no_grid(scenarios)
+#e, res_dict_energy, res_dict_net_problems=run_multiple_simulations(scenarios)
+#run_multiple_simulations_no_grid(scenarios) # ToDo: Kann weg?
 #run_multiple_simulations_multiprocessing(scenarios)
 #run_output_data_conversion(scenarios)
 #run_economics(scenarios)

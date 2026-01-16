@@ -13,12 +13,47 @@ import tools.EnergyCell as ec
 import tools.tools as tt
 from tools.evaluation.EvaluationSingleCase import EvaluationSingleCase
 import pandapower as pp
-import pandas as pd # nur für jetzt
+import pandas as pd
+import csv
+import os
 
 time_scope = { 'start_time' : '2017-05-30 00:00:00+01:00',
                'end_time'   : '2017-05-31 00:00:00+01:00',
                't_freq'     : '1H',
              }
+
+
+time_scope_winter = { 'start_time' : '2017-01-03 00:00:00+01:00',
+                      'end_time'   : '2017-01-10 00:00:00+01:00',
+                      't_freq'     : '1T',
+                      'name'       : 'winter'
+                    }
+
+
+time_scope_summer = { 'start_time' : '2017-05-27 00:00:00+02:00',
+                      'end_time'   : '2017-06-03 00:00:00+02:00',
+                      't_freq'     : '1T',
+                      'name'       : 'summer'
+                    }
+
+time_scope_autumn = { 'start_time' : '2017-10-20 00:00:00+02:00',
+                      'end_time'   : '2017-10-27 00:00:00+02:00',
+                      't_freq'     : '1T',
+                      'name'       : 'autumn'
+                    }
+
+time_scope_spring = { 'start_time' : '2017-03-05 00:00:00+01:00',
+                      'end_time'   : '2017-03-12 00:00:00+01:00',
+                      't_freq'     : '1T',
+                      'name'       : 'spring'
+                    }
+
+time_scope_all_seasons = [
+                      time_scope_spring,
+                      time_scope_summer,
+                      time_scope_autumn,
+                      time_scope_winter
+                      ]
 
 control_parameter = {
   'PV_cos_phi' : .9,
@@ -116,6 +151,12 @@ test_scenarios_no_curt = [
     [6,2,2,1,1,0,0],
 ]
 
+def read_csv(path):
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.reader(f))
+
+def list_files(directory):
+    return os.listdir(directory)
 
 def check_pandapower_network(net_number,scenario,control_parameter,time_scope,network_file):
     # create df with pandapower network for example scenario:
@@ -208,6 +249,24 @@ def test_scenarios(scenarios=test_scenarios, net_number=8, control_parameter=con
         # test evaluation results:
         evaluate_results_pf(ecell=e, energy_results_file=energy_results_file,
                             network_results_file=network_results_file, grid_analysis=True)
+
+def test_compare_output_files(folder_name='2017-05-30_2017-05-31_1H'):
+    # test for scenario [6131110] for grid rural 2
+    # test_scenarios() must be run through first in order to get the csv files
+
+    file_names = list_files('examples/'+ str(folder_name))
+
+    for file in file_names:
+
+        csv1 = read_csv('examples/'+ str(folder_name) + '/' +str(file))
+        csv2 = read_csv('output-files/6131110/simbench_rural_2/'+str(folder_name) + '/'+str(file))
+
+        if file != '01_control_paramters.csv':
+            assert len(csv1) == len(csv2), "Unterschiedliche Anzahl an Zeilen"
+
+        if file != '00_simulation_date.csv':
+            for i, (row1, row2) in enumerate(zip(csv1, csv2), start=1):
+                assert row1 == row2, f"Unterschied in Datei {file} in Zeile {i}: {row1} != {row2}"
 
 def test_scenarios_community():
     # test for comparison of results with and without powerflow

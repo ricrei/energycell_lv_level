@@ -79,6 +79,7 @@ class MainEconomics():
     with open(self.economics_folder + '00_simulation_date.csv', 'w') as f:
         f.write(str(date))
 
+    # get cost parameters
     with open(self.economics_folder + '00_control_paramters.csv', 'w') as f:
       energycosts_income = parameter_economics.energycosts_income
       investment_costs = parameter_economics.investment_costs
